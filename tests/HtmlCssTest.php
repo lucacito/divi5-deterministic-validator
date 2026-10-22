@@ -727,6 +727,42 @@ final class HtmlCssTest extends HtmlTestCase
         $this->assertSame( 'POISON:effect', $this->winner( 'p { color: #fff; text-shadow: 0 0 3px #000 }', [ 'tag' => 'p' ], 'effect' ) );
     }
 
+    /** Task 6 review C2: scope proximity ranks between specificity and order, so every declaration inside @scope has an unknown rank. */
+    public function testScopedRulesHaveTheSentinelRank(): void
+    {
+        foreach ( [ '@scope (.card) { p { color: #f00 } } p { color: #00f }', '@scope (.a) to (.b) { p { color: #f00 } } p { color: #00f }', '@scope { p { color: #f00 } } p { color: #00f }' ] as $css ) {
+            $r = HtmlCss::stylesheet( $css );
+            $this->assertSame( HtmlCss::MAX_SPECIFICITY, $r['rules'][0]['specificity'], $css );
+            $this->assertTrue( $r['rules'][0]['poison_only'], $css );
+            $this->assertSame( 'p', $r['rules'][0]['subject']['tag'], $css );
+            $this->assertSame( [ 0, 0, 1 ], $r['rules'][1]['specificity'], 'the rule after @scope is unaffected' );
+            $this->assertStringStartsWith( 'POISON', $this->winner( $css, [ 'tag' => 'p' ], 'color' ), $css );
+        }
+        $this->assertSame( [ 0, 1, 0 ], HtmlCss::stylesheet( '@media (min-width:1px) { .x { color: red } }' )['rules'][0]['specificity'], '@media keeps its specificity' );
+    }
+
+    /** Task 6 review C9: a quoted family keeps its inner spaces (a browser does), and the generic keywords are lowercase (a browser serialises them so). */
+    public function testFamilyNamesAreKeptAsTheBrowserComputesThem(): void
+    {
+        $this->assertSame( [ 'Open  Sans' ], HtmlCss::families( '"Open  Sans"' ) );
+        $this->assertSame( [ 'Open Sans' ], HtmlCss::families( 'Open   Sans' ), 'unquoted words are joined by one space' );
+        $this->assertSame( [ 'Arial', 'sans-serif', 'monospace', 'system-ui' ], HtmlCss::families( 'Arial, SANS-SERIF, MonoSpace, System-UI' ) );
+        $this->assertSame( [ 'SANS-SERIF' ], HtmlCss::families( '"SANS-SERIF"' ), 'a quoted name is a family name, not the keyword' );
+    }
+
+    /** Task 6 review I3: zoom, scale and a transform that may scale make the rendered size differ from the computed one: a presence marker. */
+    public function testZoomScaleAndTransformsAreScaleMarkers(): void
+    {
+        $this->assertContains( 'scale', HtmlCss::MARKERS );
+        foreach ( [ 'zoom: 1.5', 'zoom: 150%', 'scale: 2', 'transform: scale(2)', 'transform: matrix(2,0,0,2,0,0)', 'transform: translateX(1px) scale(1.1)', '-webkit-transform: scale(2)', 'transform: var(--t)', 'zoom: inherit' ] as $css ) {
+            $this->assertSame( [ $this->decl( 'scale', null, false, 'effect' ) ], $this->block( $css ), $css );
+        }
+        foreach ( [ 'zoom: 1', 'zoom: normal', 'zoom: 100%', 'scale: none', 'scale: 1', 'transform: none', 'transform: translateY(-50%)', 'transform: rotate(3deg) translate(1px, 2px)' ] as $css ) {
+            $this->assertSame( [], $this->block( $css ), $css );
+        }
+        $this->assertSame( [ $this->decl( 'scale', null, true, 'effect' ) ], $this->block( 'zoom: 2 !important' ) );
+    }
+
     // ---------------------------------------------------------------
     // Caps
     // ---------------------------------------------------------------

@@ -39,6 +39,50 @@ final class HtmlSource
     /** A <style> (or <link>) inside one of these is inert in a browser (template, scripting-on noscript, text-only elements): it is not read. */
     private const INERT_ANCESTORS = [ 'template', 'noscript', 'textarea', 'title', 'iframe', 'noembed', 'noframes', 'xmp', 'plaintext' ];
 
+    /**
+     * The fixed reasons of `repaired` (never input text): markup a browser's HTML5 tree builder repairs in a way libxml2 does not, so the
+     * tree the style reader walks may not be the tree the browser styles.
+     */
+    public const REPAIRS = [
+        'misnest'  => 'tags that close out of order',
+        'button'   => 'a button inside a button',
+        'nobr'     => 'a nobr inside a nobr',
+        'a'        => 'a link inside a link',
+        'list'     => 'a list item closed through another element',
+        'twice'    => 'a second body or html tag with attributes',
+        'shadow'   => 'a declarative shadow root',
+        'popover'  => 'a popover',
+        'math'     => 'a style element inside math',
+        'deep'     => 'markup nested too deeply to check',
+    ];
+
+    /** Elements without an end tag. */
+    private const VOID = [ 'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr', 'param',
+        'keygen', 'frame', 'basefont', 'bgsound', 'image' ];
+
+    /** Elements whose end tag may be left out (a browser and libxml2 close them alike). */
+    private const IMPLIED = [ 'p', 'li', 'dt', 'dd', 'tr', 'td', 'th', 'tbody', 'thead', 'tfoot', 'option', 'optgroup', 'colgroup', 'caption',
+        'rt', 'rp', 'rb', 'rtc' ];
+
+    /** Elements whose content is raw text: skipped to their end tag. */
+    private const RAW_TEXT = [ 'script', 'style', 'textarea', 'title', 'xmp', 'iframe', 'noembed', 'noframes', 'noscript' ];
+
+    /** Formatting elements (the adoption agency handles their end tags). */
+    private const FORMATTING = [ 'a', 'b', 'big', 'code', 'em', 'font', 'i', 'nobr', 's', 'small', 'strike', 'strong', 'tt', 'u' ];
+
+    /** Start tags that may come before the body without making one. */
+    private const HEAD_TAGS = [ 'html', 'head', 'title', 'meta', 'link', 'style', 'script', 'base', 'noscript', 'template', 'body' ];
+
+    /** The HTML "special" elements a list-item start tag does not walk through (address, div and p excepted). */
+    private const SPECIAL = [ 'applet', 'area', 'article', 'aside', 'base', 'basefont', 'bgsound', 'blockquote', 'body', 'br', 'button', 'caption',
+        'center', 'col', 'colgroup', 'details', 'dir', 'dl', 'embed', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'frame', 'frameset',
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'iframe', 'img', 'input', 'keygen', 'link', 'listing', 'main',
+        'marquee', 'menu', 'meta', 'nav', 'noembed', 'noframes', 'noscript', 'object', 'ol', 'param', 'plaintext', 'pre', 'script', 'search',
+        'section', 'select', 'source', 'style', 'summary', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'title', 'tr',
+        'track', 'ul', 'wbr', 'xmp' ];
+
+    private const MAX_SCAN_DEPTH = 600;
+
     /** Removed with their content. tag => why it is not converted (plain English, shown to the owner). */
     private const DROP = [
         'script'   => 'JavaScript is never converted.',
@@ -112,6 +156,10 @@ final class HtmlSource
      *                  the visitor's choice, not white and black.
      *   cut_attrs      getNodePath() => ['class' => whole value, 'id' => whole value] for the elements whose class or id the DOM keeps cut
      *                  at 300 characters (phase 1 behaviour, unchanged), so a selector reader can match the classes beyond the cut.
+     *   repaired       list of REPAIRS sentences (empty when none): a linear scan of the raw tags found markup a browser repairs in a way
+     *                  libxml2 does not (tags that close out of order, a formatting end tag over a block, a button in a button, a nobr in a
+     *                  nobr, a link in a link, a list item closed through a div, a second body/html tag with attributes, a declarative shadow
+     *                  root, a popover, a style inside math). It errs on the side of reporting: a style reader must then carry nothing.
      * The paths are computed after every removal and move, so they are the paths of the returned DOM. An element that was removed (or
      * sits inside a removed one) hands over nothing.
      *
@@ -119,11 +167,11 @@ final class HtmlSource
      * are removed, so attribute selectors and structural selectors (:nth-child, :first-child, sibling combinators) would be evaluated on a pruned
      * tree. A reader must treat them as unreadable (poison), not evaluate them.
      *
-     * @return array{error:?string, body:?\DOMElement, flagged:list<array{type:string,reason:string,path:string}>, title:string, h1s:list<string>, stats:array<string,int>, css:string, inline:array<string,string>, presentational:array<string,list<string>>, external_css:int, style_flags:list<array{type:string,reason:string,path:string}>, css_media:string, doctype:bool, color_scheme:bool, cut_attrs:array<string,array<string,string>>}
+     * @return array{error:?string, body:?\DOMElement, flagged:list<array{type:string,reason:string,path:string}>, title:string, h1s:list<string>, stats:array<string,int>, css:string, inline:array<string,string>, presentational:array<string,list<string>>, external_css:int, style_flags:list<array{type:string,reason:string,path:string}>, css_media:string, doctype:bool, color_scheme:bool, cut_attrs:array<string,array<string,string>>, repaired:list<string>}
      */
     public static function parse( string $html ): array
     {
-        $out = [ 'error' => null, 'body' => null, 'flagged' => [], 'title' => '', 'h1s' => [], 'stats' => [ 'elements' => 0, 'removed' => 0, 'urls_dropped' => 0 ], 'css' => '', 'inline' => [], 'presentational' => [], 'external_css' => 0, 'style_flags' => [], 'css_media' => '', 'doctype' => false, 'color_scheme' => false, 'cut_attrs' => [] ];
+        $out = [ 'error' => null, 'body' => null, 'flagged' => [], 'title' => '', 'h1s' => [], 'stats' => [ 'elements' => 0, 'removed' => 0, 'urls_dropped' => 0 ], 'css' => '', 'inline' => [], 'presentational' => [], 'external_css' => 0, 'style_flags' => [], 'css_media' => '', 'doctype' => false, 'color_scheme' => false, 'cut_attrs' => [], 'repaired' => [] ];
 
         if ( '' === trim( $html ) ) {
             $out['error'] = 'The HTML is empty.';
@@ -180,6 +228,7 @@ final class HtmlSource
         $out['title'] = $titleNode instanceof \DOMNode ? self::collapse( $titleNode->textContent ) : '';
 
         self::collectCss( $doc, $out );
+        $out['repaired'] = self::repairs( $html );
         $out['doctype']      = $standards;
         $out['color_scheme'] = self::darkCapable( $doc );
 
@@ -333,10 +382,10 @@ final class HtmlSource
      */
     private static function forSomeScreens( \DOMElement $style ): bool
     {
-        if ( null !== self::inertAncestor( $style ) || $style->hasAttribute( 'disabled' ) ) {
+        if ( null !== self::inertAncestor( $style ) ) {
             return false;
         }
-        $type = strtolower( trim( $style->getAttribute( 'type' ) ) );
+        $type = strtolower( $style->getAttribute( 'type' ) );
         if ( '' !== $type && 'text/css' !== $type ) {
             return false;
         }
@@ -347,6 +396,235 @@ final class HtmlSource
         }
 
         return false;
+    }
+
+    /**
+     * The repairs scan (see `repaired` in parse()). One pass over the raw text with a small stack of open elements; linear (each byte is
+     * read a bounded number of times, every walk down the stack is bounded), never throws, returns only REPAIRS sentences.
+     *
+     * @return list<string>
+     */
+    private static function repairs( string $h ): array
+    {
+        $n        = strlen( $h );
+        $i        = 0;
+        $stack    = [];
+        $open     = [];
+        $found    = [];
+        $stackOk  = true;
+        $content  = false; // something that makes a body has been seen
+        $sawHtml  = false;
+        $sawBody  = false;
+        $flag     = static function ( string $key ) use ( &$found ): void {
+            $found[ $key ] = true;
+        };
+        $pop      = static function () use ( &$stack, &$open ): void {
+            $t = array_pop( $stack );
+            if ( null !== $t ) {
+                --$open[ $t ];
+            }
+        };
+        while ( $i < $n ) {
+            $lt = strpos( $h, '<', $i );
+            if ( false === $lt ) {
+                $content = $content || strspn( $h, " \t\n\r\f", $i ) < $n - $i;
+                break;
+            }
+            if ( $lt > $i && strspn( $h, " \t\n\r\f", $i, $lt - $i ) < $lt - $i ) {
+                $content = true;
+            }
+            if ( 0 === substr_compare( $h, '<!--', $lt, 4 ) ) {
+                $e = strpos( $h, '-->', $lt + 4 );
+                $i = false === $e ? $n : $e + 3;
+                continue;
+            }
+            $c = $lt + 1 < $n ? $h[ $lt + 1 ] : '';
+            if ( '!' === $c || '?' === $c ) {
+                $e = strpos( $h, '>', $lt );
+                $i = false === $e ? $n : $e + 1;
+                continue;
+            }
+            $end = '/' === $c;
+            $j   = $lt + ( $end ? 2 : 1 );
+            if ( $j >= $n || ! ctype_alpha( $h[ $j ] ) ) {
+                if ( $end ) { // </ followed by no letter: a bogus comment up to >
+                    $e = strpos( $h, '>', $lt );
+                    $i = false === $e ? $n : $e + 1;
+                } else {
+                    $content = true;
+                    $i       = $lt + 1;
+                }
+                continue;
+            }
+            $k    = $j + strcspn( $h, " \t\n\r\f/>", $j );
+            $name = strtolower( substr( $h, $j, $k - $j ) );
+            // The attributes up to the closing > (quotes respected).
+            $attrs = [];
+            $p     = $k;
+            while ( $p < $n && '>' !== $h[ $p ] ) {
+                $p += strspn( $h, " \t\n\r\f/", $p );
+                if ( $p >= $n || '>' === $h[ $p ] ) {
+                    break;
+                }
+                $q       = $p + max( 1, strcspn( $h, " \t\n\r\f/>=", $p ) );
+                $attrs[] = strtolower( substr( $h, $p, min( 40, $q - $p ) ) );
+                $p       = $q + strspn( $h, " \t\n\r\f", $q );
+                if ( $p < $n && '=' === $h[ $p ] ) {
+                    ++$p;
+                    $p += strspn( $h, " \t\n\r\f", $p );
+                    if ( $p < $n && ( '"' === $h[ $p ] || "'" === $h[ $p ] ) ) {
+                        $e = strpos( $h, $h[ $p ], $p + 1 );
+                        $p = false === $e ? $n : $e + 1;
+                    } else {
+                        $p += strcspn( $h, " \t\n\r\f>", $p );
+                    }
+                }
+            }
+            $i = min( $n, $p + 1 );
+            if ( $end ) {
+                if ( ! $stackOk || in_array( $name, [ 'html', 'head', 'body' ], true ) ) {
+                    continue;
+                }
+                $top = end( $stack );
+                if ( $top === $name ) {
+                    $pop();
+                    continue;
+                }
+                if ( in_array( $name, self::FORMATTING, true ) || ( $open[ $name ] ?? 0 ) < 1 ) {
+                    $flag( 'misnest' ); // the adoption agency, or an end tag that matches nothing open
+                    $stackOk = false;
+                    continue;
+                }
+                while ( array() !== $stack && end( $stack ) !== $name && in_array( end( $stack ), self::IMPLIED, true ) ) {
+                    $pop();
+                }
+                if ( end( $stack ) === $name ) {
+                    $pop();
+                } else {
+                    $flag( 'misnest' );
+                    $stackOk = false;
+                }
+                continue;
+            }
+            // A start tag.
+            if ( in_array( 'shadowrootmode', $attrs, true ) ) {
+                $flag( 'shadow' );
+            }
+            if ( in_array( 'popover', $attrs, true ) ) {
+                $flag( 'popover' );
+            }
+            if ( 'html' === $name ) {
+                if ( ( $sawHtml || $content || array() !== $stack ) && array() !== $attrs ) {
+                    $flag( 'twice' );
+                }
+                $sawHtml = true;
+                continue;
+            }
+            if ( 'body' === $name ) {
+                if ( ( $sawBody || $content ) && array() !== $attrs ) {
+                    $flag( 'twice' );
+                }
+                $sawBody = true;
+                $content = true;
+                continue;
+            }
+            if ( 'head' === $name ) {
+                continue;
+            }
+            if ( ! in_array( $name, self::HEAD_TAGS, true ) ) {
+                $content = true;
+            }
+            if ( in_array( $name, self::RAW_TEXT, true ) ) {
+                $e = stripos( $h, '</' . $name, $i );
+                $e = false === $e ? false : strpos( $h, '>', $e );
+                $i = false === $e ? $n : $e + 1; // past its end tag
+                continue;
+            }
+            if ( 'plaintext' === $name ) {
+                break;
+            }
+            if ( 'math' === $name || 'svg' === $name ) {
+                // Foreign content: skipped to its matching end tag; a <style> inside math is not applied by a browser.
+                $depth = 1;
+                $p     = $i;
+                while ( $depth > 0 ) {
+                    $o = stripos( $h, '<' . $name, $p );
+                    $e = stripos( $h, '</' . $name, $p );
+                    if ( false === $e ) {
+                        $e = $n;
+                    }
+                    if ( false !== $o && $o < $e ) {
+                        ++$depth;
+                        $p = $o + 1;
+                    } else {
+                        --$depth;
+                        $p = min( $n, $e + 1 );
+                    }
+                    if ( $p >= $n ) {
+                        break;
+                    }
+                }
+                if ( 'math' === $name && false !== ( $st = stripos( $h, '<style', $i ) ) && $st < $p ) {
+                    $flag( 'math' );
+                }
+                $e = strpos( $h, '>', max( $i, $p - 1 ) );
+                $i = false === $e ? $n : $e + 1;
+                continue;
+            }
+            if ( in_array( $name, self::VOID, true ) || ! $stackOk ) {
+                continue;
+            }
+            if ( 'button' === $name && ( $open['button'] ?? 0 ) > 0 ) {
+                $flag( 'button' );
+            }
+            if ( 'nobr' === $name && ( $open['nobr'] ?? 0 ) > 0 ) {
+                $flag( 'nobr' );
+            }
+            if ( 'a' === $name && ( $open['a'] ?? 0 ) > 0 ) {
+                $flag( 'a' );
+            }
+            if ( in_array( $name, [ 'li', 'dd', 'dt' ], true ) ) {
+                $match = 'li' === $name ? [ 'li' ] : [ 'dd', 'dt' ];
+                $steps = 0;
+                for ( $x = count( $stack ) - 1; $x >= 0 && $steps < 64; $x--, $steps++ ) {
+                    $t = $stack[ $x ];
+                    if ( in_array( $t, $match, true ) ) {
+                        for ( $y = count( $stack ) - 1; $y > $x; $y-- ) {
+                            if ( 'p' !== $stack[ $y ] ) {
+                                $flag( 'list' ); // the browser closes the item through what is open inside it
+                                break;
+                            }
+                        }
+                        while ( count( $stack ) > $x ) {
+                            $pop();
+                        }
+                        break;
+                    }
+                    if ( in_array( $t, self::SPECIAL, true ) && ! in_array( $t, [ 'address', 'div', 'p' ], true ) ) {
+                        break;
+                    }
+                }
+                if ( $steps >= 64 ) {
+                    $flag( 'deep' );
+                }
+            } elseif ( in_array( $name, self::IMPLIED, true ) && end( $stack ) === $name ) {
+                $pop(); // a sibling closes the previous one (p, option, td ...)
+            }
+            $stack[]        = $name;
+            $open[ $name ]  = ( $open[ $name ] ?? 0 ) + 1;
+            if ( count( $stack ) > self::MAX_SCAN_DEPTH ) {
+                $flag( 'deep' );
+                $stackOk = false;
+            }
+        }
+        $out = [];
+        foreach ( self::REPAIRS as $key => $sentence ) {
+            if ( isset( $found[ $key ] ) ) {
+                $out[] = $sentence;
+            }
+        }
+
+        return $out;
     }
 
     /** A <meta name="color-scheme"> (anywhere that is not inert) that allows anything but light. */
@@ -376,13 +654,12 @@ final class HtmlSource
         if ( ! in_array( $media, [ '', 'all', 'screen' ], true ) ) {
             return 'its media attribute limits it to some devices or window sizes';
         }
-        $type = strtolower( trim( $style->getAttribute( 'type' ) ) );
+        // Not trimmed: a browser applies "" and "text/css" in any case, and not " text/css" (measured in Chromium).
+        $type = strtolower( $style->getAttribute( 'type' ) );
         if ( '' !== $type && 'text/css' !== $type ) {
             return 'it is not plain CSS';
         }
-        if ( $style->hasAttribute( 'disabled' ) ) {
-            return 'it is disabled';
-        }
+        // The disabled attribute does nothing on <style> (measured in Chromium: the block applies), so it is read.
 
         return null;
     }

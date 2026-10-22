@@ -29,7 +29,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * - the inline declarations (HtmlCss::declarations of the style="" text);
  * - the presentational attributes (HTML hints, below every author rule): bgcolor and background -> background poison (background also an
  *   image), color and text -> color poison, face -> family poison, size -> size poison, align -> align poison (reason presentational);
- * - <center>: text-align center at the lowest priority (a UA rule).
+ * - <center>: text-align center at the lowest priority (a UA rule). Chromium computes `-webkit-center` there (it also centres block
+ *   children); for the text it renders the same as `center`, which is the value claimed (the differential harness normalises the two
+ *   explicitly).
  * Rank, highest wins: importance; then tier (a rule of specificity HtmlCss::MAX_SPECIFICITY, compared lexicographically and never added
  * to, outranks every candidate of the same importance, inline ones included; then inline; then rules; then presentational hints; then the
  * UA <center> rule); then specificity; then order; then the declaration's position. A poison winner makes the property unresolved; there
@@ -83,9 +85,29 @@ if ( ! defined( 'ABSPATH' ) ) {
  * MATCHING. An id attribute is ONE token (never split); class splits on ASCII whitespace only. The DOM keeps 300 characters of a class or
  * id (phase 1): the whole value comes from HtmlSource cut_attrs.
  *
+ * SCALE. The HtmlCss marker `scale` (zoom other than 1, the scale property, a transform that may scale) on the element or an ancestor:
+ * text and boxes render at another size than computed, so size, padding, max width and radius are unresolved there (reason effect);
+ * colours are unaffected.
+ *
+ * FAIL CLOSED. When HtmlSource reports `repaired` (a browser would repair the markup in a way libxml2 does not), the tree walked here is
+ * not the browser's: EVERY element is unresolved for every property, and the result carries `repaired` (repairedNote() is the report
+ * sentence). Rules of the same subject are merged once (best-ranked declaration per property, markers or'ed: the same cascade, proven by
+ * a randomized test); past WORK_BUDGET candidate rules the rest of the page is unresolved and `work_cap` is true.
+ *
  * NOT READ. External sheets (<link rel=stylesheet>, counted `external` like @import) and CSS beyond the caps (`css_cap`) mean the result is
  * relative to the text it was given: `unread` is true then, so the report can warn. No raw CSS text is ever returned: records hold states,
  * normalised values (#rrggbb, numbers, alignment keywords, family names HtmlCss validated) and reasons from HtmlCss::REASONS.
+ *
+ * CONTRACT FOR TASKS 8 AND 9.
+ * - T9 calls resolve( $s['body'], $s['css'], $s['inline'], $s['presentational'], HtmlStyles::document( $s ) ) with the whole HtmlSource
+ *   output ($document is required); `repaired`, `unread` and `work_cap` mean the report must warn (repairedNote() for repaired).
+ * - T8 treats `initial` with value null, `mixed` and `unresolved` as "no claim": never a default of #000000 or 16px for them (only
+ *   `initial` WITH a value is the CSS initial value). padding null means "no author value" (the UA padding of ul, td, fieldset is not 0).
+ * - Backgrounds are own only: a descendant of an element with a background image or an unknown background has state none or unknown
+ *   itself; T8 walks up the ancestors for the backdrop.
+ * - A text module's record is the record of its `from` element(s) only (HtmlStyles::common() for several); its inline descendants
+ *   (span, strong, a, code, mark, small) can have other values, and T8 must check or count them.
+ * - Not modelled (plan D4): pseudo-element overlays (::before backgrounds, ::first-line colours) and inset box-shadows.
  */
 final class HtmlStyles
 {
@@ -99,7 +121,14 @@ final class HtmlStyles
     /** More facts of Chromium's UA sheet (html.css), same meaning as OWN_ONLY, for elements HtmlSource keeps. */
     public const UA_OWN = [ 'b' => ['weight'], 'strong' => ['weight'], 'th' => ['weight','align'], 'caption' => ['align'],
         'small' => ['size'], 'big' => ['size'], 'sub' => ['size'], 'sup' => ['size'], 'rt' => ['size'], 'mark' => ['color','background'],
-        'xmp' => ['family'], 'listing' => ['family'], 'plaintext' => ['family'], 'hr' => ['color'], 'optgroup' => ['weight'] ];
+        'xmp' => ['family'], 'listing' => ['family'], 'plaintext' => ['family'], 'hr' => ['color'], 'optgroup' => ['weight'],
+        'option' => ['weight'] ];
+
+    /** The work budget: candidate rules examined over the whole document. Past it the rest of the page resolves as unresolved. */
+    public const WORK_BUDGET = 3000000;
+
+    /** The start of the report sentence for `repaired` (HtmlStyles::repairedNote). */
+    public const REPAIRED_NOTE = 'the markup would be repaired by a browser in a way this converter does not model: styles were not carried: ';
 
     /** Chromium's quirks-mode sheet: a table resets these (measured: it still inherits the colour). */
     public const QUIRKS_OWN = [ 'table' => ['size','weight','align'] ];
@@ -162,6 +191,17 @@ final class HtmlStyles
 
     private bool $standards;
     private bool $colorScheme;
+    private bool $mergeRules = true;
+    private bool $stopped = false;
+    private bool $workCap = false;
+    private int $steps = 0;
+    private int $seq = 0;
+
+    /** @var array<string,array<mixed>> */
+    private array $pool = [];
+
+    /** @var array<string,int> subject key => rule id (rules of the same subject are merged) */
+    private array $byKey = [];
     private ?float $rootSize = null;
 
     /** @var array<string,string> */
@@ -177,11 +217,22 @@ final class HtmlStyles
      * The document facts resolve() needs, from HtmlSource::parse() output (missing keys: the conservative defaults).
      *
      * @param array<string,mixed> $source
-     * @return array{doctype:bool, color_scheme:bool, external_css:int, cut_attrs:array<string,array<string,string>>, css_media:string}
+     * @return array{doctype:bool, color_scheme:bool, external_css:int, cut_attrs:array<string,array<string,string>>, css_media:string, repaired:list<string>}
      */
     public static function document( array $source ): array
     {
+        $repaired = [];
+        foreach ( is_array( $source['repaired'] ?? null ) ? $source['repaired'] : [] as $reason ) {
+            if ( is_string( $reason ) && in_array( $reason, HtmlSource::REPAIRS, true ) ) {
+                $repaired[] = $reason;
+            }
+        }
+        if ( array() === $repaired && is_array( $source['repaired'] ?? null ) && array() !== $source['repaired'] ) {
+            $repaired[] = HtmlSource::REPAIRS['misnest']; // something unknown was reported: still fail closed
+        }
+
         return [
+            'repaired'     => $repaired,
             'doctype'      => true === ( $source['doctype'] ?? false ),
             'color_scheme' => true === ( $source['color_scheme'] ?? false ),
             'external_css' => is_int( $source['external_css'] ?? null ) ? max( 0, $source['external_css'] ) : 0,
@@ -193,8 +244,11 @@ final class HtmlStyles
     /**
      * @param array<string,string>       $inline         HtmlSource 'inline'
      * @param array<string,list<string>> $presentational HtmlSource 'presentational'
-     * @param array<string,mixed>        $document       HtmlStyles::document( HtmlSource::parse(...) ); without it standards mode is NOT assumed
-     * @return array{nodes: array<string, array<string,mixed>>, ignored: array<string,int>, unread: bool}  nodes keyed by getNodePath(), in document order, html and body included
+     * @param array<string,mixed>        $document       REQUIRED: HtmlStyles::document( HtmlSource::parse(...) ) (missing keys = conservative
+     *                                                   defaults: standards mode NOT assumed). A test-only key `merge_rules` => false turns off
+     *                                                   the merging of rules of the same subject (it is never set by document()).
+     * @return array{nodes: array<string, array<string,mixed>>, ignored: array<string,int>, unread: bool, work_cap: bool, repaired: list<string>}
+     *         nodes keyed by getNodePath(), in document order, html and body included
      *
      * Computed = array{
      *   color:  array{state:'set'|'initial'|'unresolved', value:?string, reason:?string},   initial value '#000000' (null when the UA sheet decides)
@@ -207,13 +261,22 @@ final class HtmlStyles
      *   max_width: int|string|null,  radius: list<int>|string|null                         'unresolved' or null; not inherited
      * }
      * reason is null unless the state is unresolved or unknown; then it is an HtmlCss::REASONS entry.
-     * unread = some CSS was not read (a linked sheet, an @import, a cap): the soundness is relative to the text that was given.
+     * unread   = some CSS was not read or not resolved (a linked sheet, an @import, a cap, the work budget, repaired markup): the
+     *            soundness is relative to the text that was given, and the report must warn.
+     * work_cap = the work budget (WORK_BUDGET candidate rules) ran out: the elements from that point on are all unresolved.
+     * repaired = HtmlSource `repaired`: a browser would repair the markup differently from libxml2, so EVERY element is unresolved
+     *            (repairedNote() gives the report sentence).
      */
-    public static function resolve( \DOMElement $body, string $css, array $inline, array $presentational, array $document = [] ): array
+    public static function resolve( \DOMElement $body, string $css, array $inline, array $presentational, array $document ): array
     {
-        $doc  = self::document( $document );
-        $self = new self( $doc, $inline, $presentational );
-        $self->readSheets( $css, $doc['css_media'] );
+        $doc              = self::document( $document );
+        $self             = new self( $doc, $inline, $presentational );
+        $self->mergeRules = false !== ( $document['merge_rules'] ?? true );
+        if ( array() !== $doc['repaired'] ) {
+            $self->stopped = true; // fail closed: nothing is read, nothing is resolved
+        } else {
+            $self->readSheets( $css, $doc['css_media'] );
+        }
         if ( $doc['external_css'] > 0 ) {
             self::bump( $self->ignored, 'external', $doc['external_css'] );
         }
@@ -221,10 +284,18 @@ final class HtmlStyles
         ksort( $self->ignored );
 
         return [
-            'nodes'   => $self->out,
-            'ignored' => $self->ignored,
-            'unread'  => ( $self->ignored['external'] ?? 0 ) > 0 || ( $self->ignored['css_cap'] ?? 0 ) > 0,
+            'nodes'    => $self->out,
+            'ignored'  => $self->ignored,
+            'unread'   => ( $self->ignored['external'] ?? 0 ) > 0 || ( $self->ignored['css_cap'] ?? 0 ) > 0 || $self->workCap || array() !== $doc['repaired'],
+            'work_cap' => $self->workCap,
+            'repaired' => $doc['repaired'],
         ];
+    }
+
+    /** The report sentence for resolve()['repaired'] ('' when nothing was repaired). @param list<string> $repaired */
+    public static function repairedNote( array $repaired ): string
+    {
+        return array() === $repaired ? '' : self::REPAIRED_NOTE . implode( '; ', $repaired ) . '.';
     }
 
     /**
@@ -306,7 +377,7 @@ final class HtmlStyles
         $sentinel = $someScreens || $rule['specificity'] === HtmlCss::MAX_SPECIFICITY;
         $poison   = $someScreens || true === $rule['poison_only'];
         $spec     = $sentinel ? [ 0, 0, 0 ] : array_values( $rule['specificity'] );
-        $order    = count( $this->rules );
+        $order    = $this->seq++; // the reading order (unique; not the number of stored rules, which merging keeps smaller)
         if ( $someScreens ) {
             $why = 'media';
         } elseif ( $sentinel ) {
@@ -317,6 +388,7 @@ final class HtmlStyles
         $decls  = [];
         $effect = false;
         $image  = false;
+        $scale  = false;
         foreach ( $rule['declarations'] as $k => $d ) {
             if ( 'effect' === $d['property'] ) {
                 $effect = true;
@@ -326,6 +398,10 @@ final class HtmlStyles
                 $image = true;
                 continue;
             }
+            if ( 'scale' === $d['property'] ) {
+                $scale = true;
+                continue;
+            }
             $slot = self::SLOTS[ $d['property'] ] ?? null;
             if ( null === $slot ) {
                 continue;
@@ -333,12 +409,39 @@ final class HtmlStyles
             $reason  = $d['poison'] ?? ( $poison ? $why : null );
             $decls[] = [ $slot, null === $reason ? $d['value'] : null, $reason, [ $d['important'] ? 1 : 0, $sentinel ? 2 : 0, $spec[0], $spec[1], $spec[2], $order, $k ] ];
         }
-        if ( array() === $decls && ! $effect && ! $image ) {
+        if ( array() === $decls && ! $effect && ! $image && ! $scale ) {
             return;
         }
-        $this->rules[] = [ 'subject' => $rule['subject'], 'decls' => $decls, 'effect' => $effect, 'image' => $image ];
+        $subject = $rule['subject'];
+        if ( $this->mergeRules ) {
+            // Matching depends only on the subject (tag, id set, class set) and ranks are static, so rules of one subject are one rule:
+            // the best-ranked declaration per slot, the markers or'ed. Exactly the same cascade (HtmlStylesTest proves it), less work.
+            $ids     = array_values( array_unique( $subject['ids'] ) );
+            $classes = array_values( array_unique( $subject['classes'] ) );
+            sort( $ids, SORT_STRING );
+            sort( $classes, SORT_STRING );
+            $key = serialize( [ $subject['tag'], $ids, $classes ] );
+            if ( isset( $this->byKey[ $key ] ) ) {
+                $r = &$this->rules[ $this->byKey[ $key ] ];
+                foreach ( $decls as $d ) {
+                    self::offer( $r['decls'], $d );
+                }
+                $r['effect'] = $r['effect'] || $effect;
+                $r['image']  = $r['image'] || $image;
+                $r['scale']  = $r['scale'] || $scale;
+                unset( $r );
+
+                return;
+            }
+            $best = [];
+            foreach ( $decls as $d ) {
+                self::offer( $best, $d );
+            }
+            $decls                = $best;
+            $this->byKey[ $key ] = count( $this->rules );
+        }
+        $this->rules[] = [ 'subject' => $subject, 'decls' => $decls, 'effect' => $effect, 'image' => $image, 'scale' => $scale ];
         $id            = count( $this->rules ) - 1;
-        $subject       = $rule['subject'];
         if ( array() !== $subject['ids'] ) {
             $this->index['id'][ $subject['ids'][0] ][]                  = $id;
             $this->index['id_ci'][ self::lower( $subject['ids'][0] ) ][] = $id;
@@ -518,6 +621,9 @@ final class HtmlStyles
      */
     private function element( ?\DOMElement $el, array $parent, ?string $virtual, bool $forcedEffect ): array
     {
+        if ( $this->stopped ) {
+            return self::phantomRecord();
+        }
         $tag     = null !== $el ? strtolower( $el->tagName ) : (string) $virtual;
         $path    = null !== $el ? (string) $el->getNodePath() : '';
         $ids     = [];
@@ -531,18 +637,25 @@ final class HtmlStyles
             $classes = array_values( array_unique( preg_split( '/[\x09\x0A\x0C\x0D\x20]+/', $class, -1, PREG_SPLIT_NO_EMPTY ) ?: [] ) );
         }
 
-        [ $best, $effect, $image ] = $this->cascade( $tag, $ids, $classes, null !== $el ? $path : null );
+        [ $best, $effect, $image, $scale ] = $this->cascade( $tag, $ids, $classes, null !== $el ? $path : null );
+        if ( $this->stopped ) {
+            return self::phantomRecord(); // the work budget ran out on this element
+        }
         $effect = $effect || $forcedEffect || $parent['effect'];
+        $scale  = $scale || $parent['scale'];
 
         $own = array_merge( self::OWN_ONLY[ $tag ] ?? [], self::UA_OWN[ $tag ] ?? [], $this->standards ? [] : ( self::QUIRKS_OWN[ $tag ] ?? [] ) );
 
-        $rec = [ 'effect' => $effect ];
+        $rec = [ 'effect' => $effect, 'scale' => $scale ];
         foreach ( [ 'color', 'family', 'weight', 'align' ] as $prop ) {
             $rec[ $prop ] = $this->inherited( $prop, $best[ $prop ] ?? null, $parent, in_array( $prop, $own, true ) );
         }
         $rec['size'] = $this->size( $best['size'] ?? null, $parent, in_array( 'size', $own, true ), $tag, 'html' === $tag && null !== $el, $rec['family'] );
         if ( $effect ) {
             $rec['color'] = self::rec( 'unresolved', null, 'effect' );
+        }
+        if ( $scale ) {
+            $rec['size'] = self::rec( 'unresolved', null, 'effect' ) + [ 'kw' => true ]; // rendered zoomed or scaled
         }
 
         // Not inherited.
@@ -577,6 +690,13 @@ final class HtmlStyles
             $corners[]   = $v;
         }
         $rec['radius'] = ! $any ? null : ( $unresolved ? 'unresolved' : $corners );
+        if ( $scale ) {
+            foreach ( self::SIDES as $side ) {
+                $rec['padding'][ $side ] = null === $rec['padding'][ $side ] ? null : 'unresolved';
+            }
+            $rec['max_width'] = null === $rec['max_width'] ? null : 'unresolved';
+            $rec['radius']    = null === $rec['radius'] ? null : 'unresolved';
+        }
 
         return $rec;
     }
@@ -593,6 +713,7 @@ final class HtmlStyles
         $best   = [];
         $effect = false;
         $image  = false;
+        $scale  = false;
 
         // Rules.
         $cand = [];
@@ -622,26 +743,40 @@ final class HtmlStyles
                 }
             }
         }
+        // The work budget: candidate rules examined over the document (deterministic, independent of the clock).
+        $this->steps += count( $cand ) + 1;
+        if ( $this->steps > self::WORK_BUDGET ) {
+            if ( ! $this->workCap ) {
+                $this->workCap = true;
+                self::bump( $this->ignored, 'css_cap' );
+            }
+            $this->stopped = true;
+
+            return [ [], false, false, false ];
+        }
         ksort( $cand );
+        $idSet      = array_fill_keys( $ids, true );
+        $classSet   = array_fill_keys( $classes, true );
         $lowIds     = null;
         $lowClasses = null;
         foreach ( array_keys( $cand ) as $r ) {
             $rule  = $this->rules[ $r ];
-            $match = self::matches( $rule['subject'], $tag, $ids, $classes );
+            $match = self::matches( $rule['subject'], $tag, $idSet, $classSet );
             $quirk = false;
             if ( ! $match && ! $this->standards ) {
-                $lowIds     ??= array_map( [ self::class, 'lower' ], $ids );
-                $lowClasses ??= array_map( [ self::class, 'lower' ], $classes );
-                $sub          = $rule['subject'];
+                $lowIds     ??= array_fill_keys( array_map( [ self::class, 'lower' ], $ids ), true );
+                $lowClasses ??= array_fill_keys( array_map( [ self::class, 'lower' ], $classes ), true );
+                $sub            = $rule['subject'];
                 $sub['ids']     = array_map( [ self::class, 'lower' ], $sub['ids'] );
                 $sub['classes'] = array_map( [ self::class, 'lower' ], $sub['classes'] );
-                $quirk        = self::matches( $sub, $tag, $lowIds, $lowClasses );
+                $quirk          = self::matches( $sub, $tag, $lowIds, $lowClasses );
             }
             if ( ! $match && ! $quirk ) {
                 continue;
             }
             $effect = $effect || $rule['effect'];
             $image  = $image || $rule['image'];
+            $scale  = $scale || $rule['scale'];
             foreach ( $rule['decls'] as $d ) {
                 if ( $quirk ) {
                     $d[1] = null;
@@ -662,6 +797,10 @@ final class HtmlStyles
                     }
                     if ( 'background-image' === $d['property'] ) {
                         $image = true;
+                        continue;
+                    }
+                    if ( 'scale' === $d['property'] ) {
+                        $scale = true;
                         continue;
                     }
                     $slot = self::SLOTS[ $d['property'] ] ?? null;
@@ -688,7 +827,7 @@ final class HtmlStyles
             self::offer( $best, [ 'align', 'center', null, [ 0, -2, 0, 0, 0, 0, 0 ] ] );
         }
 
-        return [ $best, $effect, $image ];
+        return [ $best, $effect, $image, $scale ];
     }
 
     /** @param array<string,array<int,mixed>> $best @param array{0:string,1:?string,2:?string,3:list<int>} $d */
@@ -712,19 +851,19 @@ final class HtmlStyles
         return false;
     }
 
-    /** @param array<string,mixed> $subject @param list<string> $ids @param list<string> $classes */
+    /** @param array<string,mixed> $subject @param array<string,true> $ids the element's id set @param array<string,true> $classes its class set */
     private static function matches( array $subject, string $tag, array $ids, array $classes ): bool
     {
         if ( null !== $subject['tag'] && $subject['tag'] !== $tag ) {
             return false;
         }
         foreach ( $subject['ids'] as $id ) {
-            if ( ! in_array( $id, $ids, true ) ) {
+            if ( ! isset( $ids[ $id ] ) ) {
                 return false;
             }
         }
         foreach ( $subject['classes'] as $class ) {
-            if ( ! in_array( $class, $classes, true ) ) {
+            if ( ! isset( $classes[ $class ] ) ) {
                 return false;
             }
         }
@@ -865,6 +1004,7 @@ final class HtmlStyles
     {
         return [
             'effect' => false,
+            'scale'  => false,
             'color'  => self::rec( 'initial', '#000000', null ),
             'family' => self::rec( 'initial', null, null ),
             'size'   => self::rec( 'initial', self::DEFAULT_SIZE, null ) + [ 'kw' => true ],
@@ -878,14 +1018,14 @@ final class HtmlStyles
     {
         $u = self::rec( 'unresolved', null, 'unresolved' );
 
-        return [ 'effect' => $parent['effect'], 'color' => $u, 'family' => $u, 'size' => $u + [ 'kw' => true ], 'weight' => $u, 'align' => $u ];
+        return [ 'effect' => $parent['effect'], 'scale' => $parent['scale'], 'color' => $u, 'family' => $u, 'size' => $u + [ 'kw' => true ], 'weight' => $u, 'align' => $u ];
     }
 
     /** The record of an element a browser does not build: nothing about it is known. @return array<string,mixed> */
     private static function phantomRecord(): array
     {
         $u   = self::rec( 'unresolved', null, 'unresolved' );
-        $rec = [ 'effect' => false, 'color' => $u, 'family' => $u, 'size' => $u, 'weight' => $u, 'align' => $u ];
+        $rec = [ 'effect' => false, 'scale' => false, 'color' => $u, 'family' => $u, 'size' => $u + [ 'kw' => true ], 'weight' => $u, 'align' => $u ];
 
         return $rec + [
             'background' => [ 'state' => 'unknown', 'value' => null, 'reason' => 'unresolved' ],
@@ -920,13 +1060,27 @@ final class HtmlStyles
         }
         $out = [];
         foreach ( [ 'color', 'family', 'size', 'weight', 'align' ] as $prop ) {
-            $out[ $prop ] = [ 'state' => $rec[ $prop ]['state'], 'value' => $rec[ $prop ]['value'], 'reason' => $rec[ $prop ]['reason'] ];
+            $out[ $prop ] = $this->shared( [ 'state' => $rec[ $prop ]['state'], 'value' => $rec[ $prop ]['value'], 'reason' => $rec[ $prop ]['reason'] ] );
         }
-        $out['background'] = $rec['background'];
-        $out['padding']    = $rec['padding'];
+        $out['background'] = $this->shared( $rec['background'] );
+        $out['padding']    = $this->shared( $rec['padding'] );
         $out['max_width']  = $rec['max_width'];
-        $out['radius']     = $rec['radius'];
+        $out['radius']     = is_array( $rec['radius'] ) ? $this->shared( $rec['radius'] ) : $rec['radius'];
         $this->out[ $path ] = $out;
+    }
+
+    /**
+     * One shared copy of equal sub-records (PHP arrays are copy-on-write, so a page of thousands of elements holds each distinct record
+     * once). Same values, less memory.
+     *
+     * @param array<mixed> $value
+     * @return array<mixed>
+     */
+    private function shared( array $value ): array
+    {
+        $key = serialize( $value );
+
+        return $this->pool[ $key ] ??= $value;
     }
 
     /** ASCII lower case (locale-independent). */

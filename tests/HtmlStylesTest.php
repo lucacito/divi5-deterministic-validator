@@ -17,6 +17,14 @@ use PHPUnit\Framework\Attributes\DataProvider;
  */
 final class HtmlStylesTest extends HtmlTestCase
 {
+    /** The big generated pages (thousands of DOM nodes) must not stay in the shared PHPUnit process: make test runs at 128 MB. */
+    protected function tearDown(): void
+    {
+        gc_collect_cycles();
+        gc_mem_caches();
+        parent::tearDown();
+    }
+
     /** @return array{nodes: array<string,array<string,mixed>>, ignored: array<string,int>, unread: bool} */
     private function styles( string $html ): array
     {
@@ -235,9 +243,9 @@ final class HtmlStylesTest extends HtmlTestCase
         $s = $this->styles( '<!DOCTYPE html><html><head>' . $css . '</head><body>' . $body . '</body></html>' );
         $this->assertSame( [ 'state' => 'initial', 'value' => '#000000', 'reason' => null ], $this->at( $s, '/html/body/p[1]', 'color' ), 'standards mode: case-sensitive' );
         $this->assertSame( '#000000', $this->at( $s, '/html/body/p[3]', 'color' )['value'] );
-        // Without the document facts, standards mode is not assumed.
+        // With empty document facts, standards mode is not assumed.
         $p = HtmlSource::parse( '<!DOCTYPE html><html><head>' . $css . '</head><body>' . $body . '</body></html>' );
-        $this->assertUnresolved( HtmlStyles::resolve( $p['body'], $p['css'], $p['inline'], $p['presentational'] )['nodes']['/html/body/p[1]']['color'], 'selector' );
+        $this->assertUnresolved( HtmlStyles::resolve( $p['body'], $p['css'], $p['inline'], $p['presentational'], [] )['nodes']['/html/body/p[1]']['color'], 'selector' );
     }
 
     /** Quirks mode: a table does not inherit font size, weight or alignment (Chromium's quirks sheet), but it does inherit the colour. */
@@ -352,7 +360,7 @@ final class HtmlStylesTest extends HtmlTestCase
     {
         $s   = HtmlSource::parse( '<!DOCTYPE html><html><body><p class="secret-class">a</p><div>b</div></body></html>' );
         $css = ".secret-class{color:#123456;font-family:\"Fam\xff\"} div{font-family:\"Brand Sans\"} .zzz-\xfe{color:red} p{--leak:\xc3(}";
-        $r   = HtmlStyles::resolve( $s['body'], $css, [ '/html/body/div' => "color:\xff;secret-inline:1" ], [] );
+        $r   = HtmlStyles::resolve( $s['body'], $css, [ '/html/body/div' => "color:\xff;secret-inline:1" ], [], HtmlStyles::document( $s ) );
         $json = json_encode( $r );
         $this->assertIsString( $json, 'valid UTF-8 throughout' );
         foreach ( [ 'secret', 'zzz', 'leak', 'Fam' ] as $needle ) {
@@ -474,7 +482,7 @@ final class HtmlStylesTest extends HtmlTestCase
         $this->assertSame( [ 'state' => 'initial', 'value' => 400, 'reason' => null ], $r['nodes']['/html/body/p']['weight'] );
         $this->assertSame( [ 'state' => 'initial', 'value' => null, 'reason' => null ], $r['nodes']['/html/body/p']['align'], 'start: its side depends on the direction' );
         $this->assertSame( [ 'state' => 'none', 'value' => null, 'reason' => null ], $r['nodes']['/html/body/p']['background'] );
-        $this->assertSame( [ 'nodes', 'ignored', 'unread' ], array_keys( $r ) );
+        $this->assertSame( [ 'nodes', 'ignored', 'unread', 'work_cap', 'repaired' ], array_keys( $r ) );
     }
 
     // ── the browser agrees (differential corpus, measured in Chromium) ──────
@@ -526,5 +534,142 @@ final class HtmlStylesTest extends HtmlTestCase
         }
 
         return null === $got['value'] ? 'no-value' : $got['value'];
+    }
+
+    // ── review round 1 ───────────────────────────────────────────────────────
+
+    /** I1: the document facts are a required argument, so a caller cannot drop css_media, cut_attrs, external_css or repaired by accident. */
+    public function testTheDocumentFactsAreRequired(): void
+    {
+        $m = new \ReflectionMethod( HtmlStyles::class, 'resolve' );
+        $this->assertSame( 5, $m->getNumberOfRequiredParameters() );
+        $this->assertSame( 'document', $m->getParameters()[4]->getName() );
+    }
+
+    /** The ruling "fail closed": when a browser would repair the markup in a way libxml2 does not, nothing is resolved. */
+    public function testRepairedMarkupResolvesNothing(): void
+    {
+        $r = $this->page( 'p{color:#111111;padding:4px} .b{background:#fff}', '<b><p class="b">x</b>y</p><p>z</p>' );
+        $this->assertSame( [ 'tags that close out of order' ], $r['repaired'] );
+        $this->assertTrue( $r['unread'] );
+        foreach ( $r['nodes'] as $path => $rec ) {
+            foreach ( [ 'color', 'family', 'size', 'weight', 'align' ] as $prop ) {
+                $this->assertSame( 'unresolved', $rec[ $prop ]['state'], $path . ' ' . $prop );
+            }
+            $this->assertSame( 'unknown', $rec['background']['state'], $path );
+            $this->assertSame( [ 'top' => 'unresolved', 'right' => 'unresolved', 'bottom' => 'unresolved', 'left' => 'unresolved' ], $rec['padding'], $path );
+        }
+        $this->assertStringStartsWith( 'the markup would be repaired by a browser in a way this converter does not model: styles were not carried: ', HtmlStyles::repairedNote( $r['repaired'] ) );
+        $this->assertSame( '', HtmlStyles::repairedNote( [] ) );
+        $this->assertSame( [], $this->page( 'p{color:#111111}', '<p>x</p>' )['repaired'] );
+    }
+
+    /** C8: an option outside a select resets its weight (Chromium's UA sheet). */
+    public function testAnOptionDoesNotInheritTheWeight(): void
+    {
+        $r = $this->page( 'div{font-weight:700}', '<div><option>o</option></div>' );
+        $this->assertNull( $this->at( $r, '/html/body/div/option', 'weight' )['value'] );
+    }
+
+    /** I3: zoom, scale and a scaling transform render text and boxes at another size than computed: sizes and boxes are unresolved, colours not. */
+    public function testScaleMakesSizesAndBoxesUnresolvedBelow(): void
+    {
+        $r = $this->page( 'body{zoom:1.5} p{font-size:20px;color:#000000;padding:4px;max-width:500px;border-radius:3px}', '<p>x <span>y</span></p>' );
+        $this->assertUnresolved( $this->at( $r, '/html/body/p', 'size' ), 'effect' );
+        $this->assertUnresolved( $this->at( $r, '/html/body/p/span', 'size' ), 'effect' );
+        $this->assertSet( '#000000', $this->at( $r, '/html/body/p', 'color' ) );
+        $this->assertSame( 'unresolved', $this->at( $r, '/html/body/p', 'padding' )['top'] );
+        $this->assertSame( 'unresolved', $this->at( $r, '/html/body/p', 'max_width' ) );
+        $this->assertSame( 'unresolved', $this->at( $r, '/html/body/p', 'radius' ) );
+        $r = $this->page( 'div{transform:scale(2)} p{font-size:20px} .t{transform:translateY(-50%)}', '<div><p>a</p></div><section class="t"><p>b</p></section>' );
+        $this->assertUnresolved( $this->at( $r, '/html/body/div/p', 'size' ), 'effect' );
+        $this->assertSet( 20.0, $this->at( $r, '/html/body/section/p', 'size' ), 'a translation does not scale' );
+    }
+
+    /**
+     * I2a: rules with the same subject are merged at reading time, keeping the best-ranked declaration per property. Ranks are static, so
+     * the merged cascade must equal the unmerged one exactly: proven over seeded random stylesheets and documents, both doctype modes.
+     */
+    public function testMergingRulesOfTheSameSubjectChangesNothing(): void
+    {
+        $state = 20261022;
+        $next  = static function ( int $max ) use ( &$state ): int {
+            $state = ( $state * 1103515245 + 12345 ) & 0x7fffffff;
+
+            return $state % $max;
+        };
+        $sels  = [ 'p', 'div', '.a', '.b', '.A', '#x', '#X', '.a.b', 'p.a', '.hero p', '*', ':root', 'div p', '[data-x]', 'p:hover', '#x.a' ];
+        $decls = [ 'color:#111111', 'color:#222222', 'color:var(--c)', 'color:#333333 !important', 'font-size:20px', 'font-size:1.5em', 'font-size:2rem !important',
+            'font-weight:700', 'text-align:center', 'padding:4px', 'padding:1em 2px', 'max-width:600px', 'border-radius:3px', 'background:#fff', 'background:url(x)',
+            'opacity:.5', 'zoom:2', 'font-family:Inter', 'color:inherit', 'font:12px Inter' ];
+        $tags  = [ 'p', 'div', 'section', 'span', 'h2', 'a' ];
+        for ( $case = 0; $case < 150; $case++ ) {
+            $css = '';
+            for ( $k = 0, $rules = 1 + $next( 14 ); $k < $rules; $k++ ) {
+                $body = [];
+                for ( $d = 0, $nd = 1 + $next( 3 ); $d < $nd; $d++ ) {
+                    $body[] = $decls[ $next( count( $decls ) ) ];
+                }
+                $rule = $sels[ $next( count( $sels ) ) ] . '{' . implode( ';', $body ) . '}';
+                $css .= 0 === $next( 6 ) ? '@media (min-width:1px){' . $rule . '}' : $rule;
+            }
+            $html = '';
+            for ( $e = 0, $ne = 2 + $next( 8 ); $e < $ne; $e++ ) {
+                $tag   = $tags[ $next( count( $tags ) ) ];
+                $attrs = [ '', ' class="a"', ' class="b A"', ' class="a b"', ' id="x"', ' id="X" class="a"' ][ $next( 6 ) ];
+                $style = 0 === $next( 4 ) ? ' style="' . $decls[ $next( count( $decls ) ) ] . '"' : '';
+                $html .= '<' . $tag . $attrs . $style . '>t<span class="a">u</span></' . $tag . '>';
+            }
+            foreach ( [ '<!DOCTYPE html>', '' ] as $doctype ) {
+                $s   = HtmlSource::parse( $doctype . '<html><head><style>' . $css . '</style></head><body>' . $html . '</body></html>' );
+                $doc = HtmlStyles::document( $s );
+                $a   = HtmlStyles::resolve( $s['body'], $s['css'], $s['inline'], $s['presentational'], $doc );
+                $b   = HtmlStyles::resolve( $s['body'], $s['css'], $s['inline'], $s['presentational'], [ 'merge_rules' => false ] + $doc );
+                $this->assertSame( $b, $a, 'case ' . $case . ' ' . $css );
+            }
+        }
+    }
+
+    /** I2: the worst shapes the review measured stay fast, and memory stays under the default limit. */
+    public function testTheReviewedWorstShapesAreFast(): void
+    {
+        $shapes = [
+            'identical rules' => '<!DOCTYPE html><html><head><style>' . str_repeat( ".a{color:#123456;font-size:12px;padding:1px 2px 3px 4px;border-radius:1px}\n", 1300 ) . '</style></head><body>' . str_repeat( '<p class="a">x</p>', 4990 ) . '</body></html>',
+            'quirks rules'    => '<html><head><style>' . str_repeat( ".A{color:#000}\n", 2000 ) . '</style></head><body>' . str_repeat( '<p class="a b c d e f g h">x</p>', 4990 ) . '</body></html>',
+        ];
+        foreach ( $shapes as $name => $html ) {
+            $s = HtmlSource::parse( $html );
+            $this->assertNull( $s['error'], $name );
+            $start = hrtime( true );
+            $r     = HtmlStyles::resolve( $s['body'], $s['css'], $s['inline'], $s['presentational'], HtmlStyles::document( $s ) );
+            $ms    = ( hrtime( true ) - $start ) / 1e6;
+            $this->assertLessThan( 1500, $ms, $name . ' resolved in ' . round( $ms ) . ' ms' );
+            $this->assertFalse( $r['work_cap'], $name );
+            unset( $r, $s );
+        }
+        $this->assertLessThan( 128 * 1048576, memory_get_peak_usage() );
+    }
+
+    /** I2b: past a fixed work budget the rest of the page is unresolved and the result says so; deterministic. */
+    public function testTheWorkBudgetTripsDeterministically(): void
+    {
+        $css = '';
+        for ( $i = 0; $i < 2000; $i++ ) {
+            $css .= '.a.x' . $i . '{color:#000}';
+        }
+        $html = '<!DOCTYPE html><html><head><style>' . $css . '</style></head><body>' . str_repeat( '<p class="a">x</p>', 4000 ) . '</body></html>';
+        $s    = HtmlSource::parse( $html );
+        $this->assertNull( $s['error'] );
+        $start = hrtime( true );
+        $r     = HtmlStyles::resolve( $s['body'], $s['css'], $s['inline'], $s['presentational'], HtmlStyles::document( $s ) );
+        $this->assertLessThan( 1500, ( hrtime( true ) - $start ) / 1e6 );
+        $this->assertTrue( $r['work_cap'] );
+        $this->assertTrue( $r['unread'] );
+        $this->assertSame( 'initial', $r['nodes']['/html/body/p[1]']['color']['state'], 'the first elements are within the budget' );
+        $this->assertSame( 'unresolved', $r['nodes']['/html/body/p[4000]']['color']['state'], 'the rest is not' );
+        $hash = md5( serialize( $r ) );
+        unset( $r );
+        $this->assertSame( $hash, md5( serialize( HtmlStyles::resolve( $s['body'], $s['css'], $s['inline'], $s['presentational'], HtmlStyles::document( $s ) ) ) ) );
+        $this->assertFalse( $this->page( '.a{color:#000}', '<p class="a">x</p>' )['work_cap'] );
     }
 }

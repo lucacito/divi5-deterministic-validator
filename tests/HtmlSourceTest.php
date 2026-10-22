@@ -278,10 +278,14 @@ final class HtmlSourceTest extends HtmlTestCase
             'media screen'          => [ '<style media="screen">p{color:red}</style>', true ],
             'media all'             => [ '<style media=" ALL ">p{color:red}</style>', true ],
             'type text/css'         => [ '<style type="Text/CSS">p{color:red}</style>', true ],
+            'type with a space'     => [ '<style type=" text/css">p{color:red}</style>', false ],
+            'type with a tail'      => [ '<style type="text/css ">p{color:red}</style>', false ],
+            'type with a charset'   => [ '<style type="text/css;charset=utf-8">p{color:red}</style>', false ],
+            'media with spaces'     => [ '<style media=" screen ">p{color:red}</style>', true ],
             'media print'           => [ '<style media="print">p{color:red}</style>', false ],
             'media query'           => [ '<style media="(min-width:600px)">p{color:red}</style>', false ],
             'type text/less'        => [ '<style type="text/less">p{color:red}</style>', false ],
-            'disabled'              => [ '<style disabled>p{color:red}</style>', false ],
+            'disabled'              => [ '<style disabled>p{color:red}</style>', true ], // measured: Chromium applies it (only <link> has disabled)
             'inside template'       => [ '<template><style>p{color:red}</style></template>', false ],
             'inside noscript'       => [ '<noscript><style>p{color:red}</style></noscript>', false ],
             'inside textarea'       => [ '<textarea><style>p{color:red}</style></textarea>', false ],
@@ -434,5 +438,91 @@ final class HtmlSourceTest extends HtmlTestCase
         $this->assertSame( [ false, false, [], '' ], [ $s['doctype'], $s['color_scheme'], $s['cut_attrs'], $s['css_media'] ] );
         $e = HtmlSource::parse( '' );
         $this->assertSame( [ false, false, [], '' ], [ $e['doctype'], $e['color_scheme'], $e['cut_attrs'], $e['css_media'] ] );
+    }
+
+    // ── markup a browser repairs differently from libxml2 (Task 6 review ruling) ──
+
+    /** @return array<string,array{0:string,1:string}> */
+    public static function repairedMarkup(): array
+    {
+        return [
+            'formatting end tag over a block' => [ '<b><p>x</b>y</p>', 'tags that close out of order' ],
+            'font over a paragraph'           => [ '<font color="red"><p>x</font>y</p>', 'tags that close out of order' ],
+            'em over a div'                   => [ '<em><div>x</em>y</div>', 'tags that close out of order' ],
+            'span closed inside a div'        => [ '<span><div>x</span>y</div>', 'tags that close out of order' ],
+            'an end tag that matches nothing' => [ '<div>x</section></div>', 'tags that close out of order' ],
+            'a div closed over a b'           => [ '<div><b>x</div>y', 'tags that close out of order' ],
+            'button in a button'              => [ '<button>a<button>b</button></button>', 'a button inside a button' ],
+            'nobr in a nobr'                  => [ '<nobr>a<nobr>b</nobr></nobr>', 'a nobr inside a nobr' ],
+            'link in a link'                  => [ '<a href="#">a<a href="#">b</a></a>', 'a link inside a link' ],
+            'dd through a div'                => [ '<dl><dt>a<div><dd>b</dd></div></dl>', 'a list item closed through another element' ],
+            'li through a div'                => [ '<ul><li>a<div><li>b</li></div></ul>', 'a list item closed through another element' ],
+            'second body with attributes'     => [ '<p>x</p><body style="color:red"><p>y</p>', 'a second body or html tag with attributes' ],
+            'second html with attributes'     => [ '<p>x</p><html style="color:red"></html>', 'a second body or html tag with attributes' ],
+            'declarative shadow root'         => [ '<div><template shadowrootmode="open"><slot></slot></template>x</div>', 'a declarative shadow root' ],
+            'popover'                         => [ '<div popover>x</div>', 'a popover' ],
+            'style inside math'               => [ '<math><style>p{color:red}</style></math><p>x</p>', 'a style element inside math' ],
+        ];
+    }
+
+    #[DataProvider('repairedMarkup')]
+    public function testMarkupABrowserRepairsDifferentlyIsReported( string $body, string $reason ): void
+    {
+        $s = HtmlSource::parse( '<!DOCTYPE html><html><body>' . $body . '</body></html>' );
+        $this->assertNull( $s['error'] );
+        $this->assertContains( $reason, $s['repaired'] );
+        foreach ( $s['repaired'] as $r ) {
+            $this->assertContains( $r, HtmlSource::REPAIRS, 'a fixed sentence, never the input' );
+        }
+    }
+
+    /** @return array<string,array{0:string}> */
+    public static function wellFormedMarkup(): array
+    {
+        return [
+            'implied ends'       => [ '<ul><li>a<li>b</ul><dl><dt>a<dd>b<dt>c</dl><p>a<p>b<table><tr><td>a<td>b<tr><th>c</table><select><option>a<option>b</select>' ],
+            'nested lists'       => [ '<ul><li>a<ul><li>b</li></ul></li></ul>' ],
+            'formatting in order'=> [ '<p><b>a <i>b</i></b> <a href="#">c <strong>d</strong></a></p><div><span>x</span></div>' ],
+            'voids and raw text' => [ '<p>a<br>b<img src="x.png" alt=""><hr><input></p><script>if (a < b) { document.write("</div>") }</script><textarea></b></textarea><style>p{}</style>' ],
+            'comments'           => [ '<!-- </div> <b> --><p>x</p><!---->' ],
+            'svg content'        => [ '<svg><g><path d="M0 0"/></g><style>.a{}</style></svg><p>x</p>' ],
+            'p around a block'   => [ '<p>a<div>b</div></p>' ],
+            'first body attrs'   => [ '' ],
+        ];
+    }
+
+    #[DataProvider('wellFormedMarkup')]
+    public function testWellFormedMarkupIsNotReported( string $body ): void
+    {
+        $s = HtmlSource::parse( '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>T</title><style>p{}</style></head><body class="home">' . $body . '<p>end</p></body></html>' );
+        $this->assertNull( $s['error'] );
+        $this->assertSame( [], $s['repaired'] );
+    }
+
+    public function testNoFixtureIsReportedAsRepaired(): void
+    {
+        foreach ( glob( self::FIXTURES . '/*.html' ) ?: [] as $file ) {
+            $s = HtmlSource::parse( (string) file_get_contents( $file ) );
+            if ( null === $s['error'] ) {
+                $this->assertSame( [], $s['repaired'], basename( $file ) );
+            }
+        }
+    }
+
+    public function testTheRepairScanIsLinearAndNeverThrows(): void
+    {
+        $start = hrtime( true );
+        $s     = HtmlSource::parse( '<!DOCTYPE html><body>' . str_repeat( '<div><span>', 20 ) . str_repeat( '<li>x', 2400 ) . str_repeat( '<p><b>a</i></p>', 1200 ) . '</body>' );
+        $this->assertNull( $s['error'] );
+        $this->assertLessThan( 1500, ( hrtime( true ) - $start ) / 1e6 );
+        $this->assertSame( [ 'tags that close out of order' ], $s['repaired'] );
+        $big = HtmlSource::parse( '<!DOCTYPE html><body>' . str_repeat( '<p class="a" title="x > y">t <b>u</b> <!-- </p> --></p>', 2400 ) . '</body>' );
+        $this->assertNull( $big['error'] );
+        $this->assertSame( [], $big['repaired'] );
+        foreach ( [ '<', '</', '<a', '<a "', "<a b='", '<!--', '<math>', '<math><style>', '<svg', '<style>', '</ >', '<<<>>>', '<a/b c=d/>' ] as $garbage ) {
+            $g = HtmlSource::parse( '<p>x</p>' . $garbage );
+            $this->assertIsArray( $g['repaired'] );
+        }
+        $this->assertSame( [], HtmlSource::parse( '' )['repaired'] );
     }
 }
