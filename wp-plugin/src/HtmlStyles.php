@@ -571,6 +571,11 @@ final class HtmlStyles
             }
         }
 
+        if ( 'math' === $tag || self::insideMath( $el ) ) {
+            // Chromium's MathML UA sheet: math { font-family: math; font-weight: normal } and math-depth scaling of scripts and fractions:
+            // in math, inherited size, weight, family and align are unknown; the colour inherits normally (measured).
+            $parent = self::mathParent( $parent );
+        }
         $rec = $this->element( $el, $parent, null, false );
         $this->emit( $el, $rec );
 
@@ -590,6 +595,26 @@ final class HtmlStyles
     private static function parentTag( \DOMElement $el ): string
     {
         return $el->parentNode instanceof \DOMElement ? strtolower( $el->parentNode->tagName ) : '';
+    }
+
+    private static function insideMath( \DOMElement $el ): bool
+    {
+        for ( $p = $el->parentNode; $p instanceof \DOMElement; $p = $p->parentNode ) {
+            if ( 'math' === strtolower( $p->tagName ) ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** The parent of an element in math: inherited size, weight, family and align unknown, the colour kept. @param array<string,mixed> $parent @return array<string,mixed> */
+    private static function mathParent( array $parent ): array
+    {
+        $u = self::unknownParent( $parent );
+        $u['color'] = $parent['color'];
+
+        return $u;
     }
 
     private static function insideTable( \DOMElement $el ): bool
@@ -653,6 +678,9 @@ final class HtmlStyles
         $scale  = $scale || $parent['scale'];
 
         $own = array_merge( self::OWN_ONLY[ $tag ] ?? [], self::UA_OWN[ $tag ] ?? [], $this->standards ? [] : ( self::QUIRKS_OWN[ $tag ] ?? [] ) );
+        if ( 'rt' === $tag && null !== $el && $el->parentNode instanceof \DOMElement && 'ruby' === strtolower( $el->parentNode->tagName ) ) {
+            $own[] = 'align'; // the UA sheet: ruby > rt { text-align: start } (rt in rtc, or outside ruby, inherits)
+        }
 
         $rec = [ 'effect' => $effect, 'scale' => $scale ];
         foreach ( [ 'color', 'family', 'weight', 'align' ] as $prop ) {

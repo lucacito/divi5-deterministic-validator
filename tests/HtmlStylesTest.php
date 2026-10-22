@@ -708,4 +708,29 @@ final class HtmlStylesTest extends HtmlTestCase
             $this->assertSet( '#0000ff', $r['nodes'][ '/html/body/div/' . $tag . '/b' ]['color'], $tag );
         }
     }
+
+    /** Review round 4, D1: in math, inherited size, weight, family and align are unknown (MathML UA sheet, math-depth); colour inherits. */
+    public function testMathInheritsOnlyTheColour(): void
+    {
+        $r = $this->page( '', '<div style="color:#ff0000;font-size:30px;font-weight:700;font-family:Georgia;text-align:right"><math><msup><mi>x</mi><mn>2</mn></msup></math></div><math style="font-family:Arial"><mi style="font-size:20px">y</mi></math>' );
+        foreach ( [ 'size', 'weight', 'family', 'align' ] as $prop ) {
+            $this->assertUnresolved( $r['nodes']['/html/body/div/math'][ $prop ], null, 'math ' . $prop );
+            $this->assertUnresolved( $r['nodes']['/html/body/div/math/msup/mn'][ $prop ], null, 'mn ' . $prop );
+        }
+        $this->assertSet( '#ff0000', $r['nodes']['/html/body/div/math/msup/mn']['color'] );
+        $this->assertSet( [ 'Arial' ], $r['nodes']['/html/body/math']['family'], 'its own declaration' );
+        $this->assertSet( 20.0, $r['nodes']['/html/body/math/mi']['size'], 'its own declaration' );
+    }
+
+    /** D2: ruby > rt takes text-align from the UA sheet (start); rt in rtc and rt outside ruby inherit. */
+    public function testARubyTextAlignsAtTheStart(): void
+    {
+        $r = $this->page( '', '<div style="text-align:right"><ruby>a<rt>b<span>c</span></rt><rtc><rt>d</rt></rtc></ruby><p><rt>e</rt></p></div>' );
+        $this->assertSame( [ 'state' => 'initial', 'value' => null, 'reason' => null ], $r['nodes']['/html/body/div/ruby/rt']['align'] );
+        $this->assertUnresolved( $r['nodes']['/html/body/div/ruby/rt/span']['align'] );
+        $this->assertSet( 'right', $r['nodes']['/html/body/div/ruby/rtc/rt']['align'] );
+        $this->assertSet( 'right', $r['nodes']['/html/body/div/p/rt']['align'] );
+        $r = $this->page( 'rt{text-align:center}', '<ruby>a<rt>b</rt></ruby>' );
+        $this->assertSet( 'center', $r['nodes']['/html/body/ruby/rt']['align'], 'its own declaration' );
+    }
 }

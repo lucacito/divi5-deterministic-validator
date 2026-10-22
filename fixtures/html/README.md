@@ -24,6 +24,9 @@ Test fixtures for `html_to_divi` converter. Each tests a specific scenario:
 | 14-styled-backgrounds.html | A gradient section, a `background-image`, a carried `#123456`, an `rgba()` background, and a black paragraph inside a light section | Gradients and images are not carried; the readability rule decides what paint travels with which ink |
 | 14-styled-fonts.html | `@import`, `@font-face`, Playfair Display headings, `"Brand Sans", Inter` body, Georgia, `system-ui`, and a `pre` | Only fonts Divi can load are carried; the rest are listed |
 | 14-styled-hostile.html | `!important`, `var()`, `calc()`, `clamp()`, `@media`, `a:hover`, `.hero h1`, `[data-x]`, an unclosed `{`, `900px`, negative padding, the `font` shorthand, `bgcolor`, `<center>`, upper-case hex, `RebeccaPurple`, `opacity` | Anything not readable with certainty is left out and reported, never guessed |
+| 15-head-style-section.html | A `<style>` block, then an HTML5 `<section>`, then a `<div>` (no html/head/body tags) | libxml2 keeps the `<section>` inside `<head>`; it is moved into the body, so no text is lost |
+| 15-head-link-section.html | A `<link rel=stylesheet>` then a `<section>` | Was refused as "no content"; the section is moved into the body |
+| 15-head-meta-header.html | A `<meta charset>` then `<header>`, `<main>`, `<footer>` | Was refused as "no content"; all three move into the body in order |
 
 `14-styled-inline.html`'s second section is the DELIBERATE mixed-style run: two consecutive `<p>` (one unstyled, one with its own colour and size) that the mapper merges into one text module (`14-styled-hostile`'s table plus `<center><p>` is another). Later tasks must carry only the style properties that are equal across every merged element, otherwise nothing for that property and a counted note "mixed"; `testTheMixedStyleRunStaysInTheInlineFixture` keeps the case from being fixed away.
 
