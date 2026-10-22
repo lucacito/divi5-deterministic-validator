@@ -108,9 +108,14 @@ final class Prepare
     }
 
     /**
-     * Writes files() into $outDir (mkdir -p), only those names, never deletes anything. A target that already exists with
-     * DIFFERENT content (a same-name foreign file, or output of another run) is refused before anything is written
-     * (\RuntimeException); identical content is simply rewritten.
+     * Writes files() into $outDir (mkdir -p), only those names, never deletes anything.
+     *
+     * Re-running into the same directory refreshes OUR files: a directory is ours when it holds a prepare.json written by this
+     * tool (valid JSON with `kit`, `language`, `task` and a `files` object). Then prepare.json, TASK.md and every name listed in
+     * its old `files` map (the guide files, and page.html only if the earlier run was an edit prepare) may be overwritten. Any
+     * other existing target with DIFFERENT content (the assistant's page.html or page-edited.html of a freehand dir, a same-name
+     * foreign file, or anything in a directory without a valid prepare.json) is refused before anything is written
+     * (\RuntimeException, nothing written). Identical content is simply rewritten. A directory in the way of a target is refused too.
      *
      * @param array<string,string> $files
      * @return list<string> the written paths
@@ -118,10 +123,14 @@ final class Prepare
     public static function write( array $files, string $outDir ): array
     {
         $outDir = rtrim( $outDir, '/' );
+        $ours   = self::oursIn( $outDir );
         foreach ( $files as $name => $content ) {
             $path = $outDir . '/' . $name;
-            if ( is_file( $path ) && (string) file_get_contents( $path ) !== $content ) {
-                throw new \RuntimeException( sprintf( '%s already exists with different content; nothing was written. Remove it or choose another --out directory.', $path ) );
+            if ( is_dir( $path ) ) {
+                throw new \RuntimeException( sprintf( '%s is a directory; nothing was written. Remove it or choose another --out directory.', $path ) );
+            }
+            if ( is_file( $path ) && ! in_array( $name, $ours, true ) && (string) file_get_contents( $path ) !== $content ) {
+                throw new \RuntimeException( sprintf( '%s already exists with different content and is not a file of an earlier prepare run; nothing was written. Move it away or choose another --out directory.', $path ) );
             }
         }
         if ( ! is_dir( $outDir ) && ! mkdir( $outDir, 0777, true ) && ! is_dir( $outDir ) ) {
@@ -137,5 +146,24 @@ final class Prepare
         }
 
         return $paths;
+    }
+
+    /**
+     * The names an earlier run of this tool wrote into $outDir: [] when there is no valid prepare.json there.
+     *
+     * @return list<string>
+     */
+    private static function oursIn( string $outDir ): array
+    {
+        $path = $outDir . '/prepare.json';
+        if ( ! is_file( $path ) ) {
+            return [];
+        }
+        $json = json_decode( (string) file_get_contents( $path ), true );
+        if ( ! is_array( $json ) || ! is_string( $json['kit'] ?? null ) || ! is_string( $json['language'] ?? null ) || ! is_string( $json['task'] ?? null ) || ! is_array( $json['files'] ?? null ) ) {
+            return [];
+        }
+
+        return array_merge( [ 'prepare.json', 'TASK.md' ], array_map( 'strval', array_keys( $json['files'] ) ) );
     }
 }

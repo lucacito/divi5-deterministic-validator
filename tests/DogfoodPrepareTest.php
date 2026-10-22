@@ -234,6 +234,109 @@ class DogfoodPrepareTest extends TestCase
         $this->assertCount( 8, $again );
     }
 
+    public function testRePreparingTheSameDirRefreshesOurFilesAndNeverTouchesTheAssistantsPage(): void
+    {
+        $dir = $this->tmpDir();
+        // An earlier run, then a guide change (simulated by stale guide files, a stale TASK.md and a stale prepare.json of OUR format).
+        $old = Prepare::files( 'hairline-dashed', 'tech-mono', 'freehand', $dir );
+        Prepare::write( $old, $dir );
+        file_put_contents( $dir . '/05-controls.md', 'an older guide' );
+        file_put_contents( $dir . '/TASK.md', 'an older task' );
+        $stale = json_decode( $old['prepare.json'], true );
+        $stale['guide_bytes'] = 1;
+        file_put_contents( $dir . '/prepare.json', json_encode( $stale ) );
+        file_put_contents( $dir . '/page.html', 'the assistant page' );
+        file_put_contents( $dir . '/foreign-notes.txt', 'mine' );
+
+        $paths = Prepare::write( $old, $dir );
+        $this->assertCount( count( $old ), $paths );
+        foreach ( $old as $name => $content ) {
+            $this->assertSame( $content, file_get_contents( $dir . '/' . $name ), $name );
+        }
+        $this->assertSame( 'the assistant page', file_get_contents( $dir . '/page.html' ) );
+        $this->assertSame( 'mine', file_get_contents( $dir . '/foreign-notes.txt' ) );
+
+        // Same through the script.
+        file_put_contents( $dir . '/06-forms.md', 'an older forms topic' );
+        [ $code, $out ] = $this->runScript( [ 'hairline-dashed', 'tech-mono', '--out', $dir ], dirname( __DIR__ ) );
+        $this->assertSame( 0, $code, $out );
+        $this->assertSame( $old['06-forms.md'], file_get_contents( $dir . '/06-forms.md' ) );
+        $this->assertSame( 'the assistant page', file_get_contents( $dir . '/page.html' ) );
+
+        // An edit dir: page.html is OURS (listed in the old files map), page-edited.html is the assistant's.
+        $edir = $this->tmpDir();
+        $edit = Prepare::files( 'glass-edge', 'glass-dark', 'edit', $edir );
+        Prepare::write( $edit, $edir );
+        file_put_contents( $edir . '/page.html', 'a stale base' );
+        file_put_contents( $edir . '/page-edited.html', 'the assistant edit' );
+        Prepare::write( $edit, $edir );
+        $this->assertSame( $edit['page.html'], file_get_contents( $edir . '/page.html' ) );
+        $this->assertSame( 'the assistant edit', file_get_contents( $edir . '/page-edited.html' ) );
+    }
+
+    public function testAnEditPrepareIntoAFreehandDirRefusesToOverwriteTheAssistantsPage(): void
+    {
+        $dir = $this->tmpDir();
+        Prepare::write( Prepare::files( 'glass-edge', 'glass-dark', 'freehand', $dir ), $dir );
+        file_put_contents( $dir . '/page.html', 'the assistant page' );
+        file_put_contents( $dir . '/01-style-guide.md', 'older' );
+        try {
+            Prepare::write( Prepare::files( 'glass-edge', 'glass-dark', 'edit', $dir ), $dir );
+            $this->fail( 'expected a RuntimeException' );
+        } catch ( \RuntimeException $e ) {
+            $this->assertStringContainsString( 'page.html', $e->getMessage() );
+        }
+        $this->assertSame( 'the assistant page', file_get_contents( $dir . '/page.html' ) );
+        $this->assertSame( 'older', file_get_contents( $dir . '/01-style-guide.md' ), 'all or nothing: our older file was not refreshed either' );
+    }
+
+    public function testACorruptOrForeignPrepareJsonMakesNothingOurs(): void
+    {
+        $files = Prepare::files( 'hairline-dashed', 'tech-mono', 'freehand', '/x' );
+        foreach ( [ 'not json', '{"kit":"a","language":"b","task":"freehand"}', '{"kit":1,"language":"b","task":"c","files":{}}', '[]', '"x"' ] as $marker ) {
+            $dir = $this->tmpDir();
+            mkdir( $dir, 0777, true );
+            file_put_contents( $dir . '/prepare.json', $marker );
+            file_put_contents( $dir . '/05-controls.md', 'foreign' );
+            try {
+                Prepare::write( $files, $dir );
+                $this->fail( 'expected a RuntimeException for ' . $marker );
+            } catch ( \RuntimeException $e ) {
+                $this->assertStringContainsString( 'different content', $e->getMessage() );
+            }
+            $this->assertSame( $marker, file_get_contents( $dir . '/prepare.json' ) );
+            $this->assertSame( 'foreign', file_get_contents( $dir . '/05-controls.md' ) );
+        }
+        // A foreign file is also refused in a directory that IS ours, when its name is not in the old files map.
+        $dir = $this->tmpDir();
+        Prepare::write( Prepare::files( 'hairline-dashed', 'tech-mono', 'freehand', $dir ), $dir );
+        $this->assertSame( [], array_diff( [ 'prepare.json' ], array_map( 'basename', glob( $dir . '/*' ) ?: [] ) ) );
+        $stale = json_decode( (string) file_get_contents( $dir . '/prepare.json' ), true );
+        unset( $stale['files']['06-forms.md'] );
+        file_put_contents( $dir . '/prepare.json', json_encode( $stale ) );
+        file_put_contents( $dir . '/06-forms.md', 'foreign' );
+        $this->expectException( \RuntimeException::class );
+        Prepare::write( Prepare::files( 'hairline-dashed', 'tech-mono', 'freehand', $dir ), $dir );
+    }
+
+    public function testADirectoryInTheWayIsAPlainRuntimeExceptionNotAWarning(): void
+    {
+        $dir = $this->tmpDir();
+        mkdir( $dir . '/TASK.md', 0777, true );
+        try {
+            Prepare::write( Prepare::files( 'hairline-dashed', 'tech-mono', 'freehand', $dir ), $dir );
+            $this->fail( 'expected a RuntimeException' );
+        } catch ( \RuntimeException $e ) {
+            $this->assertStringContainsString( 'is a directory', $e->getMessage() );
+        }
+        $this->assertSame( [ $dir . '/TASK.md' ], glob( $dir . '/*' ), 'nothing was written' );
+        [ $code, $out ] = $this->runScript( [ 'hairline-dashed', 'tech-mono', '--out', $dir ], dirname( __DIR__ ) );
+        $this->assertSame( 2, $code, $out );
+        $this->assertStringContainsString( 'is a directory', $out );
+        $this->assertStringNotContainsString( 'Warning', $out );
+        rmdir( $dir . '/TASK.md' );
+    }
+
     public function testAnOptionValueThatLooksLikeAnOptionIsRefused(): void
     {
         $root = dirname( __DIR__ );

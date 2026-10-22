@@ -38,8 +38,11 @@ Order: prepare, assistant, score, render. One kit under one language per run.
    `dist/dogfood/<kit>-<language>-edit`): `01-style-guide.md` (the default guide), `02-kit-rules.md`, `03-style-kit.md`,
    `04-design-language.md`, `05-controls.md`, `06-forms.md`, `TASK.md`, `prepare.json`, and for `TASK=edit` also `page.html` (six recipes
    under the kit: hero-cta, card-grid-3, pricing-three-tier, faq-accordion, team-grid, contact-form). The output is byte-identical on
-   repeat. It refuses (exit 2, nothing written) when a target file already exists with different content, so a same-name file of yours or
-   an earlier run's output (after a guide change, for instance) is never overwritten silently: remove the directory or pass another `OUT`.
+   repeat. Re-running it into the same out directory is the normal way to refresh after a guide change: the files of the
+   earlier run (recognised by the `prepare.json` it wrote: the guide files, `TASK.md`, and `page.html` only if that run was an edit
+   prepare) are overwritten, while your page and any foreign file are never touched. Anything else that already exists with different
+   content (a same-name file of yours, a directory with no valid `prepare.json`, or an edit prepare into an earlier freehand directory
+   whose `page.html` is the assistant's page) is refused with exit 2 and nothing is written; move it away or pass another `OUT`.
    The assistant's own `page.html` (freehand) or `page-edited.html` (edit) is not a target and is never touched.
 2. **Assistant.** Start a FRESH assistant that has none of this conversation's context. In Claude Code: the `Agent` tool (a
    general-purpose agent) with exactly this prompt, `<out>` being the absolute path of the directory step 1 wrote:
@@ -57,10 +60,10 @@ Order: prepare, assistant, score, render. One kit under one language per run.
    language used. Always pass it for a run. For an edit, score `page-edited.html`.
 4. **Render.** `make dogfood-render PAGE=<out>/page.html` (dev site, Docker up, ONE run at a time). It runs the script's pure tests first,
    then saves the page as one draft titled `aied dogfood <runToken> <name>`, renders it at 1280 and 400 px, writes
-   `dist/dogfood/<name>/shot-1280.png`, `shot-400.png` and `render.json`, and deletes the draft (also on Ctrl-C). Exit 0 only when the
+   `dist/dogfood/<name>/shot-1280.png`, `shot-400.png` and `render.json` (which has an `error` field when the script itself failed), and deletes the draft (also on Ctrl-C). Exit 0 only when the
    layout is valid, both widths were measured, horizontal overflow is 0 at both, there is no console error and no PHP error text, and the
    cleanup finished. Look at the two screenshots. There is no `--kit` option: the renderer does not need the kit. Before the run
-   `pgrep -f "node scripts/(verify|dogfood)-"` must print nothing (another gate or an earlier run); leftovers after a crash are removed with
+   `pgrep -fl "node scripts/(verify|dogfood)-"` should print nothing except itself (anything else is another gate or an earlier run); leftovers after a crash are removed with
    `make dogfood-render ARGS=--clean-orphans`, only when no run is going. The run can take a minute or more (the script scrolls the page and waits for it to settle at each width): wait
    for it to finish instead of starting anything else on the dev site, and never poll it with a second job. The page is saved EXACTLY as given (no wrapping, no token resolving), which is what an assistant would
    do. The transport is one `wp eval` call, so a page much over about 95 KB may not fit it; the corpus pages are 32 to 61 KB.

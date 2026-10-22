@@ -115,7 +115,7 @@ that is not a measurement (exit 0 after measuring, 1 only with `--min`); `dogfoo
 
 ### Review minors folded in with Task 5
 
-`Prepare::write()` refuses (nothing written) a target file that exists with different content; `dogfood-prepare.php` catches that, rejects an
+`Prepare::write()` refreshes the files of an earlier run (a directory is ours when it holds a valid `prepare.json`: that file, TASK.md and the names in its old `files` map) and refuses (nothing written) any other target that exists with different content, or a directory in the way; `dogfood-prepare.php` catches that, rejects an
 option value that starts with `--` and exits 2; `prepare.json` no longer records TASK.md's size; the TASK templates' bias guards are
 pinned by a test; `dogfood-render` truncates its printed error, fails the summary after an internal error, clears stale `shot-*.png` in a
 reused output directory and guards `browser.close()`; the sweep of the shared throwaway-pages library is covered by a pure test with a
