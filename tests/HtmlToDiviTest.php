@@ -78,6 +78,11 @@ final class HtmlToDiviTest extends HtmlTestCase
     {
         $doc  = new \DOMDocument();
         $prev = libxml_use_internal_errors( true );
+        // The body starts where a browser starts it (as HtmlSource::parse does), or libxml2's implied <p> would be written out as a real one.
+        $at = \AiEditorDivi5\WP\HtmlSource::bodyStart( $html );
+        if ( null !== $at ) {
+            $html = substr( $html, 0, $at ) . '<body>' . substr( $html, $at );
+        }
         $doc->loadHTML( '<?xml encoding="UTF-8">' . $html, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING | LIBXML_HTML_NODEFDTD );
         libxml_clear_errors();
         libxml_use_internal_errors( $prev );
@@ -312,6 +317,56 @@ final class HtmlToDiviTest extends HtmlTestCase
 
     #[DataProvider('afterHtmlFiles')]
     public function testAfterHtmlGoldenLayout( string $file ): void
+    {
+        $name = basename( $file, '.html' );
+        $r    = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $file ), [ 'styles' => 'none' ] );
+        $gold = __DIR__ . '/golden/html-to-divi/' . $name . '.none.layout.txt';
+        if ( false !== getenv( 'AIED_UPDATE_GOLDEN' ) && ! is_file( $gold ) ) {
+            file_put_contents( $gold, $r['layout'] . "\n" );
+        }
+        $this->assertFileExists( $gold );
+        $this->assertSame( rtrim( (string) file_get_contents( $gold ), "\n" ), $r['layout'] );
+    }
+
+    /** @return array<string,array{0:string,1:list<string>,2:list<string>}> file => the words that must reach the layout, the headings */
+    public static function leadingFiles(): array
+    {
+        return [
+            '17-leading-style-loose.html'      => [ '17-leading-style-loose.html', [ 'Bread out of the oven', 'Loose words between the sections', 'Open until nine' ], [ 'Morning bakes', 'Evening coffee' ] ],
+            '17-leading-meta-inline.html'      => [ '17-leading-meta-inline.html', [ 'Call', 'today', 'write to us', 'Chairs, tables', 'more loose text', 'Made by hand' ], [ 'Studio Lark', 'What we make' ] ],
+            '17-leading-comment-text.html'     => [ '17-leading-comment-text.html', [ 'Welcome text before any block', 'It begins here', 'A loose line', 'Short and sweet' ], [ 'First story', 'Side note' ] ],
+            '17-leading-script-template.html'  => [ '17-leading-script-template.html', [ 'Pick the one that fits', 'Small print', 'and loose text', 'Ask us anything' ], [ 'Plans', 'Questions' ] ],
+        ];
+    }
+
+    /**
+     * Head content (or a comment) first, then loose text between HTML5 blocks: libxml2 used to wrap the text in an implied <p> that swallowed
+     * the next block, so its heading became bold text in a paragraph. Every heading must stay a heading module, every word must be counted,
+     * and the page must convert exactly like the same page without its first line.
+     */
+    #[DataProvider('leadingFiles')]
+    public function testLeadingHeadContentKeepsTheHeadingsAndSections( string $file, array $words, array $headings ): void
+    {
+        $html = (string) file_get_contents( self::FIXTURES . '/' . $file );
+        $rest = substr( $html, strpos( $html, "\n" ) + 1 );
+        foreach ( [ 'none', 'basic' ] as $styles ) {
+            $r = $this->convert( $html, [ 'styles' => $styles ] );
+            $this->assertTrue( $r['ok'], $file . ' ' . $styles . ': ' . (string) ( $r['error'] ?? '' ) );
+            foreach ( $words as $w ) {
+                $this->assertStringContainsString( $w, $r['layout'], $file . ' ' . $styles );
+            }
+            foreach ( $headings as $h ) {
+                $this->assertStringContainsString( '<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"' . $h . '"}}', $r['layout'], $h . ' stays a heading module (' . $styles . ')' );
+                $this->assertStringNotContainsString( '<strong>' . $h, $r['layout'], $file . ' ' . $styles );
+            }
+            $this->assertTrue( $r['report']['text_check']['equal'] );
+        }
+        $this->assertSame( [], \AiEditorDivi5\WP\HtmlSource::parse( $html )['repaired'], 'what a browser builds: no repair note' );
+        $this->assertSame( $this->convert( $rest, [ 'styles' => 'none' ] )['layout'], $this->convert( $html, [ 'styles' => 'none' ] )['layout'], 'the first line changes nothing' );
+    }
+
+    #[DataProvider('leadingFiles')]
+    public function testLeadingGoldenLayout( string $file ): void
     {
         $name = basename( $file, '.html' );
         $r    = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $file ), [ 'styles' => 'none' ] );
@@ -769,13 +824,11 @@ final class HtmlToDiviTest extends HtmlTestCase
     }
 
     /**
-     * Open finding T10-F1 (Task 10's property test, seed 4 case 130 and 14 more cases in seeds 1-40): a FRAGMENT that starts with a
-     * <style> element, then an element libxml does not know (an HTML5 section, header, video ...), then loose text, loses structure in
-     * BOTH modes: libxml keeps the first element in <head> (HtmlSource::relocateHeadContent moves it back) but then opens <body> with an
-     * implied <p> around the loose text that swallows everything after it, so the second section's h2 becomes <strong> inside a nested
-     * paragraph. The text is kept (text_check equal); the heading and the section are not. The same page without the <style>, or as a
-     * whole document (<html><head>...<body>), keeps both sections. This is HtmlSource's parse, outside the style layers; the test stays
-     * incomplete (visible in every run) until it is fixed, then it passes and the property test's T10-F1 branch can be removed.
+     * Finding T10-F1 (Task 10's property test, seed 4 case 130 and 14 more cases in seeds 1-40), fixed: a FRAGMENT that started with a
+     * <style> element, then an element libxml2 does not know (an HTML5 section, header, video ...), then loose text, lost structure in
+     * BOTH modes: libxml2 was still in head mode and opened an implied <p> around the loose text that swallowed everything after it, so
+     * the second section's h2 became <strong> inside a nested paragraph. HtmlSource::bodyStart() now writes an explicit <body> where a
+     * browser starts it, so the page with and without its leading <style> gives the same layout.
      */
     public function testALeadingStyleElementInAFragmentKeepsTheStructure(): void
     {
@@ -783,9 +836,6 @@ final class HtmlToDiviTest extends HtmlTestCase
         $want = $this->convert( $body, [ 'styles' => 'none' ] )['layout'];
         $this->assertSame( 3, substr_count( $want, '<!-- wp:divi/section ' ), 'without the <style>: three sections' );
         $got = $this->convert( '<style>p{color:#111111}</style>' . $body, [ 'styles' => 'none' ] )['layout'];
-        if ( $got !== $want ) {
-            $this->markTestIncomplete( 'Open finding T10-F1: a leading <style> in a fragment changes the phase-1 structure (the second heading becomes <strong>).' );
-        }
         $this->assertSame( $want, $got );
     }
 
@@ -810,7 +860,6 @@ final class HtmlToDiviTest extends HtmlTestCase
         $painted = 0;
         $inked   = 0;
         $buttons = 0;
-        $leadingSheet = 0;
         foreach ( $cases as $n => [ $html, $bare ] ) {
             $where = 'seed ' . $seed . ' case ' . $n . "\n" . $html;
             $r     = $this->convert( $html );
@@ -819,16 +868,7 @@ final class HtmlToDiviTest extends HtmlTestCase
             $bareNone = $this->convert( $bare, [ 'styles' => 'none' ] );
             $bareBas  = $this->convert( $bare );
             $this->assertSame( $none['ok'], $r['ok'], 'both modes agree on refusing: ' . $where );
-            if ( $none['layout'] !== $bareNone['layout'] && str_starts_with( $html, '<style>' ) ) {
-                // Open finding T10-F1 (testALeadingStyleElementInAFragmentKeepsTheStructure): a fragment that starts with a <style>
-                // makes libxml parse the rest in head mode, which changes the phase-1 tree. The style="" attributes must still change
-                // nothing: the same page without its leading sheet (attributes kept) gives the bare page's bytes. Counted, never hidden.
-                $sheetless = (string) preg_replace( '/^<style>[^<]*<\/style>/', '', $html );
-                $this->assertSame( $bareNone['layout'], $this->convert( $sheetless, [ 'styles' => 'none' ] )['layout'], 'styles=none ignores every style attribute: ' . $where );
-                ++$leadingSheet;
-            } else {
-                $this->assertSame( $none['layout'], $bareNone['layout'], 'styles=none ignores every style: ' . $where );
-            }
+            $this->assertSame( $none['layout'], $bareNone['layout'], 'styles=none ignores every style: ' . $where );
             // A <center> element is HTML, not CSS: bare keeps it, and basic carries its UA alignment (D5). Only that may differ.
             $bareBasic = str_contains( strtolower( $bare ), '<center' ) ? str_replace( [ ',"textAlign":"center"', ',"module":{"advanced":{"text":{"text":{"desktop":{"value":{"orientation":"center"}}}}}}' ], '', $bareBas['layout'] ) : $bareBas['layout'];
             $this->assertSame( $bareNone['layout'], $bareBasic, 'a page without CSS is the same in both modes: ' . $where );
@@ -856,7 +896,7 @@ final class HtmlToDiviTest extends HtmlTestCase
             } );
         }
         if ( false !== getenv( 'AIED_STATS' ) ) {
-            fwrite( STDERR, sprintf( "seed %d: %d of %d convert, %d styled, %d painted blocks, %d inked modules, %d filled or ghost buttons, %d hit finding T10-F1\n", $seed, $ok, count( $cases ), $styled, $painted, $inked, $buttons, $leadingSheet ) );
+            fwrite( STDERR, sprintf( "seed %d: %d of %d convert, %d styled, %d painted blocks, %d inked modules, %d filled or ghost buttons\n", $seed, $ok, count( $cases ), $styled, $painted, $inked, $buttons ) );
         }
         $this->assertGreaterThan( 100, $ok, 'most random pages convert' );
         $this->assertGreaterThan( 20, $styled, 'the generator must produce pages whose styles change the layout' );
