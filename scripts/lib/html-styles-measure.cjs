@@ -15,13 +15,13 @@
  *   Divi computed (1280)  = written     for every code; at 900 / 400 a size is the written tablet / phone step (a missing step inherits from the
  *                                       larger one, as Divi does)
  *   source computed       = written     where the converter reads the source's own value: colour, weight, align, family (written is in the
- *                                       source's computed font-family list), size (the source value clamped to the converter's 8..200 px),
+ *                                       source's computed font-family list), size (the source value clamped to the converter's 8..120 px),
  *                                       padding (clamped to 0..200 px), a painted background (the first opaque background from the anchor up)
  * Divi's defaults are never compared with the source's: only what the converter wrote.
  */
 
 const SIZE_MIN = 8;
-const SIZE_MAX = 200;
+const SIZE_MAX = 120;
 const PAD_MAX = 200;
 const CANVAS = '#ffffff';
 

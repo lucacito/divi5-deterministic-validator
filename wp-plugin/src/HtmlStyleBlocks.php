@@ -56,7 +56,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class HtmlStyleBlocks
 {
     public const SIZE_MIN   = 8;
-    public const SIZE_MAX   = 200;
+    public const SIZE_MAX   = 120;
     public const PAD_MAX    = 200;
     public const WIDTH_MIN  = 200;
     public const WIDTH_MAX  = 2400;

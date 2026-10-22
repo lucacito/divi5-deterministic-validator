@@ -32,7 +32,7 @@ require_once __DIR__ . '/../../wp-plugin/src/DiviMarkup.php';
  *  4 a button has a label colour iff it has a fill; a solid fill pair meets 4.5:1; a transparent fill (a ghost) only under paint,
  *    its label meeting 4.5:1 against that paint; every button under paint has a pair or a ghost;
  *  5 value forms: every colour '#rrggbb' (a button fill may also be DiviMarkup::TRANSPARENT), every size, padding, max width and
- *    radius '<n>px' within the writer's clamps (size 8-200, padding 0-200, max width 200-2400, radius 0-999), a weight
+ *    radius '<n>px' within the writer's clamps (size 8-120, padding 0-200, max width 200-2400, radius 0-999), a weight
  *    '100'..'900', an alignment center|right|justify (orientation center|right), a family one of HtmlFonts::google() spelled
  *    canonically, or one of HtmlFonts::WEB_SAFE when DiviMarkup::STYLE_PROVEN['websafe-family'] is true.
  */
@@ -192,7 +192,7 @@ final class StyledLayoutOracle
                     $bad = $ok ? null : 'not a #rrggbb colour';
                     break;
                 case 'size':
-                    $bad = self::px( $value, 8, 200 ) ? null : 'not a size of 8-200px';
+                    $bad = self::px( $value, 8, 120 ) ? null : 'not a size of 8-120px';
                     break;
                 case 'maxWidth':
                     $bad = self::px( $value, 200, 2400 ) ? null : 'not a max width of 200-2400px';

@@ -637,13 +637,13 @@ final class HtmlToDiviTest extends HtmlTestCase
         $this->assertSame( [ 'Playfair Display', 'Brand Sans', 'Inter', 'Georgia' ], array_column( $b['report']['styles']['fonts'], 'source' ) );
         $this->assertSame( 1, $b['report']['styles']['external'], 'the @import is counted; the CSS in the page is still carried' );
 
-        // hostile: the h1's size (@media) and colour (.hero h1) are unresolved, 900px is clamped to 200px, the inline button pair wins,
+        // hostile: the h1's size (@media) and colour (.hero h1) are unresolved, 900px is clamped to 120px, the inline button pair wins,
         // the opacity section is not painted, and RebeccaPurple (a p's own background) is never written.
         $b  = $this->blocks( '14-styled-hostile' );
         $h1 = $this->module( $b, 'Styles that fight back' );
         $this->assertNull( $h1->attr( self::H . 'desktop.value.size' ) );
         $this->assertNull( $h1->attr( self::H . 'desktop.value.color' ) );
-        $this->assertSame( '200px', $this->module( $b, 'Enormous heading' )->attr( self::H . 'desktop.value.size' ) );
+        $this->assertSame( '120px', $this->module( $b, 'Enormous heading' )->attr( self::H . 'desktop.value.size' ) );
         $this->assertSame( 1, $b['report']['styles']['clamped'] );
         $go = $this->module( $b, '/go' );
         $this->assertSame( [ '#000000', '#ffffff', null ], [ $go->attr( self::B . 'background.desktop.value.color' ), $go->attr( self::B . 'font.font.desktop.value.color' ), $go->attr( self::B . 'border.desktop.value.radius.topLeft' ) ] );

@@ -226,11 +226,11 @@ t('hs-size: the tablet step is ignored, the phone step is ignored, the desktop s
   assert.ok(failing(evalS(s), 'hs-size').some((c) => /1280 px/.test(c.message)));
   s = synthetic(); s.source['/html/body/section[1]/h1'].size = '40px';
   assert.ok(failing(evalS(s), 'hs-size').some((c) => /the source shows/.test(c.message)));
-  // an enormous source size is clamped to 200 by the converter: written 200, source 900
+  // an enormous source size is clamped to 120 by the converter: written 120, source 900
   s = synthetic();
-  s.page.blocks[3].written.title.decoration.font.font = { desktop: { value: { headingLevel: 'h2', size: '200px' } } };
+  s.page.blocks[3].written.title.decoration.font.font = { desktop: { value: { headingLevel: 'h2', size: '120px' } } };
   s.source['/html/body/section[1]/h1'].size = '900px';
-  for (const w of [1280, 900, 400]) s.leaves[w][0].size = '200px';
+  for (const w of [1280, 900, 400]) s.leaves[w][0].size = '120px';
   assert.strictEqual(failing(evalS(s), 'hs-size').length, 0);
   // a size inherited from the desktop step when only desktop is written
   s = synthetic(); s.page.blocks[4].written.content.decoration.bodyFont.body.font = { desktop: { value: { size: '20px', color: '#cbd5e1' } } };

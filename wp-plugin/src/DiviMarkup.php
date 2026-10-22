@@ -65,7 +65,7 @@ final class DiviMarkup
     public const TRANSPARENT = 'rgba(255,255,255,0)';
 
     private const SIZE_MIN   = 8;
-    private const SIZE_MAX   = 200;
+    private const SIZE_MAX   = 120;
     private const PAD_MAX    = 200;
     private const WIDTH_MIN  = 200;
     private const WIDTH_MAX  = 2400;
@@ -163,7 +163,7 @@ final class DiviMarkup
     }
 
     /**
-     * @param array{color?:string,size?:int,weight?:string,align?:string,family?:string} $style color '#rrggbb', size px (8-200; above 32 also a
+     * @param array{color?:string,size?:int,weight?:string,align?:string,family?:string} $style color '#rrggbb', size px (8-120; above 32 also a
      *        tablet and a phone step), weight '100'..'900', align center|right|justify (justify: heading-justify), family (a web-safe one: websafe-family)
      */
     public static function heading( string $text, int $level, array $style = [] ): string

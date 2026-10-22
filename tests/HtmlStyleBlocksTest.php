@@ -68,7 +68,7 @@ final class HtmlStyleBlocksTest extends HtmlTestCase
     public function testClampsAreAppliedAndCounted(): void
     {
         [ $b ] = $this->blocks( self::page( '', '<section><h2 style="font-size:900px">Huge</h2></section>' ) );
-        $this->assertSame( 200, self::module( $b, 0 )['size'] );
+        $this->assertSame( 120, self::module( $b, 0 )['size'] );
         $this->assertSame( 1, $b['clamped'] );
 
         // NOTE (brief vs code): the brief says the -4px padding is counted `unit`. HtmlCss puts that reason on the declaration, but

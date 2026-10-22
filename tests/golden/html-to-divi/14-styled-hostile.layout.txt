@@ -14,7 +14,7 @@
 <!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Enormous heading size"}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
 <!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
-<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Enormous heading size"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2","size":"200px"}},"tablet":{"value":{"size":"150px"}},"phone":{"value":{"size":"110px"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Enormous heading size"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2","size":"120px"}},"tablet":{"value":{"size":"90px"}},"phone":{"value":{"size":"66px"}}}}}},"builderVersion":"5.8.0"} /-->
 <!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Padding"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3"}}}}}},"builderVersion":"5.8.0"} /-->
 <!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eA negative padding value is not valid CSS and must not reach the layout.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
 <!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Shorthand"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3"}}}}}},"builderVersion":"5.8.0"} /-->

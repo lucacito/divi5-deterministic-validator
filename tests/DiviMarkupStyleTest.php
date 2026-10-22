@@ -193,7 +193,7 @@ final class DiviMarkupStyleTest extends HtmlTestCase
     /** @return array<string,array{0:int,1:?array{0:string,1:string}}> */
     public static function sizes(): array
     {
-        return [ '56' => [ 56, [ '42px', '31px' ] ], '33' => [ 33, [ '25px', '20px' ] ], '32' => [ 32, null ], '8' => [ 8, null ], '200' => [ 200, [ '150px', '110px' ] ], '40' => [ 40, [ '30px', '22px' ] ] ];
+        return [ '56' => [ 56, [ '42px', '31px' ] ], '33' => [ 33, [ '25px', '20px' ] ], '32' => [ 32, null ], '8' => [ 8, null ], '120' => [ 120, [ '90px', '66px' ] ], '40' => [ 40, [ '30px', '22px' ] ] ];
     }
 
     /** @param ?array{0:string,1:string} $steps */
@@ -239,6 +239,7 @@ final class DiviMarkupStyleTest extends HtmlTestCase
             $bad( 'width above 2400', static fn () => DiviMarkup::row( [ '' ], [ 'max_width' => '2401px' ] ) ),
             $bad( 'width five digits', static fn () => DiviMarkup::row( [ '' ], [ 'max_width' => '10000px' ] ) ),
             $bad( 'size 7', static fn () => DiviMarkup::heading( 'x', 1, [ 'size' => 7 ] ) ),
+            $bad( 'size 121', static fn () => DiviMarkup::text( 'x', [ 'size' => 121 ] ) ),
             $bad( 'size 201', static fn () => DiviMarkup::text( 'x', [ 'size' => 201 ] ) ),
             $bad( 'size 1000', static fn () => DiviMarkup::heading( 'x', 1, [ 'size' => 1000 ] ) ),
             $bad( 'size as a string', static fn () => DiviMarkup::heading( 'x', 1, [ 'size' => '12px' ] ) ),
@@ -302,7 +303,7 @@ final class DiviMarkupStyleTest extends HtmlTestCase
 
     public function testEdgesOfTheClampsAreAccepted(): void
     {
-        $page = DiviMarkup::heading( 'x', 1, [ 'size' => 8 ] ) . DiviMarkup::heading( 'x', 1, [ 'size' => 200 ] )
+        $page = DiviMarkup::heading( 'x', 1, [ 'size' => 8 ] ) . DiviMarkup::heading( 'x', 1, [ 'size' => 120 ] )
             . DiviMarkup::row( [ '' ], [ 'max_width' => '200px' ] ) . DiviMarkup::row( [ '' ], [ 'max_width' => '2400px' ] )
             . DiviMarkup::section( '', '', [ 'padding' => [ 'top' => '0px', 'bottom' => '200px' ] ] )
             . DiviMarkup::button( 'x', null, false, [ 'radius' => 0 ] ) . DiviMarkup::button( 'x', null, false, [ 'radius' => 999 ] )
