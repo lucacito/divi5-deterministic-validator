@@ -76,6 +76,7 @@ final class HtmlSource
         'after'     => 'content after the end of the document',
         'deep'      => 'markup nested too deeply or too large to check',
         'reopen'    => 'a formatting tag (such as b, i or a link) still open where a block ends a paragraph (a browser opens it again inside the block)',
+        'bound'     => 'paragraphs left open before blocks in a way too tangled to work out within the time allowed (the rest of the page is read the older way)',
     ];
 
     /** Elements without an end tag. */
@@ -292,9 +293,12 @@ final class HtmlSource
         $repaired  = self::repairs( $html, LIBXML_VERSION );
         // NUL bytes and other control characters have no place in a page; drop them before parsing.
         $html = (string) preg_replace( '/[\x00-\x08\x0b\x0c\x0e-\x1f]/', '', $html );
-        $html = self::browserBody( $html, $reopen );
+        $html = self::browserBody( $html, $reopen, $bound );
         if ( $reopen && array() === $repaired ) {
             $repaired = [ self::REPAIRS['reopen'] ]; // the tree is the browser's except for the formatting elements it opens again
+        }
+        if ( $bound && array() === $repaired ) {
+            $repaired = [ self::REPAIRS['bound'] ]; // paragraphEnds() stopped at a work bound: past it the tree is libxml2's, not the browser's
         }
 
         $doc  = new \DOMDocument();
@@ -406,10 +410,10 @@ final class HtmlSource
      * where a browser starts it but libxml2 would still be in head (bodyStart()), then without the </body> and </html> end tags that
      * content follows (strayEndTags(), found on the HTML with that <body>), then with a </p> where a browser closes an open paragraph and
      * libxml2 does not (paragraphEnds()). Each step works on the result of the one before and leaves the HTML as given when it does not
-     * apply. $reopen is set when a browser opens a formatting element again after such a </p> (parse() then reports `reopen`). Public so
-     * a test helper can parse the same way.
+     * apply. $reopen is set when a browser opens a formatting element again after such a </p> (parse() then reports `reopen`), $bound
+     * when paragraphEnds() stopped at a work bound (parse() then reports `bound`). Public so a test helper can parse the same way.
      */
-    public static function browserBody( string $html, ?bool &$reopen = null ): string
+    public static function browserBody( string $html, ?bool &$reopen = null, ?bool &$bound = null ): string
     {
         $html = self::inertRawText( $html );
         $at   = self::bodyStart( $html );
@@ -424,12 +428,13 @@ final class HtmlSource
             $html = substr( $html, 0, $at ) . '</p>' . substr( $html, $at );
         }
         $reopen = $ends['reopen'];
+        $bound  = $ends['bound'];
 
         return $html;
     }
 
     /**
-     * The HTML with every "</" inside script and style text written "<\/", or the HTML as given (no such text, or markup this does not
+     * The HTML with every "</" followed by a letter inside script and style text written "<\/", or the HTML as given (no such text, or markup this does not
      * model). Public as a seam for tests.
      *
      * libxml2 2.9 ends script and style text at the first "</" followed by a letter; a browser ends it only at "</script" (or "</style")
@@ -439,7 +444,8 @@ final class HtmlSource
      * scan still reports the raw text (`rawtext`), so a style element with it stays unread.
      *
      * ONE forward pass in markup context (markupWalk()); it gives up (the HTML as given) on everything markupWalk() does not model, and on
-     * a script whose text holds "<!--" (a browser's escaped script states).
+     * a script whose "<!--" is followed by a "<script" (a browser's double-escaped script state; the scan reports `rawtext` for it). A
+     * "<!--" alone (the old comment wrapper of inline scripts) changes nothing: the script still ends at the first "</script".
      */
     public static function inertRawText( string $h ): string
     {
@@ -448,7 +454,7 @@ final class HtmlSource
             return $h;
         }
         foreach ( array_reverse( $raw ) as [ $from, $to ] ) {
-            $h = substr( $h, 0, $from ) . str_replace( '</', '<\/', substr( $h, $from, $to - $from ) ) . substr( $h, $to );
+            $h = substr( $h, 0, $from ) . preg_replace( '#</(?=[A-Za-z])#', '<\\\\/', substr( $h, $from, $to - $from ) ) . substr( $h, $to );
         }
 
         return $h;
@@ -471,14 +477,24 @@ final class HtmlSource
         'mark', 'nobr', 'q', 's', 'samp', 'small', 'span', 'strike', 'strong', 'sub', 'sup', 'time', 'tt', 'u', 'var' ];
 
     /**
-     * The parse work paragraphEnds() may spend, in bytes parsed (two parses per round; one round is enough unless a block is still open
-     * at the page's own </p>, and each round settles at least one candidate): 8 input caps, so a 20 KB page gets 80 rounds and a page at
-     * the cap 4 (measured: about 0.4 s for 75 KB of such blocks, every one of them a round). Past it the settled ones are kept and the
-     * rest of the page stays as libxml2 parses it.
+     * The work paragraphEnds() may spend, bounded three ways (past any of them the settled </p> are kept and the rest of the page stays as
+     * libxml2 parses it): at most P_ROUNDS rounds of two parses each (one round is enough unless a block is still open at the page's own
+     * </p>; each round settles at least one candidate), at most P_WORK bytes parsed in all (so a page at the input cap gets 4 rounds), and
+     * at most P_STEPS open elements read while walking up from the markers, over all rounds (a deep page with many candidates stops
+     * there). Measured on the review's hostile shapes: every one under 0.3 s.
      */
+    private const P_ROUNDS = 6;
+
+    /** See P_ROUNDS. */
     private const P_WORK = 8 * self::MAX_BYTES;
 
-    /** The text of the comments paragraphEnds() places to read libxml2's open elements; a page holding it is left alone. */
+    /** See P_ROUNDS. */
+    private const P_STEPS = 400000;
+
+    /**
+     * The start of the text of the comments paragraphEnds() places to read libxml2's open elements; an "x" is added until the page does not
+     * hold it anywhere (the same marker for the same page, and no page comment can look like one).
+     */
     private const P_MARK = 'aied-p-end-';
 
     /**
@@ -499,16 +515,19 @@ final class HtmlSource
      * it are closed from then on, so later tags do not see them. A second parse with the </p> and the comments checks that libxml2's open
      * elements at every candidate are exactly the expected ones. At the first candidate that differs (typically a </p> of the page that
      * now matches nothing, so an element it used to close stays open, as in a browser), the </p> before it are kept and the rest is decided
-     * again on a parse with only those, within P_WORK; a </p> whose own effect differs is never written. A </p> adds no text and
+     * again on a parse with only those, within the bounds of P_ROUNDS; a </p> whose own effect differs is never written. A </p> adds no text and
      * libxml2 never reorders text, so every word stays where it was in document order. What still differs from a browser: a formatting
      * element (b, em, a ...) among the popped ones is opened again by a browser inside the block (`reopen`), and the page's own </p> that
      * now matches nothing is ignored by libxml2 where a browser makes an empty p of it (the scan treats a div the same way).
      *
-     * @return array{ends:list<int>, reopen:bool}
+     * `bound` is true when a work bound (P_ROUNDS) stopped it before every candidate was settled: the page then carries the `bound` note.
+     *
+     * @return array{ends:list<int>, reopen:bool, bound:bool}
      */
     public static function paragraphEnds( string $h ): array
     {
-        $none  = [ 'ends' => [], 'reopen' => false ];
+        $none  = [ 'ends' => [], 'reopen' => false, 'bound' => false ];
+        $bound = false;
         $found = [];
         $seenP = false;
         $tags  = 0;
@@ -522,15 +541,20 @@ final class HtmlSource
         } );
         // Script or style text holding "</" (not made inert): libxml2 would end it early, not modelled. More start tags than parse() takes
         // elements: the page is refused anyway, no parse work is spent on it.
-        if ( null === $walk || array() !== $walk || array() === $found || $tags > self::MAX_ELEMENTS || false !== stripos( $h, self::P_MARK ) ) {
+        if ( null === $walk || array() !== $walk || array() === $found || $tags > self::MAX_ELEMENTS ) {
             return $none;
         }
+        $marker = self::P_MARK;
+        while ( false !== stripos( $h, $marker ) ) {
+            $marker .= 'x';
+        }
+        $work = 0; // open elements read so far (P_STEPS)
         $ends   = []; // settled: at => whether a browser opens a formatting element again there
         $skip   = []; // candidate index => true: a </p> there did not do what was expected
         $from   = 0;  // the first candidate whose decision is not settled yet
-        $rounds = max( 1, min( 1000, intdiv( self::P_WORK, 2 * max( 1, strlen( $h ) ) ) ) );
+        $rounds = max( 1, min( self::P_ROUNDS, intdiv( self::P_WORK, 2 * max( 1, strlen( $h ) ) ) ) );
         for ( $round = 0; $round < $rounds; $round++ ) {
-            $probe = self::markedDocument( $h, $found, array_keys( $ends ) );
+            $probe = self::markedDocument( $h, $found, array_keys( $ends ), $marker );
             if ( null === $probe ) {
                 return $none;
             }
@@ -542,9 +566,15 @@ final class HtmlSource
                 $mark  = $probe[1][ $k ];
                 $chain = [];
                 for ( $el = $mark->parentNode; $el instanceof \DOMElement; $el = $el->parentNode ) {
+                    ++$work;
                     if ( ! isset( $closed[ spl_object_id( $el ) ] ) ) {
                         $chain[] = $el;
                     }
+                }
+                $work += 2 * count( $chain ); // the climb of elementAfter() and isInside() is at most as long
+                if ( $work > self::P_STEPS ) {
+                    $bound = true;
+                    break 2; // out of work: only the settled ones
                 }
                 $block = self::elementAfter( $mark );
                 if ( ! $block instanceof \DOMElement || strtolower( $block->tagName ) !== $name ) {
@@ -579,7 +609,7 @@ final class HtmlSource
             if ( array() === $new ) {
                 break; // nothing more to write: every decision is settled
             }
-            $check = self::markedDocument( $h, $found, array_merge( array_keys( $ends ), array_keys( $new ) ) );
+            $check = self::markedDocument( $h, $found, array_merge( array_keys( $ends ), array_keys( $new ) ), $marker );
             if ( null === $check ) {
                 return $none;
             }
@@ -588,6 +618,11 @@ final class HtmlSource
                 $names = [];
                 for ( $el = $check[1][ $k ]->parentNode; $el instanceof \DOMElement; $el = $el->parentNode ) {
                     $names[] = strtolower( $el->tagName );
+                }
+                $work += count( $names );
+                if ( $work > self::P_STEPS ) {
+                    $bound = true;
+                    break 2; // out of work: this round is not verified, only the settled ones
                 }
                 if ( $names !== $want ) {
                     $miss = $k;
@@ -612,15 +647,13 @@ final class HtmlSource
             }
             $from = $miss;
             if ( $rounds - 1 === $round ) {
+                $bound = true;
                 break; // out of rounds: only the settled ones (the rest of the page stays as libxml2 parses it)
             }
         }
-        if ( array() === $ends ) {
-            return $none;
-        }
         ksort( $ends );
 
-        return [ 'ends' => array_keys( $ends ), 'reopen' => in_array( true, $ends, true ) ];
+        return [ 'ends' => array_keys( $ends ), 'reopen' => in_array( true, $ends, true ), 'bound' => $bound ];
     }
 
     /** The first element after $node in document order that is not html, head or body (the element of the start tag after a mark). */
@@ -646,20 +679,20 @@ final class HtmlSource
     }
 
     /**
-     * libxml2's parse of $h with a P_MARK comment before each candidate tag (after a </p> at the offsets in $ends), and the comments by
+     * libxml2's parse of $h with a $marker comment before each candidate tag (after a </p> at the offsets in $ends), and the comments by
      * candidate index, or null when a comment is not found exactly once (libxml2 read it as something else).
      *
      * @param list<array{0:int,1:string}> $found
      * @param list<int>                   $ends
      * @return ?array{0:\DOMDocument, 1:list<\DOMComment>}
      */
-    private static function markedDocument( string $h, array $found, array $ends ): ?array
+    private static function markedDocument( string $h, array $found, array $ends, string $marker ): ?array
     {
         $out  = '';
         $last = 0;
         $ends = array_flip( $ends );
         foreach ( $found as $k => [ $at ] ) {
-            $out .= substr( $h, $last, $at - $last ) . ( isset( $ends[ $at ] ) ? '</p>' : '' ) . '<!--' . self::P_MARK . $k . '-->';
+            $out .= substr( $h, $last, $at - $last ) . ( isset( $ends[ $at ] ) ? '</p>' : '' ) . '<!--' . $marker . $k . '-->';
             $last = $at;
         }
         $out .= substr( $h, $last );
@@ -676,7 +709,7 @@ final class HtmlSource
         $comments = ( new \DOMXPath( $doc ) )->query( '//comment()' );
         foreach ( false === $comments ? [] : $comments as $c ) {
             $data = (string) $c->nodeValue;
-            if ( 1 !== preg_match( '/^' . preg_quote( self::P_MARK, '/' ) . '(\d+)$/D', $data, $m ) ) {
+            if ( 1 !== preg_match( '/^' . preg_quote( $marker, '/' ) . '(\d+)$/D', $data, $m ) ) {
                 continue;
             }
             if ( isset( $marks[ (int) $m[1] ] ) || ! $c instanceof \DOMComment ) {
@@ -693,12 +726,41 @@ final class HtmlSource
     }
 
     /**
+     * Whether the text of a raw-text element (up to the end a browser finds) is one the pre-parse passes leave alone: a "</" and a letter
+     * anywhere (libxml2 2.9 may end script and style text there, and reads textarea, title and noscript text as markup); a "<!--" in
+     * title, textarea, iframe or noscript text (libxml2 reads it as a comment); in script text a "<!--" only when a "<script" follows it
+     * (scriptEscapes()). A "<!--" in style text is plain text to both parsers.
+     */
+    private static function rawTextUnsure( string $name, string $text ): bool
+    {
+        if ( 1 === preg_match( '#</[A-Za-z]#', $text ) ) {
+            return true;
+        }
+        if ( 'script' === $name ) {
+            return self::scriptEscapes( $text );
+        }
+
+        return 'style' !== $name && false !== strpos( $text, '<!--' );
+    }
+
+    /**
+     * Whether a browser might not end this script text at the first "</script": after a "<!--" (the script data escaped state) a
+     * "<script" followed by white space, "/" or ">" enters the double-escaped state, where "</script" does not end the script. Without
+     * such a "<script" after a "<!--", the first "</script" followed by white space, "/" or ">" ends it, as in plain script text.
+     * Conservative: any "<script" after any "<!--" counts, even past a "-->".
+     */
+    private static function scriptEscapes( string $text ): bool
+    {
+        return 1 === preg_match( '#<!--.*?<script[\t\n\f\r />]#is', $text );
+    }
+
+    /**
      * ONE forward pass over the markup as a browser tokenizes it: comments, the doctype, attribute values (through tag()), raw text and
      * svg/math content. $onStart gets the offset and name of every start tag outside raw text and svg/math. Returns the text extents
-     * [from, to) of the script and style elements whose text holds "</", or null for anything the two parsers might tokenize differently:
+     * [from, to) of the script and style elements whose text holds "</" and a letter, or null for anything the two parsers might tokenize differently:
      * an odd comment, CDATA, a bogus comment or processing instruction, a tag tag() rejects, a self-closing end tag or raw-text start tag,
      * xmp/noembed/noframes/plaintext/frameset/frame, raw text or a breakout tag inside svg/math, a mismatched svg/math end tag, raw text
-     * without its end tag, a script holding "<!--", and textarea, title, iframe or noscript text that libxml2 (which reads it as markup)
+     * without its end tag, a script whose "<!--" is followed by a "<script" (scriptEscapes()), and textarea, title, iframe or noscript text that libxml2 (which reads it as markup)
      * could end elsewhere (see plainRawText()).
      *
      * A raw-text element ends where a browser ends it: at the first "</name" followed by white space, "/" or ">" (case-insensitive).
@@ -815,10 +877,10 @@ final class HtmlSource
             $e   -= 2 + strlen( $name );
             $text = substr( $h, $next, $e - $next );
             if ( 'script' === $name || 'style' === $name ) {
-                if ( 'script' === $name && false !== strpos( $text, '<!--' ) ) {
+                if ( 'script' === $name && self::scriptEscapes( $text ) ) {
                     return null;
                 }
-                if ( false !== strpos( $text, '</' ) ) {
+                if ( 1 === preg_match( '#</[A-Za-z]#', $text ) ) {
                     $raw[] = [ $next, $e ];
                 }
             } elseif ( ! self::plainRawText( $h, $lh, $next, $e, $steps ) ) {
@@ -968,7 +1030,7 @@ final class HtmlSource
                 return null;
             }
             $text = substr( $h, $next, $e - $next );
-            if ( 'template' === $name ? 1 === preg_match( self::TEMPLATE_UNSURE, $text ) : ( 1 === preg_match( '#</[A-Za-z]#', $text ) || false !== strpos( $text, '<!--' ) ) ) {
+            if ( 'template' === $name ? 1 === preg_match( self::TEMPLATE_UNSURE, $text ) : self::rawTextUnsure( $name, $text ) ) {
                 return null;
             }
             $close = strpos( $h, '>', $after );
@@ -1119,7 +1181,7 @@ final class HtmlSource
                 return null;
             }
             $text = substr( $h, $next, $e - $next );
-            if ( 1 === preg_match( '#</[A-Za-z]#', $text ) || false !== strpos( $text, '<!--' ) ) {
+            if ( self::rawTextUnsure( $name, $text ) ) {
                 return null;
             }
             $steps += 1 + intdiv( $e - $next, 64 );

@@ -55,12 +55,15 @@ The two changelog lines above (New: styles, Fixed: parser) are the user-facing w
 `<p>` before a block (I8) and a closing tag inside a script's code (I9); all six are fixed). The word check used to say "equal" in these cases
 because the lost content was never counted or the structure was lost with every word kept.
 
-### Fixed late (I8 and I9, branch feat/hs-i8): re-run the live gate
+### Fixed late (I8 and I9, branch feat/hs-i8)
 
-- I8 and I9 add the fixtures `19-unclosed-p-*` (4) and `20-script-end-tag-*` (3); `make verify-html-to-divi` was not re-run with them (the
-  517 PASS below is the I7 head). Re-run it before the release.
-- Still differing from a browser (reported, never silent): a formatting tag left open around such a block (styles off, repair note), and a
-  `<style>` whose CSS holds `</` (styles off, repair note).
+- I8 and I9 add the fixtures `19-unclosed-p-*` (4) and `20-script-end-tag-*` (3). The gate with them at 757b00a: `make verify-html-to-divi` 615 PASS, 0 FAIL on Divi 5.15.1 at 757b00a (the I8/I9 merge, all 41 sample pages including the 22 parser-repair fixtures `15-*` to `20-*`); the review round after it is re-run by the controller at release.
+- Still differing from a browser (reported): a formatting tag left open around such a block (styles off, repair note), a `<style>` whose
+  CSS holds `</` and a letter, and a script whose `<!--` is followed by `<script` (styles off, repair note). Not reported: a list item or a
+  table behind an open `<span>` in a paragraph, an unusual tag such as `<ruby>` in between, and pages the pre-parse step does not model
+  (a duplicate attribute, a character reference in class or style, `@click`-style attribute names, nesting past 255 levels): those keep the old
+  reading (spec Outcome, known limits). A very deep or tangled page that hits the time bound of the paragraph fix is read the old way past it
+  and carries a repair note (styles off).
 
 ### Lines of `wp-plugin/readme.txt` that still say colors and fonts are not converted (change them in the release commit)
 
@@ -72,7 +75,7 @@ because the lost content was never counted or the structure was lost with every 
 
 ### Before you release
 
-1. The gate was re-run at the final head (the I7 head 4e057aa; the final-review fixes after it change no golden layout): `make verify-html-to-divi` 517 PASS, 0 FAIL on Divi 5.15.1, with all 34 sample pages including the 15 parser-repair fixtures `15-*` to `18-*`.
+1. The gate: `make verify-html-to-divi` 615 PASS, 0 FAIL on Divi 5.15.1 at 757b00a (the I8/I9 merge, all 41 sample pages including the 22 parser-repair fixtures `15-*` to `20-*`); the review round after it is re-run by the controller at release.
 2. `HtmlToDiviLockstepTest` and `WpOrgComplianceTest` pin the descriptions, the schema and the font-list entries; the readme claims are re-read against them (checklist item 2 above).
 3. The font list `wp-plugin/data/google-fonts-names.txt` ships in the zip (1,945 names, a data file read locally); nothing remote, no new host.
 4. Known limits to keep out of any promise: links inside text keep the theme's link color, no hover colors for buttons, linked stylesheets are not read (a rule in them can override a carried value), a mobile-first stylesheet carries little, CSS over 100 KB or 2,000 rules turns all styles off for the page (WordPress theme exports with big inline global styles hit it), and a font stack with a generic or system keyword before the first loadable family carries no font (the Bootstrap stack).
