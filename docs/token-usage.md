@@ -1,12 +1,12 @@
 # Token usage of the AI Editor for Divi 5 (free plugin)
 
-Measured 2026-10-21 by `scripts/measure-tokens.php`. Tokens are ESTIMATED as bytes / 4; the real count depends on the model.
+Measured 2026-10-22 by `scripts/measure-tokens.php`. Tokens are ESTIMATED as bytes / 4; the real count depends on the model.
 
 Checking a layout runs in PHP on your server and costs **0 tokens**. What costs tokens is what the assistant has to read.
 
 | What | Detail | Bytes | Approx. tokens |
 | --- | --- | ---: | ---: |
-| Tool definitions | 21 tools, loaded once per conversation (free plugin only) | 21,601 | 5,401 |
+| Tool definitions | 21 tools, loaded once per conversation (free plugin only) | 21,883 | 5,471 |
 | Reading a page (smallest) | the page's layout content (get_page_layout adds a little wrapper), from page-17-variable-heading.json | 1,152 | 288 |
 | Reading a page's outline (smallest) | get_page_layout with view "outline" on the same page: 5 blocks, each with path, name, size and the start of its text | 358 | 90 |
 | Reading a page (median) | the page's layout content (get_page_layout adds a little wrapper), from page-45-layout-3.json | 49,842 | 12,461 |
@@ -44,7 +44,7 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | The style guide, topic forms | get_style_guide with topic "forms", only when asked for | 6,474 | 1,619 |
 | The style guide, topic composition | get_style_guide with topic "composition", only when asked for | 8,706 | 2,177 |
 | The style guide, topic style-kits | get_style_guide with topic "style-kits", only when asked for | 8,444 | 2,111 |
-| The style guide, topic kit-rules | get_style_guide with topic "kit-rules", only when asked for | 7,302 | 1,826 |
+| The style guide, topic kit-rules | get_style_guide with topic "kit-rules", only when asked for | 8,997 | 2,250 |
 | The style guide, topic style-kit:quiet-solid | get_style_guide with topic "style-kit:quiet-solid", only when asked for | 8,232 | 2,058 |
 | The style guide, topic style-kit:glass-edge | get_style_guide with topic "style-kit:glass-edge", only when asked for | 8,230 | 2,058 |
 | The style guide, topic style-kit:warm-pill | get_style_guide with topic "style-kit:warm-pill", only when asked for | 8,255 | 2,064 |
