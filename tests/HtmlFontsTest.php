@@ -33,6 +33,16 @@ final class HtmlFontsTest extends TestCase
         $this->assertCount( 1945, HtmlFonts::google() );
     }
 
+    public function testIsKnownIsAnExactCaseGoogleMembership(): void
+    {
+        foreach ( [ 'Inter', 'Maven Pro', 'Playfair Display', 'Noto Sans JP' ] as $name ) {
+            $this->assertTrue( HtmlFonts::isKnown( $name ), $name );
+        }
+        foreach ( [ 'inter', 'INTER', 'Inter ', ' Inter', '', '0', 'Comic Sans MS', 'Georgia', 'Brand Sans', 'maven pro' ] as $name ) {
+            $this->assertFalse( HtmlFonts::isKnown( $name ), json_encode( $name ) );
+        }
+    }
+
     public function testOnlyGoogleOrProvenWebSafeFamiliesAreChosen(): void
     {
         $r = HtmlFonts::choose( [ 'Brand Sans', 'inter', 'sans-serif' ] );

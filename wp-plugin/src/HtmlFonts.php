@@ -39,6 +39,12 @@ final class HtmlFonts
         return self::$google ??= self::parse( @file_get_contents( self::DATA ) );
     }
 
+    /** Whether $canonical is, spelled exactly like this (case included), one of Divi's Google font names. */
+    public static function isKnown( string $canonical ): bool
+    {
+        return ( self::google()[ self::fold( $canonical ) ] ?? null ) === $canonical;
+    }
+
     /**
      * Parses the text of a font list (one family per line). Never throws: anything that is not text is an empty list.
      *

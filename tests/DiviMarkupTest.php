@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace Divi5Validator\Tests;
 
 use AiEditorDivi5\WP\DiviMarkup;
+use Divi5Validator\Tests\Support\KnownBlockPaths;
 use Divi5Validator\Validator;
 use PHPUnit\Framework\Attributes\DataProvider;
 
-require_once __DIR__ . '/../wp-plugin/src/RecipeTokens.php';
-require_once __DIR__ . '/../wp-plugin/src/StyleKits.php';
-require_once __DIR__ . '/../wp-plugin/src/KitAdapters.php';
-require_once __DIR__ . '/../wp-plugin/src/KitResolver.php';
+require_once __DIR__ . '/Support/KnownBlockPaths.php';
 
 /**
  * The emitter: serialisation like WordPress's, and every attribute path grounded in a real export or recipe.
@@ -24,59 +22,16 @@ require_once __DIR__ . '/../wp-plugin/src/KitResolver.php';
  */
 final class DiviMarkupTest extends HtmlTestCase
 {
-    /** @var ?array<string,array<string,true>> block name => attribute paths seen in real exports and recipes */
-    private static ?array $known = null;
-
     /** @return array<string,array<string,true>> */
     private static function known(): array
     {
-        if ( null !== self::$known ) {
-            return self::$known;
-        }
-        $sources = [];
-        foreach ( (array) glob( __DIR__ . '/../fixtures/valid/*.json' ) as $f ) {
-            $d = json_decode( (string) file_get_contents( $f ), true );
-            if ( is_array( $d ) && is_string( $d['post_content'] ?? null ) ) {
-                $sources[] = $d['post_content'];
-            }
-        }
-        foreach ( (array) json_decode( (string) file_get_contents( __DIR__ . '/../wp-plugin/data/section-recipes.json' ), true ) as $r ) {
-            // As served: every style kit's markers resolved (a kit marker is not a Divi attribute and grounds nothing).
-            foreach ( \AiEditorDivi5\WP\StyleKits::ids() as $kit ) {
-                $sources[] = \AiEditorDivi5\WP\KitResolver::resolve( (string) ( $r['markup'] ?? '' ), (array) \AiEditorDivi5\WP\StyleKits::get( $kit ) );
-            }
-        }
-        $known = [];
-        foreach ( $sources as $content ) {
-            if ( 0 < preg_match_all( '/<!-- wp:divi\/([a-z0-9-]+) (\{.*?\}) \/?-->/s', $content, $m, PREG_SET_ORDER ) ) {
-                foreach ( $m as $block ) {
-                    $attrs = json_decode( $block[2], true );
-                    if ( is_array( $attrs ) ) {
-                        foreach ( self::paths( $attrs ) as $path ) {
-                            $known[ $block[1] ][ $path ] = true;
-                        }
-                    }
-                }
-            }
-        }
-
-        return self::$known = $known;
+        return KnownBlockPaths::all();
     }
 
     /** Dot paths of every key, leaf or not; list indexes are folded into []. @return list<string> */
     private static function paths( array $a, string $prefix = '' ): array
     {
-        $out = [];
-        foreach ( $a as $k => $v ) {
-            $key   = is_int( $k ) ? '[]' : (string) $k;
-            $path  = '' === $prefix ? $key : $prefix . '.' . $key;
-            $out[] = $path;
-            if ( is_array( $v ) ) {
-                array_push( $out, ...self::paths( $v, $path ) );
-            }
-        }
-
-        return $out;
+        return KnownBlockPaths::paths( $a, $prefix );
     }
 
     /** @return array<string,array{0:string,1:string}> block name => sample markup */
