@@ -262,10 +262,12 @@ verify-test-connection:
 	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-test-connection.php --user=1
 
 # ---------------------------------------------------------------
-# verify-html-to-divi — real-site check of html_to_divi: every fixture saved as a throwaway draft through the real handlers, read back and rendered with the real Divi (Docker site; dev site only; every page it creates is deleted)
+# verify-html-to-divi — real-site check of html_to_divi: every fixture saved as a throwaway draft through the real handlers, read back and rendered with the real Divi; then the pure tests of the styles gate; then the styles gate itself (styles=basic: the six 14-styled fixtures compared, in a real browser at 1280/900/400, with their source and with what the converter wrote; screenshots in dist/html-to-divi/) (Docker site; dev site only; every page it creates is deleted; run ONE gate at a time)
 # ---------------------------------------------------------------
 verify-html-to-divi:
 	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-html-to-divi.php --user=1
+	@node scripts/test-verify-html-styles.cjs
+	@node scripts/verify-html-to-divi-styles.cjs
 
 # ---------------------------------------------------------------
 # verify-components — real-site check of Divi 5.15 Components: the builder-made instances (section, row, module), the Slot (empty and filled) and a nested component validate, save and render with the real Divi (Docker site on Divi 5.15 or newer; dev site only; everything it creates is deleted)
