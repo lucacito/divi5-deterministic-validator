@@ -69,6 +69,14 @@ function savePage() {
   return { id: ok ? id : null, valid: ok && verdict === 'valid', verdict: ok ? 'valid' : (verdict || out).slice(0, 1500) };
 }
 
+/** Deletes the shot-<width>.png files of an earlier run in a reused out dir, so a width that fails now cannot show an old picture. */
+function clearOldShots(dir) {
+  if (!fs.existsSync(dir)) return;
+  try {
+    for (const f of fs.readdirSync(dir)) if (/^shot-\d+\.png$/.test(f)) fs.unlinkSync(path.join(dir, f));
+  } catch (e) { console.log('WARNING could not clear old screenshots: ' + D.shorten(e)); }
+}
+
 (async () => {
   const results = { page: opts.page, title: TITLE, valid: false, verdict: '', widths: {}, cleanupOk: true };
   const state = { token: null };
@@ -78,6 +86,7 @@ function savePage() {
     if (content.includes('{{aied:')) console.log('WARNING tokens left: the page still contains {{aied: tokens (an assistant must resolve them; saved as given)');
     const foreign = pages.foreignCount();
     if (foreign > 0) console.log(`WARNING ${foreign} leftover or concurrent dogfood pages (not deleted; run with --clean-orphans when no other run is going)`);
+    clearOldShots(OUT_DIR);
     const saved = savePage();
     results.valid = saved.valid;
     results.verdict = saved.verdict;
@@ -115,14 +124,14 @@ function savePage() {
       }
     }
   } catch (e) {
-    console.log('ERROR script: ' + (e && e.message ? e.message : e));
-    results.error = String(e && e.message ? e.message : e).slice(0, 300);
+    results.error = D.shorten(e);
+    console.log('ERROR script: ' + results.error);
   } finally {
     if (!run.cleaning) {
       for (const id of [...created]) dropPage(id);
       if (state.token) endSession(wp, state.token);
       results.cleanupOk = sweep();
-      if (browser) await browser.close();
+      if (browser) { try { await browser.close(); } catch (e) { console.log('WARNING could not close the browser: ' + D.shorten(e)); } }
     }
   }
   if (run.cleaning) return;
@@ -135,5 +144,5 @@ function savePage() {
   }
   for (const line of summary.lines) console.log(line);
   console.log('output: ' + path.relative(ROOT, OUT_DIR));
-  process.exit(summary.ok && !results.error ? 0 : 1);
+  process.exit(summary.ok ? 0 : 1);
 })();

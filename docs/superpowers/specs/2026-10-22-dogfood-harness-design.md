@@ -71,3 +71,64 @@ Free suite green with the new scorer tests; the scorer reproduces, for the pinne
 mutation of a conformant page (a radius, a border style, a rule width, a missing frame) is caught per category; `dogfood-prepare` output is
 byte-identical on repeat; `dogfood-render` validates, renders and deletes a corpus page on the dev site with 0 orphan pages;
 `docs/dogfood.md` exists and a fresh assistant run using only it (one run, a kit not in the corpus) is scored end to end.
+
+## Outcome
+
+Status: skeleton written in Task 5 with the facts known before the live run. The numbers marked `TBD-LIVE-RUN` (and the corpus scores,
+`TBD-CORPUS`) are filled by the controller from the measured runs; nothing below them is invented.
+
+### What was built
+
+Plan `docs/superpowers/plans/2026-10-22-dogfood-harness.md`. Dev tooling only; `src/`, `wp-plugin/` and the tracked zip are untouched.
+`tests/Support/Dogfood/` (`Prepare`, `Scorer`, `Page`, `Expected`, `Mutate`), `scripts/dogfood-prepare.php`, `scripts/dogfood-score.php`,
+`scripts/dogfood-render.cjs` with `scripts/lib/dogfood-render.cjs` and `scripts/test-dogfood-render.cjs`, the TASK templates in
+`scripts/dogfood/`, the corpus in `fixtures/dogfood/`, `docs/dogfood.md`, the Makefile targets `dogfood-prepare`, `dogfood-score` and
+`dogfood-render`. Two amendments to the text above: the scorer exits 2 (not 0) on a usage error or a page that does not parse, because
+that is not a measurement (exit 0 after measuring, 1 only with `--min`); `dogfood-render` takes no `--kit` option (the spec line
+`dogfood-render.cjs <page.html> [--kit ...]` is dropped).
+
+### Decisions (D1 to D10)
+
+- D1 Seven categories in fixed order: `button`, `rule`, `chip`, `framed`, `item`, `form`, `image`; checks are named `<category>.<check>` (`Scorer::CHECKS`, 33).
+- D2 A block several roles could produce is judged against the best-matching role (most passing checks; a tie goes to the first in `KitAdapters::APPLIED` order, grounds after the plain card roles); the chosen role is reported per block.
+- D3 Bands of a freehand page come from a reverse palette lookup in the fixed priority `bg, surface, surface-glass, accent, text, overlay, inverse` (mapped to light, surface, accent, panel, dark); a background image or an overlay gradient is dark; anything else is `unknown` (judged against the union of the role's bands); the nearest painting ancestor wins.
+- D4 Colours are role-set membership (normalised, alpha to two decimals); lengths are compared in px with tolerance 0; an absent value fails except where a check says otherwise.
+- D5 Scorer exit codes: 0 after measuring, 1 only with `--min`, 2 on a usage error or an unparseable page (amended from "exit 0 always").
+- D6 `--language` defaults to the language whose own kit is the given kit, else `editorial`; the output names the language used.
+- D7 Default prepare output `dist/dogfood/<kit>-<language>` (freehand) or `...-edit` (edit); `prepare.json` records the file sizes (TASK.md excluded, its length depends on the out path) and `guide_bytes`.
+- D8 TASK templates live in `scripts/dogfood/TASK-freehand.md` and `TASK-edit.md` (the prototype texts, `%KIT%` / `%LANGUAGE%` / `%OUT%` placeholders).
+- D9 `dogfood-render`: output dir `dist/dogfood/<name>/` (the page's parent directory name, plus `-<stem>` when the file is not `page.html`); exit 1 on an invalid layout, overflow at either width, a console error, a PHP error text or an incomplete cleanup; the plan's `--kit` label is dropped (ruling 7).
+- D10 The fresh run of the last task uses kit `double-frame` under `corporate-trust` (not in the corpus); its score is recorded here only, never pinned.
+
+### Spec issues found (with the controller's ruling)
+
+1. Palette hex collisions make bands depend on the fixed priority of D3; accepted.
+2. Framed groups are judged against the card radius, tags against the control radius; accepted.
+3. A card with neither a frame nor a radius is unclassified (not scored); accepted.
+4. Images pass the media radius or 0px, shaped images are unclassified; accepted.
+5. A rule on a framed block: only width and style are judged; accepted.
+6. Edit runs are scored on the whole page; a base-aware mode is a possible follow-up, not built.
+7. `dogfood-render` has no `--kit` option; ruling 7.
+8. The edit base's images stay `https://example.com/...`; documented in `docs/dogfood.md`.
+9. Exit 2 for usage errors and an unparseable page; ruling 9.
+10. The edit task's default output gets `-edit`; ruling 10.
+
+### Review minors folded in with Task 5
+
+`Prepare::write()` refreshes the files of an earlier run (a directory is ours when it holds a valid `prepare.json`: that file, TASK.md and the names in its old `files` map) and refuses (nothing written) any other target that exists with different content, or a directory in the way; `dogfood-prepare.php` catches that, rejects an
+option value that starts with `--` and exits 2; `prepare.json` no longer records TASK.md's size; the TASK templates' bias guards are
+pinned by a test; `dogfood-render` truncates its printed error, fails the summary after an internal error, clears stale `shot-*.png` in a
+reused output directory and guards `browser.close()`; the sweep of the shared throwaway-pages library is covered by a pure test with a
+fake `wp`. The wp-eval transport of the render script limits a page to about 95 KB.
+
+### Corpus scores (measured in Task 3)
+
+TBD-CORPUS
+
+### Live render (Task 6)
+
+TBD-LIVE-RUN
+
+### Fresh run (Task 6)
+
+TBD-LIVE-RUN

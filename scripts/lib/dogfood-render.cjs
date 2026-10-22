@@ -12,6 +12,14 @@ const TITLE_PREFIX = 'aied dogfood ';
 const USAGE = 'usage: node scripts/dogfood-render.cjs <page.html> [--name <label>] [--out <dir>]\n       node scripts/dogfood-render.cjs --clean-orphans';
 const WIDTHS = [1280, 400];
 
+/** The longest error text the script prints (an exception message can be tens of KB, e.g. a whole wp-cli output). */
+const MAX_ERROR = 300;
+/** One line, at most MAX_ERROR characters, with an ellipsis when cut. */
+const shorten = (e) => {
+  const t = String(e && e.message ? e.message : e).replace(/\s+/g, ' ').trim();
+  return t.length > MAX_ERROR ? t.slice(0, MAX_ERROR) + '...' : t;
+};
+
 /** Only [a-z0-9-] kept (lower-cased), everything else becomes '-'. */
 const clean = (s) => String(s).toLowerCase().replace(/[^a-z0-9-]/g, '-');
 
@@ -73,7 +81,8 @@ function runTitle(token, name) {
 }
 
 /**
- * results = { valid, verdict, widths: { 1280: { overflow, errors:[], phpError }, 400: {...} } (maybe partial), cleanupOk } -> { ok, lines }.
+ * results = { valid, verdict, widths: { 1280: { overflow, errors:[], phpError }, 400: {...} } (maybe partial), cleanupOk, error? } -> { ok, lines }.
+ * An internal script error (results.error) is always a failure, whatever else was measured (its text is cut to MAX_ERROR characters).
  * ok only when the layout is valid, BOTH widths were measured, the overflow is 0 at both, there is no console/HTTP/empty error, no PHP error
  * text and the cleanup finished. A width that was not measured is a failure, never a pass.
  */
@@ -100,10 +109,11 @@ function summarize(results) {
     if (m.phpError) why.push(`${w}px PHP error text`);
   }
   if (r.cleanupOk !== true) why.push('cleanup incomplete');
+  if (r.error) why.push('script error: ' + shorten(r.error));
   const ok = why.length === 0;
   for (const w of why) lines.push('FAIL ' + w);
   lines.push(ok ? 'OK' : 'FAILED');
   return { ok, lines };
 }
 
-module.exports = { TITLE_PREFIX, USAGE, WIDTHS, parseArgs, outName, runTitle, summarize };
+module.exports = { TITLE_PREFIX, USAGE, WIDTHS, MAX_ERROR, shorten, parseArgs, outName, runTitle, summarize };

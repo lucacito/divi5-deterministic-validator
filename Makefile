@@ -1,4 +1,4 @@
-.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-page-title verify-products verify-oauth verify-test-connection verify-html-to-divi verify-guide-shapes verify-shapes verify-recipes verify-kits verify-components verify-style-values card-report divi-currency
+.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-page-title verify-products verify-oauth verify-test-connection verify-html-to-divi verify-guide-shapes verify-shapes verify-recipes verify-kits verify-components verify-style-values card-report dogfood-prepare dogfood-score dogfood-render divi-currency
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -317,3 +317,22 @@ verify-kits:
 # ---------------------------------------------------------------
 card-report:
 	@php scripts/card-migration-report.php $(ARGS)
+
+# ---------------------------------------------------------------
+# dogfood-prepare — dev-only dogfood routine (docs/dogfood.md), step 1: writes the served guide (the default guide plus the topics kit-rules, style-kit:<kit>, design-language:<language>, controls and forms) and a TASK.md into dist/dogfood/<kit>-<language> (TASK=edit: also a base page.html of six recipes under the kit, into dist/dogfood/<kit>-<language>-edit; OUT=<dir> to choose) for a FRESH assistant to build or edit a page from. Pure PHP, no site, no network, no model call; re-running into the same out dir refreshes the files of the earlier run (guide files, TASK.md, a base page.html) while your page and any foreign file are never touched, and refuses (nothing written) to overwrite anything else that differs. Not part of `make test`. make dogfood-prepare KIT=double-frame LANGUAGE=corporate-trust
+# ---------------------------------------------------------------
+dogfood-prepare:
+	@php scripts/dogfood-prepare.php $(KIT) $(LANGUAGE) $(if $(TASK),--task $(TASK)) $(if $(OUT),--out $(OUT))
+
+# ---------------------------------------------------------------
+# dogfood-score — dev-only dogfood routine, step 3: statically scores a page an assistant wrote against what the real kit adapters write for that kit (7 categories, 33 checks; colours by role-set membership in the language; blocks it cannot place are listed as UNCLASSIFIED, never counted). Pure PHP, no site. PAGE=<file> KIT=<id> [LANGUAGE=<id>] [ARGS="--json --min 90"]; exit 0 after measuring, 1 only below --min, 2 on a usage error or a page that does not parse. Not part of `make test`.
+# ---------------------------------------------------------------
+dogfood-score:
+	@php scripts/dogfood-score.php $(PAGE) $(KIT) $(if $(LANGUAGE),--language $(LANGUAGE)) $(ARGS)
+
+# ---------------------------------------------------------------
+# dogfood-render — dev-only dogfood routine, step 4: runs the pure tests of the script, then validates ONE page through the real LayoutGate on the dev site, saves it as ONE throwaway draft exactly as given, renders it at 1280 and 400 px (overflow, console errors, PHP error text, screenshots into dist/dogfood/<name>/) and deletes it. Docker site; dev site only; ONE run at a time; the draft is titled `aied dogfood <runToken> <name>` and deleted by that exact prefix; ARGS=--clean-orphans (with no PAGE) removes leftovers when no run is going. There is no --kit option. make dogfood-render PAGE=dist/dogfood/<dir>/page.html
+# ---------------------------------------------------------------
+dogfood-render:
+	@node scripts/test-dogfood-render.cjs
+	@node scripts/dogfood-render.cjs $(PAGE) $(ARGS)

@@ -6,7 +6,8 @@
  *   php scripts/dogfood-prepare.php <kit> <language> [--out <dir>] [--task freehand|edit]
  *
  * The default out dir is dist/dogfood/<kit>-<language> (freehand) or dist/dogfood/<kit>-<language>-edit (edit), relative
- * to the repo root. Exit 2 on an unknown kit, language, task or flag.
+ * to the repo root. Exit 2 on an unknown kit, language, task or flag, an option value that starts with `--`, or
+ * a target file that already exists with different content (nothing is written then).
  */
 
 declare(strict_types=1);
@@ -31,7 +32,7 @@ $args       = array_slice( $argv, 1 );
 for ( $i = 0, $n = count( $args ); $i < $n; ++$i ) {
     $a = $args[ $i ];
     if ( '--out' === $a || '--task' === $a ) {
-        if ( ! isset( $args[ $i + 1 ] ) || '' === $args[ $i + 1 ] ) {
+        if ( ! isset( $args[ $i + 1 ] ) || '' === $args[ $i + 1 ] || 0 === strpos( $args[ $i + 1 ], '--' ) ) {
             $fail( "$a needs a value." );
         }
         if ( '--out' === $a ) {
@@ -54,11 +55,11 @@ try {
     $rel = $out ?? Prepare::defaultOut( $kit, $language, $task );
     $dir = rtrim( 0 === strpos( $rel, '/' ) ? $rel : $root . '/' . $rel, '/' );
     $files = Prepare::files( $kit, $language, $task, $dir );
-} catch ( \InvalidArgumentException $e ) {
+    Prepare::write( $files, $dir );
+} catch ( \InvalidArgumentException | \RuntimeException $e ) {
     $fail( $e->getMessage() );
 }
 
-Prepare::write( $files, $dir );
 foreach ( $files as $name => $content ) {
     echo $name, ' ', strlen( $content ), "\n";
 }
