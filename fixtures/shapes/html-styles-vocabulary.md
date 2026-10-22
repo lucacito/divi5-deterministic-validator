@@ -6,9 +6,6 @@ What `DiviMarkup` may write when `html_to_divi` carries a source's CSS (`styles=
 `fixtures/shapes/verified-shapes.json`). Every decision is measured ON its block, because the registry is path-only (a path proven
 on one module proves nothing on another). Candidate ids are `hs-<decision>`.
 
-**STATUS: SKELETON.** The worker wrote the candidates and this file; every verdict below is `PASS` until the controller
-runs the live probe (plan Task 1, Steps 3 and 4) and replaces it with `PASS` or `FAIL`. Nothing here is a result yet.
-
 - **PASS**: the candidate changed the block's computed styles at some width (`effect: true`), did not overflow at 400 px and is not
   css-only. A decision that needs a candidate expected to PASS is PASS only when that candidate PASSED.
 - **FAIL**: the candidate read DEAD, css-only or OVERFLOW (or a geometry condition failed). The adapter never writes that path; a

@@ -73,7 +73,7 @@ final class DiviMarkup
     private const WEIGHTS    = [ '100', '200', '300', '400', '500', '600', '700', '800', '900' ];
     private const SIDES      = [ 'top', 'right', 'bottom', 'left' ];
 
-    /** @var ?array<string,bool> a test-only replacement for STYLE_PROVEN (runWithProven) */
+    /** @var ?array<string,bool> a test-only replacement for STYLE_PROVEN, set through reflection by tests/Support/ProvenOverride.php (never by plugin code) */
     private static ?array $provenOverride = null;
 
     /** @param list<string> $sections */
@@ -107,18 +107,27 @@ final class DiviMarkup
      * @param list<string> $columns
      * @param array{background?:string,padding?:array<string,string>,max_width?:string} $style the row: background (row-background), padding,
      *        max_width '<n>px' (row-max-width: the row is centred)
-     * @param list<array{background?:string,padding?:array<string,string>}> $columnStyles one record per column, in order
+     * @param list<array{background?:string,padding?:array<string,string>}> $columnStyles one record per column, in order (a list no longer
+     *        than the columns written, else InvalidArgumentException)
      *        (background: column-background, padding: column-padding)
      */
     public static function row( array $columns, array $style = [], array $columnStyles = [] ): string
     {
         $rowStyle = self::checkStyle( $style, [ 'background', 'padding', 'max_width' ], 'row' );
-        foreach ( $columnStyles as $columnStyle ) {
-            self::checkStyle( (array) $columnStyle, [ 'background', 'padding' ], 'column' );
-        }
-
         $columns = array() === $columns ? [ '' ] : $columns; // a row always has at least one column
         $n       = max( 1, min( 4, count( $columns ) ) );
+        // One record per column, in order: a list of arrays no longer than the columns written. Anything else would silently drop a
+        // column's paint while its modules keep the ink chosen for it.
+        if ( array_keys( $columnStyles ) !== array_slice( range( 0, $n ), 0, count( $columnStyles ) ) || count( $columnStyles ) > $n ) {
+            throw new \InvalidArgumentException( 'DiviMarkup: the column styles must be a list with one record per column written' );
+        }
+        foreach ( $columnStyles as $columnStyle ) {
+            if ( ! is_array( $columnStyle ) ) {
+                throw new \InvalidArgumentException( 'DiviMarkup: a column style must be an array' );
+            }
+            self::checkStyle( $columnStyle, [ 'background', 'padding' ], 'column' );
+        }
+
         $shape   = self::ROWS[ $n ];
 
         $sizing = [];
@@ -127,7 +136,7 @@ final class DiviMarkup
         }
         $cols = '';
         foreach ( array_slice( array_values( $columns ), 0, 4 ) as $i => $modules ) {
-            $colStyle   = isset( $columnStyles[ $i ] ) ? self::checkStyle( (array) $columnStyles[ $i ], [ 'background', 'padding' ], 'column' ) : [];
+            $colStyle   = $columnStyles[ $i ] ?? [];
             $decoration = [ 'sizing' => $sizing ] + self::boxDecoration( $colStyle, self::proven( 'column-background' ), self::proven( 'column-padding' ) );
             $cols .= ( '' === $cols ? '' : "\n" ) . self::block( 'column', [
                 'module'         => [ 'advanced' => [ 'type' => [ 'desktop' => [ 'value' => $shape['type'] ] ] ], 'decoration' => $decoration ],
@@ -173,7 +182,7 @@ final class DiviMarkup
         if ( null !== $align ) {
             $v['textAlign'] = $align;
         }
-        if ( isset( $style['family'] ) && self::familyAllowed( $style['family'] ) ) {
+        if ( isset( $style['family'] ) ) {
             $v['family'] = $style['family'];
         }
         unset( $v );
@@ -204,7 +213,7 @@ final class DiviMarkup
         if ( isset( $style['weight'] ) ) {
             $v['weight'] = $style['weight'];
         }
-        if ( isset( $style['family'] ) && self::familyAllowed( $style['family'] ) ) {
+        if ( isset( $style['family'] ) ) {
             $v['family'] = $style['family'];
         }
         // Alignment: the module's orientation first (centre, right); the body font's textAlign when that is the proven one, and for justify
@@ -297,27 +306,6 @@ final class DiviMarkup
 
     private const FONT_KEYS = [ 'color', 'size', 'weight', 'align', 'family' ];
 
-    /**
-     * Runs $fn with the given decisions in place of STYLE_PROVEN, then puts them back. Test-only (the grounding tests plant a false
-     * decision to prove it is never written); nothing in the plugin calls it.
-     *
-     * @internal
-     * @param array<string,bool> $proven exactly the STYLE_PROVEN keys
-     */
-    public static function runWithProven( array $proven, callable $fn ): mixed
-    {
-        if ( array_keys( $proven ) !== array_keys( self::STYLE_PROVEN ) ) {
-            throw new \InvalidArgumentException( 'runWithProven takes exactly the STYLE_PROVEN keys, in order' );
-        }
-        $before = self::$provenOverride;
-        self::$provenOverride = $proven;
-        try {
-            return $fn();
-        } finally {
-            self::$provenOverride = $before;
-        }
-    }
-
     private static function proven( string $decision ): bool
     {
         return ( self::$provenOverride ?? self::STYLE_PROVEN )[ $decision ] ?? false;
@@ -352,7 +340,7 @@ final class DiviMarkup
                     $ok = is_string( $value ) && in_array( $value, self::WEIGHTS, true );
                     break;
                 case 'family':
-                    $ok = is_string( $value ) && 1 === preg_match( '/^[A-Za-z0-9 ]{1,60}\z/', $value );
+                    $ok = self::isFamily( $value );
                     break;
                 case 'align':
                     $ok = is_string( $value ) && in_array( $value, [ 'center', 'right', 'justify' ], true );
@@ -386,7 +374,23 @@ final class DiviMarkup
 
     private static function isPx( mixed $v, int $min, int $max ): bool
     {
-        return is_string( $v ) && 1 === preg_match( '/^\d{1,4}px\z/', $v ) && (int) $v >= $min && (int) $v <= $max;
+        return is_string( $v ) && 1 === preg_match( '/^(0|[1-9]\d{0,3})px\z/', $v ) && (int) $v >= $min && (int) $v <= $max;
+    }
+
+    /**
+     * A family is written only in its canonical spelling: a web-safe one (exact case, and only while STYLE_PROVEN['websafe-family']) or
+     * one of Divi's Google fonts (exact case, HtmlFonts::isKnown). Anything else is a converter bug and throws.
+     */
+    private static function isFamily( mixed $v ): bool
+    {
+        if ( ! is_string( $v ) || strlen( $v ) > 60 || 1 !== preg_match( '/^[A-Za-z0-9]+(?: [A-Za-z0-9]+)*\z/', $v ) ) {
+            return false;
+        }
+        if ( in_array( $v, self::WEB_SAFE_FAMILIES, true ) ) {
+            return self::proven( 'websafe-family' );
+        }
+
+        return HtmlFonts::isKnown( $v );
     }
 
     /** Background and padding of a section, row or column: { background?, spacing? } in this order, each only when its decision allows. */
@@ -429,18 +433,6 @@ final class DiviMarkup
         }
 
         return 'justify' !== $align || self::proven( 'heading-justify' ) ? $align : null;
-    }
-
-    /** A Google family is always allowed (HtmlFonts chose it); a web-safe one only when the probe proved it. */
-    private static function familyAllowed( string $family ): bool
-    {
-        foreach ( self::WEB_SAFE_FAMILIES as $safe ) {
-            if ( 0 === strcasecmp( $safe, $family ) ) {
-                return self::proven( 'websafe-family' );
-            }
-        }
-
-        return true;
     }
 
     /** The text colour reaches a list or a quote only through a proven decision: a colour on text holding one is written only then. */

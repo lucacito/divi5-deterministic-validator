@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Divi5Validator\Tests;
 
 use AiEditorDivi5\WP\DiviMarkup;
+use Divi5Validator\Tests\Support\ProvenOverride;
 use Divi5Validator\Tests\Support\DeadOnModule;
 use Divi5Validator\Tests\Support\HtmlStylesVocabulary;
 use Divi5Validator\Tests\Support\KnownBlockPaths;
@@ -16,6 +17,7 @@ require_once __DIR__ . '/Support/HtmlStylesVocabulary.php';
 require_once __DIR__ . '/Support/ShapePaths.php';
 require_once __DIR__ . '/Support/ShapeRegistry.php';
 require_once __DIR__ . '/Support/DeadOnModule.php';
+require_once __DIR__ . '/Support/ProvenOverride.php';
 
 /**
  * Every attribute path the style writer can emit is (a) in the verified shape registry, (b) proven ON the block that carries it
@@ -35,7 +37,7 @@ final class HtmlToDiviGroundingTest extends HtmlTestCase
         foreach ( [ 'center', 'right', 'justify' ] as $align ) {
             $out[] = DiviMarkup::heading( 'H', 2, $font + [ 'align' => $align ] );
             $out[] = DiviMarkup::text( '<p>T</p>', $font + [ 'align' => $align ] );
-            $out[] = DiviMarkup::runWithProven( $bodyfont, static fn () => DiviMarkup::text( '<p>T</p>', $font + [ 'align' => $align ] ) );
+            $out[] = ProvenOverride::run( $bodyfont, static fn () => DiviMarkup::text( '<p>T</p>', $font + [ 'align' => $align ] ) );
         }
         foreach ( DiviMarkup::WEB_SAFE_FAMILIES as $family ) {
             $out[] = DiviMarkup::heading( 'H', 3, [ 'family' => $family ] );
@@ -93,6 +95,14 @@ final class HtmlToDiviGroundingTest extends HtmlTestCase
         }
 
         return array_keys( $bad );
+    }
+
+    public function testNoStyledSampleWritesTheDeadOrientationPath(): void
+    {
+        foreach ( self::styledSamples() as $i => $markup ) {
+            $this->assertStringNotContainsString( '"orientation":"justified"', $markup, 'sample ' . $i );
+            $this->assertStringNotContainsString( 'justified', $markup, 'sample ' . $i );
+        }
     }
 
     public function testTheSamplesAreWhatTheWriterCanEmit(): void
@@ -184,9 +194,13 @@ final class HtmlToDiviGroundingTest extends HtmlTestCase
         foreach ( $asks as $decision => $entry ) {
             [ $ask, $shows ] = $entry;
             $base = array_merge( DiviMarkup::STYLE_PROVEN, $entry[2] ?? [] );
-            $on   = DiviMarkup::runWithProven( $base, $ask );
+            $on   = ProvenOverride::run( $base, $ask );
             $this->assertTrue( $shows( $on ), $decision . ': with the decision true the ask is written (the check is not vacuous)' );
-            $off = DiviMarkup::runWithProven( array_merge( $base, [ $decision => false ] ), $ask );
+            try {
+                $off = ProvenOverride::run( array_merge( $base, [ $decision => false ] ), $ask );
+            } catch ( \InvalidArgumentException ) {
+                $off = ''; // refused outright (a web-safe family while the decision is false): nothing written either
+            }
             $this->assertFalse( $shows( $off ), $decision . ': with the decision false its path is not written even though the style asks for it' );
         }
         // Whatever the real table says: a decision that is false in STYLE_PROVEN is absent from every styled sample (the three that share

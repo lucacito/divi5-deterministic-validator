@@ -44,12 +44,12 @@ final class HtmlStylesVocabulary
         return $out;
     }
 
-    /** @return array<string,bool> candidate id => the probe measured an effect on the real Divi */
+    /** @return array<string,bool> candidate id => the probe measured an effect on the real Divi AND the phone did not overflow */
     public static function effects(): array
     {
         $out = [];
         foreach ( (array) json_decode( (string) file_get_contents( self::RESULTS ), true ) as $r ) {
-            $out[ (string) $r['id'] ] = true === ( $r['effect'] ?? false );
+            $out[ (string) $r['id'] ] = true === ( $r['effect'] ?? false ) && false === ( $r['phoneOverflow'] ?? null );
         }
 
         return $out;
