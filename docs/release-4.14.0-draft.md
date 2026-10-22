@@ -11,7 +11,7 @@ owner's call (CLAUDE.md: no version bump, zip rebuild, push or release without t
 * Improved: the guide now tells your assistant exactly how to write those by hand (widths, which settings to use, and that the kit wins when a design language says something different). Found by having fresh assistants build pages from the guide alone.
 * Improved: in the built-in section patterns the thin rules and the icon badges follow the chosen kit. With the default look some lines are a little heavier and icon badges are squarer.
 * New: `html_to_divi` now carries the HTML's basic colors, fonts, sizes, alignment, backgrounds and spacing (and a button's colors and corners) where Divi can show them, and drops any color that would make text hard to read. The report lists what was carried and what was left out.
-* Fixed: `html_to_divi` could lose content in a few HTML shapes: HTML5 sections placed after a stylesheet link, `<meta>` or `<style>` (the page was refused as empty or the first section was dropped), content after the closing `</html>` tag, a section following loose text at the start of a fragment, and a section following loose text after the closing `</body>` tag (in the last two its heading turned into bold text). The word and link checks now see all of it.
+* Fixed: `html_to_divi` could lose content or structure in a few HTML shapes: HTML5 sections placed after a stylesheet link, `<meta>` or `<style>` (the page was refused as empty or the first section was dropped), content after the closing `</html>` tag, a section following loose text at the start of a fragment, a section following loose text after the closing `</body>` tag, a section, header, footer or other block right after a paragraph that was never closed, and a script whose code contains `</body>`, `</html>` or another closing tag (its code showed up as page text). In the last four a heading could turn into bold text. The word and link checks now see all of it.
 * Improved: verified on Divi 5.15.1.
 ```
 
@@ -47,21 +47,20 @@ Free suite 2782, Pro suite 2169, pure render-gate tests 114; Plugin Check on the
 
 Blurb, testimonial and counter adapters; a `rule-accent` role; heading and text typography per kit; table-cell rules; `divi/signup`.
 
-## html_to_divi styles (phase 2) and the four parser fixes: what the owner has to do (NOT applied)
+## html_to_divi styles (phase 2) and the six parser fixes: what the owner has to do (NOT applied)
 
 Built on `feat/dogfood-and-html-styles`; spec and Outcome `docs/superpowers/specs/2026-10-22-html-to-divi-styles-design.md`; owner-facing description `docs/html-to-divi-workflow.md`.
 The two changelog lines above (New: styles, Fixed: parser) are the user-facing wording. Telling the owner plainly: the fixes cover bugs that were already published in 4.10.0 to 4.13.0
-(HTML5 elements after head content, content after `</html>`, loose text at the start of a fragment, and loose text after `</body>`; all four
-are fixed). The word check used to say "equal" in these cases because the lost content was never counted.
+(HTML5 elements after head content, content after `</html>`, loose text at the start of a fragment, loose text after `</body>`, an unclosed
+`<p>` before a block (I8) and a closing tag inside a script's code (I9); all six are fixed). The word check used to say "equal" in these cases
+because the lost content was never counted or the structure was lost with every word kept.
 
-### Known issue to keep in mind (OPEN, not fixed, not in the changelog as fixed)
+### Fixed late (I8 and I9, branch feat/hs-i8): re-run the live gate
 
-- I8: an unclosed `<p>` right before an HTML5 block (`section`, `article`, `nav`, `header`, `footer`, `aside`, `main`, `figure`) still
-  swallows that block (libxml2 follows the HTML4 rules there). The text is kept, but the heading becomes bold text and the section structure is
-  lost, and the word check cannot see it. It shipped in 4.10.0 to 4.13.0 and is still there in 4.14.0. Decide whether to fix it before or after
-  the release; until then do not promise that every section survives.
-- Related and rare: a `</body>` or `</html>` written inside a script's text leaks the rest of that script into the page as text and bolds the
-  next heading (with styles on, a repair note fires and styles are off). In 4.13.0 the content after it was lost instead.
+- I8 and I9 add the fixtures `19-unclosed-p-*` (4) and `20-script-end-tag-*` (3); `make verify-html-to-divi` was not re-run with them (the
+  517 PASS below is the I7 head). Re-run it before the release.
+- Still differing from a browser (reported, never silent): a formatting tag left open around such a block (styles off, repair note), and a
+  `<style>` whose CSS holds `</` (styles off, repair note).
 
 ### Lines of `wp-plugin/readme.txt` that still say colors and fonts are not converted (change them in the release commit)
 
@@ -76,4 +75,4 @@ are fixed). The word check used to say "equal" in these cases because the lost c
 1. The gate was re-run at the final head (the I7 head 4e057aa; the final-review fixes after it change no golden layout): `make verify-html-to-divi` 517 PASS, 0 FAIL on Divi 5.15.1, with all 34 sample pages including the 15 parser-repair fixtures `15-*` to `18-*`.
 2. `HtmlToDiviLockstepTest` and `WpOrgComplianceTest` pin the descriptions, the schema and the font-list entries; the readme claims are re-read against them (checklist item 2 above).
 3. The font list `wp-plugin/data/google-fonts-names.txt` ships in the zip (1,945 names, a data file read locally); nothing remote, no new host.
-4. Known limits to keep out of any promise: links inside text keep the theme's link color, no hover colors for buttons, linked stylesheets are not read (a rule in them can override a carried value), a mobile-first stylesheet carries little, CSS over 100 KB or 2,000 rules turns all styles off for the page (WordPress theme exports with big inline global styles hit it), a font stack with a generic or system keyword before the first loadable family carries no font (the Bootstrap stack), and I8 above.
+4. Known limits to keep out of any promise: links inside text keep the theme's link color, no hover colors for buttons, linked stylesheets are not read (a rule in them can override a carried value), a mobile-first stylesheet carries little, CSS over 100 KB or 2,000 rules turns all styles off for the page (WordPress theme exports with big inline global styles hit it), and a font stack with a generic or system keyword before the first loadable family carries no font (the Bootstrap stack).

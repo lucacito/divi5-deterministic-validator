@@ -75,6 +75,7 @@ final class HtmlSource
         'duplicate' => 'an attribute written twice',
         'after'     => 'content after the end of the document',
         'deep'      => 'markup nested too deeply or too large to check',
+        'reopen'    => 'a formatting tag (such as b, i or a link) still open where a block ends a paragraph (a browser opens it again inside the block)',
     ];
 
     /** Elements without an end tag. */
@@ -291,7 +292,10 @@ final class HtmlSource
         $repaired  = self::repairs( $html, LIBXML_VERSION );
         // NUL bytes and other control characters have no place in a page; drop them before parsing.
         $html = (string) preg_replace( '/[\x00-\x08\x0b\x0c\x0e-\x1f]/', '', $html );
-        $html = self::browserBody( $html );
+        $html = self::browserBody( $html, $reopen );
+        if ( $reopen && array() === $repaired ) {
+            $repaired = [ self::REPAIRS['reopen'] ]; // the tree is the browser's except for the formatting elements it opens again
+        }
 
         $doc  = new \DOMDocument();
         $prev = libxml_use_internal_errors( true );
@@ -398,21 +402,472 @@ final class HtmlSource
     }
 
     /**
-     * The HTML with the body where a browser has it, for libxml2: an explicit <body> where a browser starts it but libxml2 would still be
-     * in head (bodyStart()), then without the </body> and </html> end tags that content follows (strayEndTags(), found on the HTML with
-     * that <body>). Each step leaves the HTML as given when it does not apply. Public so a test helper can parse the same way.
+     * The HTML with the body where a browser has it, for libxml2: script and style text made inert (inertRawText()), an explicit <body>
+     * where a browser starts it but libxml2 would still be in head (bodyStart()), then without the </body> and </html> end tags that
+     * content follows (strayEndTags(), found on the HTML with that <body>), then with a </p> where a browser closes an open paragraph and
+     * libxml2 does not (paragraphEnds()). Each step works on the result of the one before and leaves the HTML as given when it does not
+     * apply. $reopen is set when a browser opens a formatting element again after such a </p> (parse() then reports `reopen`). Public so
+     * a test helper can parse the same way.
      */
-    public static function browserBody( string $html ): string
+    public static function browserBody( string $html, ?bool &$reopen = null ): string
     {
-        $at = self::bodyStart( $html );
+        $html = self::inertRawText( $html );
+        $at   = self::bodyStart( $html );
         if ( null !== $at ) {
             $html = substr( $html, 0, $at ) . '<body>' . substr( $html, $at );
         }
         foreach ( array_reverse( self::strayEndTags( $html ) ?? [] ) as [ $from, $length ] ) {
             $html = substr( $html, 0, $from ) . substr( $html, $from + $length );
         }
+        $ends = self::paragraphEnds( $html );
+        foreach ( array_reverse( $ends['ends'] ) as $at ) {
+            $html = substr( $html, 0, $at ) . '</p>' . substr( $html, $at );
+        }
+        $reopen = $ends['reopen'];
 
         return $html;
+    }
+
+    /**
+     * The HTML with every "</" inside script and style text written "<\/", or the HTML as given (no such text, or markup this does not
+     * model). Public as a seam for tests.
+     *
+     * libxml2 2.9 ends script and style text at the first "</" followed by a letter; a browser ends it only at "</script" (or "</style")
+     * followed by white space, "/" or ">", case-insensitive. So a script holding '</body>', '</div>' or '</html>' in a string or a comment
+     * was cut short: the rest of its text became page text, and the end tag closed the elements around it (a heading after it became bold
+     * text in a paragraph). "<\/" is the same value in a JavaScript or CSS string; the script is dropped and reported as before, and the
+     * scan still reports the raw text (`rawtext`), so a style element with it stays unread.
+     *
+     * ONE forward pass in markup context (markupWalk()); it gives up (the HTML as given) on everything markupWalk() does not model, and on
+     * a script whose text holds "<!--" (a browser's escaped script states).
+     */
+    public static function inertRawText( string $h ): string
+    {
+        $raw = self::markupWalk( $h );
+        if ( null === $raw ) {
+            return $h;
+        }
+        foreach ( array_reverse( $raw ) as [ $from, $to ] ) {
+            $h = substr( $h, 0, $from ) . str_replace( '</', '<\/', substr( $h, $from, $to - $from ) ) . substr( $h, $to );
+        }
+
+        return $h;
+    }
+
+    /** Blocks libxml2 2.9 does not know (HTML5): a browser closes an open p at their start tag, libxml2 never does. */
+    private const P_CLOSERS_NEW = [ 'article', 'aside', 'details', 'figcaption', 'figure', 'footer', 'header', 'hgroup', 'main', 'nav', 'search',
+        'section', 'summary' ];
+
+    /** Blocks libxml2 closes a p for only when the p is the current node; a browser closes it through open phrasing elements too. */
+    private const P_CLOSERS_OLD = [ 'address', 'blockquote', 'center', 'dir', 'div', 'dl', 'fieldset', 'menu', 'ol', 'p', 'ul', 'h1', 'h2', 'h3', 'h4',
+        'h5', 'h6', 'pre', 'hr' ];
+
+    /**
+     * The ordinary phrasing elements a browser pops when it closes a p, and libxml2 closes for a </p> (plus custom elements, any name with
+     * a hyphen). Anything else between the p and the block (a button, object, select, table cell ... or an element this does not list)
+     * leaves the p alone.
+     */
+    private const P_PHRASING = [ 'a', 'abbr', 'b', 'bdi', 'bdo', 'big', 'cite', 'code', 'data', 'del', 'dfn', 'em', 'font', 'i', 'ins', 'kbd', 'label',
+        'mark', 'nobr', 'q', 's', 'samp', 'small', 'span', 'strike', 'strong', 'sub', 'sup', 'time', 'tt', 'u', 'var' ];
+
+    /**
+     * The parse work paragraphEnds() may spend, in bytes parsed (two parses per round; one round is enough unless a block is still open
+     * at the page's own </p>, and each round settles at least one candidate): 8 input caps, so a 20 KB page gets 80 rounds and a page at
+     * the cap 4 (measured: about 0.4 s for 75 KB of such blocks, every one of them a round). Past it the settled ones are kept and the
+     * rest of the page stays as libxml2 parses it.
+     */
+    private const P_WORK = 8 * self::MAX_BYTES;
+
+    /** The text of the comments paragraphEnds() places to read libxml2's open elements; a page holding it is left alone. */
+    private const P_MARK = 'aied-p-end-';
+
+    /**
+     * Where to write a </p> so that libxml2 closes an open paragraph where a browser does: byte offsets of block start tags, in document
+     * order, and whether a browser then opens a formatting element again (`reopen`). Empty when nothing applies or anything is not
+     * modelled (the HTML then stays as given). Public as a seam for tests.
+     *
+     * A browser closes a p ("close a p element": every element above it is popped) at the start tag of a block whenever a p is in button
+     * scope. libxml2 2.9 (HTML 4) never does for the HTML5 blocks it does not know (section, article, nav, header, footer, aside, main,
+     * figure, figcaption, details, summary, hgroup, search), and for the blocks it knows (div, h1-h6, ul, ol, blockquote ...) only when the
+     * p is the current node, not through an open span or b. The block was kept inside the p: a section's heading became bold text in a
+     * paragraph, and the text check could not see it.
+     *
+     * How (no model of libxml2's tree building): markupWalk() finds the candidate start tags in markup context; a comment is placed before
+     * each one and libxml2 parses the page: a comment is added to the current node and libxml2 never moves a node, so the comment's
+     * ancestors ARE libxml2's open elements at that tag. A </p> is written where, going up from there, only ordinary phrasing elements
+     * (P_PHRASING) come before a p, and libxml2 kept the block inside that p (it did not close the p itself). The p and the elements above
+     * it are closed from then on, so later tags do not see them. A second parse with the </p> and the comments checks that libxml2's open
+     * elements at every candidate are exactly the expected ones. At the first candidate that differs (typically a </p> of the page that
+     * now matches nothing, so an element it used to close stays open, as in a browser), the </p> before it are kept and the rest is decided
+     * again on a parse with only those, within P_WORK; a </p> whose own effect differs is never written. A </p> adds no text and
+     * libxml2 never reorders text, so every word stays where it was in document order. What still differs from a browser: a formatting
+     * element (b, em, a ...) among the popped ones is opened again by a browser inside the block (`reopen`), and the page's own </p> that
+     * now matches nothing is ignored by libxml2 where a browser makes an empty p of it (the scan treats a div the same way).
+     *
+     * @return array{ends:list<int>, reopen:bool}
+     */
+    public static function paragraphEnds( string $h ): array
+    {
+        $none  = [ 'ends' => [], 'reopen' => false ];
+        $found = [];
+        $seenP = false;
+        $tags  = 0;
+        $walk  = self::markupWalk( $h, static function ( int $at, string $name ) use ( &$found, &$seenP, &$tags ): void {
+            ++$tags;
+            // Before the first p start tag no p can be open.
+            if ( $seenP && ( in_array( $name, self::P_CLOSERS_NEW, true ) || in_array( $name, self::P_CLOSERS_OLD, true ) ) ) {
+                $found[] = [ $at, $name ];
+            }
+            $seenP = $seenP || 'p' === $name;
+        } );
+        // Script or style text holding "</" (not made inert): libxml2 would end it early, not modelled. More start tags than parse() takes
+        // elements: the page is refused anyway, no parse work is spent on it.
+        if ( null === $walk || array() !== $walk || array() === $found || $tags > self::MAX_ELEMENTS || false !== stripos( $h, self::P_MARK ) ) {
+            return $none;
+        }
+        $ends   = []; // settled: at => whether a browser opens a formatting element again there
+        $skip   = []; // candidate index => true: a </p> there did not do what was expected
+        $from   = 0;  // the first candidate whose decision is not settled yet
+        $rounds = max( 1, min( 1000, intdiv( self::P_WORK, 2 * max( 1, strlen( $h ) ) ) ) );
+        for ( $round = 0; $round < $rounds; $round++ ) {
+            $probe = self::markedDocument( $h, $found, array_keys( $ends ) );
+            if ( null === $probe ) {
+                return $none;
+            }
+            $closed = []; // spl_object_id => the element closed by a </p> of this round (held, so PHP keeps handing out the same object)
+            $new    = []; // at => reopen
+            $expect = []; // candidate index => libxml2's open elements expected there, innermost first
+            for ( $k = $from, $count = count( $found ); $k < $count; $k++ ) {
+                [ $at, $name ] = $found[ $k ];
+                $mark  = $probe[1][ $k ];
+                $chain = [];
+                for ( $el = $mark->parentNode; $el instanceof \DOMElement; $el = $el->parentNode ) {
+                    if ( ! isset( $closed[ spl_object_id( $el ) ] ) ) {
+                        $chain[] = $el;
+                    }
+                }
+                $block = self::elementAfter( $mark );
+                if ( ! $block instanceof \DOMElement || strtolower( $block->tagName ) !== $name ) {
+                    return $none;
+                }
+                $p       = null;
+                $between = [];
+                foreach ( $chain as $el ) {
+                    $tag = strtolower( $el->tagName );
+                    if ( 'p' === $tag ) {
+                        $p = $el;
+                        break;
+                    }
+                    if ( ! in_array( $tag, self::P_PHRASING, true ) && ! str_contains( $tag, '-' ) ) {
+                        break;
+                    }
+                    $between[] = $el;
+                }
+                $names = array_map( static fn ( \DOMElement $el ): string => strtolower( $el->tagName ), $chain );
+                if ( null !== $p && ! isset( $skip[ $k ] ) && self::isInside( $block, $p ) ) {
+                    $reopen = false;
+                    $closed[ spl_object_id( $p ) ] = $p;
+                    foreach ( $between as $el ) {
+                        $closed[ spl_object_id( $el ) ] = $el;
+                        $reopen = $reopen || in_array( strtolower( $el->tagName ), self::FORMATTING, true );
+                    }
+                    $new[ $at ] = $reopen;
+                    $names      = array_slice( $names, count( $between ) + 1 );
+                }
+                $expect[ $k ] = $names;
+            }
+            if ( array() === $new ) {
+                break; // nothing more to write: every decision is settled
+            }
+            $check = self::markedDocument( $h, $found, array_merge( array_keys( $ends ), array_keys( $new ) ) );
+            if ( null === $check ) {
+                return $none;
+            }
+            $miss = null;
+            foreach ( $expect as $k => $want ) {
+                $names = [];
+                for ( $el = $check[1][ $k ]->parentNode; $el instanceof \DOMElement; $el = $el->parentNode ) {
+                    $names[] = strtolower( $el->tagName );
+                }
+                if ( $names !== $want ) {
+                    $miss = $k;
+                    break;
+                }
+            }
+            if ( null === $miss ) {
+                $ends += $new;
+                break;
+            }
+            // Every candidate before the miss is as expected: its </p> are settled. The rest is decided again on a parse with them only
+            // (a later </p> of the page may now match nothing, and libxml2's tree after it differs from this round's simulation).
+            $settled = 0;
+            foreach ( $new as $at => $reopen ) {
+                if ( $at < $found[ $miss ][0] ) {
+                    $ends[ $at ] = $reopen;
+                    ++$settled;
+                }
+            }
+            if ( 0 === $settled && isset( $new[ $found[ $miss ][0] ] ) ) {
+                $skip[ $miss ] = true; // its own </p> went wrong: never written
+            }
+            $from = $miss;
+            if ( $rounds - 1 === $round ) {
+                break; // out of rounds: only the settled ones (the rest of the page stays as libxml2 parses it)
+            }
+        }
+        if ( array() === $ends ) {
+            return $none;
+        }
+        ksort( $ends );
+
+        return [ 'ends' => array_keys( $ends ), 'reopen' => in_array( true, $ends, true ) ];
+    }
+
+    /** The first element after $node in document order that is not html, head or body (the element of the start tag after a mark). */
+    private static function elementAfter( \DOMNode $node ): ?\DOMElement
+    {
+        $at = $node;
+        while ( true ) {
+            if ( $at !== $node && null !== $at->firstChild ) {
+                $at = $at->firstChild;
+            } else {
+                while ( null !== $at && null === $at->nextSibling ) {
+                    $at = $at->parentNode;
+                }
+                if ( null === $at ) {
+                    return null;
+                }
+                $at = $at->nextSibling;
+            }
+            if ( $at instanceof \DOMElement && ! in_array( strtolower( $at->tagName ), [ 'html', 'head', 'body' ], true ) ) {
+                return $at;
+            }
+        }
+    }
+
+    /**
+     * libxml2's parse of $h with a P_MARK comment before each candidate tag (after a </p> at the offsets in $ends), and the comments by
+     * candidate index, or null when a comment is not found exactly once (libxml2 read it as something else).
+     *
+     * @param list<array{0:int,1:string}> $found
+     * @param list<int>                   $ends
+     * @return ?array{0:\DOMDocument, 1:list<\DOMComment>}
+     */
+    private static function markedDocument( string $h, array $found, array $ends ): ?array
+    {
+        $out  = '';
+        $last = 0;
+        $ends = array_flip( $ends );
+        foreach ( $found as $k => [ $at ] ) {
+            $out .= substr( $h, $last, $at - $last ) . ( isset( $ends[ $at ] ) ? '</p>' : '' ) . '<!--' . self::P_MARK . $k . '-->';
+            $last = $at;
+        }
+        $out .= substr( $h, $last );
+
+        $doc  = new \DOMDocument();
+        $prev = libxml_use_internal_errors( true );
+        $ok   = $doc->loadHTML( '<?xml encoding="UTF-8">' . $out, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING | LIBXML_COMPACT | LIBXML_HTML_NODEFDTD );
+        libxml_clear_errors();
+        libxml_use_internal_errors( $prev );
+        if ( ! $ok ) {
+            return null;
+        }
+        $marks    = [];
+        $comments = ( new \DOMXPath( $doc ) )->query( '//comment()' );
+        foreach ( false === $comments ? [] : $comments as $c ) {
+            $data = (string) $c->nodeValue;
+            if ( 1 !== preg_match( '/^' . preg_quote( self::P_MARK, '/' ) . '(\d+)$/D', $data, $m ) ) {
+                continue;
+            }
+            if ( isset( $marks[ (int) $m[1] ] ) || ! $c instanceof \DOMComment ) {
+                return null;
+            }
+            $marks[ (int) $m[1] ] = $c;
+        }
+        if ( count( $marks ) !== count( $found ) ) {
+            return null;
+        }
+        ksort( $marks );
+
+        return [ $doc, array_values( $marks ) ];
+    }
+
+    /**
+     * ONE forward pass over the markup as a browser tokenizes it: comments, the doctype, attribute values (through tag()), raw text and
+     * svg/math content. $onStart gets the offset and name of every start tag outside raw text and svg/math. Returns the text extents
+     * [from, to) of the script and style elements whose text holds "</", or null for anything the two parsers might tokenize differently:
+     * an odd comment, CDATA, a bogus comment or processing instruction, a tag tag() rejects, a self-closing end tag or raw-text start tag,
+     * xmp/noembed/noframes/plaintext/frameset/frame, raw text or a breakout tag inside svg/math, a mismatched svg/math end tag, raw text
+     * without its end tag, a script holding "<!--", and textarea, title, iframe or noscript text that libxml2 (which reads it as markup)
+     * could end elsewhere (see plainRawText()).
+     *
+     * A raw-text element ends where a browser ends it: at the first "</name" followed by white space, "/" or ">" (case-insensitive).
+     *
+     * @param ?callable(int,string):void $onStart
+     * @return ?list<array{0:int,1:int}>
+     */
+    private static function markupWalk( string $h, ?callable $onStart = null ): ?array
+    {
+        $n       = strlen( $h );
+        $lh      = strtolower( $h );
+        $i       = 0 === strncmp( $h, "\xEF\xBB\xBF", 3 ) ? 3 : 0;
+        $steps   = 0;
+        $foreign = [];
+        $raw     = [];
+        while ( $i < $n ) {
+            if ( ++$steps > self::MAX_SCAN_STEPS ) {
+                return null;
+            }
+            $lt = strpos( $h, '<', $i );
+            if ( false === $lt ) {
+                break;
+            }
+            $c = $lt + 1 < $n ? $h[ $lt + 1 ] : '';
+            if ( '!' === $c ) {
+                if ( 0 === substr_compare( $h, '<!--', $lt, 4 ) ) {
+                    $j = $lt + 4;
+                    $e = strpos( $h, '-->', $j );
+                    if ( ( $j < $n && '>' === $h[ $j ] ) || 0 === substr_compare( $h, '->', $j, 2 ) || false === $e || false !== strpos( substr( $h, $j, $e - $j ), '--!>' ) ) {
+                        return null;
+                    }
+                    $i = $e + 3;
+                    continue;
+                }
+                if ( 0 === substr_compare( $lh, '<!doctype', $lt, 9 ) && false !== ( $e = strpos( $h, '>', $lt ) ) ) {
+                    $i = $e + 1;
+                    continue;
+                }
+
+                return null;
+            }
+            if ( '?' === $c ) {
+                return null;
+            }
+            $end = '/' === $c;
+            $j   = $lt + ( $end ? 2 : 1 );
+            if ( $j >= $n || ! ctype_alpha( $h[ $j ] ) ) {
+                if ( $end ) {
+                    return null;
+                }
+                $i = $lt + 1; // a lone < is text
+                continue;
+            }
+            $tag = self::tag( $h, $lh, $j, $n, $steps );
+            if ( is_string( $tag ) ) {
+                return null;
+            }
+            [ $next, $name, , $selfClose ] = $tag;
+            $i = $next;
+            if ( in_array( $name, self::STRAY_UNSURE, true ) ) {
+                return null;
+            }
+            if ( $end ) {
+                if ( $selfClose ) {
+                    return null;
+                }
+                if ( [] !== $foreign ) {
+                    if ( end( $foreign ) !== $name ) {
+                        return null;
+                    }
+                    array_pop( $foreign );
+                }
+                continue;
+            }
+            if ( [] !== $foreign ) {
+                if ( in_array( $name, self::BREAKOUT, true ) || 'font' === $name || in_array( $name, self::STRAY_RAW, true ) ) {
+                    return null;
+                }
+                if ( ! $selfClose ) {
+                    $foreign[] = $name;
+                    if ( count( $foreign ) > self::MAX_SCAN_DEPTH ) {
+                        return null;
+                    }
+                }
+                continue;
+            }
+            if ( 'svg' === $name || 'math' === $name ) {
+                if ( ! $selfClose ) {
+                    $foreign = [ $name ];
+                }
+                continue;
+            }
+            if ( null !== $onStart ) {
+                $onStart( $lt, $name );
+            }
+            if ( ! in_array( $name, self::STRAY_RAW, true ) ) {
+                continue;
+            }
+            if ( $selfClose ) {
+                return null; // a browser ignores the slash and reads raw text, libxml2 closes the element
+            }
+            $e = $next;
+            do {
+                $e = strpos( $lh, '</' . $name, $e );
+                if ( false === $e ) {
+                    return null;
+                }
+                $after = $e + 2 + strlen( $name );
+                $e     = $after;
+            } while ( $after < $n && false === strpos( self::WS . '/>', $h[ $after ] ) );
+            if ( $after >= $n ) {
+                return null;
+            }
+            $e   -= 2 + strlen( $name );
+            $text = substr( $h, $next, $e - $next );
+            if ( 'script' === $name || 'style' === $name ) {
+                if ( 'script' === $name && false !== strpos( $text, '<!--' ) ) {
+                    return null;
+                }
+                if ( false !== strpos( $text, '</' ) ) {
+                    $raw[] = [ $next, $e ];
+                }
+            } elseif ( ! self::plainRawText( $h, $lh, $next, $e, $steps ) ) {
+                return null;
+            }
+            $steps += 1 + intdiv( $e - $next, 64 );
+            $close  = self::tag( $h, $lh, $e + 2, $n, $steps );
+            if ( is_string( $close ) || $close[3] ) {
+                return null;
+            }
+            $i = $close[0];
+        }
+
+        return $raw;
+    }
+
+    /**
+     * Whether libxml2, which reads textarea, title, iframe and noscript text as markup, sees nothing in $h[$from, $to) that could make
+     * it end the element anywhere but at $to: no comment, CDATA, doctype or processing instruction, no script or style (raw text in
+     * libxml2), no element markupWalk() does not model, no "</" without a letter, and every tag in it ends before $to.
+     */
+    private static function plainRawText( string $h, string $lh, int $from, int $to, int &$steps ): bool
+    {
+        $i = $from;
+        while ( false !== ( $lt = strpos( $h, '<', $i ) ) && $lt < $to ) {
+            if ( ++$steps > self::MAX_SCAN_STEPS ) {
+                return false;
+            }
+            $c = $lt + 1 < $to ? $h[ $lt + 1 ] : '';
+            if ( '!' === $c || '?' === $c ) {
+                return false;
+            }
+            $end = '/' === $c;
+            $j   = $lt + ( $end ? 2 : 1 );
+            if ( $j >= $to || ! ctype_alpha( $h[ $j ] ) ) {
+                if ( $end ) {
+                    return false;
+                }
+                $i = $lt + 1;
+                continue;
+            }
+            $tag = self::tag( $h, $lh, $j, $to, $steps );
+            if ( is_string( $tag ) || in_array( $tag[1], [ 'script', 'style' ], true ) || in_array( $tag[1], self::STRAY_UNSURE, true ) ) {
+                return false;
+            }
+            $i = $tag[0];
+        }
+
+        return true;
     }
 
     /** Head elements whose content bodyStart() skips to their end tag (raw text, escapable raw text, or a template's content). */
