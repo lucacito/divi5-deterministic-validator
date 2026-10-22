@@ -390,10 +390,21 @@ final class HtmlStylesTest extends HtmlTestCase
         $this->assertSet( '#111111', $this->at( $r, '/html/body/section/table/tr/td', 'color' ) );
     }
 
-    /** libxml2 nests HTML5 blocks inside an open <p> (and a heading inside a heading); a browser closes it first. */
+    /**
+     * libxml2 nests HTML5 blocks inside an open <p> (and a heading inside a heading); a browser closes it first. Since I8 HtmlSource writes
+     * the </p> a browser implies (HtmlSource::paragraphEnds()), so the tree read here is the browser's and the block inherits from the body;
+     * the model below stays the safety net for a page HtmlSource leaves as given (here: a comment in a textarea, which it does not model).
+     */
     public function testElementsABrowserMovesOutOfAParagraphAreNotInheritedFromIt(): void
     {
-        $r = $this->page( 'p{color:#111111} h1{color:#222222} .own{color:#333333}', '<p>a<section><span>b</span><em class="own">c</em></section><span>d</span></p><h1>e<h2>f</h2></h1>' );
+        $r = $this->page( 'p{color:#111111} body{color:#444444} .own{color:#333333}', '<p>a<section><span>b</span><em class="own">c</em></section><span>d</span></p>' );
+        $this->assertSet( '#111111', $this->at( $r, '/html/body/p', 'color' ) );
+        $this->assertSet( '#444444', $this->at( $r, '/html/body/section', 'color' ), 'the browser\'s tree: the section is the body\'s child' );
+        $this->assertSet( '#444444', $this->at( $r, '/html/body/section/span', 'color' ) );
+        $this->assertSet( '#333333', $this->at( $r, '/html/body/section/em', 'color' ) );
+        $this->assertSet( '#444444', $this->at( $r, '/html/body/span', 'color' ) );
+        $r = $this->page( 'p{color:#111111} h1{color:#222222} .own{color:#333333}', '<textarea><!-- x --></textarea><p>a<section><span>b</span><em class="own">c</em></section><span>d</span></p><h1>e<h2>f</h2></h1>' );
+        $this->assertSame( [], $r['repaired'], 'the scan has nothing to say' );
         $this->assertSet( '#111111', $this->at( $r, '/html/body/p', 'color' ) );
         $this->assertUnresolved( $this->at( $r, '/html/body/p/section', 'color' ) );
         $this->assertUnresolved( $this->at( $r, '/html/body/p/section/span', 'color' ) );

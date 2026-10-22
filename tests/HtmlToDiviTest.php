@@ -444,6 +444,63 @@ final class HtmlToDiviTest extends HtmlTestCase
         $this->assertSame( rtrim( (string) file_get_contents( $gold ), "\n" ), $r['layout'] );
     }
 
+    /** @return array<string,array{0:string,1:list<string>,2:list<string>,3:int}> file => the words, the headings, the sections */
+    public static function parserFixFiles(): array
+    {
+        return [
+            '19-unclosed-p-section.html'      => [ '19-unclosed-p-section.html', [ 'We meet every Tuesday evening.', 'Bring your own seeds.', 'New members welcome', 'Write to the secretary.' ], [ 'Garden club', 'Spring planting', 'How to join' ], 0 ],
+            '19-unclosed-p-inline.html'       => [ '19-unclosed-p-inline.html', [ 'Food from', 'twelve', 'see the map', 'music', 'Friday and Saturday.', 'Free entry for', 'children under ten', 'Take the number 4 bus.', 'and parking nearby' ], [ 'Night market', 'Opening hours', 'Getting there' ], 0 ],
+            '19-unclosed-p-nested.html'       => [ '19-unclosed-p-nested.html', [ 'A short note', 'Open since 1990.', 'First point', 'A quiet corner.', 'In a cell', 'Soup of the day.', 'Outer words', 'Inner words', 'At the bottom.' ], [ 'Our bakery', 'Deepest part' ], 0 ],
+            '19-unclosed-p-closed-later.html' => [ '19-unclosed-p-closed-later.html', [ 'Second-hand books', 'The front window', 'and new ones too.', 'Readings on Sunday', 'Call the shop.' ], [ 'Book shop', 'Contact' ], 0 ],
+            '20-script-end-tag-body.html'     => [ '20-script-end-tag-body.html', [ 'Every hour from the pier.', 'Loose words after the body.', 'Buy on board.' ], [ 'Ferry times', 'Tickets' ], 3 ],
+            '20-script-end-tag-html.html'     => [ '20-script-end-tag-html.html', [ 'Available for parties.', 'Ask at the post office.' ], [ 'Village hall', 'Bookings' ], 2 ],
+            '20-script-end-tag-style.html'    => [ '20-script-end-tag-style.html', [ 'Bring broken things.', 'Loose words after the body.', 'We need helpers.' ], [ 'Repair cafe', 'Volunteers' ], 3 ],
+        ];
+    }
+
+    /**
+     * I8: an open <p> before a block (section, header, nav, article, aside, main, figure, footer ...) kept the block inside the paragraph,
+     * so its heading became bold text in a text module. I9: a script whose text holds '</body>', '</html>' or '</div>' was cut short by
+     * libxml2: the rest of the script became page text and the next heading bold text. Every heading must stay a heading module, every
+     * word must be there and counted, no script text may reach the layout, and the section count is pinned where it is the point.
+     */
+    #[DataProvider('parserFixFiles')]
+    public function testUnclosedParagraphsAndScriptEndTagsKeepTheHeadings( string $file, array $words, array $headings, int $sections ): void
+    {
+        $html = (string) file_get_contents( self::FIXTURES . '/' . $file );
+        foreach ( [ 'none', 'basic' ] as $styles ) {
+            $r = $this->convert( $html, [ 'styles' => $styles ] );
+            $this->assertTrue( $r['ok'], $file . ' ' . $styles . ': ' . (string) ( $r['error'] ?? '' ) );
+            foreach ( $words as $w ) {
+                $this->assertStringContainsString( $w, $r['layout'], $file . ' ' . $styles );
+            }
+            foreach ( $headings as $h ) {
+                $this->assertMatchesRegularExpression( '/<!-- wp:divi\/heading \{"title":\{"innerContent":\{"desktop":\{"value":"' . preg_quote( $h, '/' ) . '"\}\}/', $r['layout'], $h . ' stays a heading module (' . $styles . ')' );
+                $this->assertStringNotContainsString( '<strong>' . $h, $r['layout'], $file . ' ' . $styles );
+            }
+            if ( $sections > 0 ) {
+                $this->assertSame( $sections, substr_count( $r['layout'], '<!-- wp:divi/section ' ), $file . ' ' . $styles );
+            }
+            foreach ( [ "';", 'document.title', 'var end', 'content:' ] as $leak ) {
+                $this->assertStringNotContainsString( $leak, $r['layout'], 'no script or style text in the page: ' . $file . ' ' . $styles );
+            }
+            $this->assertTrue( $r['report']['text_check']['equal'] );
+        }
+    }
+
+    #[DataProvider('parserFixFiles')]
+    public function testParserFixGoldenLayout( string $file ): void
+    {
+        $name = basename( $file, '.html' );
+        $r    = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $file ), [ 'styles' => 'none' ] );
+        $gold = __DIR__ . '/golden/html-to-divi/' . $name . '.none.layout.txt';
+        if ( false !== getenv( 'AIED_UPDATE_GOLDEN' ) && ! is_file( $gold ) ) {
+            file_put_contents( $gold, $r['layout'] . "\n" );
+        }
+        $this->assertFileExists( $gold );
+        $this->assertSame( rtrim( (string) file_get_contents( $gold ), "\n" ), $r['layout'] );
+    }
+
     public function testEmptyInputIsRefusedWithAReason(): void
     {
         $r = $this->convert( (string) file_get_contents( self::FIXTURES . '/11-empty.html' ) );
@@ -906,6 +963,53 @@ final class HtmlToDiviTest extends HtmlTestCase
             $this->assertSame( 1, substr_count( $r['layout'], '<!-- wp:divi/placeholder -->' ) );
         }
         $this->assertGreaterThan( 100, $ok, 'most random pages convert' );
+        // I8: an open <p> before a block, drawn after the 200 pages above (their random stream is unchanged).
+        for ( $n = 0; $n < 60; $n++ ) {
+            $html = self::openParagraphPage( 3 );
+            $r    = $this->convert( $html );
+            $this->assertTrue( $r['ok'], 'family case ' . $n . ': ' . (string) ( $r['error'] ?? '' ) . "\n" . $html );
+            $this->assertTrue( LayoutGate::check( $r['layout'] )->isValid(), 'family case ' . $n . "\n" . $html );
+            $this->assertTrue( $r['report']['text_check']['equal'], 'family case ' . $n . ': ' . ( $r['report']['text_check']['first_difference'] ?? '' ) . "\n" . $html );
+        }
+    }
+
+    /**
+     * A random page of the I8 family (mt_rand, so seeded by the caller): paragraphs left open before blocks (HTML5 ones and the ones
+     * libxml2 knows), with phrasing elements open or closed before them, in div, li, td, section or blockquote, closed by </p> or not.
+     */
+    public static function openParagraphPage( int $depth ): string
+    {
+        $blocks  = [ 'section', 'article', 'aside', 'header', 'footer', 'main', 'figure', 'figcaption', 'details', 'summary', 'hgroup', 'search', 'div', 'h2', 'ul', 'blockquote', 'p', 'pre', 'hr' ];
+        $inline  = [ 'b', 'span', 'a href="/x"', 'em', 'label', 'strong', 'my-tag', 'code' ];
+        $context = [ [ '', '' ], [ '<div>', '</div>' ], [ '<ul><li>', '</li></ul>' ], [ '<table><tr><td>', '</td></tr></table>' ], [ '<section>', '</section>' ], [ '<blockquote>', '</blockquote>' ] ];
+        $words   = [ 'Fresh bread', 'Open late', 'Tom & Jerry', 'Call us', 'Free parking', 'Since 1990' ];
+        $out     = '';
+        for ( $i = mt_rand( 1, 4 ); $i > 0; $i-- ) {
+            $w = $words[ mt_rand( 0, count( $words ) - 1 ) ] . ' ' . mt_rand( 1, 99 );
+            if ( 0 === mt_rand( 0, 3 ) ) {
+                $out .= $w;
+                continue;
+            }
+            [ $open, $close ] = $context[ mt_rand( 0, count( $context ) - 1 ) ];
+            $p = '<p>' . $w;
+            if ( 0 === mt_rand( 0, 2 ) ) {
+                $t  = $inline[ mt_rand( 0, count( $inline ) - 1 ) ];
+                $p .= ' <' . $t . '>x</' . explode( ' ', $t )[0] . '> ';
+            }
+            $still = '';
+            if ( 0 === mt_rand( 0, 2 ) ) {
+                $t     = $inline[ mt_rand( 0, count( $inline ) - 1 ) ];
+                $p    .= '<' . $t . '>y ';
+                $still = '</' . explode( ' ', $t )[0] . '>';
+            }
+            $b  = $blocks[ mt_rand( 0, count( $blocks ) - 1 ) ];
+            $in = $depth > 0 && 0 === mt_rand( 0, 1 ) ? self::openParagraphPage( $depth - 1 ) : '<h2>Heading ' . mt_rand( 1, 99 ) . '</h2>';
+            $p .= 'hr' === $b ? '<hr>' : '<' . $b . '>' . $in . ( 0 === mt_rand( 0, 4 ) ? '' : '</' . $b . '>' );
+            $p .= ' after ' . mt_rand( 1, 99 ) . ( 0 === mt_rand( 0, 1 ) ? $still : '' ) . ( 0 === mt_rand( 0, 1 ) ? '</p>' : '' );
+            $out .= $open . $p . $close;
+        }
+
+        return $out;
     }
 
     /**
@@ -1213,6 +1317,11 @@ final class HtmlToDiviTest extends HtmlTestCase
                 '<!DOCTYPE html><html><head><style>' . $sheet . '</style></head>' . $body . $styled . '</body></html>',
                 '<!DOCTYPE html><html><head></head><body>' . $bare . '</body></html>',
             ];
+        }
+        // I8: an open <p> before a block, drawn after the 200 pages above (their random stream is unchanged).
+        for ( $n = 0; $n < 30; $n++ ) {
+            $page  = self::openParagraphPage( 2 );
+            $out[] = [ '<!DOCTYPE html><html><head><style>' . self::randomSheet() . '</style></head><body>' . $page . '</body></html>', '<!DOCTYPE html><html><head></head><body>' . $page . '</body></html>' ];
         }
 
         return $out;

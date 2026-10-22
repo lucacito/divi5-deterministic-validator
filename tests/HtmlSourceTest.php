@@ -593,6 +593,8 @@ final class HtmlSourceTest extends HtmlTestCase
                 // The 16-after-html fixtures carry content after the end of the document: the scan keeps its note (styles stay failed closed).
                 if ( str_starts_with( basename( $file ), '16-after-html' ) ) {
                     $this->assertContains( $s['repaired'], [ [], [ HtmlSource::REPAIRS['after'] ] ], basename( $file ) );
+                } elseif ( str_starts_with( basename( $file ), '20-script-end-tag' ) ) {
+                    $this->assertSame( [ HtmlSource::REPAIRS['rawtext'] ], $s['repaired'], 'an end tag in script or style text: the scan keeps its note' );
                 } elseif ( '18-after-body-html-text-section.html' === basename( $file ) ) {
                     $this->assertSame( [ HtmlSource::REPAIRS['after'] ], $s['repaired'], 'content after </html>: the note stays' );
                 } else {
@@ -625,6 +627,9 @@ final class HtmlSourceTest extends HtmlTestCase
             'many attributes'      => [ '<p ' . str_repeat( 'a' . 'b ', intdiv( $cap, 3 ) - 5 ) . '>x</p>' ],
             'lt soup'              => [ '<p>x</p>' . str_repeat( '<', $cap - 10 ) ],
             'deep svg'             => [ '<svg>' . str_repeat( '<g>', 600 ) . str_repeat( '</g>', 600 ) . '</svg>' . str_repeat( '<p>x</p>', 40000 ) ],
+            // I8: a block still open at the page's own </p> costs paragraphEnds() a parse round each (within its work budget).
+            'blocks open at </p>'  => [ str_repeat( '<section><p>Call us<search><h2>H</h2> after</p><div>d</div></search></section>', 990 ) ],
+            'open p before blocks' => [ str_repeat( '<p>Some words<section><h2>Head</h2>x</section>', 1650 ) ],
         ];
     }
 
@@ -1023,6 +1028,176 @@ final class HtmlSourceTest extends HtmlTestCase
             $s = HtmlSource::parse( $html );
             $this->assertNull( $s['error'], $html );
             $this->assertStringContainsString( 'B</p></body>', $this->bodyHtml( $s ), $html );
+        }
+    }
+
+    /** @return array<string,array{0:string,1:string,2:string}> name => [HTML, Chromium's body, the block] */
+    public static function paragraphCloseCases(): array
+    {
+        $out = [];
+        foreach ( require __DIR__ . '/Support/html-paragraph-close-cases.php' as $name => [ $html, $chromium ] ) {
+            $out[ $name ] = [ $html, $chromium, explode( '/', $name )[0] ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * An open <p> before a block (I8): a browser closes the p ("close a p element" when a p is in button scope) at section, article, nav,
+     * header ... and at every block when a phrasing element is still open in the p; libxml2 2.9 kept the block inside the p, so a heading
+     * became bold text in a paragraph. The body must now be Chromium's (pinned in Support/html-paragraph-close-cases.php), except for
+     * two differences that are written down: libxml2 adds no tbody, and a </p> that matches nothing stays ignored (a browser makes an
+     * empty p of it; the scan treats that alike for every block, see the div precedent). With an em still open a browser opens it
+     * again inside the block: the tree is the browser's once the em tags are left out, and the page carries the `reopen` note.
+     */
+    #[DataProvider('paragraphCloseCases')]
+    public function testAnOpenParagraphBeforeABlockIsTheBrowsersTree( string $html, string $chromium, string $block ): void
+    {
+        $s = HtmlSource::parse( $html );
+        $this->assertNull( $s['error'], $html );
+        $got  = (string) preg_replace( '#^<body>|</body>$#', '', $this->bodyHtml( $s ) );
+        $want = str_replace( [ '<tbody>', '</tbody>', '<p></p>' ], '', $chromium );
+        if ( str_contains( $html, '<em>' ) ) {
+            $this->assertSame( str_replace( [ '<em>', '</em>' ], '', $want ), str_replace( [ '<em>', '</em>' ], '', $got ), $html );
+            $this->assertNotSame( [], $s['repaired'], 'a browser opens the em again inside the block: styles stay off' );
+        } else {
+            $this->assertSame( $want, $got, $html );
+            // No note of its own: only what the scan already said (a <p> in a <p> closed later is its `misnest`), none for an HTML5 block.
+            $this->assertSame( HtmlSource::repairs( $html ), $s['repaired'], $html );
+            if ( 'p' !== $block ) {
+                $this->assertSame( [], $s['repaired'], $html );
+            }
+        }
+    }
+
+    /** The two repros of the finding, and the note for a formatting element that a browser opens again. */
+    public function testTheParagraphRepros(): void
+    {
+        $this->assertSame( '<body><section><p>para start</p><section><h2>B</h2></section></section></body>', $this->bodyHtml( HtmlSource::parse( '<section><p>para start<section><h2>B</h2></section></section>' ) ) );
+        $this->assertSame( '<body><p>Intro</p><section><h2>Head</h2><p>x</p></section></body>', $this->bodyHtml( HtmlSource::parse( '<p>Intro<section><h2>Head</h2><p>x</p></section>' ) ) );
+        $this->assertSame( [ HtmlSource::REPAIRS['reopen'] ], HtmlSource::parse( '<p>a<b>x<section>s</section>y</b>z</p>' )['repaired'] );
+        $this->assertSame( [], HtmlSource::parse( '<p>a<span>x<section>s</section>y</span>z</p>' )['repaired'] );
+    }
+
+    /** The </p> written before the block: only where a browser closes the p and libxml2 does not, as offsets into the HTML. */
+    public function testParagraphEndsAreWrittenOnlyWhereABrowserClosesTheParagraph(): void
+    {
+        $this->assertSame( [ 'ends' => [ 4 ], 'reopen' => false ], HtmlSource::paragraphEnds( '<p>a<section>b</section>' ) );
+        $this->assertSame( [ 'ends' => [ 11, 34 ], 'reopen' => false ], HtmlSource::paragraphEnds( '<p>a<span>b<div>c</div></span><p>d<nav>e</nav>' ) );
+        $this->assertSame( [ 'ends' => [ 8 ], 'reopen' => true ], HtmlSource::paragraphEnds( '<p>a<b>x<aside>s</aside>' ) );
+        $none = [ 'ends' => [], 'reopen' => false ];
+        foreach ( [
+            '<p>a<div>b</div>'                                   => 'libxml2 closes the p itself',
+            '<p>a</p><section>b</section>'                       => 'nothing open',
+            '<p>a<span>b</span><br><img src="x.png">c<em>d</em></p>' => 'no block at all',
+            '<p>a<button><section>b</section></button>c'         => 'a button is a scope boundary: a browser keeps the section in it',
+            '<p>a<svg><section>b</section></svg>c'               => 'a section in svg is foreign content',
+            '<p>a<textarea><section></textarea>b'                => 'textarea text',
+            '<p>a<title><section></title>b'                      => 'title text',
+            '<p>a<!--<section>-->b'                              => 'a comment',
+            '<p title="<section>">a'                             => 'an attribute value',
+            '<p>a<script>"<section>"</script>b'                  => 'script text',
+            '<p>a<object><section>b</section></object>'          => 'an object is a scope boundary',
+            '<p>a<select><section>b</section></select>'          => 'not a phrasing element between: left alone',
+            '<table><tr><td><section>b</section></td></tr></table>' => 'no p',
+            '<p>a<!-->b<section>c</section>'                     => 'an odd comment: not modelled',
+            '<p>a<![CDATA[x]]><section>c</section>'              => 'CDATA: not modelled',
+            '<p>a<xmp></xmp><section>c</section>'                => 'xmp: not modelled',
+            '<p>aied-p-end-<section>c</section>'                  => 'the marker text is in the page: left alone',
+        ] as $html => $why ) {
+            $this->assertSame( $none, HtmlSource::paragraphEnds( $html ), $why );
+        }
+    }
+
+    /** Nesting: a p in a section in a p, each p closed where its block starts; the text never moves out of document order. */
+    public function testNestedParagraphsCloseInOrder(): void
+    {
+        $s = HtmlSource::parse( '<p>a<section><p>b<section>c</section></p></section></p>' );
+        $this->assertSame( '<body><p>a</p><section><p>b</p><section>c</section></section></body>', $this->bodyHtml( $s ) );
+        $s = HtmlSource::parse( '<div><p>a<figure><figcaption>c</figcaption><p>x<figcaption>d</figcaption></figure></div>' );
+        $this->assertSame( '<body><div><p>a</p><figure><figcaption>c</figcaption><p>x</p><figcaption>d</figcaption></figure></div></body>', $this->bodyHtml( $s ) );
+        $s = HtmlSource::parse( '<p>a<section>b</p>c</section>d' );
+        $this->assertSame( '<body><p>a</p><section>bc</section>d</body>', $this->bodyHtml( $s ), 'the </p> inside the section matches nothing: ignored (a browser makes an empty p there)' );
+        // A block still open at the page's own </p>: that </p> now matches nothing, so the block stays open (as in a browser) and the next
+        // div lands in it; the first parse round could not foresee that, the second settles it (Chromium 149, the empty p left out).
+        $html = '<section><p>Call us<search><h2>H</h2> after</p><div>d</div></search></section><section><p>Write<search><h2>K</h2> more</p><div>e</div></search></section>';
+        $this->assertSame( [ 'ends' => [ 19, 95 ], 'reopen' => false ], HtmlSource::paragraphEnds( $html ) );
+        $this->assertSame( '<body><section><p>Call us</p><search><h2>H</h2> after<div>d</div></search></section><section><p>Write</p><search><h2>K</h2> more<div>e</div></search></section></body>', $this->bodyHtml( HtmlSource::parse( $html ) ) );
+    }
+
+    /**
+     * I9: a script whose text holds an end tag. libxml2 2.9 ends script and style text at the first </ and a letter, a browser only at
+     * </script (or </style) followed by a space, / or >. The rest of the script became page text and the next heading bold text. The
+     * </ inside script and style text is now written <\/ before parsing (the same value in a JavaScript or CSS string), so libxml2 ends
+     * the element where a browser does. The script is still dropped and reported exactly as before.
+     */
+    public function testAnEndTagInsideScriptTextNoLongerLeaks(): void
+    {
+        $plain = HtmlSource::parse( '<body><section><h2>A</h2><script>var s=\'\';</script><p>x</p></section></body>Loose<section><h2>H</h2></section>' );
+        foreach ( [ "'</body>'", "'</html>'", "'</BODY>'", "'</scriptx>'", "'</script'+'>'", '/* </body> */', "// </html>\n", "'</div></section>'" ] as $js ) {
+            $html = '<body><section><h2>A</h2><script>var s=' . $js . ';</script><p>x</p></section></body>Loose<section><h2>H</h2></section>';
+            $s    = HtmlSource::parse( $html );
+            $this->assertSame( '<body><section><h2>A</h2><p>x</p></section>Loose<section><h2>H</h2></section></body>', $this->bodyHtml( $s ), $js );
+            $this->assertSame( $plain['flagged'], $s['flagged'], 'the script report is unchanged: ' . $js );
+            $this->assertSame( $plain['stats'], $s['stats'], $js );
+        }
+        $s = HtmlSource::parse( '<html><head><style>a::after{content:"</body>"}</style></head><body><section><h2>A</h2></section></body>Loose' );
+        $this->assertSame( '<body><section><h2>A</h2></section>Loose</body>', $this->bodyHtml( $s ), 'a style with an end tag in a string' );
+        $this->assertStringContainsString( 'content:"<\/body>"', $s['css'], 'the same CSS string value' );
+        $this->assertSame( [ HtmlSource::REPAIRS['rawtext'] ], $s['repaired'], 'the scan still reports the raw text: styles stay off' );
+    }
+
+    /** The neutralised raw text: only </ in script and style text, only when the markup around it is modelled. */
+    public function testOnlyScriptAndStyleTextIsMadeInert(): void
+    {
+        $this->assertSame( '<script>a="<\/b>"</script><p>x</p>', HtmlSource::inertRawText( '<script>a="</b>"</script><p>x</p>' ) );
+        $this->assertSame( '<STYLE>a{b:"<\/x>"}</STYLE >', HtmlSource::inertRawText( '<STYLE>a{b:"</x>"}</STYLE >' ) );
+        $this->assertSame( "<script>a='<\/scriptx>'</script>", HtmlSource::inertRawText( "<script>a='</scriptx>'</script>" ), 'a browser does not end the script at </scriptx' );
+        foreach ( [
+            '<p>a</p>',
+            '<textarea></body></textarea><p>B</p>',
+            '<title></html></title><p>B</p>',
+            '<script><!-- a="</b>" --></script>',
+            '<svg><script>a="</b>"</script></svg>',
+            '<script/>a="</b>"</script>',
+            '<!-->x<script>a="</b>"</script>',
+            '<p title="<script>">a="</b>"',
+            '<!-- <script> -->a="</b>"',
+            '<script>a="</b>"',
+        ] as $html ) {
+            $this->assertSame( $html, HtmlSource::inertRawText( $html ), $html );
+        }
+        $this->assertSame( '<noscript><iframe src="/x"></iframe></noscript><script>a="<\/b>"</script>', HtmlSource::inertRawText( '<noscript><iframe src="/x"></iframe></noscript><script>a="</b>"</script>' ), 'plain markup in a noscript is skipped' );
+        $this->assertSame( '<noscript><script>x</script></noscript><script>a="</b>"</script>', HtmlSource::inertRawText( '<noscript><script>x</script></noscript><script>a="</b>"</script>' ), 'a script in a noscript: libxml2 reads it as a script, not modelled' );
+    }
+
+    /**
+     * I8 property test (seeded, AIED_SEED overrides the default): random pages of the open-paragraph family. After the parse no block a
+     * browser closes a p for sits in a p through phrasing elements only, and the text is exactly libxml2's text of the page as given, in
+     * the same order (a </p> adds and moves no text).
+     */
+    public function testRandomOpenParagraphsNeverHoldABlock(): void
+    {
+        mt_srand( (int) ( getenv( 'AIED_SEED' ) ?: 20261022 ) );
+        $blocks  = [ 'section', 'article', 'aside', 'header', 'footer', 'main', 'figure', 'figcaption', 'details', 'summary', 'hgroup', 'search', 'div', 'h2', 'ul', 'blockquote', 'p', 'pre', 'hr' ];
+        $phrase  = [ 'b', 'span', 'a', 'em', 'label', 'strong', 'my-tag', 'code' ];
+        for ( $n = 0; $n < 150; $n++ ) {
+            $html = HtmlToDiviTest::openParagraphPage( 3 );
+            $s    = HtmlSource::parse( $html );
+            $this->assertNull( $s['error'], $html );
+            $raw  = new \DOMDocument();
+            $prev = libxml_use_internal_errors( true );
+            $raw->loadHTML( '<?xml encoding="UTF-8">' . $html, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING | LIBXML_COMPACT | LIBXML_HTML_NODEFDTD );
+            libxml_clear_errors();
+            libxml_use_internal_errors( $prev );
+            $this->assertSame( $raw->documentElement->textContent, $s['body']->textContent, 'the same text in the same order: ' . $html );
+            foreach ( $blocks as $b ) {
+                foreach ( iterator_to_array( $s['body']->getElementsByTagName( $b ) ) as $el ) {
+                    for ( $up = $el->parentNode; $up instanceof \DOMElement && in_array( strtolower( $up->tagName ), $phrase, true ); $up = $up->parentNode ) {
+                    }
+                    $this->assertFalse( $up instanceof \DOMElement && 'p' === strtolower( $up->tagName ), 'a ' . $b . ' in a p: ' . $html );
+                }
+            }
         }
     }
 }
