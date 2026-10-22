@@ -629,6 +629,11 @@ final class HtmlSourceTest extends HtmlTestCase
             'deep svg'             => [ '<svg>' . str_repeat( '<g>', 600 ) . str_repeat( '</g>', 600 ) . '</svg>' . str_repeat( '<p>x</p>', 40000 ) ],
             // I8: a block still open at the page's own </p> costs paragraphEnds() a parse round each (within its work budget).
             'blocks open at </p>'  => [ str_repeat( '<section><p>Call us<search><h2>H</h2> after</p><div>d</div></search></section>', 990 ) ],
+            // Review round 1: deep chains times many rounds (each was 1-7 s before the work bound counted the chain walks).
+            'deep open navs'       => [ str_repeat( '<blockquote>', 120 ) . str_repeat( '<p><p></b><b><nav>', 900 ) ],
+            'open navs at 40'      => [ str_repeat( '<blockquote>', 40 ) . str_repeat( '<p><p></b><b><nav>', 600 ) ],
+            'stray ends and navs'  => [ str_repeat( '<p><p></b></div><b><nav></span>', 1200 ) ],
+            'open navs at cap'     => [ substr( str_repeat( '<blockquote>', 45 ) . str_repeat( '<p><p></b><b><nav>', 21000 ), 0, $cap ) ],
             'open p before blocks' => [ str_repeat( '<p>Some words<section><h2>Head</h2>x</section>', 1650 ) ],
         ];
     }
@@ -1103,7 +1108,6 @@ final class HtmlSourceTest extends HtmlTestCase
             '<p>a<!-->b<section>c</section>'                     => 'an odd comment: not modelled',
             '<p>a<![CDATA[x]]><section>c</section>'              => 'CDATA: not modelled',
             '<p>a<xmp></xmp><section>c</section>'                => 'xmp: not modelled',
-            '<p>aied-p-end-<section>c</section>'                  => 'the marker text is in the page: left alone',
         ] as $html => $why ) {
             $this->assertSame( $none, HtmlSource::paragraphEnds( $html ), $why );
         }
@@ -1147,6 +1151,41 @@ final class HtmlSourceTest extends HtmlTestCase
         $this->assertSame( [ HtmlSource::REPAIRS['rawtext'] ], $s['repaired'], 'the scan still reports the raw text: styles stay off' );
     }
 
+    /** Review round 1: the marker text in the page does not switch the fix off (another marker is picked, the same one every time). */
+    public function testTheMarkerTextInThePageIsNoObstacle(): void
+    {
+        $this->assertSame( [ 'ends' => [ 15 ], 'reopen' => false ], HtmlSource::paragraphEnds( '<p>aied-p-end-0<section>c</section>' ) );
+        $this->assertSame( '<body><p>aied-p-end-0 aied-p-end-x</p><section>c</section></body>', $this->bodyHtml( HtmlSource::parse( '<p>aied-p-end-0 aied-p-end-x<section>c</section>' ) ) );
+    }
+
+    /**
+     * Review round 1: a script holding "<!--" made every pre-parse fix give up, and content after it was lost without a note. In a browser
+     * "<!--" in script text changes where the script ends only when a "<script" follows it (the double-escaped state); otherwise the
+     * script ends at the first </script. Only that case is left alone, and the scan's `rawtext` note says so.
+     */
+    public function testACommentOpenerInAScriptNoLongerSwitchesTheFixesOff(): void
+    {
+        $html = '<body><section><h2>A</h2><script>var s="</section>"; x="<!--y";</script><p>after words</p></section><section><h2>Bee</h2></section>';
+        $this->assertSame( '<body><section><h2>A</h2><p>after words</p></section><section><h2>Bee</h2></section></body>', $this->bodyHtml( HtmlSource::parse( $html ) ) );
+        $legacy = "<body><section><h2>A</h2><script><!--\nvar s='</div>';\n//--></script><p>after words</p></section></body>Loose<section><h2>Bee</h2></section>";
+        $this->assertSame( '<body><section><h2>A</h2><p>after words</p></section>Loose<section><h2>Bee</h2></section></body>', $this->bodyHtml( HtmlSource::parse( $legacy ) ), 'the legacy comment wrapper' );
+        $this->assertSame( '<script>a="<p>a<\/b><!-- x --><\/p>"</script>', HtmlSource::inertRawText( '<script>a="<p>a</b><!-- x --></p>"</script>' ) );
+        $this->assertSame( [ [ 27, 7 ] ], HtmlSource::strayEndTags( '<script><!-- x --></script></body>B' ), 'a comment opener in script text: the end tag is found' );
+        $this->assertSame( 29, HtmlSource::bodyStart( '<script><!-- x //--></script>Loose' ) );
+        // "<!--" then "<script": a browser does not end the script at the first </script (double-escaped): left as given, with the note.
+        $double = '<body><section><h2>A</h2><script><!-- document.write("<script>a()</script>"); --></script><p>after words</p></section>';
+        $this->assertSame( $double, HtmlSource::inertRawText( $double ) );
+        $this->assertNull( HtmlSource::strayEndTags( '<script><!-- <script> --></script></body>B' ) );
+        $this->assertSame( [ HtmlSource::REPAIRS['rawtext'] ], HtmlSource::parse( $double )['repaired'] );
+    }
+
+    /** Review round 1: only "</" and a letter ends raw text in libxml2, so only that is written "<\/"; a style holding '</' alone is untouched. */
+    public function testOnlyAnEndTagRunIsRewritten(): void
+    {
+        $this->assertSame( '<style>a::after{content:"</"} b::after{content:"<\/b"}</style>', HtmlSource::inertRawText( '<style>a::after{content:"</"} b::after{content:"</b"}</style>' ) );
+        $this->assertSame( '<style>a::after{content:"</ 1"}</style>', HtmlSource::inertRawText( '<style>a::after{content:"</ 1"}</style>' ) );
+    }
+
     /** The neutralised raw text: only </ in script and style text, only when the markup around it is modelled. */
     public function testOnlyScriptAndStyleTextIsMadeInert(): void
     {
@@ -1157,7 +1196,7 @@ final class HtmlSourceTest extends HtmlTestCase
             '<p>a</p>',
             '<textarea></body></textarea><p>B</p>',
             '<title></html></title><p>B</p>',
-            '<script><!-- a="</b>" --></script>',
+            '<script><!-- <script>a="</b>"</script> --></script>',
             '<svg><script>a="</b>"</script></svg>',
             '<script/>a="</b>"</script>',
             '<!-->x<script>a="</b>"</script>',

@@ -81,10 +81,16 @@ Things to know:
 - A heading carries a weight only when the source sets one; the browser's default bold is not copied.
 - A bold, italic or link tag left open around a block that ends a paragraph (`<p><b>Intro<section>...`) switches styles off for that page (a
   repair note says so): a browser repeats the bold inside the block, the converter does not.
-- A `<style>` block whose CSS contains `</` (for example `content:"</b>"`) is not read (a repair note says so).
+- A `<style>` block whose CSS contains `</` and a letter (for example `content:"</b>"`) is not read (a repair note says so).
+- A script whose `<!--` is followed by a `<script` (an old `document.write` trick) is read as the converter's parser reads it, which can
+  differ from a browser (a repair note says so).
+- An unclosed paragraph is closed at a list item or a table only when nothing like `<span>` or `<b>` is still open inside it; in rare markup
+  (an unusual tag between the paragraph and the block, a tag with the same attribute twice, a character reference like `&amp;` in a class
+  or style value, an attribute such as `@click`, nesting deeper than 255 levels) the page is read the old way and a heading after an
+  unclosed paragraph can still become bold text.
 - Use `styles=none` for the plain structure and copy only.
 
 ## Limits
 
 400,000 bytes of HTML per call, 5,000 elements, 50 levels deep (it says so and asks you to convert in parts). One page per call.
-Verified on Divi 5.15.1: `make verify-html-to-divi` converts every sample page (including the 15 parser-repair pages `15-*` to `18-*`), saves them as drafts and renders them with the real Divi, and compares the six styled sample pages (colours, sizes, weights, alignment, fonts, backgrounds, padding, widths, button radius, contrast) with their source in a real browser at 1280, 900 and 400 px (final run: 517 PASS, 0 FAIL, no horizontal overflow; the seven pages `19-*` and `20-*` added with the last two parser fixes were not in that run yet). Only the properties the converter carries are measured.
+Verified on Divi 5.15.1: `make verify-html-to-divi` converts every sample page (including the 22 parser-repair pages `15-*` to `20-*`), saves them as drafts and renders them with the real Divi, and compares the six styled sample pages (colours, sizes, weights, alignment, fonts, backgrounds, padding, widths, button radius, contrast) with their source in a real browser at 1280, 900 and 400 px (final run with all 41 sample pages, the 22 parser-repair pages `15-*` to `20-*` included: 615 PASS, 0 FAIL, no horizontal overflow). Only the properties the converter carries are measured.
