@@ -56,7 +56,35 @@ final class HtmlToDiviTest extends HtmlTestCase
     {
         $html = (string) file_get_contents( $file );
         $this->assertSame( $this->convert( $html ), $this->convert( $html ) );
-        $this->assertSame( $this->convert( $html )['layout'], $this->convert( $html, [ 'styles' => 'none' ] )['layout'], 'styles do not change the structure' );
+        $bare = self::bare( $html );
+        $this->assertSame( $this->convert( $bare )['layout'], $this->convert( $bare, [ 'styles' => 'none' ] )['layout'], 'a page without CSS is the same in both modes' );
+    }
+
+    /** The none mode never reads a style: the page with every style removed converts to the same bytes. */
+    #[DataProvider('fixtures')]
+    public function testStylesNoneIgnoresEveryStyle( string $file ): void
+    {
+        $html = (string) file_get_contents( $file );
+        $none = [ 'styles' => 'none' ];
+        $this->assertSame( $this->convert( $html, $none )['layout'], $this->convert( self::bare( $html ), $none )['layout'], 'styles do not change the structure' );
+    }
+
+    /** The page without any CSS: every style="" attribute and every <style> element removed in the DOM (no regex). */
+    public static function bare( string $html ): string
+    {
+        $doc  = new \DOMDocument();
+        $prev = libxml_use_internal_errors( true );
+        $doc->loadHTML( '<?xml encoding="UTF-8">' . $html, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING | LIBXML_HTML_NODEFDTD );
+        libxml_clear_errors();
+        libxml_use_internal_errors( $prev );
+        foreach ( iterator_to_array( $doc->getElementsByTagName( 'style' ) ) as $style ) {
+            $style->parentNode?->removeChild( $style );
+        }
+        foreach ( iterator_to_array( $doc->getElementsByTagName( '*' ) ) as $el ) {
+            $el->removeAttribute( 'style' );
+        }
+
+        return (string) $doc->saveHTML();
     }
 
     #[DataProvider('fixtures')]
@@ -124,6 +152,47 @@ final class HtmlToDiviTest extends HtmlTestCase
         }
         $this->assertFileExists( $file );
         $this->assertSame( rtrim( (string) file_get_contents( $file ), "\n" ), $r['layout'] );
+    }
+
+    /** @return array<string,array{0:string,1:string}> name => file under tests/golden/html-to-divi */
+    public static function noneGoldens(): array
+    {
+        $out = [];
+        foreach ( [ '01-landing', '03-pricing-cards', '13-images' ] as $n ) {
+            $out[ $n ] = [ $n, $n . '.layout.txt' ];
+        }
+        foreach ( [ 'inline', 'classes', 'dark', 'backgrounds', 'fonts', 'hostile' ] as $n ) {
+            $out[ '14-styled-' . $n ] = [ '14-styled-' . $n, '14-styled-' . $n . '.none.layout.txt' ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * styles=none is the phase-1 output, byte for byte. These files were recorded on the converter before any style
+     * code existed; only AIED_UPDATE_NONE_GOLDEN rewrites them (never AIED_UPDATE_GOLDEN), so regenerating the
+     * styled goldens can never touch them.
+     */
+    #[DataProvider('noneGoldens')]
+    public function testStylesNoneGoldenLayout( string $name, string $golden ): void
+    {
+        $r    = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $name . '.html' ), [ 'styles' => 'none' ] );
+        $file = __DIR__ . '/golden/html-to-divi/' . $golden;
+        if ( false !== getenv( 'AIED_UPDATE_NONE_GOLDEN' ) ) {
+            file_put_contents( $file, $r['layout'] . "\n" );
+        }
+        $this->assertFileExists( $file );
+        $this->assertSame( rtrim( (string) file_get_contents( $file ), "\n" ), $r['layout'] );
+    }
+
+    /** These pages have no CSS: the default (basic) and none give the very same file. */
+    #[DataProvider('goldens')]
+    public function testThePhaseOneGoldensAreTheSameInBothModes( string $name ): void
+    {
+        $html = (string) file_get_contents( self::FIXTURES . '/' . $name . '.html' );
+        $file = rtrim( (string) file_get_contents( __DIR__ . '/golden/html-to-divi/' . $name . '.layout.txt' ), "\n" );
+        $this->assertSame( $file, $this->convert( $html )['layout'] );
+        $this->assertSame( $file, $this->convert( $html, [ 'styles' => 'none' ] )['layout'] );
     }
 
     public function testEmptyInputIsRefusedWithAReason(): void

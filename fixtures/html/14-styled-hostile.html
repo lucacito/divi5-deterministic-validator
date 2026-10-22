@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Hostile Styles Test</title>
+<style>
+:root { --ink: #222222; }
+h1 { font-size: 40px; color: #111111 !important; }
+h1 { color: #ff0000; }
+@media (min-width: 768px) { h1 { font-size: 72px; } }
+.hero h1 { color: #fff; }
+a:hover { color: #ff00ff; background: #00ff00; }
+p.lead { color: var(--ink); font-size: calc(1rem + 2vw); }
+.clamped { font-size: clamp(16px, 2vw, 24px); }
+[data-x] { color: #00aa00; }
+.huge { font-size: 900px; }
+.neg { padding: -4px; }
+.shorthand { font: italic 700 20px Inter; }
+.mixed { color: #AABBCC; background: RebeccaPurple; }
+.broken { color: #123456;
+</style>
+</head>
+<body>
+<section class="hero" style="opacity:.6; background:#0F172A">
+<h1>Styles that fight back</h1>
+<p class="lead">This paragraph reads its colour and size from values a simple reader cannot evaluate.</p>
+<h3>Sizes</h3>
+<p class="clamped">A clamp function sizes this line between sixteen and twenty-four pixels.</p>
+<h3>Selectors</h3>
+<p data-x="1">An attribute selector colours this line green.</p>
+</section>
+<section>
+<h2 class="huge">Enormous heading size</h2>
+<h3>Padding</h3>
+<p class="neg">A negative padding value is not valid CSS and must not reach the layout.</p>
+<h3>Shorthand</h3>
+<p class="shorthand">The font shorthand sets style, weight, size and family together.</p>
+<h3>Colours</h3>
+<p class="mixed">Upper-case hex and a named colour share one rule here.</p>
+<h3>Braces</h3>
+<p class="broken">The rule above this one never closed its brace.</p>
+<a class="btn" href="/go" style="color:#FFFFFF !important; background:#000000">Go now</a>
+</section>
+<table bgcolor="#000000" width="100%">
+<tr><td style="color:#ffffff">Plan</td><td style="color:#ffffff">Price</td></tr>
+<tr><td style="color:#ffffff">Basic</td><td style="color:#ffffff">$9</td></tr>
+</table>
+<center><p>Centered with a legacy tag, still readable.</p></center>
+</body>
+</html>
