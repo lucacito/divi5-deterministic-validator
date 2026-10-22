@@ -590,7 +590,12 @@ final class HtmlSourceTest extends HtmlTestCase
         foreach ( glob( self::FIXTURES . '/*.html' ) ?: [] as $file ) {
             $s = HtmlSource::parse( (string) file_get_contents( $file ) );
             if ( null === $s['error'] ) {
-                $this->assertSame( [], $s['repaired'], basename( $file ) );
+                // The 16-after-html fixtures carry content after the end of the document: the scan keeps its note (styles stay failed closed).
+                if ( str_starts_with( basename( $file ), '16-after-html' ) ) {
+                    $this->assertContains( $s['repaired'], [ [], [ HtmlSource::REPAIRS['after'] ] ], basename( $file ) );
+                } else {
+                    $this->assertSame( [], $s['repaired'], basename( $file ) );
+                }
             }
         }
     }
@@ -781,5 +786,67 @@ final class HtmlSourceTest extends HtmlTestCase
         $this->assertSame( [ 'meta', 'title', 'link', 'style', 'script' ], array_map( static fn( $n ) => $n->nodeName, array_values( array_filter( iterator_to_array( $head->childNodes ), static fn( $n ) => $n instanceof \DOMElement ) ) ) );
         $this->assertSame( 'T', $s['title'] );
         $this->assertSame( [], $s['repaired'], 'a relocation is what a browser does: no repair note' );
+    }
+
+    /** @return array<string,array{0:string,1:list<string>}> */
+    public static function afterHtmlShapes(): array
+    {
+        return [
+            'paragraph after html'      => [ '<html><body><p>AAA</p></body></html><p>BBB</p>', [ 'AAA', 'BBB' ] ],
+            'paragraph after body'      => [ '<html><body><p>AAA</p></body><p>BBB</p></html>', [ 'AAA', 'BBB' ] ],
+            'text after html'           => [ '<html><body><p>AAA</p></body></html>BBB tail', [ 'AAA', 'BBB tail' ] ],
+            'sections and text'         => [ '<html><body><p>AAA</p></body></html><section><h1>BBB</h1></section>CCC', [ 'AAA', 'BBB', 'CCC' ] ],
+            'second full document'      => [ '<html><head><title>x</title></head><body><p>AAA</p></body></html><html><head><title>y</title></head><body><p>BBB</p></body></html><p>CCC</p>', [ 'AAA', 'BBB', 'CCC' ] ],
+            'two things after'          => [ '<html><body><p>AAA</p></body></html><p>BBB</p><p>CCC</p><div>DDD</div>', [ 'AAA', 'BBB', 'CCC', 'DDD' ] ],
+            'html without a body first' => [ '<html></html><p>AAA</p>', [ 'AAA' ] ],
+        ];
+    }
+
+    /** libxml2 makes extra top-level nodes (or a sibling of <body>) that nothing read; a browser appends them to the body. */
+    #[DataProvider('afterHtmlShapes')]
+    public function testContentAfterTheHtmlOrBodyEndIsAppendedToTheBody( string $html, array $texts ): void
+    {
+        $s = HtmlSource::parse( $html );
+        $this->assertNull( $s['error'], (string) $s['error'] );
+        $body = $this->bodyHtml( $s );
+        $last = -1;
+        foreach ( $texts as $t ) {
+            $pos = strpos( $body, $t );
+            $this->assertNotFalse( $pos, $t . ' is in the body' );
+            $this->assertGreaterThan( $last, $pos, 'document order is kept' );
+            $last = $pos;
+        }
+        // The scan's existing note for content after </html> is kept on purpose (styles stay failed closed for such a page, which the
+        // differential corpus pins); the content itself is no longer lost. The relocation adds no note of its own.
+        $this->assertContains( $s['repaired'], [ [], [ HtmlSource::REPAIRS['after'] ] ] );
+        $this->assertSame( 1, $s['body']->ownerDocument->getElementsByTagName( 'body' )->length, 'one body, nothing left in a stray node' );
+    }
+
+    public function testASecondDocumentsTitleIsNotUsed(): void
+    {
+        $s = HtmlSource::parse( '<html><head><title>First</title></head><body><p>A</p></body></html><html><head><title>Second</title></head><body><p>B</p></body></html>' );
+        $this->assertSame( 'First', $s['title'] );
+    }
+
+    public function testCommentsAfterTheHtmlEndAddNothing(): void
+    {
+        $s = HtmlSource::parse( '<html><body><p>AAA</p></body></html><!-- note -->' );
+        $this->assertNull( $s['error'] );
+        $this->assertStringNotContainsString( 'note', $this->bodyHtml( $s ) );
+        $this->assertSame( 'AAA', trim( $s['body']->textContent ) );
+    }
+
+    public function testWhitespaceAfterTheHtmlEndChangesNothing(): void
+    {
+        $plain = HtmlSource::parse( '<html><body><p>AAA</p></body></html>' );
+        $ws    = HtmlSource::parse( "<html><body><p>AAA</p></body></html>\n\n  \n" );
+        $this->assertSame( $this->bodyHtml( $plain ), $this->bodyHtml( $ws ) );
+    }
+
+    public function testAStyleInASecondDocumentStillReachesTheStyleReader(): void
+    {
+        $s = HtmlSource::parse( '<html><body><p class="x">AAA</p></body></html><html><head><style>.x{color:red}</style></head><body><p>BBB</p></body></html>' );
+        $this->assertNull( $s['error'] );
+        $this->assertStringContainsString( 'BBB', $this->bodyHtml( $s ) );
     }
 }

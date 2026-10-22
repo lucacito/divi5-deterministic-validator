@@ -257,6 +257,51 @@ final class HtmlToDiviTest extends HtmlTestCase
         $this->assertSame( rtrim( (string) file_get_contents( $gold ), "\n" ), $r['layout'] );
     }
 
+    /** @return array<string,array{0:string,1:list<string>}> file => the words that must reach the layout */
+    public static function afterHtmlFiles(): array
+    {
+        return [
+            '16-after-html-section.html'         => [ '16-after-html-section.html', [ 'Before the end', 'After the html tag', 'A browser puts this in the body too' ] ],
+            '16-after-html-body-close.html'      => [ '16-after-html-body-close.html', [ 'Written in the body', 'After the body tag', 'Still the page body' ] ],
+            '16-after-html-second-document.html' => [ '16-after-html-second-document.html', [ 'First document', 'Second document', 'The second body text', 'Loose words at the very end' ] ],
+        ];
+    }
+
+    /** Content after </html> or </body> was silently dropped while text_check still said equal: every word must be converted and counted. */
+    #[DataProvider('afterHtmlFiles')]
+    public function testContentAfterTheHtmlEndIsConverted( string $file, array $words ): void
+    {
+        foreach ( [ 'none', 'basic' ] as $styles ) {
+            $r = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $file ), [ 'styles' => $styles ] );
+            $this->assertTrue( $r['ok'], $file . ' ' . $styles . ': ' . (string) ( $r['error'] ?? '' ) );
+            foreach ( $words as $w ) {
+                $this->assertStringContainsString( $w, $r['layout'], $file . ' ' . $styles );
+            }
+            $this->assertTrue( $r['report']['text_check']['equal'] );
+            $this->assertGreaterThanOrEqual( strlen( implode( '', $words ) ) - count( $words ) * 2, $r['report']['text_check']['source_chars'], 'the moved text counts as source text' );
+        }
+    }
+
+    public function testAParagraphAfterTheHtmlEndCountsInTheTextCheck(): void
+    {
+        $r = $this->convert( '<html><body><p>AAA</p></body></html><p>BBB</p>', [ 'styles' => 'none' ] );
+        $this->assertStringContainsString( 'BBB', $r['layout'] );
+        $this->assertSame( 6, $r['report']['text_check']['source_chars'] );
+    }
+
+    #[DataProvider('afterHtmlFiles')]
+    public function testAfterHtmlGoldenLayout( string $file ): void
+    {
+        $name = basename( $file, '.html' );
+        $r    = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $file ), [ 'styles' => 'none' ] );
+        $gold = __DIR__ . '/golden/html-to-divi/' . $name . '.none.layout.txt';
+        if ( false !== getenv( 'AIED_UPDATE_GOLDEN' ) && ! is_file( $gold ) ) {
+            file_put_contents( $gold, $r['layout'] . "\n" );
+        }
+        $this->assertFileExists( $gold );
+        $this->assertSame( rtrim( (string) file_get_contents( $gold ), "\n" ), $r['layout'] );
+    }
+
     public function testEmptyInputIsRefusedWithAReason(): void
     {
         $r = $this->convert( (string) file_get_contents( self::FIXTURES . '/11-empty.html' ) );
