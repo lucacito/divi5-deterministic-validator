@@ -1,0 +1,37 @@
+<!-- wp:divi/placeholder -->
+<!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Styles that fight back"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Styles that fight back"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h1"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eThis paragraph reads its colour and size from values a simple reader cannot evaluate.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Sizes"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eA clamp function sizes this line between sixteen and twenty-four pixels.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Selectors"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eAn attribute selector colours this line green.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Enormous heading size"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Enormous heading size"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Padding"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eA negative padding value is not valid CSS and must not reach the layout.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Shorthand"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eThe font shorthand sets style, weight, size and family together.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Colours"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eUpper-case hex and a named colour share one rule here.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Braces"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eThe rule above this one never closed its brace.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"Go now","linkUrl":"/go"}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Section 3"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003ctable\u003e\u003ctr\u003e\u003ctd\u003ePlan\u003c/td\u003e\u003ctd\u003ePrice\u003c/td\u003e\u003c/tr\u003e\u003ctr\u003e\u003ctd\u003eBasic\u003c/td\u003e\u003ctd\u003e$9\u003c/td\u003e\u003c/tr\u003e\u003c/table\u003e\u003cp\u003eCentered with a legacy tag, still readable.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- /wp:divi/placeholder -->

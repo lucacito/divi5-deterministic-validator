@@ -1,0 +1,25 @@
+<!-- wp:divi/placeholder -->
+<!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Header"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Studio Lark"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h1"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"What we make"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eCall \u003cb\u003etoday\u003c/b\u003e or \u003ca href=\u0022/contact\u0022\u003ewrite to us\u003c/a\u003e.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"What we make"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eChairs, tables and shelves.\u003c/p\u003e\u003cp\u003eMore \u0026amp; more loose text.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Footer"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eMade by hand in Porto.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- /wp:divi/placeholder -->

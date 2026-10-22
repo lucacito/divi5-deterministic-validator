@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace Divi5Validator\Tests;
 
 use AiEditorDivi5\WP\CodePolicy;
+use AiEditorDivi5\WP\DiviMarkup;
 use AiEditorDivi5\WP\HtmlToDivi;
 use AiEditorDivi5\WP\LayoutGate;
+use Divi5Validator\Tests\Support\StyledLayoutOracle;
 use PHPUnit\Framework\Attributes\DataProvider;
+
+require_once __DIR__ . '/Support/StyledLayoutOracle.php';
 
 /** html_to_divi end to end over the fixture corpus: valid, text kept, links kept, nothing dangerous, same bytes twice. */
 final class HtmlToDiviTest extends HtmlTestCase
@@ -56,7 +60,37 @@ final class HtmlToDiviTest extends HtmlTestCase
     {
         $html = (string) file_get_contents( $file );
         $this->assertSame( $this->convert( $html ), $this->convert( $html ) );
-        $this->assertSame( $this->convert( $html )['layout'], $this->convert( $html, [ 'styles' => 'none' ] )['layout'], 'styles do not change the structure' );
+        $bare = self::bare( $html );
+        $this->assertSame( $this->convert( $bare )['layout'], $this->convert( $bare, [ 'styles' => 'none' ] )['layout'], 'a page without CSS is the same in both modes' );
+    }
+
+    /** The none mode never reads a style: the page with every style removed converts to the same bytes. */
+    #[DataProvider('fixtures')]
+    public function testStylesNoneIgnoresEveryStyle( string $file ): void
+    {
+        $html = (string) file_get_contents( $file );
+        $none = [ 'styles' => 'none' ];
+        $this->assertSame( $this->convert( $html, $none )['layout'], $this->convert( self::bare( $html ), $none )['layout'], 'styles do not change the structure' );
+    }
+
+    /** The page without any CSS: every style="" attribute and every <style> element removed in the DOM (no regex). */
+    public static function bare( string $html ): string
+    {
+        $doc  = new \DOMDocument();
+        $prev = libxml_use_internal_errors( true );
+        // The body is where a browser has it (as HtmlSource::parse does), or libxml2's implied <p> would be written out as a real one.
+        $html = \AiEditorDivi5\WP\HtmlSource::browserBody( $html );
+        $doc->loadHTML( '<?xml encoding="UTF-8">' . $html, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING | LIBXML_HTML_NODEFDTD );
+        libxml_clear_errors();
+        libxml_use_internal_errors( $prev );
+        foreach ( iterator_to_array( $doc->getElementsByTagName( 'style' ) ) as $style ) {
+            $style->parentNode?->removeChild( $style );
+        }
+        foreach ( iterator_to_array( $doc->getElementsByTagName( '*' ) ) as $el ) {
+            $el->removeAttribute( 'style' );
+        }
+
+        return (string) $doc->saveHTML();
     }
 
     #[DataProvider('fixtures')]
@@ -104,10 +138,27 @@ final class HtmlToDiviTest extends HtmlTestCase
         $this->assertLessThan( strpos( $r['layout'], 'John Roe' ), strpos( $r['layout'], 'Jane Doe' ), 'order is kept' );
     }
 
-    /** @return array<string,array{0:string}> */
-    public static function goldens(): array
+    /** @return array<string,array{0:string}> the three phase-1 pages (no CSS: the same file in both modes) */
+    public static function phaseOneGoldens(): array
     {
         return [ '01-landing' => [ '01-landing' ], '03-pricing-cards' => [ '03-pricing-cards' ], '13-images' => [ '13-images' ] ];
+    }
+
+    /** @return array<string,array{0:string}> the six styled pages */
+    public static function styledFixtures(): array
+    {
+        $out = [];
+        foreach ( [ 'inline', 'classes', 'dark', 'backgrounds', 'fonts', 'hostile' ] as $n ) {
+            $out[ '14-styled-' . $n ] = [ '14-styled-' . $n ];
+        }
+
+        return $out;
+    }
+
+    /** @return array<string,array{0:string}> the phase-1 pages plus the six styled pages (default mode: styles=basic) */
+    public static function goldens(): array
+    {
+        return self::phaseOneGoldens() + self::styledFixtures();
     }
 
     /**
@@ -124,6 +175,273 @@ final class HtmlToDiviTest extends HtmlTestCase
         }
         $this->assertFileExists( $file );
         $this->assertSame( rtrim( (string) file_get_contents( $file ), "\n" ), $r['layout'] );
+    }
+
+    /**
+     * The mixed-style run is DELIBERATE: the second section of 14-styled-inline holds two consecutive <p> (one unstyled,
+     * one with its own colour and size) that the mapper merges into ONE divi/text. Later style tasks must satisfy it:
+     * a module carries only the style properties that are equal across all its merged elements; otherwise nothing for
+     * that property and a counted note "mixed". 14-styled-hostile (table + <center><p>) is a second such module.
+     *
+     * @return array<string,array{0:string,1:string}> name => file under tests/golden/html-to-divi
+     */
+    public static function noneGoldens(): array
+    {
+        $out = [];
+        foreach ( [ '01-landing', '03-pricing-cards', '13-images' ] as $n ) {
+            $out[ $n ] = [ $n, $n . '.layout.txt' ];
+        }
+        foreach ( [ 'inline', 'classes', 'dark', 'backgrounds', 'fonts', 'hostile' ] as $n ) {
+            $out[ '14-styled-' . $n ] = [ '14-styled-' . $n, '14-styled-' . $n . '.none.layout.txt' ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * styles=none is the phase-1 output, byte for byte. These files were recorded on the converter before any style
+     * code existed; only AIED_UPDATE_NONE_GOLDEN rewrites them (never AIED_UPDATE_GOLDEN), so regenerating the
+     * styled goldens can never touch them.
+     */
+    #[DataProvider('noneGoldens')]
+    public function testStylesNoneGoldenLayout( string $name, string $golden ): void
+    {
+        $r    = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $name . '.html' ), [ 'styles' => 'none' ] );
+        $file = __DIR__ . '/golden/html-to-divi/' . $golden;
+        if ( false !== getenv( 'AIED_UPDATE_NONE_GOLDEN' ) ) {
+            file_put_contents( $file, $r['layout'] . "\n" );
+        }
+        $this->assertFileExists( $file );
+        $this->assertSame( rtrim( (string) file_get_contents( $file ), "\n" ), $r['layout'] );
+    }
+
+    /** A later "fix" of the fixture must not remove the deliberate mixed-style run (see noneGoldens). */
+    public function testTheMixedStyleRunStaysInTheInlineFixture(): void
+    {
+        $html = (string) file_get_contents( self::FIXTURES . '/14-styled-inline.html' );
+        $this->assertMatchesRegularExpression( '/<p>We buy green[^<]*<\/p>\s*<p style="[^"]*color:#4b5563[^"]*">Every batch/', $html );
+        $golden = (string) file_get_contents( __DIR__ . '/golden/html-to-divi/14-styled-inline.none.layout.txt' );
+        $this->assertStringContainsString( 'kilos.\u003c/p\u003e\u003cp\u003eEvery batch', $golden, 'the two paragraphs are one text module' );
+    }
+
+    /** These pages have no CSS: the default (basic) and none give the very same file. */
+    #[DataProvider('phaseOneGoldens')]
+    public function testThePhaseOneGoldensAreTheSameInBothModes( string $name ): void
+    {
+        $html = (string) file_get_contents( self::FIXTURES . '/' . $name . '.html' );
+        $file = rtrim( (string) file_get_contents( __DIR__ . '/golden/html-to-divi/' . $name . '.layout.txt' ), "\n" );
+        $this->assertSame( $file, $this->convert( $html )['layout'] );
+        $this->assertSame( $file, $this->convert( $html, [ 'styles' => 'none' ] )['layout'] );
+    }
+
+    /** @return array<string,array{0:string,1:list<string>}> file => the words that must reach the layout */
+    public static function headShapes(): array
+    {
+        return [
+            '15-head-style-section.html' => [ '15-head-style-section.html', [ 'Fresh coffee', 'Roasted every morning', 'Visit us on Main Street' ] ],
+            '15-head-link-section.html'  => [ '15-head-link-section.html', [ 'Hello from the link page', 'Only a stylesheet link' ] ],
+            '15-head-meta-header.html'   => [ '15-head-meta-header.html', [ 'Top of the page', 'The main text', 'Footer words' ] ],
+        ];
+    }
+
+    /** HTML5 elements after head content used to be lost (or the page refused): every word must now be converted and counted. */
+    #[DataProvider('headShapes')]
+    public function testHtml5ElementsAfterHeadContentAreConverted( string $file, array $words ): void
+    {
+        foreach ( [ 'none', 'basic' ] as $styles ) {
+            $r = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $file ), [ 'styles' => $styles ] );
+            $this->assertTrue( $r['ok'], $file . ' ' . $styles . ': ' . (string) ( $r['error'] ?? '' ) );
+            foreach ( $words as $w ) {
+                $this->assertStringContainsString( $w, $r['layout'], $file . ' ' . $styles );
+            }
+            $this->assertTrue( $r['report']['text_check']['equal'] );
+            $this->assertGreaterThanOrEqual( strlen( implode( '', $words ) ) - count( $words ) * 2, $r['report']['text_check']['source_chars'], 'the relocated text counts as source text' );
+        }
+    }
+
+    public function testASectionBeforeADivIsNoLongerLostAfterAStyleBlock(): void
+    {
+        $r = $this->convert( '<style>h1{color:red}</style><section><h1>AAA</h1><p>one</p></section><div><p>BBB</p></div>', [ 'styles' => 'none' ] );
+        $this->assertStringContainsString( 'AAA', $r['layout'] );
+        $this->assertStringContainsString( 'BBB', $r['layout'] );
+        $this->assertSame( 9, $r['report']['text_check']['source_chars'] );
+    }
+
+    #[DataProvider('headShapes')]
+    public function testHeadShapeGoldenLayout( string $file ): void
+    {
+        $name = basename( $file, '.html' );
+        $r    = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $file ), [ 'styles' => 'none' ] );
+        $gold = __DIR__ . '/golden/html-to-divi/' . $name . '.none.layout.txt';
+        if ( false !== getenv( 'AIED_UPDATE_GOLDEN' ) ) {
+            file_put_contents( $gold, $r['layout'] . "\n" );
+        }
+        $this->assertFileExists( $gold );
+        $this->assertSame( rtrim( (string) file_get_contents( $gold ), "\n" ), $r['layout'] );
+    }
+
+    /** @return array<string,array{0:string,1:list<string>}> file => the words that must reach the layout */
+    public static function afterHtmlFiles(): array
+    {
+        return [
+            '16-after-html-section.html'         => [ '16-after-html-section.html', [ 'Before the end', 'After the html tag', 'A browser puts this in the body too' ] ],
+            '16-after-html-body-close.html'      => [ '16-after-html-body-close.html', [ 'Written in the body', 'After the body tag', 'Still the page body' ] ],
+            '16-after-html-second-document.html' => [ '16-after-html-second-document.html', [ 'First document', 'Second document', 'The second body text', 'Loose words at the very end' ] ],
+        ];
+    }
+
+    /** Content after </html> or </body> was silently dropped while text_check still said equal: every word must be converted and counted. */
+    #[DataProvider('afterHtmlFiles')]
+    public function testContentAfterTheHtmlEndIsConverted( string $file, array $words ): void
+    {
+        foreach ( [ 'none', 'basic' ] as $styles ) {
+            $r = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $file ), [ 'styles' => $styles ] );
+            $this->assertTrue( $r['ok'], $file . ' ' . $styles . ': ' . (string) ( $r['error'] ?? '' ) );
+            foreach ( $words as $w ) {
+                $this->assertStringContainsString( $w, $r['layout'], $file . ' ' . $styles );
+            }
+            $this->assertTrue( $r['report']['text_check']['equal'] );
+            $this->assertGreaterThanOrEqual( strlen( implode( '', $words ) ) - count( $words ) * 2, $r['report']['text_check']['source_chars'], 'the moved text counts as source text' );
+        }
+    }
+
+    public function testAParagraphAfterTheHtmlEndCountsInTheTextCheck(): void
+    {
+        $r = $this->convert( '<html><body><p>AAA</p></body></html><p>BBB</p>', [ 'styles' => 'none' ] );
+        $this->assertStringContainsString( 'BBB', $r['layout'] );
+        $this->assertSame( 6, $r['report']['text_check']['source_chars'] );
+    }
+
+    #[DataProvider('afterHtmlFiles')]
+    public function testAfterHtmlGoldenLayout( string $file ): void
+    {
+        $name = basename( $file, '.html' );
+        $r    = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $file ), [ 'styles' => 'none' ] );
+        $gold = __DIR__ . '/golden/html-to-divi/' . $name . '.none.layout.txt';
+        if ( false !== getenv( 'AIED_UPDATE_GOLDEN' ) && ! is_file( $gold ) ) {
+            file_put_contents( $gold, $r['layout'] . "\n" );
+        }
+        $this->assertFileExists( $gold );
+        $this->assertSame( rtrim( (string) file_get_contents( $gold ), "\n" ), $r['layout'] );
+    }
+
+    /** @return array<string,array{0:string,1:list<string>,2:list<string>}> file => the words that must reach the layout, the headings */
+    public static function leadingFiles(): array
+    {
+        return [
+            '17-leading-style-loose.html'      => [ '17-leading-style-loose.html', [ 'Bread out of the oven', 'Loose words between the sections', 'Open until nine' ], [ 'Morning bakes', 'Evening coffee' ] ],
+            '17-leading-meta-inline.html'      => [ '17-leading-meta-inline.html', [ 'Call', 'today', 'write to us', 'Chairs, tables', 'more loose text', 'Made by hand' ], [ 'Studio Lark', 'What we make' ] ],
+            '17-leading-comment-text.html'     => [ '17-leading-comment-text.html', [ 'Welcome text before any block', 'It begins here', 'A loose line', 'Short and sweet' ], [ 'First story', 'Side note' ] ],
+            '17-leading-script-template.html'  => [ '17-leading-script-template.html', [ 'Pick the one that fits', 'Small print', 'and loose text', 'Ask us anything' ], [ 'Plans', 'Questions' ] ],
+        ];
+    }
+
+    /**
+     * Head content (or a comment) first, then loose text between HTML5 blocks: libxml2 used to wrap the text in an implied <p> that swallowed
+     * the next block, so its heading became bold text in a paragraph. Every heading must stay a heading module, every word must be counted,
+     * and the page must convert exactly like the same page without its first line.
+     */
+    #[DataProvider('leadingFiles')]
+    public function testLeadingHeadContentKeepsTheHeadingsAndSections( string $file, array $words, array $headings ): void
+    {
+        $html = (string) file_get_contents( self::FIXTURES . '/' . $file );
+        $rest = substr( $html, strpos( $html, "\n" ) + 1 );
+        foreach ( [ 'none', 'basic' ] as $styles ) {
+            $r = $this->convert( $html, [ 'styles' => $styles ] );
+            $this->assertTrue( $r['ok'], $file . ' ' . $styles . ': ' . (string) ( $r['error'] ?? '' ) );
+            foreach ( $words as $w ) {
+                $this->assertStringContainsString( $w, $r['layout'], $file . ' ' . $styles );
+            }
+            foreach ( $headings as $h ) {
+                $this->assertStringContainsString( '<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"' . $h . '"}}', $r['layout'], $h . ' stays a heading module (' . $styles . ')' );
+                $this->assertStringNotContainsString( '<strong>' . $h, $r['layout'], $file . ' ' . $styles );
+            }
+            $this->assertTrue( $r['report']['text_check']['equal'] );
+        }
+        $this->assertSame( [], \AiEditorDivi5\WP\HtmlSource::parse( $html )['repaired'], 'what a browser builds: no repair note' );
+        $this->assertSame( $this->convert( $rest, [ 'styles' => 'none' ] )['layout'], $this->convert( $html, [ 'styles' => 'none' ] )['layout'], 'the first line changes nothing' );
+    }
+
+    #[DataProvider('leadingFiles')]
+    public function testLeadingGoldenLayout( string $file ): void
+    {
+        $name = basename( $file, '.html' );
+        $r    = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $file ), [ 'styles' => 'none' ] );
+        $gold = __DIR__ . '/golden/html-to-divi/' . $name . '.none.layout.txt';
+        if ( false !== getenv( 'AIED_UPDATE_GOLDEN' ) && ! is_file( $gold ) ) {
+            file_put_contents( $gold, $r['layout'] . "\n" );
+        }
+        $this->assertFileExists( $gold );
+        $this->assertSame( rtrim( (string) file_get_contents( $gold ), "\n" ), $r['layout'] );
+    }
+
+    /** @return array<string,array{0:string,1:list<string>,2:list<string>,3:int}> file => the words, the headings, the sections */
+    public static function afterBodyFiles(): array
+    {
+        return [
+            '18-after-body-loose-section.html'     => [ '18-after-body-loose-section.html', [ 'Cut every morning at six', 'Loose words after the body tag', 'Delivered on Fridays' ], [ 'Fresh flowers', 'Weekly bunches' ], 3 ],
+            '18-after-body-html-text-section.html' => [ '18-after-body-html-text-section.html', [ 'Tools for every trade', 'Loose words after the html tag', 'Bring it in, we fix it' ], [ 'Our workshop', 'Repairs' ], 3 ],
+            '18-after-body-inline.html'            => [ '18-after-body-inline.html', [ 'Open from ten', 'Call us on', '0123 456', 'write to us', 'today', 'Baked in the back' ], [ 'Tea room', 'Cakes' ], 3 ],
+            '18-after-body-two-bodies.html'        => [ '18-after-body-two-bodies.html', [ 'The first body text', 'Loose words in the second body', 'The second body text' ], [ 'First body', 'Second body' ], 3 ],
+            '18-after-body-lookalikes.html'        => [ '18-after-body-lookalikes.html', [ 'link', 'and a comment', 'Loose words after the real end tag', 'Only the real end tag counts' ], [ 'Look alikes', 'Still a section' ], 3 ],
+        ];
+    }
+
+    /**
+     * Loose text after </body> or </html>, then a section: libxml2 wrapped the text in an implied <p> that swallowed the section, so its
+     * heading became bold text in a paragraph. A browser ignores those end tags. Every heading must stay a heading module, every word must
+     * be counted, and the loose text must be a section of its own between the two.
+     */
+    #[DataProvider('afterBodyFiles')]
+    public function testContentAfterTheBodyEndKeepsTheHeadingsAndSections( string $file, array $words, array $headings, int $sections ): void
+    {
+        $html = (string) file_get_contents( self::FIXTURES . '/' . $file );
+        foreach ( [ 'none', 'basic' ] as $styles ) {
+            $r = $this->convert( $html, [ 'styles' => $styles ] );
+            $this->assertTrue( $r['ok'], $file . ' ' . $styles . ': ' . (string) ( $r['error'] ?? '' ) );
+            foreach ( $words as $w ) {
+                $this->assertStringContainsString( $w, $r['layout'], $file . ' ' . $styles );
+            }
+            foreach ( $headings as $h ) {
+                $this->assertStringContainsString( '<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"' . $h . '"}}', $r['layout'], $h . ' stays a heading module (' . $styles . ')' );
+                $this->assertStringNotContainsString( '<strong>' . $h, $r['layout'], $file . ' ' . $styles );
+            }
+            $this->assertSame( $sections, substr_count( $r['layout'], '<!-- wp:divi/section ' ), $file . ' ' . $styles );
+            $this->assertTrue( $r['report']['text_check']['equal'] );
+        }
+        $this->assertStringNotContainsString( '&lt;/body', $this->convert( $html, [ 'styles' => 'none' ] )['layout'], 'a look-alike in an attribute is never shown as text' );
+    }
+
+    /**
+     * The style reader (phase 2) reads the same tree: a page whose </body> comes before loose text and a styled section converts with
+     * styles exactly like the same page with its </body> at the end (what a browser builds), and the style reader sees the section after the end tag inside the body.
+     */
+    public function testStylesAfterTheBodyEndReadTheBrowsersTree(): void
+    {
+        $tail  = 'Loose words.<section style="background-color:#204060"><h2 style="color:#fafafa">Second</h2><p>Two.</p></section>';
+        $early = '<!DOCTYPE html><html><head><style>h2{color:#333333}</style></head><body><section><h2>First</h2><p>One.</p></section></body>' . $tail . '</html>';
+        $late  = '<!DOCTYPE html><html><head><style>h2{color:#333333}</style></head><body><section><h2>First</h2><p>One.</p></section>' . $tail . '</body></html>';
+        $got   = $this->convert( $early, [ 'styles' => 'basic' ] );
+        $want  = $this->convert( $late, [ 'styles' => 'basic' ] );
+        $this->assertTrue( $got['ok'] );
+        $this->assertSame( $want['layout'], $got['layout'] );
+        $this->assertSame( $want['report'], $got['report'], 'the same style report' );
+        $this->assertSame( [ 'canvas' => 1, 'color' => 2 ], $got['report']['styles']['carried'], 'the first section on the canvas (not a source background)' );
+        $this->assertSame( '/html/body/section[2]/h2', $got['report']['styles']['dropped_unreadable'][0]['path'], 'at its path inside the body' );
+        $this->assertSame( 3, substr_count( $got['layout'], '<!-- wp:divi/section ' ) );
+    }
+
+    #[DataProvider('afterBodyFiles')]
+    public function testAfterBodyGoldenLayout( string $file ): void
+    {
+        $name = basename( $file, '.html' );
+        $r    = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $file ), [ 'styles' => 'none' ] );
+        $gold = __DIR__ . '/golden/html-to-divi/' . $name . '.none.layout.txt';
+        if ( false !== getenv( 'AIED_UPDATE_GOLDEN' ) && ! is_file( $gold ) ) {
+            file_put_contents( $gold, $r['layout'] . "\n" );
+        }
+        $this->assertFileExists( $gold );
+        $this->assertSame( rtrim( (string) file_get_contents( $gold ), "\n" ), $r['layout'] );
     }
 
     public function testEmptyInputIsRefusedWithAReason(): void
@@ -159,11 +477,304 @@ final class HtmlToDiviTest extends HtmlTestCase
         $this->assertGreaterThan( 0, $r['report']['elements']['sections'] );
     }
 
-    public function testTheStyleNoteIsOnlyThereWhenStylesAreAskedFor(): void
+    public function testTheStylesReportIsOnlyThereWhenStylesAreAskedFor(): void
     {
-        $html = '<h1>Hi</h1><p>x</p>';
-        $this->assertNotEmpty( array_filter( $this->convert( $html )['report']['notes'], static fn( $n ) => str_contains( $n, 'not converted yet' ) ) );
-        $this->assertSame( [], array_filter( $this->convert( $html, [ 'styles' => 'none' ] )['report']['notes'], static fn( $n ) => str_contains( $n, 'not converted yet' ) ) );
+        $html  = '<h1>Hi</h1><p>x</p>';
+        $basic = $this->convert( $html )['report'];
+        $none  = $this->convert( $html, [ 'styles' => 'none' ] )['report'];
+        $this->assertSame( [ 'carried', 'ignored', 'dropped_unreadable', 'dropped_total', 'fonts', 'clamped', 'notes', 'external' ], array_keys( $basic['styles'] ), 'the internal pass count is not handed over' );
+        $this->assertArrayNotHasKey( 'styles', $none, 'styles=none is the phase-1 report exactly' );
+        foreach ( [ $basic, $none ] as $report ) {
+            $this->assertSame( [], array_filter( $report['notes'], static fn( $n ) => str_contains( $n, 'not converted yet' ) ) );
+        }
+        $this->assertSame( array_keys( $none ), array_values( array_diff( array_keys( $basic ), [ 'styles' ] ) ), 'the rest of the report is the same in both modes' );
+    }
+
+    /** report.styles.ignored is the sorted union of every layer's counters: HtmlCss and HtmlStyles plus HtmlStyleBlocks and HtmlReadability. */
+    public function testTheIgnoredCountersOfEveryLayerAreAddedUp(): void
+    {
+        $s = $this->convert( (string) file_get_contents( self::FIXTURES . '/14-styled-hostile.html' ) )['report']['styles'];
+        $keys = array_keys( $s['ignored'] );
+        $sorted = $keys;
+        sort( $sorted );
+        $this->assertSame( $sorted, $keys );
+        $this->assertArrayHasKey( 'media', $s['ignored'], 'a cascade counter (HtmlStyles)' );
+        $this->assertArrayHasKey( 'pseudo_state', $s['ignored'], 'a CSS reader counter (HtmlCss)' );
+        $this->assertArrayHasKey( 'unknown_background', $s['ignored'], 'a readability counter (HtmlReadability)' );
+        $this->assertSame( 2, $s['dropped_total'] );
+        $this->assertCount( 2, $s['dropped_unreadable'] );
+    }
+
+    /** The skipped <style> elements and the linked stylesheets are flagged only with styles=basic; the generic entry never doubles them. */
+    public function testStyleFlagsJoinTheReportOnlyForBasic(): void
+    {
+        $html  = '<!DOCTYPE html><html><head><link rel="stylesheet" href="/a.css"><style>@import url("/b.css"); p{color:#111111}</style></head><body><section><h1>Hi</h1>'
+            . '<style>p{color:#222222}</style><style media="print">h1{color:#ff0000}</style><p>x</p></section></body></html>';
+        $basic = $this->convert( $html )['report'];
+        $none  = $this->convert( $html, [ 'styles' => 'none' ] )['report'];
+
+        $this->assertSame( [ 'style', 'style' ], array_column( $none['flagged'], 'type' ), 'styles=none: the phase-1 entries, one per <style> in the body' );
+        $this->assertSame( [ 'style', 'link' ], array_column( $basic['flagged'], 'type' ), 'basic: the print <style> and the link, each once; the read <style> is in report.styles' );
+        $this->assertStringContainsString( 'media attribute', $basic['flagged'][0]['reason'] );
+        $this->assertStringContainsString( '1 linked stylesheet was not read', $basic['flagged'][1]['reason'] );
+        $this->assertSame( count( $basic['flagged'] ), $basic['flagged_count'] );
+        $this->assertSame( 2, $basic['styles']['external'], 'the link and the @import' );
+        $this->assertContains( '2 external stylesheet(s) not read: the converter never fetches CSS, so colours and fonts may differ.', $basic['styles']['notes'] );
+        $this->assertSame( 0, $this->convert( '<h1>Hi</h1>' )['report']['styles']['external'] );
+        $this->assertSame( [], $this->convert( '<h1>Hi</h1>' )['report']['styles']['notes'] );
+    }
+
+    /** Every string of report.styles is valid UTF-8 and at most 200 characters (a font name comes from the source CSS). */
+    public function testReportStringsAreCappedAndValidUtf8(): void
+    {
+        $cap = new \ReflectionMethod( HtmlToDivi::class, 'cap' );
+        $this->assertSame( 200, mb_strlen( (string) $cap->invoke( null, str_repeat( 'é', 300 ) ) ) );
+        $this->assertTrue( mb_check_encoding( (string) $cap->invoke( null, "Brand\xff\xfe Sans" ), 'UTF-8' ) );
+        $this->assertSame( 'Inter', $cap->invoke( null, 'Inter' ) );
+
+        foreach ( self::styledFixtures() as [ $name ] ) {
+            $styles = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $name . '.html' ) )['report']['styles'];
+            $this->assertNotFalse( json_encode( $styles ), $name );
+            array_walk_recursive( $styles, function ( mixed $v ) use ( $name ): void {
+                if ( is_string( $v ) ) {
+                    $this->assertLessThanOrEqual( 200, mb_strlen( $v ), $name );
+                    $this->assertTrue( mb_check_encoding( $v, 'UTF-8' ), $name );
+                }
+            } );
+            $this->assertLessThanOrEqual( 20, count( $styles['fonts'] ) );
+            $this->assertSame( count( $styles['fonts'] ), count( array_unique( array_column( $styles['fonts'], 'source' ) ) ), 'fonts are unique by source' );
+        }
+    }
+
+    /**
+     * Review M4: a cards chunk of more than four cards becomes several Divi rows. The writer takes padding per side, so the row's top
+     * padding goes on the first Divi row only and its bottom padding on the last only; left, right, background and max width repeat.
+     */
+    public function testACardsRowSplitIntoSeveralRowsPadsOnlyItsOuterEdges(): void
+    {
+        $card = static fn( int $i ): string => '<div class="card"><h3>Card ' . $i . '</h3><p>Text of card number ' . $i . ' here.</p></div>';
+        $html = '<!DOCTYPE html><html><body><section style="background:#ffffff"><div class="grid" style="padding:10px 20px 30px 40px; max-width:900px">'
+            . implode( '', array_map( $card, range( 1, 6 ) ) ) . '</div></section></body></html>';
+        $root = ( new \Divi5Validator\BlockParser() )->parse( $this->convert( $html )['layout'] )->root();
+        $this->assertNotNull( $root );
+        $rows = [];
+        $root->walk( static function ( \Divi5Validator\Block $b ) use ( &$rows ): void {
+            if ( 'divi/row' === $b->name() ) {
+                $rows[] = $b;
+            }
+        } );
+        $this->assertCount( 2, $rows, 'six cards: two rows of three' );
+        $pad = static fn( \Divi5Validator\Block $r ): array => (array) ( $r->attr( 'module.decoration.spacing.desktop.value.padding' ) ?? [] );
+        $this->assertSame( [ 'top' => '10px', 'right' => '20px', 'left' => '40px' ], $pad( $rows[0] ) );
+        $this->assertSame( [ 'right' => '20px', 'bottom' => '30px', 'left' => '40px' ], $pad( $rows[1] ) );
+        foreach ( $rows as $r ) {
+            $this->assertSame( '900px', $r->attr( 'module.decoration.sizing.desktop.value.maxWidth' ) );
+        }
+    }
+
+    /** The background path of a section, row or column (DiviMarkup). */
+    private const PAINT = 'module.decoration.background.desktop.value.color';
+
+    #[DataProvider('styledFixtures')]
+    public function testEveryStyledFixtureMeetsTheOracle( string $name ): void
+    {
+        $r = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $name . '.html' ) );
+        $this->assertTrue( $r['ok'] );
+        $this->assertSame( [], StyledLayoutOracle::problems( $r['layout'] ), $name );
+    }
+
+    /** Every page of the corpus, in both modes: the oracle has nothing to say (a page without styles is trivially fine). */
+    #[DataProvider('fixtures')]
+    public function testEveryFixtureMeetsTheOracleInBothModes( string $file ): void
+    {
+        $html = (string) file_get_contents( $file );
+        foreach ( [ 'basic', 'none' ] as $mode ) {
+            $r = $this->convert( $html, [ 'styles' => $mode ] );
+            if ( $r['ok'] ) {
+                $this->assertSame( [], StyledLayoutOracle::problems( $r['layout'] ), basename( $file ) . ' ' . $mode );
+            }
+        }
+    }
+
+    /**
+     * Five hand-made layouts, one per rule of StyledLayoutOracle, each giving exactly its own problem; each next to its clean twin,
+     * which gives none. Then the edges of rule 3 (the smallest device size, weight, the innermost paint) and rule 4.
+     */
+    public function testTheOracleCatchesPlantedFaults(): void
+    {
+        $page = static fn( string $mods, array $section = [], array $row = [], array $columns = [] ): string => DiviMarkup::page( [ DiviMarkup::section( '', DiviMarkup::row( [ $mods ], $row, $columns ), $section ) ] );
+        $text = static fn( array $style = [] ): string => DiviMarkup::text( '<p>Some words</p>', $style );
+        $white = [ 'background' => '#ffffff' ];
+
+        $faults = [
+            'rule 1' => [ $page( $text( [ 'color' => '#111111' ] ) ), $page( $text( [ 'color' => '#111111' ] ), $white ) ],
+            'rule 2' => [ $page( $text(), $white ), $page( $text() ) ],
+            'rule 3' => [ $page( $text( [ 'color' => '#eeeeee' ] ), $white ), $page( $text( [ 'color' => '#333333' ] ), $white ) ],
+            'rule 4' => [ $page( DiviMarkup::button( 'Go', '/go', false, [ 'background' => '#2563eb' ] ) ), $page( DiviMarkup::button( 'Go', '/go', false, [ 'background' => '#2563eb', 'color' => '#ffffff' ] ) ) ],
+            'rule 5' => [ str_replace( '"200px"', '"250px"', $page( $text(), [ 'padding' => [ 'top' => '200px' ] ] ) ), $page( $text(), [ 'padding' => [ 'top' => '200px' ] ] ) ],
+        ];
+        foreach ( $faults as $rule => [ $faulty, $clean ] ) {
+            $problems = StyledLayoutOracle::problems( $faulty );
+            $this->assertCount( 1, $problems, $rule . ': ' . json_encode( $problems ) );
+            $this->assertStringStartsWith( $rule . ':', $problems[0] );
+            $this->assertSame( [], StyledLayoutOracle::problems( $clean ), $rule . ' clean twin' );
+        }
+
+        // Rule 3 is judged at the smallest size written on any device: #8a8a8a on white is 3.45:1.
+        $heading = static fn( int $size, string $weight = '400' ): string => DiviMarkup::heading( 'Title', 2, [ 'color' => '#8a8a8a', 'size' => $size, 'weight' => $weight ] );
+        $only    = static fn( string $layout ): array => array_map( static fn( string $p ): string => substr( $p, 0, 7 ), StyledLayoutOracle::problems( $layout ) );
+        $this->assertSame( [ 'rule 3:' ], $only( $page( $heading( 40 ), $white ) ), '40px steps down to 22px on phones: normal text' );
+        $this->assertSame( [], $only( $page( $heading( 60 ), $white ) ), '60px is 33px on phones: large' );
+        $this->assertSame( [], $only( $page( $heading( 24 ), $white ) ), '24px written on desktop only: large' );
+        $this->assertSame( [], $only( $page( $heading( 20, '700' ), $white ) ), '20px bold: large' );
+        $this->assertSame( [ 'rule 3:' ], $only( $page( $heading( 20, '600' ), $white ) ), '20px semibold: normal' );
+        $this->assertSame( [ 'rule 3:' ], $only( $page( $heading( 18, '700' ), $white ) ), '18px bold: normal' );
+        $this->assertSame( [ 'rule 3:' ], $only( $page( DiviMarkup::heading( 'Title', 1, [ 'color' => '#8a8a8a' ] ), $white ) ), 'no written size: never large' );
+
+        // The innermost paint is the one judged.
+        $this->assertSame( [], $only( $page( $text( [ 'color' => '#111111' ] ), [ 'background' => '#000000' ], [], [ $white ] ) ) );
+        $this->assertSame( [ 'rule 3:' ], $only( $page( $text( [ 'color' => '#111111' ] ), $white, [ 'background' => '#000000' ] ) ) );
+        $this->assertSame( [ 'rule 3:' ], $only( $page( $text( [ 'color' => '#ffffff' ] ), [ 'background' => '#000000' ], [], [ $white ] ) ) );
+
+        // Rule 4: an unreadable pair, a ghost without paint, a ghost on paint, a bare button on paint.
+        $button = static fn( array $style ): string => DiviMarkup::button( 'Go', '/go', false, $style );
+        $this->assertSame( [ 'rule 4:' ], $only( $page( $button( [ 'background' => '#ffffff', 'color' => '#eeeeee' ] ) ) ) );
+        $this->assertSame( [ 'rule 4:' ], $only( $page( $button( [ 'background' => DiviMarkup::TRANSPARENT, 'color' => '#111111' ] ) ) ) );
+        $this->assertSame( [], $only( $page( $button( [ 'background' => DiviMarkup::TRANSPARENT, 'color' => '#111111' ] ), $white ) ) );
+        $this->assertSame( [ 'rule 4:' ], $only( $page( $button( [ 'background' => DiviMarkup::TRANSPARENT, 'color' => '#eeeeee' ] ), $white ) ) );
+        $this->assertSame( [ 'rule 4:' ], $only( $page( $button( [] ), $white ) ) );
+        $this->assertSame( [], $only( $page( $button( [ 'radius' => 8 ] ) ) ) );
+
+        // Rule 5: a colour, a family and a size outside their forms.
+        $this->assertSame( [ 'rule 5:' ], $only( str_replace( '#333333', '#333333aa', $page( $text( [ 'color' => '#333333' ] ), $white ) ) ) );
+        $this->assertSame( [ 'rule 5:' ], $only( str_replace( '"Inter"', '"Brand X"', $page( $text( [ 'family' => 'Inter' ] ) ) ) ) );
+        $this->assertSame( [ 'rule 5:' ], $only( str_replace( '"16px"', '"7px"', $page( $text( [ 'size' => 16 ] ) ) ) ) );
+        $this->assertSame( [ 'rule 5:' ], $only( str_replace( '"720px"', '"3000px"', $page( $text(), [], [ 'max_width' => '720px' ] ) ) ) );
+    }
+
+    /** @return array<string,mixed> sections, rows, columns and modules (lists of \Divi5Validator\Block, document order), report, layout */
+    private function blocks( string $name ): array
+    {
+        $r = $this->convert( (string) file_get_contents( self::FIXTURES . '/' . $name . '.html' ) );
+        $this->assertTrue( $r['ok'] );
+        $root = ( new \Divi5Validator\BlockParser() )->parse( $r['layout'] )->root();
+        $this->assertNotNull( $root );
+        $out = [ 'sections' => [], 'rows' => [], 'columns' => [], 'modules' => [], 'report' => $r['report'], 'layout' => $r['layout'] ];
+        $root->walk( static function ( \Divi5Validator\Block $b ) use ( &$out ): void {
+            $k = match ( $b->name() ) {
+                'divi/section' => 'sections',
+                'divi/row'     => 'rows',
+                'divi/column'  => 'columns',
+                'divi/placeholder' => null,
+                default        => 'modules',
+            };
+            if ( null !== $k ) {
+                $out[ $k ][] = $b;
+            }
+        } );
+
+        return $out;
+    }
+
+    /** The first module whose attributes contain $text. */
+    private function module( array $blocks, string $text ): \Divi5Validator\Block
+    {
+        foreach ( $blocks['modules'] as $m ) {
+            if ( str_contains( (string) json_encode( $m->attrs(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ), $text ) ) {
+                return $m;
+            }
+        }
+        $this->fail( 'no module holds ' . $text );
+    }
+
+    private const H = 'title.decoration.font.font.';
+    private const T = 'content.decoration.bodyFont.body.font.';
+    private const B = 'button.decoration.';
+
+    /**
+     * What each styled page must carry, read from its HTML (every fact was checked against the fixture's own CSS before it was pinned).
+     */
+    public function testTheStyledFixturesCarryWhatTheyShould(): void
+    {
+        // inline: a dark hero with a white 56px / 800 centred h1, a button pair, and a 720px row with 40px padding.
+        $b  = $this->blocks( '14-styled-inline' );
+        $h1 = $this->module( $b, 'Small-batch coffee' );
+        $this->assertSame( '#0f172a', $b['sections'][0]->attr( self::PAINT ) );
+        $this->assertSame( [ '#ffffff', '56px', '800', 'center' ], [ $h1->attr( self::H . 'desktop.value.color' ), $h1->attr( self::H . 'desktop.value.size' ), $h1->attr( self::H . 'desktop.value.weight' ), $h1->attr( self::H . 'desktop.value.textAlign' ) ] );
+        $lead = $this->module( $b, 'Order by Sunday' );
+        $this->assertSame( [ '#cbd5e1', '20px', 'center' ], [ $lead->attr( self::T . 'desktop.value.color' ), $lead->attr( self::T . 'desktop.value.size' ), $lead->attr( 'module.advanced.text.text.desktop.value.orientation' ) ] );
+        $btn = $this->module( $b, '/shop' );
+        $this->assertSame( [ '#f59e0b', '#111827', '999px' ], [ $btn->attr( self::B . 'background.desktop.value.color' ), $btn->attr( self::B . 'font.font.desktop.value.color' ), $btn->attr( self::B . 'border.desktop.value.radius.topLeft' ) ] );
+        $this->assertSame( '720px', $b['rows'][1]->attr( 'module.decoration.sizing.desktop.value.maxWidth' ) );
+        $this->assertSame( [ 'top' => '40px', 'right' => '40px', 'bottom' => '40px', 'left' => '40px' ], $b['rows'][1]->attr( 'module.decoration.spacing.desktop.value.padding' ) );
+        // The deliberate mixed run (one unstyled and one styled <p> in one text module) drops the second section's canvas, so its h2 colour goes too.
+        $this->assertNull( $b['sections'][1]->attr( self::PAINT ) );
+        $this->assertNull( $this->module( $b, 'How we roast' )->attr( self::H . 'desktop.value.color' ) );
+        $this->assertSame( 'paint_dropped', $b['report']['styles']['dropped_unreadable'][0]['reason'] );
+
+        // classes: #intro beats .lead, the inline colour beats .accent, h2 2em of 18px = 36/27/20, three white cards on #f3f4f6, Inter.
+        $b = $this->blocks( '14-styled-classes' );
+        $this->assertSame( '#ffffff', $b['sections'][0]->attr( self::PAINT ), 'the canvas under declared colours' );
+        $this->assertSame( '#0f766e', $this->module( $b, 'Drop it off' )->attr( self::T . 'desktop.value.color' ) );
+        $this->assertSame( '#6b7280', $this->module( $b, 'nine thousand' )->attr( self::T . 'desktop.value.color' ) );
+        $this->assertSame( '#7c3aed', $this->module( $b, 'Free safety check' )->attr( self::T . 'desktop.value.color' ) );
+        $this->assertSame( '#1f2937', $this->module( $b, 'Walk-ins' )->attr( self::T . 'desktop.value.color' ), 'the later of two equal p rules' );
+        $h2 = $this->module( $b, 'What we fix' );
+        $this->assertSame( [ '36px', '27px', '20px' ], [ $h2->attr( self::H . 'desktop.value.size' ), $h2->attr( self::H . 'tablet.value.size' ), $h2->attr( self::H . 'phone.value.size' ) ] );
+        $this->assertNull( $this->module( $b, 'Our record' )->attr( self::H . 'desktop.value.size' ), 'an h3 takes its size only from its own rules' );
+        $this->assertSame( '#f3f4f6', $b['sections'][1]->attr( self::PAINT ) );
+        $cards = array_slice( $b['columns'], -3 );
+        foreach ( $cards as $c ) {
+            $this->assertSame( '#ffffff', $c->attr( self::PAINT ) );
+            $this->assertSame( '24px', $c->attr( 'module.decoration.spacing.desktop.value.padding.top' ) );
+        }
+        $this->assertSame( 'Inter', $this->module( $b, 'Tune-ups' )->attr( self::H . 'desktop.value.family' ) );
+        $this->assertSame( [ [ 'source' => 'Inter', 'action' => 'carried' ] ], $b['report']['styles']['fonts'] );
+
+        // dark: the page background reaches three sections; the fine print (2.48:1 on #0b1120) leaves its section unpainted and is listed.
+        $b = $this->blocks( '14-styled-dark' );
+        $this->assertSame( [ '#0b1120', '#1e293b', '#0b1120', null ], array_map( static fn( $s ) => $s->attr( self::PAINT ), $b['sections'] ) );
+        $this->assertNull( $this->module( $b, 'Prices exclude VAT' )->attr( self::T . 'desktop.value.color' ) );
+        $this->assertSame( [ 'reason' => 'unreadable', 'color' => '#475569', 'background' => '#0b1120', 'ratio' => '2.48' ], array_intersect_key( $b['report']['styles']['dropped_unreadable'][0], array_flip( [ 'reason', 'color', 'background', 'ratio' ] ) ) );
+        $this->assertSame( [ '#a78bfa', '#0b1120' ], [ $this->module( $b, '/rates' )->attr( self::B . 'background.desktop.value.color' ), $this->module( $b, '/rates' )->attr( self::B . 'font.font.desktop.value.color' ) ] );
+
+        // backgrounds: only the solid #123456 section is painted; the gradient, the image and the rgba() sections are not, nor is the
+        // light section whose last paragraph has its own black background (a background between the text and its section).
+        $b = $this->blocks( '14-styled-backgrounds' );
+        $this->assertSame( [ null, null, '#123456', null, null ], array_map( static fn( $s ) => $s->attr( self::PAINT ), $b['sections'] ) );
+        $this->assertSame( '#e0f2fe', $this->module( $b, 'Lightweight shelters' )->attr( self::H . 'desktop.value.color' ) );
+        $this->assertNull( $this->module( $b, 'Gear that goes higher' )->attr( self::H . 'desktop.value.color' ) );
+        $this->assertSame( '120px', $b['sections'][1]->attr( 'module.decoration.spacing.desktop.value.padding.top' ), 'padding is layout: it is carried even where the paint is not' );
+        $this->assertStringNotContainsString( '#000000', $b['layout'] );
+
+        // fonts: Playfair Display on the headings that ask for it, Inter (after Brand Sans) on the text, Georgia, nothing on the pre.
+        $b = $this->blocks( '14-styled-fonts' );
+        $this->assertSame( 'Playfair Display', $this->module( $b, 'Letters worth keeping' )->attr( self::H . 'desktop.value.family' ) );
+        $this->assertSame( 'Playfair Display', $this->module( $b, 'Our paper' )->attr( self::H . 'desktop.value.family' ) );
+        $this->assertSame( 'Inter', $this->module( $b, 'fountain pens' )->attr( self::T . 'desktop.value.family' ) );
+        $this->assertSame( 'Georgia', $this->module( $b, 'cotton rag' )->attr( self::T . 'desktop.value.family' ) );
+        $this->assertNull( $this->module( $b, 'Ships worldwide' )->attr( self::T . 'desktop.value.family' ), 'system-ui is a generic family' );
+        $this->assertNull( $this->module( $b, 'iron gall' )->attr( self::T . 'desktop.value.family' ), 'a pre takes its family only from its own rules' );
+        $this->assertSame( [ 'Playfair Display', 'Brand Sans', 'Inter', 'Georgia' ], array_column( $b['report']['styles']['fonts'], 'source' ) );
+        $this->assertSame( 1, $b['report']['styles']['external'], 'the @import is counted; the CSS in the page is still carried' );
+
+        // hostile: the h1's size (@media) and colour (.hero h1) are unresolved, 900px is clamped to 120px, the inline button pair wins,
+        // the opacity section is not painted, and RebeccaPurple (a p's own background) is never written.
+        $b  = $this->blocks( '14-styled-hostile' );
+        $h1 = $this->module( $b, 'Styles that fight back' );
+        $this->assertNull( $h1->attr( self::H . 'desktop.value.size' ) );
+        $this->assertNull( $h1->attr( self::H . 'desktop.value.color' ) );
+        $this->assertSame( '120px', $this->module( $b, 'Enormous heading' )->attr( self::H . 'desktop.value.size' ) );
+        $this->assertSame( 1, $b['report']['styles']['clamped'] );
+        $go = $this->module( $b, '/go' );
+        $this->assertSame( [ '#000000', '#ffffff', null ], [ $go->attr( self::B . 'background.desktop.value.color' ), $go->attr( self::B . 'font.font.desktop.value.color' ), $go->attr( self::B . 'border.desktop.value.radius.topLeft' ) ] );
+        $this->assertNull( $b['sections'][0]->attr( self::PAINT ) );
+        $this->assertStringNotContainsString( '#663399', strtolower( $b['layout'] ) );
+        $this->assertStringNotContainsString( 'rebeccapurple', strtolower( $b['layout'] ) );
+        $this->assertSame( [ 'reason' => 'unknown_background', 'color' => '#aabbcc' ], array_intersect_key( $b['report']['styles']['dropped_unreadable'][0], array_flip( [ 'reason', 'color' ] ) ) );
+        foreach ( [ 'var(', 'calc(', 'clamp(', '#ff0000', '#ff00ff', '#00aa00', '#00ff00' ] as $never ) {
+            $this->assertStringNotContainsString( $never, strtolower( $b['layout'] ) );
+        }
     }
 
     public function testImagesAreReportedWithWhatHappenedToThem(): void
@@ -182,6 +793,43 @@ final class HtmlToDiviTest extends HtmlTestCase
         $r = HtmlToDivi::convert( '<h1>T</h1><img src="https://mysite.test/wp-content/uploads/a.jpg" alt="Mine">', [ 'image_mode' => 'keep' ], \AiEditorDivi5\WP\ImagePack::manifest(), $site, [ self::class, 'resolve' ] );
         $this->assertStringContainsString( 'https://mysite.test/wp-content/uploads/a.jpg', $r['layout'] );
         $this->assertStringContainsString( 'Media Library', $r['report']['images'][0]['action'] );
+    }
+
+    public function testPropertiesAnEffectMadeUnresolvedAreCountedNotSilent(): void
+    {
+        $r = HtmlToDivi::convert( '<section style="background:#000;opacity:.2"><p style="color:#fff">Text</p></section>' );
+        $this->assertSame( [], $r['report']['styles']['carried'] );
+        $this->assertSame( 2, $r['report']['styles']['ignored']['effect'] ?? 0, 'the section background and the text colour' );
+        $this->assertStringNotContainsString( '#ffffff', $r['layout'] );
+        $this->assertStringNotContainsString( '#000000', $r['layout'] );
+    }
+
+    public function testASelfCheckThatRefusesAValueOnTheStylePathFallsBackToTheUnstyledConversion(): void
+    {
+        // An InvalidArgumentException is what a self-check of the converter or of DiviMarkup throws. Here it is raised from inside the
+        // basic run through the existing $isSiteImage parameter (the first call only), which no production caller makes throw.
+        $html  = '<section style="background:#0f172a"><h1 style="color:#ffffff">T</h1><img src="https://mysite.test/wp-content/uploads/a.jpg" alt="Mine"></section>';
+        $calls = 0;
+        $site  = static function ( string $u ) use ( &$calls ): bool {
+            if ( 1 === ++$calls ) {
+                throw new \InvalidArgumentException( 'raw <b>secret</b> message' );
+            }
+
+            return false;
+        };
+        $r    = HtmlToDivi::convert( $html, [ 'image_mode' => 'keep' ], \AiEditorDivi5\WP\ImagePack::manifest(), $site, [ self::class, 'resolve' ] );
+        $none = HtmlToDivi::convert( $html, [ 'image_mode' => 'keep', 'styles' => 'none' ], \AiEditorDivi5\WP\ImagePack::manifest(), static fn( string $u ): bool => false, [ self::class, 'resolve' ] );
+        $this->assertTrue( $r['ok'] );
+        $this->assertSame( $none['layout'], $r['layout'], 'exactly the styles=none layout' );
+        $this->assertSame( [ 'carried' => [], 'ignored' => [], 'dropped_unreadable' => [], 'dropped_total' => 0, 'fonts' => [], 'clamped' => 0, 'notes' => [ HtmlToDivi::NOTE_STYLES_FAILED ], 'external' => 0 ], $r['report']['styles'] );
+        $this->assertStringNotContainsString( 'secret', json_encode( $r ) );
+        unset( $r['report']['styles'] );
+        $this->assertSame( $none['report'], $r['report'] );
+
+        // styles=none has no fallback: the exception is not swallowed there.
+        $calls = 0;
+        $this->expectException( \InvalidArgumentException::class );
+        HtmlToDivi::convert( $html, [ 'image_mode' => 'keep', 'styles' => 'none' ], \AiEditorDivi5\WP\ImagePack::manifest(), $site, [ self::class, 'resolve' ] );
     }
 
     public function testUnknownOptionsFallBackToTheDefaults(): void
@@ -258,5 +906,315 @@ final class HtmlToDiviTest extends HtmlTestCase
             $this->assertSame( 1, substr_count( $r['layout'], '<!-- wp:divi/placeholder -->' ) );
         }
         $this->assertGreaterThan( 100, $ok, 'most random pages convert' );
+    }
+
+    /**
+     * End to end on the large-text edges (#8a8a8a on #ffffff is 3.45:1, between the two floors): the oracle has nothing to say about
+     * any of them, and the colour is carried exactly where the text stays large on every device the writer steps it to.
+     */
+    public function testTheLargeTextEdgesMeetTheOracleEndToEnd(): void
+    {
+        $carried = [];
+        foreach ( [ [ '40px', '400' ], [ '44px', '400' ], [ '60px', '400' ], [ '24px', '400' ], [ '20px', '700' ], [ '18px', '700' ], [ '20px', '400' ] ] as [ $size, $weight ] ) {
+            $html = '<section style="background:#ffffff"><h2 style="color:#8a8a8a;font-size:' . $size . ';font-weight:' . $weight . '">Edge words</h2></section>';
+            $r    = $this->convert( $html );
+            $this->assertTrue( $r['ok'] );
+            $this->assertSame( [], StyledLayoutOracle::problems( $r['layout'] ), $html );
+            $carried[ $size . '/' . $weight ] = str_contains( $r['layout'], '"color":"#8a8a8a"' );
+        }
+        // 40 and 44 px step down to 22 and 24 px on phones (max(20, 55%)): 22 px is normal text, 24 px is large.
+        $this->assertSame( [ '40px/400' => false, '44px/400' => true, '60px/400' => true, '24px/400' => true, '20px/700' => true, '18px/700' => false, '20px/400' => false ], $carried );
+    }
+
+    /**
+     * Finding T10-F1 (Task 10's property test, seed 4 case 130 and 14 more cases in seeds 1-40), fixed: a FRAGMENT that started with a
+     * <style> element, then an element libxml2 does not know (an HTML5 section, header, video ...), then loose text, lost structure in
+     * BOTH modes: libxml2 was still in head mode and opened an implied <p> around the loose text that swallowed everything after it, so
+     * the second section's h2 became <strong> inside a nested paragraph. HtmlSource::bodyStart() now writes an explicit <body> where a
+     * browser starts it, so the page with and without its leading <style> gives the same layout.
+     */
+    public function testALeadingStyleElementInAFragmentKeepsTheStructure(): void
+    {
+        $body = '<section><h2>First</h2></section>Loose words<section><h2>Second</h2></section>';
+        $want = $this->convert( $body, [ 'styles' => 'none' ] )['layout'];
+        $this->assertSame( 3, substr_count( $want, '<!-- wp:divi/section ' ), 'without the <style>: three sections' );
+        $got = $this->convert( '<style>p{color:#111111}</style>' . $body, [ 'styles' => 'none' ] )['layout'];
+        $this->assertSame( $want, $got );
+    }
+
+    /** The default seed of the styled property test (AIED_SEED overrides it). */
+    private const STYLED_SEED = 20261022;
+
+    /**
+     * The phase-1 generator, extended with styles: every element may get a random style="" from STYLE_POOL and the page a random
+     * <style> of 0-12 rules. Seeded (AIED_SEED, default 20261022), 200 cases. Each case is a pair [styled, bare] built from the same
+     * random choices (bare = the same tree without any style attribute or <style> element). The contract: never throws; ok or a plain
+     * error; valid through LayoutGate; text kept; nothing CodePolicy refuses; no CSS in the layout; StyledLayoutOracle has nothing to
+     * say; styles=none ignores every style (styled none == bare none == bare basic); the same seed gives the same bytes twice.
+     */
+    public function testRandomStyledHtmlNeverBreaksTheContract(): void
+    {
+        $seed  = (int) ( getenv( 'AIED_SEED' ) ?: self::STYLED_SEED );
+        $cases = self::styledCases( $seed );
+        $this->assertSame( $cases, self::styledCases( $seed ), 'the same seed gives the same pages' );
+
+        $ok      = 0;
+        $styled  = 0;
+        $painted = 0;
+        $inked   = 0;
+        $buttons = 0;
+        foreach ( $cases as $n => [ $html, $bare ] ) {
+            $where = 'seed ' . $seed . ' case ' . $n . "\n" . $html;
+            $r     = $this->convert( $html );
+            $this->assertSame( $r, $this->convert( $html ), 'the same bytes twice: ' . $where );
+            $none     = $this->convert( $html, [ 'styles' => 'none' ] );
+            $bareNone = $this->convert( $bare, [ 'styles' => 'none' ] );
+            $bareBas  = $this->convert( $bare );
+            $this->assertSame( $none['ok'], $r['ok'], 'both modes agree on refusing: ' . $where );
+            $this->assertSame( $none['layout'], $bareNone['layout'], 'styles=none ignores every style: ' . $where );
+            // A <center> element is HTML, not CSS: bare keeps it, and basic carries its UA alignment (D5). Only that may differ.
+            $bareBasic = str_contains( strtolower( $bare ), '<center' ) ? str_replace( [ ',"textAlign":"center"', ',"module":{"advanced":{"text":{"text":{"desktop":{"value":{"orientation":"center"}}}}}}' ], '', $bareBas['layout'] ) : $bareBas['layout'];
+            $this->assertSame( $bareNone['layout'], $bareBasic, 'a page without CSS is the same in both modes: ' . $where );
+            if ( ! $r['ok'] ) {
+                $this->assertIsString( $r['error'], $where );
+                $this->assertNotSame( '', $r['error'], $where );
+                $this->assertSame( '', $r['layout'], $where );
+                continue;
+            }
+            ++$ok;
+            $gate = LayoutGate::check( $r['layout'] );
+            $this->assertTrue( $gate->isValid(), json_encode( array_map( static fn( $v ) => $v->toArray(), $gate->violations() ) ) . "\n" . $where );
+            $this->assertTrue( $r['report']['text_check']['equal'], ( $r['report']['text_check']['first_difference'] ?? '' ) . "\n" . $where );
+            $this->assertSame( [], CodePolicy::violations( $r['layout'] ), $where );
+            $lower = strtolower( $r['layout'] );
+            $this->assertStringNotContainsString( 'style=', $lower, $where );
+            $this->assertStringNotContainsString( '<style', $lower, $where );
+            $this->assertSame( [], StyledLayoutOracle::problems( $r['layout'] ), $where );
+
+            $styled += $r['layout'] !== $bareBas['layout'] ? 1 : 0;
+            ( new \Divi5Validator\BlockParser() )->parse( $r['layout'] )->root()?->walk( static function ( \Divi5Validator\Block $b ) use ( &$painted, &$inked, &$buttons ): void {
+                $painted += in_array( $b->name(), [ 'divi/section', 'divi/row', 'divi/column' ], true ) && null !== $b->attr( self::PAINT ) ? 1 : 0;
+                $inked   += null !== ( $b->attr( 'title.decoration.font.font.desktop.value.color' ) ?? $b->attr( 'content.decoration.bodyFont.body.font.desktop.value.color' ) ) ? 1 : 0;
+                $buttons += null !== $b->attr( 'button.decoration.background.desktop.value.color' ) ? 1 : 0;
+            } );
+        }
+        if ( false !== getenv( 'AIED_STATS' ) ) {
+            fwrite( STDERR, sprintf( "seed %d: %d of %d convert, %d styled, %d painted blocks, %d inked modules, %d filled or ghost buttons\n", $seed, $ok, count( $cases ), $styled, $painted, $inked, $buttons ) );
+        }
+        $this->assertGreaterThan( 100, $ok, 'most random pages convert' );
+        $this->assertGreaterThan( 20, $styled, 'the generator must produce pages whose styles change the layout' );
+        $this->assertGreaterThan( 5, $painted, 'the generator must produce painted blocks' );
+        $this->assertGreaterThan( 5, $inked, 'the generator must produce carried colours' );
+        $this->assertGreaterThan( 10, $buttons, 'the generator must produce button pairs or ghosts' );
+    }
+
+    /** The values a random style="" or <style> declaration takes: every form, including the ones the reader must refuse. */
+    private const STYLE_POOL = [
+        'color'            => [ '#111827', '#ffffff', '#fff', '#ABC', '#0f766e', '#949494', '#767676', 'red', 'white', 'RebeccaPurple', 'navy', 'rgb(30,41,59)', 'rgb(30 41 59 / 50%)', 'rgba(0,0,0,.5)', '#11182780', '#0008', 'hsl(0 0% 50%)', 'var(--x)', 'var(--x, #000)', 'currentColor', 'transparent', 'inherit', 'initial' ],
+        'background'       => [ '#ffffff', '#0b1120', '#f3f4f6', '#123456', '#000', 'white', 'navy', 'rgba(0,0,0,.5)', '#ffffff80', 'transparent', 'none', 'linear-gradient(#000,#fff)', 'radial-gradient(#fff,#000)', 'url(/x.jpg)', '#123456 url(/x.jpg)', 'var(--bg)', 'inherit' ],
+        'background-color' => [ '#ffffff', '#0b1120', '#1e293b', '#fef3c7', '#2563eb', '#f59e0b', 'black', 'rgba(255,255,255,.1)', 'transparent', 'var(--bg)', 'currentColor' ],
+        'font-size'        => [ '12px', '16px', '19px', '20px', '23px', '24px', '33px', '40px', '56px', '72px', '900px', '4px', '-2px', '1.5em', '2rem', '150%', 'large', 'smaller', 'calc(1rem + 2vw)', 'clamp(1rem,2vw,3rem)', '0' ],
+        'font-weight'      => [ '400', '600', '650', '700', '800', '900', 'bold', 'normal', 'bolder', 'lighter' ],
+        'font-family'      => [ 'Inter', 'Inter, sans-serif', '"Playfair Display", serif', 'Georgia', '"Brand X", sans-serif', 'sans-serif', '"Brand X", Inter', 'system-ui' ],
+        'text-align'       => [ 'left', 'center', 'right', 'justify', 'start', 'end' ],
+        'padding'          => [ '24px', '40px 16px', '10px 20px 30px', '1px 2px 3px 4px', '-4px', '10%', '0', '1em 2em', '300px', 'calc(8px + 1vw)' ],
+        'padding-top'      => [ '12px', '64px', '-1px', '5%' ],
+        'max-width'        => [ '720px', '1080px', '100px', '3000px', '50%', 'none', '60rem', 'min(90vw,800px)' ],
+        'border-radius'    => [ '8px', '999px', '0', '4px 8px', '50%', '2000px', '1em' ],
+        'opacity'          => [ '.6', '1', '0' ],
+        'font'             => [ 'bold 20px Georgia', '16px/1.5 Inter' ],
+    ];
+
+    /** A random declaration list: 0 to 4 declarations from STYLE_POOL, some !important. */
+    private static function randomDeclarations(): string
+    {
+        $names = array_keys( self::STYLE_POOL );
+        $out   = [];
+        for ( $i = mt_rand( 0, 4 ); $i > 0; $i-- ) {
+            $name  = $names[ mt_rand( 0, count( $names ) - 1 ) ];
+            $vals  = self::STYLE_POOL[ $name ];
+            $out[] = $name . ':' . $vals[ mt_rand( 0, count( $vals ) - 1 ) ] . ( 0 === mt_rand( 0, 9 ) ? ' !important' : '' );
+        }
+
+        return implode( ';', $out );
+    }
+
+    /** A declaration list that more often sets a colour or a background (the structured blocks: so pages are painted and inked). */
+    private static function likelyDeclarations( bool $box ): string
+    {
+        $out = [];
+        if ( mt_rand( 1, 100 ) <= ( $box ? 40 : 50 ) ) {
+            $out[] = 'color:' . self::pickFrom( [ '#111827', '#1f2937', '#ffffff', '#f8fafc', '#e2e8f0', '#0f766e', '#475569', '#767676', '#8a8a8a', '#949494', '#9ca3af', '#000', 'white', 'rgba(0,0,0,.5)', 'var(--x)', 'currentColor' ] );
+        }
+        if ( ! $box && mt_rand( 1, 100 ) <= 25 ) {
+            // Sizes around the large-text edges: 19-24 px, and 33-43 px, which the writer steps down below 24 px on phones.
+            $out[] = 'font-size:' . self::pickFrom( [ '18px', '19px', '20px', '24px', '28px', '36px', '40px', '44px', '48px', '56px' ] );
+            if ( 0 === mt_rand( 0, 1 ) ) {
+                $out[] = 'font-weight:' . self::pickFrom( [ '400', '700', 'bold' ] );
+            }
+        }
+        if ( mt_rand( 1, 100 ) <= ( $box ? 60 : 15 ) ) {
+            $out[] = self::pickFrom( [ 'background', 'background-color' ] ) . ':' . self::pickFrom( [ '#ffffff', '#f3f4f6', '#fef3c7', '#0b1120', '#1e293b', '#123456', '#2563eb', '#f59e0b', 'white', 'navy', '#0008', 'transparent', 'linear-gradient(#000,#fff)', 'url(/x.jpg)' ] );
+        }
+        $more = self::randomDeclarations();
+        if ( '' !== $more && 0 === mt_rand( 0, 1 ) ) {
+            $out[] = $more;
+        }
+
+        return implode( ';', $out );
+    }
+
+    private static function pickFrom( array $a ): mixed
+    {
+        return $a[ mt_rand( 0, count( $a ) - 1 ) ];
+    }
+
+    /** One element with a random class and maybe a style: [styled, bare]. */
+    private static function styledElement( string $tag, array $inner, bool $box, string $attrs = '' ): array
+    {
+        if ( '' === $attrs && 0 === mt_rand( 0, 4 ) ) {
+            $attrs = ' class="' . self::pickFrom( [ 'card', 'hero', 'lead', 'btn' ] ) . '"';
+        }
+        $style = 0 === mt_rand( 0, 2 ) ? '' : self::likelyDeclarations( $box );
+        $s     = '' === $style ? '' : ' style="' . htmlspecialchars( $style, ENT_QUOTES ) . '"';
+
+        return [ '<' . $tag . $attrs . $s . '>' . $inner[0] . '</' . $tag . '>', '<' . $tag . $attrs . '>' . $inner[1] . '</' . $tag . '>' ];
+    }
+
+    /** A link button: half the time a fill and label pair (readable or not), else random declarations. [styled, bare] */
+    private static function styledButton(): array
+    {
+        $attrs = ' class="btn" href="/go"';
+        if ( 0 === mt_rand( 0, 1 ) ) {
+            return self::styledElement( 'a', [ 'Book now', 'Book now' ], true, $attrs );
+        }
+        [ $fill, $label ] = self::pickFrom( [ [ '#2563eb', '#ffffff' ], [ '#f59e0b', '#111827' ], [ '#111827', '#ffffff' ], [ '#ffffff', '#949494' ], [ '#0f766e', '#ffffff' ], [ 'transparent', '#111827' ], [ 'navy', 'white' ], [ '#fef3c7', '#8a8a8a' ] ] );
+        $style = 'background-color:' . $fill . ';color:' . $label . ( 0 === mt_rand( 0, 2 ) ? ';border-radius:' . self::pickFrom( [ '6px', '999px', '4px 8px' ] ) : '' );
+
+        return [ '<a' . $attrs . ' style="' . htmlspecialchars( $style, ENT_QUOTES ) . '">Book now</a>', '<a' . $attrs . '>Book now</a>' ];
+    }
+
+    /** A structured, convertible block (a section of headings, paragraphs, buttons or a card grid), styled at random: [styled, bare]. */
+    private static function styledBlock(): array
+    {
+        $words = static fn(): array => array_fill( 0, 2, self::pickFrom( [ 'Fresh bread daily', 'Open late on Fridays', 'Tested by guides', 'Free shipping on orders', 'Two rooms, one sound' ] ) );
+        $join  = static function ( array $parts ): array {
+            return [ implode( '', array_column( $parts, 0 ) ), implode( '', array_column( $parts, 1 ) ) ];
+        };
+        $parts = [];
+        for ( $i = mt_rand( 1, 4 ); $i > 0; $i-- ) {
+            $r = mt_rand( 1, 8 );
+            if ( $r <= 2 ) {
+                $parts[] = self::styledElement( 'h' . mt_rand( 1, 3 ), $words(), false );
+            } elseif ( $r <= 4 ) {
+                $inner = $words();
+                if ( 0 === mt_rand( 0, 3 ) ) {
+                    $inner = $join( [ $inner, [ ' ', ' ' ], self::styledElement( self::pickFrom( [ 'span', 'strong', 'a', 'code' ] ), [ 'more', 'more' ], false ) ] );
+                }
+                $parts[] = self::styledElement( 'p', $inner, false );
+            } elseif ( 5 === $r || 8 === $r ) {
+                $parts[] = self::styledButton();
+            } elseif ( 6 === $r ) {
+                $cards = [];
+                for ( $k = mt_rand( 2, 5 ); $k > 0; $k-- ) {
+                    $cards[] = self::styledElement( 'div', $join( [ self::styledElement( 'h3', $words(), false ), self::styledElement( 'p', $words(), false ) ] ), true, ' class="card"' );
+                }
+                $parts[] = self::styledElement( 'div', $join( $cards ), true );
+            } else {
+                $parts[] = self::styledElement( 'ul', [ '<li>One thing</li><li>Another</li>', '<li>One thing</li><li>Another</li>' ], false );
+            }
+        }
+
+        return self::styledElement( self::pickFrom( [ 'section', 'section', 'div', 'header', 'footer' ] ), $join( $parts ), true );
+    }
+
+    /** A random <style> text of 0-12 rules over tags, classes, an id, a combinator, a pseudo-class, a compound and @media. */
+    private static function randomSheet(): string
+    {
+        $selectors = [ 'body', 'html', 'section', 'div', 'h1', 'h2', 'h3', 'p', 'a', 'span', 'li', '.card', '.btn', '.hero', '.lead', '#x', '.hero h1', 'a:hover', 'p.lead', 'a.btn', '*', 'section > p' ];
+        $rules     = [];
+        for ( $i = mt_rand( 0, 12 ); $i > 0; $i-- ) {
+            $rule    = $selectors[ mt_rand( 0, count( $selectors ) - 1 ) ] . '{' . self::randomDeclarations() . '}';
+            $rules[] = 0 === mt_rand( 0, 7 ) ? '@media (min-width:600px){' . $rule . '}' : $rule;
+        }
+
+        return implode( "\n", $rules );
+    }
+
+    /**
+     * 200 [styled, bare] pairs for one seed. The tree is the phase-1 generator's (its tags without `style`, which is the page's own
+     * sheet here, and its attributes without `style=""`, plus the hero and lead classes); every element may also get a random
+     * style="" (bare: none). The page's sheet sits in the head, or at the start of a fragment (bare: no sheet).
+     *
+     * @return list<array{0:string,1:string}>
+     */
+    private static function styledCases( int $seed ): array
+    {
+        mt_srand( $seed );
+        $tags  = [ 'div', 'section', 'article', 'header', 'footer', 'main', 'aside', 'nav', 'p', 'span', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'img', 'button', 'hr', 'table', 'tr', 'td', 'figure', 'figcaption', 'blockquote', 'pre', 'strong', 'em', 'br', 'form', 'script', 'iframe', 'svg', 'video', 'embed', 'input', 'picture', 'font', 'center' ];
+        $attrs = [ 'class="btn"', 'class="card"', 'class="hero"', 'class="lead"', 'id="x"', 'href="/a"', 'href="https://example.com"', 'href="javascript:alert(1)"', 'src="/i.png"', 'src="data:text/html,x"', 'onclick="x()"', 'alt="a"', 'target="_blank"', 'role="button"', 'width="10" height="5"' ];
+        $texts = [ 'Hello', 'Tom & Jerry', '1 < 2', '日本語', 'أهلا', '"quoted"', "it's", '-->', '<!--', '\\u003c', "\u{1F389}", 'Fresh bread daily', '' ];
+
+        $make = static function ( int $depth ) use ( &$make, $tags, $attrs, $texts ): array {
+            $styled = '';
+            $bare   = '';
+            for ( $i = mt_rand( 0, 4 ); $i > 0; $i-- ) {
+                if ( 0 === mt_rand( 0, 2 ) ) {
+                    [ $bs, $bb ] = self::styledBlock();
+                    $styled     .= $bs;
+                    $bare       .= $bb;
+                    continue;
+                }
+                if ( 0 === mt_rand( 0, 2 ) ) {
+                    $t       = $texts[ mt_rand( 0, count( $texts ) - 1 ) ];
+                    $styled .= $t;
+                    $bare   .= $t;
+                    continue;
+                }
+                $t     = $tags[ mt_rand( 0, count( $tags ) - 1 ) ];
+                $a     = 0 === mt_rand( 0, 1 ) ? ' ' . $attrs[ mt_rand( 0, count( $attrs ) - 1 ) ] : '';
+                $style = 0 === mt_rand( 0, 1 ) ? self::randomDeclarations() : '';
+                $s     = '' === $style ? '' : ' style="' . htmlspecialchars( $style, ENT_QUOTES ) . '"';
+                if ( $depth > 0 ) {
+                    [ $innerStyled, $innerBare ] = $make( $depth - 1 );
+                } else {
+                    $innerStyled = $innerBare = $texts[ mt_rand( 0, count( $texts ) - 1 ) ];
+                }
+                $close   = 0 === mt_rand( 0, 9 ) ? '' : '</' . $t . '>';
+                $styled .= '<' . $t . $a . $s . '>' . $innerStyled . $close;
+                $bare   .= '<' . $t . $a . '>' . $innerBare . $close;
+            }
+
+            return [ $styled, $bare ];
+        };
+
+        $out = [];
+        for ( $n = 0; $n < 200; $n++ ) {
+            $sheet = self::randomSheet();
+            if ( mt_rand( 1, 5 ) <= 2 ) {
+                // A page of structured blocks only (no phase-1 noise around them), so the paint and ink rules are really exercised.
+                $styled = '';
+                $bare   = '';
+                for ( $k = mt_rand( 1, 4 ); $k > 0; $k-- ) {
+                    [ $bs, $bb ] = self::styledBlock();
+                    $styled     .= $bs;
+                    $bare       .= $bb;
+                }
+            } else {
+                [ $styled, $bare ] = $make( 4 );
+            }
+            if ( 0 === mt_rand( 0, 3 ) ) {
+                $out[] = [ '<style>' . $sheet . '</style>' . $styled, $bare ];
+                continue;
+            }
+            $bodyStyle = 0 === mt_rand( 0, 3 ) ? self::randomDeclarations() : '';
+            $body      = '' === $bodyStyle ? '<body>' : '<body style="' . htmlspecialchars( $bodyStyle, ENT_QUOTES ) . '">';
+            $out[]     = [
+                '<!DOCTYPE html><html><head><style>' . $sheet . '</style></head>' . $body . $styled . '</body></html>',
+                '<!DOCTYPE html><html><head></head><body>' . $bare . '</body></html>',
+            ];
+        }
+
+        return $out;
     }
 }

@@ -1,0 +1,25 @@
+<!-- wp:divi/placeholder -->
+<!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Look alikes"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Look alikes"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eA \u003ca href=\u0022/a\u0022 title=\u0022\u0026lt;/body\u0026gt;\u0026lt;/html\u0026gt;\u0022\u003elink\u003c/a\u003e and a comment.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Section 2"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eLoose words after the real end tag.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Still a section"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Still a section"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eOnly the real end tag counts.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- /wp:divi/placeholder -->

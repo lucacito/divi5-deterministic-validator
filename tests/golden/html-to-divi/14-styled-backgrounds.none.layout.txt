@@ -1,0 +1,44 @@
+<!-- wp:divi/placeholder -->
+<!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Gear that goes higher"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Gear that goes higher"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h1"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eTents, packs and layers tested above the tree line by guides who use them every week.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Photographed on Mount Rainier"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Photographed on Mount Rainier"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eOur new shell jacket was field tested over fourteen days of snow, wind and sun.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Lightweight shelters"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Lightweight shelters"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eOur two-person tent weighs 1.1 kilograms and packs down to the size of a loaf of bread.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Warranty promise"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Warranty promise"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eIf it fails because of how it was made, we repair it or replace it, whatever the age.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- wp:divi/section {"module":{"meta":{"adminLabel":{"desktop":{"value":"Staff picks"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Staff picks"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eThree guides tell us what they would pack for a weekend on the ridge.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"Shipping"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h3"}}}}}},"builderVersion":"5.8.0"} /-->
+<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"\u003cp\u003eFree shipping on every order over one hundred dollars.\u003c/p\u003e"}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+<!-- /wp:divi/placeholder -->

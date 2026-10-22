@@ -22365,3 +22365,438 @@ Phone overflow at 400 px: no.
 Note: A top side written on a column that already has an all-sides 1px frame and a 16px radius: the top edge changes; the other three sides must stay 1px (read from changedProps: no right/bottom/left width change) and the radius must not change.
 
 Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## hs-heading-color-control
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.color` = `"#dc2626"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `2:h1:border-block-end-color: rgb(51, 51, 51) -> rgb(220, 38, 38)` |
+| 900 px | yes | 17 | yes | `2:h1:border-block-end-color: rgb(51, 51, 51) -> rgb(220, 38, 38)` |
+| 400 px | yes | 17 | yes | `2:h1:border-block-end-color: rgb(51, 51, 51) -> rgb(220, 38, 38)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Control: a heading colour on divi/heading itself, over the theme's default heading colour (the path is served by the kit recipes; this proves the effect on a rendered heading, which the other heading candidates need as a reference).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## hs-text-orientation-center
+
+Block: `text`. Set on top of the base block:
+
+- `module.advanced.text.text.desktop.value.orientation` = `"center"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:text-align: start -> center` |
+| 900 px | yes | 3 | yes | `0:div:text-align: start -> center` |
+| 400 px | yes | 3 | yes | `0:div:text-align: start -> center` |
+
+Properties that changed (any width): `text-align`.
+
+Phone overflow at 400 px: no.
+
+Note: Text alignment through the module's orientation (exported on divi/text 27 times, registered) = center, over Divi's default (left) on a wrapping paragraph. Decision text-align-orientation (with -right).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## hs-text-orientation-right
+
+Block: `text`. Set on top of the base block:
+
+- `module.advanced.text.text.desktop.value.orientation` = `"right"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:text-align: start -> right` |
+| 900 px | yes | 3 | yes | `0:div:text-align: start -> right` |
+| 400 px | yes | 3 | yes | `0:div:text-align: start -> right` |
+
+Properties that changed (any width): `text-align`.
+
+Phone overflow at 400 px: no.
+
+Note: orientation = right over the default. Decision text-align-orientation (with -center).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## hs-text-orientation-left
+
+Block: `text`. Set on top of the base block:
+
+- `module.advanced.text.text.desktop.value.orientation` = `"left"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:text-align: start -> left` |
+| 900 px | yes | 3 | yes | `0:div:text-align: start -> left` |
+| 400 px | yes | 3 | yes | `0:div:text-align: start -> left` |
+
+Properties that changed (any width): `text-align`.
+
+Phone overflow at 400 px: no.
+
+Note: Explicit left: PASS (corrected control: left is NOT a no-op, Divi writes an explicit text-align left where the default computes as start; for left-to-right text it looks identical). Default-value check (not a dead path): left is Divi's default orientation, so nothing changes. If this is NOT DEAD, left is not the default and the plan's D7 changes to write left when declared (the controller amends Task 7 before it starts).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## hs-text-bodyfont-align-center
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.textAlign` = `"center"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `1:div:text-align: start -> center` |
+| 900 px | yes | 2 | yes | `1:div:text-align: start -> center` |
+| 400 px | yes | 2 | yes | `1:div:text-align: start -> center` |
+
+Properties that changed (any width): `text-align`.
+
+Phone overflow at 400 px: no.
+
+Note: Text alignment through the body font's textAlign = center on divi/text over the default (left). Decision text-align-bodyfont. Measured by make verify-guide-shapes before, but not in the registry and not on a candidate.
+
+Registered paths added:
+
+- `content.decoration.bodyFont.body.font.{bp}.value.textAlign`
+
+## hs-text-bodyfont-align-justify
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.textAlign` = `"justify"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `1:div:text-align: start -> justify` |
+| 900 px | yes | 2 | yes | `1:div:text-align: start -> justify` |
+| 400 px | yes | 2 | yes | `1:div:text-align: start -> justify` |
+
+Properties that changed (any width): `text-align`.
+
+Phone overflow at 400 px: no.
+
+Note: bodyFont textAlign = justify. Decision text-justify only when text-align-orientation is NOT PASS.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## hs-heading-align-justify
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.textAlign` = `"justify"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:text-align: start -> justify` |
+| 900 px | yes | 1 | yes | `2:h1:text-align: start -> justify` |
+| 400 px | yes | 1 | yes | `2:h1:text-align: start -> justify` |
+
+Properties that changed (any width): `text-align`.
+
+Phone overflow at 400 px: no.
+
+Note: Heading textAlign = justify over the default, on a headline that wraps over three lines at 400 px. Decision heading-justify.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## hs-heading-family-georgia
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.family` = `"Georgia"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:font-family: Abel -> Georgia, "Times New Roman", serif` |
+| 900 px | yes | 1 | yes | `2:h1:font-family: Abel -> Georgia, "Times New Roman", serif` |
+| 400 px | yes | 1 | yes | `2:h1:font-family: Abel -> Georgia, "Times New Roman", serif` |
+
+Properties that changed (any width): `font-family`.
+
+Phone overflow at 400 px: no.
+
+Note: Web-safe family Georgia on a heading (not a Google font, so Divi must print it as a plain family). Decision websafe-family.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## hs-heading-family-courier
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.family` = `"Courier New"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h1:font-family: Abel -> "Courier New", Helvetica, Arial, Lucida, sans-serif` |
+| 900 px | yes | 1 | yes | `2:h1:font-family: Abel -> "Courier New", Helvetica, Arial, Lucida, sans-serif` |
+| 400 px | yes | 1 | yes | `2:h1:font-family: Abel -> "Courier New", Helvetica, Arial, Lucida, sans-serif` |
+
+Properties that changed (any width): `font-family`.
+
+Phone overflow at 400 px: no.
+
+Note: Web-safe family with a space, Courier New, on a heading. Decision websafe-family.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## hs-text-family-georgia
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.family` = `"Georgia"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `1:div:font-family: "Open Sans" -> Georgia, "Times New Roman", serif` |
+| 900 px | yes | 2 | yes | `1:div:font-family: "Open Sans" -> Georgia, "Times New Roman", serif` |
+| 400 px | yes | 2 | yes | `1:div:font-family: "Open Sans" -> Georgia, "Times New Roman", serif` |
+
+Properties that changed (any width): `font-family`.
+
+Phone overflow at 400 px: no.
+
+Note: Web-safe family Georgia on divi/text through the body font. Decision websafe-family.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## hs-text-ink-ul
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.color` = `"#dc2626"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 68 | yes | `1:div:border-block-end-color: rgb(102, 102, 102) -> rgb(220, 38, 38)` |
+| 900 px | yes | 68 | yes | `1:div:border-block-end-color: rgb(102, 102, 102) -> rgb(220, 38, 38)` |
+| 400 px | yes | 68 | yes | `1:div:border-block-end-color: rgb(102, 102, 102) -> rgb(220, 38, 38)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Body font colour on a text module whose only content is an unordered list: the computed colour of the li must change (a list may not inherit the module's colour). Decision list-ink-ul.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## hs-text-ink-ol
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.color` = `"#dc2626"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 68 | yes | `1:div:border-block-end-color: rgb(102, 102, 102) -> rgb(220, 38, 38)` |
+| 900 px | yes | 68 | yes | `1:div:border-block-end-color: rgb(102, 102, 102) -> rgb(220, 38, 38)` |
+| 400 px | yes | 68 | yes | `1:div:border-block-end-color: rgb(102, 102, 102) -> rgb(220, 38, 38)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: The same on an ordered list. Decision list-ink-ol.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## hs-text-ink-quote
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.color` = `"#dc2626"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 43 | yes | `1:div:border-block-end-color: rgb(102, 102, 102) -> rgb(220, 38, 38)` |
+| 900 px | yes | 43 | yes | `1:div:border-block-end-color: rgb(102, 102, 102) -> rgb(220, 38, 38)` |
+| 400 px | yes | 43 | yes | `1:div:border-block-end-color: rgb(102, 102, 102) -> rgb(220, 38, 38)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: The same on a blockquote (the theme may colour it itself): not expected either way. Decision quote-ink.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## hs-row-max-width
+
+Block: `row`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.maxWidth` = `"600px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 24 | yes | `0:div:inline-size: 1024px -> 600px` |
+| 900 px | yes | 24 | yes | `0:div:inline-size: 720px -> 600px` |
+| 400 px | yes | 2 | yes | `0:div:max-inline-size: 1080px -> 600px` |
+
+Properties that changed (any width): `inline-size`, `max-inline-size`, `max-width`, `perspective-origin`, `rect:left`, `rect:width`, `transform-origin`, `width`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 188, 1024 x 40 | 340, 188, 600 x 40 | 1280 -> 1280 | 0 -> 0 | - -> - |
+| 900 px | 90, 242, 720 x 40 | 150, 242, 600 x 40 | 900 -> 900 | 0 -> 0 | - -> - |
+| 400 px | 40, 202, 320 x 40 | 40, 202, 320 x 40 | 400 -> 400 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: Row max width 600px (export-proven on rows only): the row must get narrower at 1280 and 900 and sit centred in its parent within 1 px (geometry). Decision row-max-width.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## hs-row-background
+
+Block: `row`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.color` = `"#1e293b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-color: rgba(0, 0, 0, 0) -> rgb(30, 41, 59)` |
+| 900 px | yes | 1 | yes | `0:div:background-color: rgba(0, 0, 0, 0) -> rgb(30, 41, 59)` |
+| 400 px | yes | 1 | yes | `0:div:background-color: rgba(0, 0, 0, 0) -> rgb(30, 41, 59)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Row background colour over no background. Decision row-background.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## hs-column-background
+
+Block: `column`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.color` = `"#1e293b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-color: rgba(0, 0, 0, 0) -> rgb(30, 41, 59)` |
+| 900 px | yes | 1 | yes | `0:div:background-color: rgba(0, 0, 0, 0) -> rgb(30, 41, 59)` |
+| 400 px | yes | 1 | yes | `0:div:background-color: rgba(0, 0, 0, 0) -> rgb(30, 41, 59)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Column background colour over no background. Decision column-background.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## hs-column-padding
+
+Block: `column`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"64px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:block-size: 40px -> 104px` |
+| 900 px | yes | 6 | yes | `0:div:block-size: 40px -> 104px` |
+| 400 px | yes | 6 | yes | `0:div:block-size: 40px -> 104px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-start`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Column padding top 64px over the default. Decision column-padding.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## hs-section-padding
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.left` = `"48px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 22 | yes | `0:div:padding-inline-start: 0px -> 48px` |
+| 900 px | yes | 22 | yes | `0:div:padding-inline-start: 0px -> 48px` |
+| 400 px | yes | 22 | yes | `0:div:padding-inline-start: 0px -> 48px` |
+
+Properties that changed (any width): `inline-size`, `padding-inline-start`, `padding-left`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Section padding left 48px over the default. Decision section-padding.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## hs-button-ghost
+
+Block: `button`. Set on top of the base block:
+
+- `button.decoration.background.desktop.value.color` = `"rgba(255,255,255,0)"`
+- `button.decoration.font.font.desktop.value.color` = `"#e2e8f0"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 10 | yes | `0:a:background-color: rgb(30, 58, 138) -> rgba(255, 255, 255, 0)` |
+| 900 px | yes | 10 | yes | `0:a:background-color: rgb(30, 58, 138) -> rgba(255, 255, 255, 0)` |
+| 400 px | yes | 10 | yes | `0:a:background-color: rgb(30, 58, 138) -> rgba(255, 255, 255, 0)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `background-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: A ghost button: a transparent fill (the value KitAdapters::TRANSPARENT writes) and a pale label over a navy fill with a white label, so the fill really changes (the same base kb-fill-transparent-rgba uses; a transparent fill over the site's default button could read DEAD). Used by the converter's unpaired-button rule (plan D1), no adapter decision.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## Not taught (html-styles)
+
+Candidates from `html-styles.json` that were measured and are not taught, with the reason:
+
+- `hs-text-orientation-justified`: no effect (dead). Measured DEAD on divi/text (first run 2026-10-22): the orientation path does not accept justified; justification is the body font textAlign justify path (hs-text-bodyfont-align-justify, PASS). orientation = justified (Divi's value name for justify). Decision text-justify when text-align-orientation is PASS. Not expected either way.

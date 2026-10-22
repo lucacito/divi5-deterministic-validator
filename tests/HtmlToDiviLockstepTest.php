@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
 require_once __DIR__ . '/FakeWpdb.php';
 require_once __DIR__ . '/WpRestShims.php';
 require_once __DIR__ . '/WpInsertPostShims.php';
-foreach ( [ 'UsageTracker', 'PageHistory', 'HistoryTable', 'HistoryStore', 'EditTarget', 'DiviCompat', 'HistoryService', 'PageEditor', 'DraftPage', 'LayoutDiff', 'CodePolicy', 'LayoutGate', 'DryRun', 'GlobalStyles', 'CustomFields', 'StyleReferences', 'ApprovalMode', 'StyleGuide', 'ImagePack', 'ImageTokens', 'HtmlSource', 'HtmlProse', 'HtmlMapper', 'DiviMarkup', 'HtmlImages', 'HtmlToDivi', 'HtmlToDiviService', 'OpenApiSpec', 'RestController', 'McpHandler' ] as $htmlLockstepClass ) {
+foreach ( [ 'UsageTracker', 'PageHistory', 'HistoryTable', 'HistoryStore', 'EditTarget', 'DiviCompat', 'HistoryService', 'PageEditor', 'DraftPage', 'LayoutDiff', 'CodePolicy', 'LayoutGate', 'DryRun', 'GlobalStyles', 'CustomFields', 'StyleReferences', 'ApprovalMode', 'StyleGuide', 'ImagePack', 'ImageTokens', 'HtmlSource', 'HtmlProse', 'HtmlCss', 'HtmlMapper', 'HtmlStyles', 'DiviMarkup', 'HtmlImages', 'HtmlFonts', 'DesignLanguages', 'HtmlStyleBlocks', 'HtmlReadability', 'HtmlToDivi', 'HtmlToDiviService', 'OpenApiSpec', 'RestController', 'McpHandler' ] as $htmlLockstepClass ) {
     require_once __DIR__ . '/../wp-plugin/src/' . $htmlLockstepClass . '.php';
 }
 
@@ -227,5 +227,38 @@ final class HtmlToDiviLockstepTest extends TestCase
             $this->assertStringContainsString( 'UsageTracker::log( self::ENDPOINT', $src );
             $this->assertStringContainsString( $result, $src, 'the outcome ' . $result . ' is logged' );
         }
+    }
+
+    /**
+     * The descriptions say what styles=basic carries (no "not converted yet"). Before the styles work the tool description was 1,256
+     * bytes; it may grow by at most 120 (it is 1,368 now: the new sentence is longer, and the rest was tightened to stay inside the bound).
+     */
+    public function testTheStylesDescriptionsSayWhatIsCarried(): void
+    {
+        $req   = new \WP_REST_Request( [ 'jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list' ] );
+        $tools = ( new McpHandler() )->handle( $req )->get_data()['result']['tools'];
+        $tool  = current( array_filter( $tools, static fn( $t ) => 'html_to_divi' === $t['name'] ) );
+        $desc  = (string) $tool['description'];
+        $style = (string) $tool['inputSchema']['properties']['styles']['description'];
+        foreach ( [ $desc, $style ] as $text ) {
+            $this->assertStringNotContainsString( 'not converted yet', $text );
+            $this->assertStringNotContainsString( 'only adds a reminder', $text );
+        }
+        $this->assertStringContainsString( 'report.styles', $desc );
+        $this->assertStringContainsString( 'get_style_guide', $desc );
+        $this->assertStringContainsString( 'none: structure and content only.', $style );
+        $this->assertLessThanOrEqual( 300, strlen( $style ) );
+        $this->assertLessThanOrEqual( 1256 + 120, strlen( $desc ) );
+        $this->assertSame( [ 'html', 'create', 'title', 'slug', 'image_mode', 'styles' ], array_keys( $tool['inputSchema']['properties'] ), 'no schema change' );
+        $this->assertSame( [ 'basic', 'none' ], $tool['inputSchema']['properties']['styles']['enum'] );
+        $this->assertStringNotContainsString( 'not converted yet', $this->src( 'SiteGuide.php' ) );
+        $this->assertStringNotContainsString( 'not converted yet', $this->src( 'HtmlToDivi.php' ) );
+
+        [ , $basic ] = $this->mcp( [ 'html' => self::HTML ] );
+        [ , $none ]  = $this->mcp( [ 'html' => self::HTML, 'styles' => 'none' ] );
+        [ , $rest ]  = $this->rest( [ 'html' => self::HTML ] );
+        $this->assertArrayHasKey( 'styles', $basic['report'], 'report.styles reaches the assistant' );
+        $this->assertSame( $basic['report']['styles'], $rest['report']['styles'] );
+        $this->assertArrayNotHasKey( 'styles', $none['report'] );
     }
 }

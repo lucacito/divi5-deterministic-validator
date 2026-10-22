@@ -44,6 +44,8 @@ class WpOrgComplianceTest extends TestCase
         'src/SectionRecipes.php' => ['self::DATA' => "DATA = __DIR__ . '/../data/section-recipes.json' (bundled)"],
         'src/DesignLanguages.php' => ['self::DATA' => "DATA = __DIR__ . '/../data/design-languages.json' (bundled)"],
         'src/StyleKits.php'      => ['self::DATA' => "DATA = __DIR__ . '/../data/style-kits.json' (bundled)"],
+        // html_to_divi styles plan (Task 5, controller ruling 1): the Google font family names Divi ships, read from the bundled copy only.
+        'src/HtmlFonts.php'      => ['self::DATA' => "DATA = __DIR__ . '/../data/google-fonts-names.txt' (bundled)"],
         'src/ImagePack.php'      => ['$path ?? self::DEFAULT_PATH' => "DEFAULT_PATH = __DIR__ . '/../assets/images/manifest.json'; \$path is only passed by tests"],
     ];
 
@@ -79,6 +81,8 @@ class WpOrgComplianceTest extends TestCase
         ['src/UsageTracker.php', "wp-admin/includes/upgrade.php", 'WordPress core include that provides dbDelta() for the usage-log table'],
         ['src/HistoryTable.php', "wp-admin/includes/upgrade.php", 'WordPress core include that provides dbDelta() for the history table'],
         ['src/OAuthTable.php', "wp-admin/includes/upgrade.php", 'WordPress core include that provides dbDelta() for the OAuth table'],
+        // html_to_divi styles plan (Task 5, controller ruling 1): scoped to this one file and the substring ' Pro'; HtmlFontsTest enumerates every hit.
+        ['data/google-fonts-names.txt', ' Pro', 'Google Fonts family names Divi ships (for example "Maven Pro"); a copy of fixtures/shapes/google-fonts-names.txt pinned by HtmlFontsTest, not wording'],
     ];
 
     /** APIs that change site settings, users, themes, plugins, menus or run code. */
