@@ -210,4 +210,159 @@ final class HtmlSourceTest extends HtmlTestCase
         $this->assertCount( 100, $s['flagged'] );
         $this->assertSame( 300, $s['stats']['removed'] );
     }
+
+    // ── styles hand-over (html_to_divi styles, task 4) ─────────────────────
+
+    public function testStyleTextAndInlineStylesAreHandedOverButNeverKeptInTheDom(): void
+    {
+        $s = HtmlSource::parse( '<html><head><style>h1{color:red}</style></head><body style="color:#111"><h1 style="font-size:40px">x</h1><style>p{}</style></body></html>' );
+        $this->assertNull( $s['error'] );
+        $this->assertSame( "h1{color:red}\np{}", $s['css'] );
+        $this->assertSame( 'color:#111', $s['inline']['/html/body'] );
+        $this->assertSame( 'font-size:40px', $s['inline']['/html/body/h1'] );
+        $this->assertStringNotContainsString( 'style=', $this->bodyHtml( $s ) );
+        // The paths belong to the returned DOM.
+        $xp = new \DOMXPath( $s['body']->ownerDocument );
+        $this->assertSame( 'x', $xp->query( '/html/body/h1' )->item( 0 )->textContent );
+    }
+
+    public function testTheHtmlElementsOwnStyleAndAttributesAreHandedOver(): void
+    {
+        $s = HtmlSource::parse( '<html style="color:#222" bgcolor="#fff"><body><p>x</p></body></html>' );
+        $this->assertSame( 'color:#222', $s['inline']['/html'] );
+        $this->assertSame( [ 'bgcolor' ], $s['presentational']['/html'] );
+    }
+
+    public function testPresentationalAttributesAreRecorded(): void
+    {
+        $s = $this->parse( '<table bgcolor="#000"><tr><td align="center">x</td></tr></table><font color="red" face="Arial">y</font>' );
+        $this->assertSame( [ 'bgcolor' ], $s['presentational']['/html/body/table'] );
+        $this->assertSame( [ 'align' ], $s['presentational']['/html/body/table/tr/td'] );
+        $this->assertSame( [ 'color', 'face' ], $s['presentational']['/html/body/font'] );
+        $this->assertStringNotContainsString( 'bgcolor', $this->bodyHtml( $s ) );
+        $this->assertStringNotContainsString( 'align', $this->bodyHtml( $s ) );
+        $this->assertStringNotContainsString( 'face', $this->bodyHtml( $s ) );
+    }
+
+    public function testAnInlineStyleOfARemovedElementIsNotHandedOver(): void
+    {
+        $s = $this->parse( '<form action="/x" style="color:red"><div style="color:blue">a</div></form><p style="color:green">keep</p>' );
+        $this->assertSame( [ '/html/body/p' => 'color:green' ], $s['inline'] );
+    }
+
+    public function testTheStyleTextIsHandedOverOneByteOverTheCapSoTheReaderSeesItWasCut(): void
+    {
+        $s = $this->parse( '<style>' . str_repeat( 'é', 60000 ) . '</style><p>x</p>' );
+        $this->assertNull( $s['error'] );
+        $this->assertSame( HtmlSource::MAX_CSS_BYTES + 1, strlen( $s['css'] ), 'plain substr, possibly inside a character' );
+
+        $exact = $this->parse( '<style>' . str_repeat( 'a', HtmlSource::MAX_CSS_BYTES ) . '</style><p>x</p>' );
+        $this->assertSame( HtmlSource::MAX_CSS_BYTES, strlen( $exact['css'] ), 'a text of exactly the cap is not cut' );
+
+        // A colour cut by the cap must never look complete: the text is longer than the cap, so the reader notices.
+        $css = '<style>' . str_repeat( ' ', 10 ) . 'p{x:y}' . str_repeat( 'a{b:c}', 20000 ) . '</style><p>x</p>';
+        $this->assertGreaterThan( HtmlSource::MAX_CSS_BYTES, strlen( $this->parse( $css )['css'] ) );
+    }
+
+    /** @return array<string,array{0:string,1:bool}> */
+    public static function styleBlocks(): array
+    {
+        return [
+            'plain'                 => [ '<style>p{color:red}</style>', true ],
+            'media screen'          => [ '<style media="screen">p{color:red}</style>', true ],
+            'media all'             => [ '<style media=" ALL ">p{color:red}</style>', true ],
+            'type text/css'         => [ '<style type="Text/CSS">p{color:red}</style>', true ],
+            'media print'           => [ '<style media="print">p{color:red}</style>', false ],
+            'media query'           => [ '<style media="(min-width:600px)">p{color:red}</style>', false ],
+            'type text/less'        => [ '<style type="text/less">p{color:red}</style>', false ],
+            'disabled'              => [ '<style disabled>p{color:red}</style>', false ],
+            'inside template'       => [ '<template><style>p{color:red}</style></template>', false ],
+            'inside noscript'       => [ '<noscript><style>p{color:red}</style></noscript>', false ],
+            'inside textarea'       => [ '<textarea><style>p{color:red}</style></textarea>', false ],
+            'inside svg'            => [ '<svg><style>p{color:red}</style></svg>', true ],
+            'inside form'           => [ '<form><style>p{color:red}</style></form>', true ],
+            'inside object'         => [ '<object><style>p{color:red}</style></object>', true ],
+            'inside video fallback' => [ '<video><style>p{color:red}</style></video>', true ],
+        ];
+    }
+
+    #[DataProvider('styleBlocks')]
+    public function testOnlyStyleBlocksThatApplyAreCollected( string $block, bool $kept ): void
+    {
+        $s = $this->parse( $block . '<p>x</p>' );
+        $this->assertNull( $s['error'] );
+        $this->assertSame( $kept ? 'p{color:red}' : '', $s['css'] );
+        $this->assertCount( $kept ? 0 : 1, $s['style_flags'] );
+        if ( ! $kept ) {
+            $this->assertSame( 'style', $s['style_flags'][0]['type'] );
+            $this->assertStringContainsString( 'not read', $s['style_flags'][0]['reason'] );
+            $this->assertNotSame( '', $s['style_flags'][0]['path'] );
+        }
+    }
+
+    public function testASkippedHeadStyleDoesNotChangeTheFlaggedList(): void
+    {
+        $with = HtmlSource::parse( '<html><head><style media="print">p{}</style><link rel="stylesheet" href="a.css"></head><body><p>x</p></body></html>' );
+        $without = HtmlSource::parse( '<html><head></head><body><p>x</p></body></html>' );
+        $this->assertSame( $without['flagged'], $with['flagged'], 'styles=none reports stay phase 1' );
+    }
+
+    public function testLinkedStylesheetsAreCountedAndFlagged(): void
+    {
+        $s = HtmlSource::parse( '<html><head><link rel="stylesheet" href="a.css"><link rel="Stylesheet preload" href="b.css"><link rel="alternate stylesheet" href="c.css"><link rel="icon" href="i.png"><noscript><link rel="stylesheet" href="d.css"></noscript></head><body><p>x</p></body></html>' );
+        $this->assertSame( 2, $s['external_css'] );
+        $flags = array_values( array_filter( $s['style_flags'], static fn ( array $f ): bool => 'link' === $f['type'] ) );
+        $this->assertCount( 1, $flags );
+        $this->assertSame( '2 linked stylesheets were not read: colours and fonts may differ.', $flags[0]['reason'] );
+
+        $one = HtmlSource::parse( '<html><head><link rel="stylesheet" href="a.css"></head><body><p>x</p></body></html>' );
+        $this->assertSame( 1, $one['external_css'] );
+        $this->assertSame( '1 linked stylesheet was not read: colours and fonts may differ.', $one['style_flags'][0]['reason'] );
+
+        $none = $this->parse( '<p>x</p>' );
+        $this->assertSame( 0, $none['external_css'] );
+        $this->assertSame( [], $none['style_flags'] );
+    }
+
+    /** @return array<string,array{0:string}> */
+    public static function presentationalNames(): array
+    {
+        $out = [];
+        foreach ( [ 'bgcolor', 'background', 'color', 'text', 'link', 'vlink', 'alink', 'face', 'size', 'align', 'valign' ] as $n ) {
+            $out[ $n ] = [ $n ];
+        }
+
+        return $out;
+    }
+
+    #[DataProvider('presentationalNames')]
+    public function testEveryPresentationalAttributeIsRecordedAndNeverKept( string $name ): void
+    {
+        $s = HtmlSource::parse( '<html><body><div ' . $name . '="x"><p>t</p></div></body></html>' );
+        $this->assertSame( [ $name ], $s['presentational']['/html/body/div'] );
+        $this->assertStringNotContainsString( $name . '=', $this->bodyHtml( $s ) );
+        $b = HtmlSource::parse( '<html><body ' . $name . '="x"><p>t</p></body></html>' );
+        $this->assertSame( [ $name ], $b['presentational']['/html/body'] );
+        $this->assertStringNotContainsString( $name . '=', $this->bodyHtml( $b ) );
+    }
+    public function testNoStylesMeansEmptyHandOvers(): void
+    {
+        $s = $this->parse( '<p>x</p>' );
+        $this->assertSame( '', $s['css'] );
+        $this->assertSame( [], $s['inline'] );
+        $this->assertSame( [], $s['presentational'] );
+        $e = HtmlSource::parse( '' );
+        $this->assertSame( [ '', [], [] ], [ $e['css'], $e['inline'], $e['presentational'] ] );
+    }
+
+    public function testAMovedChildKeepsItsStyleUnderItsFinalPath(): void
+    {
+        // libxml2 may nest what follows a void <embed>; the children are moved out, so the path is read after the move.
+        $s  = $this->parse( '<div><embed src="x.swf"><p style="color:red">after</p></div>' );
+        $xp = new \DOMXPath( $s['body']->ownerDocument );
+        foreach ( array_keys( $s['inline'] ) as $path ) {
+            $this->assertSame( 1, $xp->query( $path )->length, $path );
+        }
+        $this->assertSame( [ 'color:red' ], array_values( $s['inline'] ) );
+    }
 }
