@@ -305,6 +305,7 @@ final class HtmlSource
         }
 
         self::relocateHeadContent( $doc );
+        self::relocateContentAfterHtml( $doc );
 
         $total = $doc->getElementsByTagName( '*' )->length;
         if ( $total > self::MAX_ELEMENTS ) {
@@ -432,6 +433,93 @@ final class HtmlSource
         $first = $body->firstChild;
         foreach ( $moving as $el ) {
             $body->insertBefore( $el, $first );
+        }
+    }
+
+    /** A node that is page content when found outside <body>: an element other than head/body and the head elements, text or a comment. */
+    private static function isLooseContent( \DOMNode $node ): bool
+    {
+        if ( $node instanceof \DOMElement ) {
+            return ! in_array( strtolower( $node->tagName ), array_merge( self::HEAD_ELEMENTS, [ 'head', 'body', 'html' ] ), true );
+        }
+
+        return in_array( $node->nodeType, [ XML_TEXT_NODE, XML_CDATA_SECTION_NODE, XML_COMMENT_NODE ], true );
+    }
+
+    /**
+     * Content after </html> or </body> ends up where nothing reads it: libxml2 opens a SECOND top-level <html> node (or leaves a loose
+     * node beside the document's <html>), or keeps the content as a sibling of <body> inside <html>. A browser appends all of it to the
+     * body. Every such node moves, in document order, to the END of the first <body> (created when the first <html> has none): the
+     * children of an extra <html>'s <body>, its other non-head elements and text, and loose elements, text and comments after the first
+     * <html>. Head elements of an extra <html> stay where they are (the first <title> stays the title); doctype and processing
+     * instructions stay. Nothing is dropped, so the text check counts the moved text; no repair note, because the result is the
+     * browser's tree.
+     */
+    private static function relocateContentAfterHtml( \DOMDocument $doc ): void
+    {
+        $html = $doc->documentElement;
+        if ( ! $html instanceof \DOMElement || 'html' !== strtolower( $html->tagName ) ) {
+            return;
+        }
+        $body = null;
+        foreach ( $html->childNodes as $child ) {
+            if ( $child instanceof \DOMElement && 'body' === strtolower( $child->tagName ) ) {
+                $body = $child;
+                break;
+            }
+        }
+
+        $moving = [];
+        $emptied = [];
+        // Siblings of <body> inside the first <html> that follow it (all of its loose children when there is no body).
+        $after = null === $body;
+        foreach ( $html->childNodes as $child ) {
+            if ( $child === $body ) {
+                $after = true;
+            } elseif ( $after && self::isLooseContent( $child ) ) {
+                $moving[] = $child;
+            }
+        }
+        // Everything at the top level of the document after the first <html>.
+        for ( $node = $html->nextSibling; $node instanceof \DOMNode; $node = $node->nextSibling ) {
+            if ( ! $node instanceof \DOMElement || 'html' !== strtolower( $node->tagName ) ) {
+                if ( self::isLooseContent( $node ) ) {
+                    $moving[] = $node;
+                }
+                continue;
+            }
+            foreach ( $node->childNodes as $child ) {
+                if ( $child instanceof \DOMElement && 'body' === strtolower( $child->tagName ) ) {
+                    $emptied[] = $child;
+                    foreach ( $child->childNodes as $grand ) {
+                        $moving[] = $grand;
+                    }
+                } elseif ( self::isLooseContent( $child ) ) {
+                    $moving[] = $child;
+                }
+            }
+        }
+
+        // Only whitespace and comments: nothing to carry, and no body is made for them.
+        $meaningful = false;
+        foreach ( $moving as $node ) {
+            if ( $node instanceof \DOMElement || ( XML_COMMENT_NODE !== $node->nodeType && '' !== trim( (string) $node->nodeValue ) ) ) {
+                $meaningful = true;
+                break;
+            }
+        }
+        if ( ! $meaningful ) {
+            return;
+        }
+        if ( null === $body ) {
+            $body = $doc->createElement( 'body' );
+            $html->appendChild( $body );
+        }
+        foreach ( $moving as $node ) {
+            $body->appendChild( $node );
+        }
+        foreach ( $emptied as $stray ) {
+            $stray->parentNode?->removeChild( $stray );
         }
     }
 

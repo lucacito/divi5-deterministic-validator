@@ -27,6 +27,9 @@ Test fixtures for `html_to_divi` converter. Each tests a specific scenario:
 | 15-head-style-section.html | A `<style>` block, then an HTML5 `<section>`, then a `<div>` (no html/head/body tags) | libxml2 keeps the `<section>` inside `<head>`; it is moved into the body, so no text is lost |
 | 15-head-link-section.html | A `<link rel=stylesheet>` then a `<section>` | Was refused as "no content"; the section is moved into the body |
 | 15-head-meta-header.html | A `<meta charset>` then `<header>`, `<main>`, `<footer>` | Was refused as "no content"; all three move into the body in order |
+| 16-after-html-section.html | A complete page, then a `<section>` after `</html>` | libxml2 makes a second `<html>` node nothing read; the section is moved to the end of the body, as a browser does |
+| 16-after-html-body-close.html | A `<section>` between `</body>` and `</html>` | libxml2 leaves it as a sibling of `<body>`; it is moved to the end of the body |
+| 16-after-html-second-document.html | Two full `<html>` documents, then loose text | The second document's body content and the loose text are appended to the first body; the second `<title>` is not used |
 
 `14-styled-inline.html`'s second section is the DELIBERATE mixed-style run: two consecutive `<p>` (one unstyled, one with its own colour and size) that the mapper merges into one text module (`14-styled-hostile`'s table plus `<center><p>` is another). Later tasks must carry only the style properties that are equal across every merged element, otherwise nothing for that property and a counted note "mixed"; `testTheMixedStyleRunStaysInTheInlineFixture` keeps the case from being fixed away.
 
