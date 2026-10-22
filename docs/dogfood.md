@@ -58,6 +58,9 @@ Order: prepare, assistant, score, render. One kit under one language per run.
 3. **Score.** `make dogfood-score PAGE=<out>/page.html KIT=<kit> LANGUAGE=<language>` (add `ARGS="--json"` for the JSON, `ARGS="--min 90"`
    to exit 1 below a percentage). `LANGUAGE` defaults to the language whose own kit is `<kit>`, else `editorial`; the output names the
    language used. Always pass it for a run. For an edit, score `page-edited.html`.
+
+   Absolute paths with spaces work: the Make targets quote `PAGE`, `OUT`, `KIT`, `LANGUAGE` and `TASK` as one argument each (a single quote inside
+   a value is escaped); `ARGS` is passed as written, so it may carry several flags.
 4. **Render.** `make dogfood-render PAGE=<out>/page.html` (dev site, Docker up, ONE run at a time). It runs the script's pure tests first,
    then saves the page as one draft titled `aied dogfood <runToken> <name>`, renders it at 1280 and 400 px, writes
    `dist/dogfood/<name>/shot-1280.png`, `shot-400.png` and `render.json` (which has an `error` field when the script itself failed), and deletes the draft (also on Ctrl-C). Exit 0 only when the

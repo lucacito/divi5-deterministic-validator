@@ -74,8 +74,7 @@ byte-identical on repeat; `dogfood-render` validates, renders and deletes a corp
 
 ## Outcome
 
-Status: skeleton written in Task 5 with the facts known before the live run. The numbers marked `TBD-LIVE-RUN` (and the corpus scores,
-`TBD-CORPUS`) are filled by the controller from the measured runs; nothing below them is invented.
+Status: built and measured. The corpus scores and the live run below are the measured facts (Task 6 filled them in from the controller's runs).
 
 ### What was built
 
@@ -123,12 +122,37 @@ fake `wp`. The wp-eval transport of the render script limits a page to about 95 
 
 ### Corpus scores (measured in Task 3)
 
-TBD-CORPUS
+Scores are passed/checked checks, overall, as the scorer reproduces them (pinned by `DogfoodCorpusTest`, data in `fixtures/dogfood/corpus.json`):
+
+| Page | Score |
+|---|---|
+| hairline-dashed | 114/119 |
+| heavy-block | 98/104 |
+| dotted-pill | 80/81 |
+| underlined-label | 85/91 |
+| soft-rounded | 93/98 |
+| gilt-hairline | 101/101 |
+| edit base (recipe-built, glass-edge / glass-dark) | 77/77 |
+| edited page | 111/111 |
+
+Each page's own failures: hairline-dashed `chip.frame-colour` x5 (the tags are in the text colour instead of the border colour);
+underlined-label `chip.frame` x5 (1px against the kit's 3px) and `framed.frame` x1 (a 4px top rule where this underline kit's card draws a
+3px bottom underline); the failures of the other pages are in `fixtures/dogfood/corpus.json`.
 
 ### Live render (Task 6)
 
-TBD-LIVE-RUN
+2026-10-22, run by the controller. `make dogfood-render` validated the page through the real `LayoutGate`, rendered it at 1280 and 400 px
+with 0 overflow and no console error, and deleted the throwaway draft; `--clean-orphans` found 0.
 
 ### Fresh run (Task 6)
 
-TBD-LIVE-RUN
+2026-10-22, controller. `make dogfood-prepare KIT=double-frame LANGUAGE=corporate-trust` (a kit not in the corpus) wrote the guide files and
+TASK.md. A fresh sonnet assistant given exactly the documented prompt built the page (7 sections, valid, one h1). `make dogfood-score` gave
+button 19/19, rule 15/15, chip 24/28, framed 20/20, item 4/4, form 7/7, image n/a, overall 89/93 (95.7%).
+
+The 4 misses are one finding: the tag frame is 3px where the adapter writes the kit's 4px double. The guide's tag clause says "1px at least"
+and never says a tag takes the kit's border width. A guide gap the harness found, to be fixed in a follow-up wording task.
+
+The assistant also reported (not scored): kit rule widths for a double kit were ambiguous (the quiet range 1-2px against "a double is never
+under 3px"; it chose 3px quiet / 4px strong, which matches the adapter); "which rule weight where" is not stated; chips and tags have no
+sizing guidance.
