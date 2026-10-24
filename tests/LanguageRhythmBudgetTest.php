@@ -15,11 +15,14 @@ require_once __DIR__ . '/../wp-plugin/src/StyleGuide.php';
  * Size budgets of the rhythm adapter (plan docs/superpowers/plans/2026-10-24-rhythm-adapter.md, Task 0).
  *
  * The numbers were measured at feat/type-adapter 2b40d59 (the merged state). Everything the rhythm adapter does
- * not own must not move; what it owns (one generated Section spacing line per language topic) may only grow
- * within its cap. Task 2 tightens the language topics to an exact equality.
+ * not own must not move; what it owns (one generated Section spacing line per language topic, plus the tech-mono
+ * reword) grows each language topic by exactly that (Task 2 tightened the check to an equality).
  */
 final class LanguageRhythmBudgetTest extends TestCase
 {
+    /** tech-mono's section_padding prose was reworded in Task 2: "the same padding on every section" -> "every ordinary section has the same padding". */
+    private const TECH_MONO_PROSE_DELTA = 10;
+
     /** Bytes of each `design-language:<id>` topic before the Section spacing line. */
     private const BEFORE_LANGUAGE_TOPICS = [
         'editorial'       => 2026,
@@ -33,9 +36,6 @@ final class LanguageRhythmBudgetTest extends TestCase
         'brutalist-flat'  => 2775,
         'luxe'            => 2963,
     ];
-
-    /** One generated line is at most 260 B (DesignLanguages::GENERATED_LINE_MAX) plus its newline. */
-    private const LINE_MAX_WITH_NEWLINE = 261;
 
     private const TOPIC_BOUND = 10000;
 
@@ -51,12 +51,16 @@ final class LanguageRhythmBudgetTest extends TestCase
         self::assertSame( 9972, strlen( StyleGuide::markdown( 'layout-sizing' ) ) );
     }
 
-    public function testEachLanguageTopicGrowsByAtMostOneGeneratedLine(): void
+    public function testEachLanguageTopicGrowsByExactlyItsSectionSpacingLine(): void
     {
         self::assertSame( array_keys( self::BEFORE_LANGUAGE_TOPICS ), DesignLanguages::ids(), 'the budget table lists every language' );
         foreach ( self::BEFORE_LANGUAGE_TOPICS as $id => $before ) {
             $now = strlen( StyleGuide::markdown( 'design-language:' . $id ) );
-            self::assertLessThanOrEqual( $before + self::LINE_MAX_WITH_NEWLINE, $now, "$id: more than one generated line was added" );
+            $line = DesignLanguages::sectionSpaceLine( (array) DesignLanguages::get( $id ) );
+            self::assertNotSame( '', $line, "$id has a Section spacing line" );
+            self::assertLessThanOrEqual( DesignLanguages::GENERATED_LINE_MAX, strlen( $line ), "$id: the line is over its cap" );
+            $delta = 'tech-mono' === $id ? self::TECH_MONO_PROSE_DELTA : 0;
+            self::assertSame( $before + strlen( $line ) + 1 + $delta, $now, "$id: must grow by exactly its Section spacing line and one newline" );
             self::assertLessThanOrEqual( self::TOPIC_BOUND, $now, "$id: over the topic bound" );
         }
     }

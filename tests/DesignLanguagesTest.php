@@ -1250,10 +1250,249 @@ class DesignLanguagesTest extends TestCase
         $this->assertSame(260, DesignLanguages::GENERATED_LINE_MAX);
         foreach (DesignLanguages::ids() as $id) {
             $lines = DesignLanguages::generatedLines((array) DesignLanguages::get($id));
-            $this->assertSame(['type'], array_keys($lines), $id);
+            $this->assertSame(['type', 'section_space'], array_keys($lines), $id);
             foreach ($lines as $name => $line) {
                 $this->assertLessThanOrEqual(DesignLanguages::GENERATED_LINE_MAX, strlen($line), "$id.$name");
             }
+        }
+    }
+
+    /** Ruling 8 of the rhythm adapter, typed once: language => role => [desktop, tablet, phone]. */
+    private const RHYTHM_TABLE = [
+        'editorial'       => [ 'section' => [120, 80, 56], 'open' => [152, 104, 72], 'tight' => [72, 48, 32] ],
+        'glass-dark'      => [ 'section' => [100, 72, 48], 'open' => [128, 88, 64],  'tight' => [64, 40, 32] ],
+        'organic-warm'    => [ 'section' => [96, 64, 44],  'open' => [120, 80, 56],  'tight' => [56, 40, 28] ],
+        'tech-mono'       => [ 'section' => [88, 64, 40],  'open' => [112, 80, 48],  'tight' => [56, 40, 28] ],
+        'playful-pastel'  => [ 'section' => [88, 60, 40],  'open' => [112, 72, 48],  'tight' => [56, 40, 28] ],
+        'corporate-trust' => [ 'section' => [96, 68, 44],  'open' => [120, 88, 56],  'tight' => [56, 40, 28] ],
+        'soft-saas'       => [ 'section' => [104, 72, 48], 'open' => [128, 88, 64],  'tight' => [64, 40, 32] ],
+        'bold-vibrant'    => [ 'section' => [80, 56, 36],  'open' => [104, 72, 48],  'tight' => [56, 32, 28] ],
+        'brutalist-flat'  => [ 'section' => [64, 48, 32],  'open' => [80, 64, 40],   'tight' => [56, 32, 28] ],
+        'luxe'            => [ 'section' => [160, 112, 72], 'open' => [200, 144, 88], 'tight' => [96, 64, 40] ],
+    ];
+
+    /** @return list<array<string,mixed>> */
+    private function allLanguages(): array
+    {
+        return array_map(static fn(string $id): array => (array) DesignLanguages::get($id), DesignLanguages::ids());
+    }
+
+    public function testEverySectionSpaceIsItsProseSentence(): void
+    {
+        foreach ($this->allLanguages() as $lang) {
+            $id = $lang['id'];
+            $this->assertSame(1, preg_match_all('/(\d+)px top and bottom on desktop, (\d+)px on tablet, (\d+)px on phone/', $lang['section_padding'], $m), "$id: the prose states the padding once");
+            $this->assertSame(
+                [ (int) $m[1][0], (int) $m[2][0], (int) $m[3][0] ],
+                [ $lang['section_space']['desktop'], $lang['section_space']['tablet'], $lang['section_space']['phone'] ],
+                "$id: section_space is the sentence"
+            );
+        }
+        // Planted: a mismatch is found by the same comparison.
+        $lang                           = $this->okLanguage();
+        $lang['section_space']['phone'] = 52;
+        preg_match('/(\d+)px top and bottom on desktop, (\d+)px on tablet, (\d+)px on phone/', $lang['section_padding'], $p);
+        $this->assertNotSame([ (int) $p[1], (int) $p[2], (int) $p[3] ], array_values($lang['section_space']));
+    }
+
+    public function testTheSectionSpaceBoundsHold(): void
+    {
+        foreach ($this->allLanguages() as $lang) {
+            $this->assertSame(DesignLanguages::SECTION_SPACE_KEYS, array_keys($lang['section_space']), $lang['id']);
+            $this->assertSame([], DesignLanguages::sectionSpaceProblems($lang), $lang['id']);
+            $this->assertGreaterThanOrEqual(56, $lang['section_space']['desktop']);
+            $this->assertLessThanOrEqual(200, $lang['section_space']['desktop']);
+            $this->assertGreaterThanOrEqual(28, $lang['section_space']['phone']);
+            $this->assertLessThanOrEqual(120, $lang['section_space']['phone']);
+        }
+    }
+
+    /** @return array<string,array{0:callable(array<string,mixed>):array<string,mixed>,1:string}> */
+    public static function brokenSectionSpaces(): array
+    {
+        return [
+            'missing'            => [static function (array $l): array { unset($l['section_space']); return $l; }, 'section_space'],
+            'not an object'      => [static function (array $l): array { $l['section_space'] = '120/80/56'; return $l; }, 'section_space'],
+            'extra key'          => [static function (array $l): array { $l['section_space']['wide'] = 200; return $l; }, 'section_space.wide'],
+            'missing tablet'     => [static function (array $l): array { unset($l['section_space']['tablet']); return $l; }, 'section_space.tablet'],
+            'string number'      => [static function (array $l): array { $l['section_space']['desktop'] = '120'; return $l; }, 'section_space.desktop'],
+            'float number'       => [static function (array $l): array { $l['section_space']['desktop'] = 120.0; return $l; }, 'section_space.desktop'],
+            'bool'               => [static function (array $l): array { $l['section_space']['tablet'] = true; return $l; }, 'section_space.tablet'],
+            'desktop 54'         => [static function (array $l): array { $l['section_space']['desktop'] = 54; return $l; }, 'section_space.desktop'],
+            'desktop 208'        => [static function (array $l): array { $l['section_space']['desktop'] = 208; return $l; }, 'section_space.desktop'],
+            'phone 24'           => [static function (array $l): array { $l['section_space']['phone'] = 24; return $l; }, 'section_space.phone'],
+            'phone 128'          => [static function (array $l): array { $l['section_space']['phone'] = 128; return $l; }, 'section_space.phone'],
+            'tablet above desktop' => [static function (array $l): array { $l['section_space']['tablet'] = 108; return $l; }, 'section_space.tablet'],
+            'phone above tablet' => [static function (array $l): array { $l['section_space']['phone'] = 76; return $l; }, 'section_space.phone'],
+        ];
+    }
+
+    #[DataProvider('brokenSectionSpaces')]
+    /**
+     * @param callable(array<string,mixed>):array<string,mixed> $break
+     */
+    public function testSectionSpaceProblemsCatchesEachBrokenShape(callable $break, string $field): void
+    {
+        $this->assertSame([], DesignLanguages::sectionSpaceProblems($this->okLanguage()), 'the base fixture is valid');
+        $broken = $break($this->okLanguage());
+        $lines  = DesignLanguages::sectionSpaceProblems($broken);
+        $this->assertNotSame([], $lines);
+        foreach ($lines as $line) {
+            $this->assertStringStartsWith('section_space', $line);
+        }
+        $this->assertStringContainsString($field, implode("\n", $lines));
+        // valid() reports the same lines, and a broken language yields no roles and no line.
+        $this->assertStringContainsString($field, implode("\n", DesignLanguages::valid($broken, $this->knownFonts())));
+        foreach (DesignLanguages::RHYTHM_ROLES as $role) {
+            $this->assertNull(DesignLanguages::sectionSpace($broken, $role), $role);
+        }
+        $this->assertSame('', DesignLanguages::sectionSpaceLine($broken));
+    }
+
+    /** @param list<array<string,mixed>> $languages @return array<string,list<string>> */
+    private static function sharedSectionSpaces(array $languages): array
+    {
+        $triples = [];
+        foreach ($languages as $lang) {
+            $triples[json_encode($lang['section_space'])][] = $lang['id'];
+        }
+        return array_filter($triples, static fn(array $ids): bool => count($ids) > 1);
+    }
+
+    public function testNoTwoLanguagesShareASectionSpaceTriple(): void
+    {
+        $all = $this->allLanguages();
+        $this->assertSame([], self::sharedSectionSpaces($all), 'cap 0, no exemption file');
+        $copy       = $all[0];
+        $copy['id'] = 'copy';
+        $this->assertCount(1, self::sharedSectionSpaces([ ...$all, $copy ]));
+    }
+
+    public function testTheDerivedRolesAreTheRuling8Table(): void
+    {
+        $this->assertSame(array_keys(self::RHYTHM_TABLE), DesignLanguages::ids());
+        $this->assertSame([ 'section', 'open', 'tight' ], DesignLanguages::RHYTHM_ROLES);
+        foreach (self::RHYTHM_TABLE as $id => $roles) {
+            $lang = (array) DesignLanguages::get($id);
+            foreach ($roles as $role => [ $d, $t, $p ]) {
+                $this->assertSame([ 'desktop' => $d, 'tablet' => $t, 'phone' => $p ], DesignLanguages::sectionSpace($lang, $role), "$id.$role");
+            }
+            // `section` is the data itself, never rounded.
+            $this->assertSame($lang['section_space'], DesignLanguages::sectionSpace($lang, 'section'), $id);
+        }
+        $this->assertSame(44, DesignLanguages::sectionSpace((array) DesignLanguages::get('organic-warm'), 'section')['phone'], '44 px stays 44 px');
+        $this->assertNull(DesignLanguages::sectionSpace($this->okLanguage(), 'huge'));
+        $this->assertNull(DesignLanguages::sectionSpace($this->okLanguage(), ''));
+    }
+
+    public function testTheDerivedRolesHoldForEveryTripleInsideTheBounds(): void
+    {
+        $clamps = [ 28, 56, 120, 200 ];
+        $count  = 0;
+        for ($desktop = 56; $desktop <= 200; $desktop += 4) {
+            for ($phone = 28; $phone <= min(120, $desktop); $phone += 4) {
+                for ($tablet = $phone; $tablet <= $desktop; $tablet += 4) {
+                    $lang   = $this->okLanguage();
+                    $lang['section_space'] = [ 'desktop' => $desktop, 'tablet' => $tablet, 'phone' => $phone ];
+                    $base   = DesignLanguages::sectionSpace($lang, 'section');
+                    foreach ([ 'open', 'tight' ] as $role) {
+                        $got = DesignLanguages::sectionSpace($lang, $role);
+                        $this->assertIsArray($got);
+                        foreach ($got as $key => $value) {
+                            $this->assertIsInt($value);
+                            $ok = 0 === $value % 8 || in_array($value, $clamps, true) || $value === $got['desktop'] || $value === $got['phone'];
+                            $this->assertTrue($ok, "$role $desktop/$tablet/$phone $key=$value");
+                        }
+                        $this->assertGreaterThanOrEqual(56, $got['desktop']);
+                        $this->assertLessThanOrEqual(200, $got['desktop']);
+                        $this->assertGreaterThanOrEqual(28, $got['phone']);
+                        $this->assertLessThanOrEqual(120, $got['phone']);
+                        $this->assertGreaterThanOrEqual($got['tablet'], $got['desktop'], "$role $desktop/$tablet/$phone");
+                        $this->assertGreaterThanOrEqual($got['phone'], $got['tablet'], "$role $desktop/$tablet/$phone");
+                    }
+                    $open  = DesignLanguages::sectionSpace($lang, 'open');
+                    $tight = DesignLanguages::sectionSpace($lang, 'tight');
+                    foreach (DesignLanguages::SECTION_SPACE_KEYS as $key) {
+                        $this->assertGreaterThanOrEqual($base[$key], $open[$key], "open >= section $desktop/$tablet/$phone $key");
+                        $this->assertLessThanOrEqual($base[$key], $tight[$key], "tight <= section $desktop/$tablet/$phone $key");
+                    }
+                    ++$count;
+                }
+            }
+        }
+        $this->assertGreaterThan(10000, $count, 'the sweep covered the whole grid');
+        // The half case rounds up; a result below the phone floor is raised to it.
+        $lang = $this->okLanguage();
+        $lang['section_space'] = [ 'desktop' => 100, 'tablet' => 48, 'phone' => 40 ];
+        $this->assertSame(64, DesignLanguages::sectionSpace($lang, 'open')['tablet'], '48 x 5/4 = 60 rounds to 64');
+        $this->assertSame(28, DesignLanguages::sectionSpace($lang, 'tight')['phone'], '40 x 3/5 = 24 is raised to the phone floor 28');
+    }
+
+    public function testTheShippedRolesAreStrictlyOrdered(): void
+    {
+        foreach ($this->allLanguages() as $lang) {
+            $base  = DesignLanguages::sectionSpace($lang, 'section');
+            $open  = DesignLanguages::sectionSpace($lang, 'open');
+            $tight = DesignLanguages::sectionSpace($lang, 'tight');
+            foreach (DesignLanguages::SECTION_SPACE_KEYS as $key) {
+                $this->assertGreaterThan($base[$key], $open[$key], $lang['id'] . " open > section at $key");
+                $this->assertGreaterThan($tight[$key], $base[$key], $lang['id'] . " section > tight at $key");
+            }
+        }
+        // Planted: a language at the floor cannot get a tighter role, and the check sees it.
+        $lang                  = $this->okLanguage();
+        $lang['section_space'] = [ 'desktop' => 56, 'tablet' => 40, 'phone' => 28 ];
+        $this->assertSame(56, DesignLanguages::sectionSpace($lang, 'tight')['desktop']);
+        $this->assertSame(
+            DesignLanguages::sectionSpace($lang, 'section')['desktop'],
+            DesignLanguages::sectionSpace($lang, 'tight')['desktop'],
+            'tight is not below section here, so the strict-order check would fail for such a language'
+        );
+    }
+
+    public function testNoProsePromisesOnePaddingForEverySection(): void
+    {
+        $bad = static function (array $node) use (&$bad): bool {
+            foreach ($node as $value) {
+                if (is_array($value) ? $bad($value) : (is_string($value) && 1 === preg_match('/same padding on every section/i', $value))) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        foreach ($this->allLanguages() as $lang) {
+            $this->assertFalse($bad($lang), $lang['id'] . ': a language with open and tight roles cannot say every section has the same padding');
+        }
+        $planted                    = $this->okLanguage();
+        $planted['section_padding'] .= ' The same padding on every section.';
+        $this->assertTrue($bad($planted), 'a planted sentence is found');
+    }
+
+    public function testTheSectionSpacingLineIsGeneratedFromTheData(): void
+    {
+        $this->assertSame('module.decoration.spacing', DesignLanguages::SECTION_SPACE_PATH);
+        foreach (DesignLanguages::ids() as $id) {
+            $lang  = (array) DesignLanguages::get($id);
+            $line  = DesignLanguages::sectionSpaceLine($lang);
+            $md    = DesignLanguages::markdown($id);
+            $this->assertSame(1, substr_count($md, $line), "$id Section spacing line appears once");
+            $lines = explode("\n", $md);
+            $at    = array_search($line, $lines, true);
+            $this->assertIsInt($at, $id);
+            $this->assertStringStartsWith('- Section padding: ', $lines[$at - 1], "$id: right after the Section padding line");
+            $this->assertStringStartsWith('- Section spacing: ', $line);
+            foreach (DesignLanguages::RHYTHM_ROLES as $role) {
+                $s = DesignLanguages::sectionSpace($lang, $role);
+                $this->assertStringContainsString($s['desktop'] . '/' . $s['tablet'] . '/' . $s['phone'] . 'px', $line, "$id.$role");
+            }
+            $this->assertStringContainsString(DesignLanguages::SECTION_SPACE_PATH, $line);
+            $this->assertStringContainsString('never left or right', $line);
+            $this->assertLessThanOrEqual(DesignLanguages::GENERATED_LINE_MAX, strlen($line), $id);
+            foreach (['{{', '<', '`'] as $bad) {
+                $this->assertStringNotContainsString($bad, $line, $id);
+            }
+            // The Type line stays where it was: right after the fonts line.
+            $this->assertStringStartsWith('- headings: ', $lines[array_search(DesignLanguages::typeLine($lang), $lines, true) - 1]);
         }
     }
 }
