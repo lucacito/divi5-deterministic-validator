@@ -7,9 +7,10 @@ namespace Divi5Validator\Tests;
 use PHPUnit\Framework\TestCase;
 
 /**
- * The goldens of the earlier kit adapters (button, card, item, form) are frozen: the rules and chips adapter only ADDS two
- * goldens (kit-rule-patches.json, kit-chip-patches.json) and never changes a patch the earlier adapters write. The sha256 of
- * each earlier file is pinned literally (their values at 155ff75, before the rules and chips adapter began), so a change to any
+ * The goldens of the earlier adapters are frozen: the rules and chips adapter only ADDED two goldens (kit-rule-patches.json,
+ * kit-chip-patches.json) and the type adapter only ADDED language-type-patches.json; none of them changes a patch an earlier
+ * adapter writes. The sha256 of each file is pinned literally (the four kit goldens at 155ff75, rule and chip at 77abc24, the
+ * language type golden when the type adapter's Task 4 generated it, so the rhythm adapter cannot change it), so a change to any
  * of them, even a whitespace one, fails here and has to be made on purpose, in the open, by changing the pin with the golden.
  */
 class KitGoldenFreezeTest extends TestCase
@@ -19,11 +20,14 @@ class KitGoldenFreezeTest extends TestCase
         'kit-card-patches.json'    => '1ffad3f06f3a22feb94e9c854cbb93f1391d7b800dc032124efbb4a042ee309f',
         'kit-item-patches.json'    => '73605923c31d175ebe5c783954f58f31b03e62e0fc96c9af898d4da6198b8956',
         'kit-form-patches.json'    => '47be308c01424d9241f00dac247381423bf956cb697e34153286721b2bd1acc8',
+        'kit-rule-patches.json'    => 'd087813dcc1562b29fd9fec3883828faa6b9833061ae7458d6785ef7b7f2b0a3',
+        'kit-chip-patches.json'    => '12dfba28c57715e651ee2e029e3a9c2e0fb3bbe771f0bbdd38fcce88613ebe2d',
+        'language-type-patches.json' => '64bf3702f64351d4c8af21758b2fca684b3321f57745ebda7a95b3169c04a9f4',
     ];
 
-    public function testTheEarlierKitGoldensAreByteIdentical(): void
+    public function testTheEarlierGoldensAreByteIdentical(): void
     {
-        $this->assertCount( 4, self::FROZEN );
+        $this->assertCount( 7, self::FROZEN );
         foreach ( self::FROZEN as $file => $sha ) {
             $path = __DIR__ . '/golden/' . $file;
             $this->assertFileExists( $path );
