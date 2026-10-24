@@ -28,7 +28,8 @@ class TypeMigrationReportTest extends TestCase
     {
         $out = \TypeReport::render( TypeAudit::blocks( self::library() ), false );
         $this->assertStringContainsString( "\ndisplay 56, title 64, eyebrow 86 (53 headings + 33 texts), exempt 4\n", $out );
-        $this->assertStringContainsString( "\nmarked 0 of 206\n", $out );
+        // Since Task 5 (scripts/migrate-type-markers.php) every classified block carries its marker.
+        $this->assertStringContainsString( "\nmarked 206 of 206\n", $out );
     }
 
     public function testEveryClassifiedBlockHasALine(): void
@@ -38,8 +39,8 @@ class TypeMigrationReportTest extends TestCase
         $this->assertSame( 206 + 4, substr_count( $out, "\n  " ) , 'one indented line per classified or exempt block' );
         $this->assertStringContainsString( '  proof-press-quotes | text#0 | - | display | exempt | - | a publication name', $out );
         $this->assertStringContainsString( '  shop-grid | heading#0 | - | display | exempt | - |', $out );
-        $this->assertStringContainsString( '  hero-cta | heading#1 | h1 | display | display | - |', $out );
-        $this->assertStringContainsString( '  hero-image-scrim | text#1 | - | eyebrow | eyebrow | - |', $out );
+        $this->assertStringContainsString( '  hero-cta | heading#1 | h1 | display | display | MARKED |', $out );
+        $this->assertStringContainsString( '  hero-image-scrim | text#1 | - | eyebrow | eyebrow | MARKED |', $out );
     }
 
     public function testAllAlsoListsTheUnclassifiedTexts(): void

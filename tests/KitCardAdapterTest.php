@@ -8,6 +8,7 @@ use AiEditorDivi5\WP\DesignLanguages;
 use AiEditorDivi5\WP\ImageTokens;
 use AiEditorDivi5\WP\KitAdapters;
 use AiEditorDivi5\WP\KitResolver;
+use AiEditorDivi5\WP\LanguageResolver;
 use AiEditorDivi5\WP\LayoutGate;
 use AiEditorDivi5\WP\RecipeTokens;
 use AiEditorDivi5\WP\SectionRecipes;
@@ -240,7 +241,8 @@ class KitCardAdapterTest extends TestCase
 
     public function testGroundPatchValidatesInsideAGroupAndAColumnBlock(): void
     {
-        $raw = ImageTokens::resolve( (string) SectionRecipes::rawMarkup( 'hero-spec-card' ), 'https://example.test/images/' );
+        // The language step runs first, as when a recipe is served (type adapter Task 5: recipe headings carry type markers).
+        $raw = LanguageResolver::resolve( ImageTokens::resolve( (string) SectionRecipes::rawMarkup( 'hero-spec-card' ), 'https://example.test/images/' ), (array) RecipeTokens::default() );
         $checked = 0;
         foreach ( $this->shippedKits() as $id => $kit ) {
             foreach ( self::ROLES as $role ) {
@@ -280,7 +282,8 @@ class KitCardAdapterTest extends TestCase
     public function testCardPatchValidatesInsideAGroupAndAColumnBlock(): void
     {
         // A real recipe: every group (the panel and its rows) and every column (two halves of a 1_2,1_2 row) carries a marker.
-        $raw = ImageTokens::resolve( (string) SectionRecipes::rawMarkup( 'hero-spec-card' ), 'https://example.test/images/' );
+        // The language step runs first, as when a recipe is served (type adapter Task 5: recipe headings carry type markers).
+        $raw = LanguageResolver::resolve( ImageTokens::resolve( (string) SectionRecipes::rawMarkup( 'hero-spec-card' ), 'https://example.test/images/' ), (array) RecipeTokens::default() );
         $this->assertStringContainsString( 'wp:divi/group', $raw );
         $this->assertStringContainsString( 'wp:divi/column', $raw );
         $checked = 0;

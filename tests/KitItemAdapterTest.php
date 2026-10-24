@@ -8,6 +8,7 @@ use AiEditorDivi5\WP\DesignLanguages;
 use AiEditorDivi5\WP\ImageTokens;
 use AiEditorDivi5\WP\KitAdapters;
 use AiEditorDivi5\WP\KitResolver;
+use AiEditorDivi5\WP\LanguageResolver;
 use AiEditorDivi5\WP\LayoutGate;
 use AiEditorDivi5\WP\RecipeTokens;
 use AiEditorDivi5\WP\SectionRecipes;
@@ -455,7 +456,8 @@ class KitItemAdapterTest extends TestCase
         $checked = 0;
         foreach ( $recipes as $carrier => $names ) {
             foreach ( $names as $name ) {
-                $raw = ImageTokens::resolve( (string) SectionRecipes::rawMarkup( $name ), 'https://example.test/images/' );
+                // The language step runs first, as when a recipe is served (type adapter Task 5: recipe headings carry type markers).
+                $raw = LanguageResolver::resolve( ImageTokens::resolve( (string) SectionRecipes::rawMarkup( $name ), 'https://example.test/images/' ), (array) RecipeTokens::default() );
                 $this->assertStringContainsString( 'wp:' . $carrier . ' ', $raw, "$name has a $carrier" );
                 foreach ( $this->shippedKits() as $id => $kit ) {
                     foreach ( self::BANDS as $role => $bands ) {
