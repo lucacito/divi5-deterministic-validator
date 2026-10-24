@@ -1,0 +1,253 @@
+# Type and rhythm adapters: a design language also decides headline type and section spacing
+
+Date: 2026-10-24. Status: approved by delegation (the owner said "do all you can do" and delegated every decision; each
+ruling below is recorded with its cost if wrong). Two adapters, built one after the other on the same machinery:
+**A. Type** (plan `docs/superpowers/plans/2026-10-24-type-adapter.md`) and **B. Rhythm**
+(plan `docs/superpowers/plans/2026-10-24-rhythm-adapter.md`, written after A is merged because it reuses A's resolver).
+Branches `feat/type-adapter`, then `feat/rhythm-adapter`, worktrees `../wt-*`, `git merge --no-ff` into LOCAL main.
+NO push, release, version bump, zip rebuild or SVN. The validator (`src/`, `wp-plugin/validator/`) is untouched.
+
+## Intent and why
+
+The earlier adapters made every BUTTON, CARD, ACCORDION, FORM, RULE, CHIP and IMAGE of a recipe follow the chosen style kit.
+What still does not follow anything is the part a visitor reads first: the headline type and the vertical air between
+sections. Today 174 headings in 57 recipes render with whatever weight, tracking and capitalisation Divi's default gives
+them, so luxe (serif at weight 300, wide-tracked labels) and brutalist-flat (weight 900 capitals) look the same in the
+headlines as editorial; and 31 of 71 sections carry the same 112/88/64 px padding whatever the language says
+(`section_padding` is only prose: 64 px for brutalist-flat, 160 px for luxe). A language is already "an art-direction
+system"; this makes two more of its decisions mechanical, so a recipe served under a language is typographically and
+rhythmically that language, and a hand-written page can read the same numbers from the guide.
+
+## What the audit found (script audit over `wp-plugin/data/section-recipes.json`, 71 recipes; scratch scripts are throwaway)
+
+- 174 `divi/heading` blocks in 57 recipes. Level and font token decide the role cleanly:
+  h1 13, h2 43, h3 64, h4 with `{{aied:font:eyebrow}}` 53 (the uppercase 2 px 600 label: 42 at 13 px, 10 at 14 px,
+  1 at 16 px), plus two or three outliers. Only 63 carry a weight, 54 a capitalisation, 57 a letter spacing: the display
+  headings (h1/h2/h3) mostly carry NONE of the three, so the language can decide without fighting a recipe. The literals
+  that exist are: h2 weight 700 at 48 px (5), h3 weight 600 at 34 px (4), h2 700 at 65 px (1), one h1 `900 uppercase -1px`
+  (the brutalist recipe), 3 h1 with `-1px`.
+- 335 `divi/text` blocks in 65 recipes. Weight on 83, capitalisation on 36, letter spacing on 61. The 36 capitalised texts are
+  small labels (the text-module form of an eyebrow); body weights are emphasis lines, not a design decision.
+- Heading and text paths (`title.decoration.font.font.<bp>.value.{weight,capitalization,letterSpacing}` and
+  `content.decoration.bodyFont.body.font.<bp>.value.{...}`) are already in the shape registry (export- or probe-proven);
+  the adapter still probes its own decisions on the carriers (watch for no-op controls).
+- 71 sections: desktop top = bottom in about 55 of them (112 px 31, 120 px 4, 128 px 2, 160 px 2, 100 px 2, 96 px 2, 80 px, 72 px, 140 px,
+  152 px, 40 px, 32 px once each ...), each with tablet and phone steps; 7 carry no padding, 3 have 0px on phone, about 8 are
+  asymmetric or in %, vw or 0. 101 rows: 83 carry NO padding, so rows have nothing to decide.
+- Divi ships `core/json-data/google-fonts.json` (1,945 families, equal to our committed names list) with, for each family,
+  either static `variants` (`regular`, `700` ...) or a variable `axes` entry `{"tag":"wght","start":N,"end":M}`. That is
+  the evidence for which weights a language's fonts can actually render (Space Mono: 400 and 700 only; Playfair Display
+  400-900; Cormorant Garamond 300-700; Unbounded 200-900).
+
+## Goals, non-goals, anti-goals
+
+Goals
+1. A. Type: `display`, `title` and `eyebrow` roles. A recipe heading (or an eyebrow text) carries
+   `"aied":{"type":"<role>"}`; the served markup carries the language's weight, letter spacing and capitalisation for that role.
+2. B. Rhythm: `section`, `open` and `tight` roles. A recipe section carries `"aied":{"rhythm":"<role>"}`; the served markup
+   carries the language's vertical padding for desktop, tablet and phone.
+3. Both decisions are structured data on the design language, pinned to its prose by tests, shown in the language's guide
+   topic by a GENERATED sentence (so a hand-written page can use them), and measured on the real Divi.
+4. Proofs with ZERO exceptions and no baseline files; goldens for the resolved patches; `KitGoldenFreezeTest`'s frozen
+   goldens stay byte-identical; recipes keep tokens and markers only.
+
+Non-goals
+- Body copy (weight, size, line height), heading SIZE and line height (recipes tune these per device and per layout),
+  heading colour (already tokens), row padding (83 of 101 rows carry none), horizontal padding, `divi/blurb`, testimonial,
+  counters, slider, `divi/signup`, a `rule-accent` role, a per-language frame colour. Not "later adapters" in this spec.
+- No new MCP tool, REST route or OpenAPI operation. No new guide topic NAME (the `topic` parameter description is 258 of 260
+  characters). The default guide stays 28,975 B. The validator is not touched.
+- No custom CSS/JS/PHP, no remote call, no Divi attribute path that is not proven on its module.
+
+Anti-goals (a failure even if it technically works)
+- A language overriding a deliberate recipe look silently. Every heading the adapter does NOT take over is named in a
+  shrink-only exemption list with a reason.
+- A weight the language's font cannot render (the browser would synthesise a bold or pick the nearest face).
+- An overflow at 400 px because an uppercase or heavier headline got wider.
+- A section rhythm that squeezes the overlap recipes (their 0 px edges stay literal).
+
+## Design
+
+### 1. Where the decision lives (Ruling 1)
+
+Type and rhythm are properties of the LANGUAGE, not of the style kit. A weight is only meaningful for a font (the language
+chooses the font), and `style_kit` can pair any kit with any language, so putting type on the kit would let a kit fight the
+language's fonts. Each of the 10 languages in `wp-plugin/data/design-languages.json` gains two keys:
+
+```json
+"type": {
+  "display": { "weight": "600", "letterSpacing": "-1px", "capitalization": "none" },
+  "title":   { "weight": "600", "letterSpacing": "0px",  "capitalization": "none" },
+  "eyebrow": { "weight": "600", "letterSpacing": "2px",  "capitalization": "uppercase" }
+},
+"section_space": { "desktop": 120, "tablet": 80, "phone": 56 }
+```
+
+`section_space` is the structured form of the existing `section_padding` prose (tests pin them equal by parsing the prose
+sentence `N px top and bottom on desktop, M px on tablet, K px on phone`; where a language's prose does not follow the
+sentence the test names the exception and the prose is reworded, never the test loosened). `DesignLanguages::valid()` learns
+both keys (strict: closed key sets, values from closed lists, bounds below); `DesignLanguages::markdown()` prints a generated
+line for each (see 6).
+
+Starting table for `type` (the builder may adjust a value within the bounds below, and records every change in the plan
+ledger with the reason; weights must pass the font proof in 3):
+
+| language (display / eyebrow font) | display | title | eyebrow |
+|---|---|---|---|
+| editorial (Playfair Display / Source Sans 3) | 600, -1px, none | 600, 0px, none | 600, 2px, uppercase |
+| glass-dark (Inter) | 600, -1px, none | 600, 0px, none | 500, 2px, uppercase |
+| organic-warm (Fraunces / DM Sans) | 600, -0.5px, none | 600, 0px, none | 600, 1px, uppercase |
+| tech-mono (Space Grotesk / JetBrains Mono) | 600, -1px, none | 500, 0px, none | 500, 2px, uppercase |
+| playful-pastel (Fredoka) | 700, 0px, none | 600, 0px, none | 600, 1px, none |
+| corporate-trust (IBM Plex Sans) | 600, 0px, none | 600, 0px, none | 600, 1px, uppercase |
+| soft-saas (Plus Jakarta Sans / Figtree) | 700, -1px, none | 600, 0px, none | 600, 1px, uppercase |
+| bold-vibrant (Unbounded / Work Sans) | 800, -1px, none | 700, 0px, none | 700, 2px, uppercase |
+| brutalist-flat (Archivo / Space Mono) | 900, -1px, uppercase | 700, 0px, none | 700, 2px, uppercase |
+| luxe (Cormorant Garamond / Jost) | 300, 0px, none | 400, 0px, none | 400, 3px, uppercase |
+
+Bounds (validity, tested): weights are the nine CSS weights 100-900 and must exist in the role's font (3); `letterSpacing`
+is a whole-pixel value within `display` [-3px, 0px], `title` [-1px, 1px], `eyebrow` [0px, 4px]; `capitalization` is `none` or
+`uppercase`, and `uppercase` for `display` or `title` is allowed only in a language whose own `hero` prose asks for capital
+letters (today brutalist-flat; a closed, shrink-only list in the test); `section_space` values are whole pixels with
+desktop >= tablet >= phone, desktop within 56-200, phone within 28-120.
+
+### 2. Roles, carriers, markers (Ruling 2, 3)
+
+Type markers (top-level block attribute, the only keys `type`, no `on`):
+
+| marker | carriers | meaning |
+|---|---|---|
+| `"aied":{"type":"display"}` | `divi/heading` | a headline (recipe h1 and h2) |
+| `"aied":{"type":"title"}` | `divi/heading` | a card or item title (recipe h3) |
+| `"aied":{"type":"eyebrow"}` | `divi/heading`, `divi/text` | the small label above a headline (recipe h4 in the eyebrow font; a text-module label) |
+
+The patch writes weight, letterSpacing and capitalization for ONE breakpoint, `desktop` (Divi cascades a desktop value to
+tablet and phone; the probe proves it on the carrier), at `title.decoration.font.font.desktop.value.*` for a heading and
+`content.decoration.bodyFont.body.font.desktop.value.*` for a text. `capitalization: none` is written as the value `none`
+only if the probe proves the explicit `none` is live (and is a real difference from Divi's default for that module);
+otherwise a `none` role writes no capitalisation key and the recipe literal (if any) is a migration exemption. It never
+writes size, line height, colour, family or alignment. The language wins over a recipe literal at the same key (deep merge,
+as every kit patch).
+
+Rhythm marker: `"aied":{"rhythm":"section|open|tight"}` on `divi/section` only. Roles are derived from `section_space`
+(Ruling 8): `section` = the language's three values; `open` (a hero or closing band that needs more air) = each value x 1.25;
+`tight` (a compact strip: logos, a stats band) = each value x 0.6; both rounded to the nearest 8 px and clamped to the bounds
+above (tablet and phone keep desktop >= tablet >= phone after rounding; a function, tested exhaustively for the 10 languages).
+The patch writes `module.decoration.spacing.<desktop|tablet|phone>.value.padding.{top,bottom,syncVertical:"on"}` (the shape
+recipes already use and the registry proves), never left/right.
+
+### 3. Resolver and pipeline
+
+A new pure `LanguageResolver::resolve(string $markup, array $language): string` (same scanner discipline as `KitResolver`:
+only inside the attribute JSON of a `<!-- wp:divi/<name> {json} -->` comment; a block without a resolvable marker stays
+byte-identical; unknown role, block or extra keys are left and reported by `leftovers()`, never guessed) and a pure
+`LanguageAdapters::patch(string $block, string $kind, string $role, array $language): ?array` (`$kind` is `type` or `rhythm`).
+`SectionRecipes::recipe()` runs ImageTokens -> LanguageResolver -> KitResolver -> RecipeTokens, and returns null if any marker
+is left (never partial markup). `KitResolver::leftovers()` must keep reporting an unresolved `aied` marker of either kind; a
+type or rhythm marker never reaches the kit step. The builder reads `KitResolver` first and shares what it can (the block
+scanner) instead of copying it.
+
+### 4. Proofs (pure PHP, zero exceptions, no baseline files)
+
+- Font proof: a committed fixture `fixtures/shapes/font-weights.json` (the 19 families the languages use, extracted from
+  Divi's own `google-fonts.json` with its provenance and the Divi version; regenerated by a script) and a test that every
+  language weight exists for its role's font (display font for display and title, eyebrow font for eyebrow; a variable
+  font: weight within `start..end`; a static font: the weight in `variants`, `regular` = 400).
+- Bounds above, closed key sets, prose consistency (a weight the prose names, e.g. bold-vibrant 800, luxe 300, brutalist 900
+  capitals, equals the data; the test lists each prose claim it checks), `section_space` equals the prose sentence.
+- Visible-difference: no two languages share the same (display, title, eyebrow) triple, and no two share the same
+  `section_space` triple unless listed in a shrink-only exemption file with a reason (cap = the count found, asserted).
+- Readability: `uppercase` + tracking only where tested above; an eyebrow never below 0 px tracking when uppercase.
+- Goldens: `tests/golden/language-type-patches.json` (10 languages x 3 roles x its carriers) and
+  `tests/golden/language-rhythm-patches.json` (10 languages x 3 roles), generated once, then frozen by sha256 beside the
+  earlier goldens (`KitGoldenFreezeTest` style). The earlier kit goldens stay byte-identical.
+- Dead-on-module guard: probe `DEAD` results go in `fixtures/shapes/dead-on-module.txt` only if a path the library used turns
+  out dead on the carrier; `tests/Support/DeadOnModule.php` covers heading/text/section carriers for type and rhythm.
+- Library migration tests (`TypeMigrationTest`, `RhythmMigrationTest`): every marker's block and role are pinned by recipe and
+  index; classification of every heading and section of the library is asserted (marked, or in a named shrink-only exemption
+  list with a reason; the lists END small and are capped by an assertion); each recipe still validates through `LayoutGate`
+  under all 10 languages; no marker, token or leftover reaches served markup.
+
+### 5. Probe list (live, serial; ids `lt-*` for type, `lr-*` for rhythm; the existing `ty-*` ids belong to the typography probe)
+
+Run on the carriers with the real language fonts as `{{aied:font:...}}`-resolved family values:
+`lt-heading-weight-<w>` for 300, 400, 500, 600, 700, 800, 900 (computed `font-weight` equals the value AND differs from the
+module's default where that is the point), `lt-heading-tracking-{-3,-1,0}px`, `lt-heading-caps-{uppercase,none}` (explicit
+`none` over an uppercase preset or recipe literal: is it a real difference?), `lt-heading-cascade` (a desktop-only value reaches
+tablet 900 px and phone 400 px), `lt-text-eyebrow-{weight,tracking,caps}` on `divi/text` bodyFont.body, `lt-heading-h1-h4`
+(the same patch on every `headingLevel`), `lr-section-padding-<N>` desktop/tablet/phone (computed padding-top and
+-bottom at 1280/900/400 for an `N` px symmetric section, `syncVertical` on) and `lr-section-first-last` (padding on the first and
+a later section; a section with a background image keeps the image). Results to `fixtures/shapes/language-type-vocabulary.md`
+and `language-rhythm-vocabulary.md` with an "Adapter decisions" table; `LanguageAdapters::TYPE_PROVEN` / `RHYTHM_PROVEN`
+constants are pinned to those tables (all decisions true), exactly as `RULE_PROVEN` is. A control that does not change a
+computed value is a defect of the candidate, not an answer: re-probe, do not freeze.
+
+### 6. Guide and size (plan this first; the headroom is thin)
+
+No new topic name. Wording goes into existing generated text only:
+- `design-language:<id>` (generated by `DesignLanguages::markdown()` / `StyleGuide`): two generated lines, "Type: ..." (the
+  three roles with weight, tracking, case) and "Section spacing: ..." (section, open, tight numbers from the same function the
+  patch uses), each at most 260 B.
+- `typography` topic: one generated sentence saying a hand-written heading follows the language's `type` roles at the
+  proven path (the path string comes from the adapter, not typed twice).
+The first plan task measures every affected topic and the default guide, and writes the pins (default guide stays exactly 28,975 B;
+no topic over its bound of 10,000 B; the `topic` description unchanged). If a line does not fit, trim existing prose first.
+
+### 7. Render gate
+
+`make verify-language-type` (`scripts/verify-language-type.cjs`, pure tests first, then live): for each of the 10 languages
+one throwaway draft page with a display h1 and h2, a title h3, an eyebrow heading, an eyebrow text and, for rhythm, a
+`section`, `open` and `tight` section, all resolved by the REAL pipeline, rendered at 1280/900/400 on the dev site. Codes:
+`type-weight`, `type-tracking`, `type-caps`, `type-family`, `type-overflow`, `type-font-loaded` (the requested family and
+weight reported by `document.fonts` when the font is a web font), `rhythm-padding` (computed padding-top/-bottom per
+viewport), `rhythm-order` (open > section > tight), `overflow`. Expectations come from the RESOLVED markup, never typed; a run
+that checks nothing fails; the same synthetic-departures test pattern as `scripts/test-kit-card-run.cjs` proves each code
+catches its departure. The migrated recipes are re-rendered with the existing `make verify-recipes` narrowed to them under
+the 10 languages (overflow, contrast, columns, console errors). `make verify-shapes` and one narrowed `make verify-kits`
+smoke (2 kits x 2 languages) confirm nothing else moved. The full 3 h `verify-kits` is NOT required (no kit code changes);
+it is run only if a task touches `KitAdapters` or `KitResolver` beyond the shared scanner.
+
+### 8. Rulings (made by delegation; cost if wrong)
+
+1. Type and rhythm live on the language, not the kit. Why: weights depend on the font; kit and language are independent knobs.
+   Cost if wrong: move two objects to the kit file and key the patch by kit (the patch functions are pure).
+2. Three type roles only (display, title, eyebrow); body, size and line height are not touched. Why: recipes tune size and
+   line height per device and layout; body weight is emphasis. Cost: a fourth role is one table entry plus a probe.
+3. Markers are `"aied":{"type":...}` and `"aied":{"rhythm":...}` (separate resolver, runs before the kit step). Cost: rename.
+4. Language wins over a recipe literal at the same key; every literal kept is a named shrink-only exemption. Cost: delete an entry.
+5. Weights are checked against Divi's own font file, not memory. Cost if wrong: a synthetic bold; the live `type-font-loaded` code and the font proof guard it.
+6. Uppercase display/title only where the language prose asks for capitals (brutalist-flat). Cost: one list entry.
+7. `desktop` value only for type (cascade proven by probe); if the probe shows tablet/phone do not inherit, the patch writes the three breakpoints (same value) and the golden follows. Cost: three keys instead of one.
+8. `open` = x1.25 and `tight` = x0.6, rounded to 8 px, clamped. Why: derivable, no 30 extra numbers to keep consistent. Cost: tune two factors and regenerate the golden.
+9. Rows, horizontal padding and the other modules are out. Why: nothing to decide (83 of 101 rows carry no padding).
+10. Asymmetric, `%`, `vw` and `0px` sections (overlap recipes, a hero measured in vw) stay literal and are listed. Cost: a section stops following the language: cosmetic.
+11. One gate script for both adapters (`verify-language-type`), serial, 10 cells, minutes not hours.
+12. The dogfood scorer (`dogfood-score`) is NOT extended in this spec (it scores kit decisions); say so in the Outcome.
+
+### 9. Done means
+
+- A: `make test` green (free suite), the proofs of 4 with zero exceptions, goldens frozen, `TypeMigrationTest` green, markers on the
+  headings the audit classifies (about 53 eyebrow headings, 56 display (h1/h2) and 64 title (h3) headings and the eyebrow-label texts; exact counts from the
+  migration report), guide sizes within the pins, `make verify-shapes` OK, probe results committed, `make verify-language-type`
+  and the narrowed recipe render PASS, a final opus whole-branch review, merged `--no-ff` to LOCAL main, CLAUDE.md paragraph and
+  memory updated.
+- B: the same for rhythm (about 40 section markers), plus the section-geometry checks in the gate.
+- Plugin Check on the dev copy is NOT needed until a release; run it at the end of B anyway (cheap) and report.
+
+## Phased plan, order and cost
+
+Task order inside each plan: (0) measure sizes and write pins; (1) live probe (serial, controller-run); (2) data + validity +
+proofs (pure, parallel worktree with 1); (3) adapter + resolver + generated guide; (4) goldens and migration report;
+(5) recipe migration; (6) render gate + synthetic-departure tests; (7) docs, CLAUDE.md, memory; (8) final live gates and
+whole-branch review. Max 3 parallel workers; ONE probe/render/live gate at a time on the dev site. Models: plan writer opus,
+implementers sonnet (opus for the resolver, adapters and anything judgment-heavy), reviews opus.
+
+## Left to the builder
+
+The exact starting table values within the bounds; the migration classification rule details (level and font token decide;
+outliers become named exemptions); whether the shared block scanner moves to a small helper or `LanguageResolver` calls
+`KitResolver` internals; the file and test names; the wording of the generated lines (within 260 B each).
+
+## Outcome
+
+(Filled at the end of each adapter.)
