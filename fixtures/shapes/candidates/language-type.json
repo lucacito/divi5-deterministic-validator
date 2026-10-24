@@ -1,0 +1,1551 @@
+[
+ {
+  "id": "lt-heading-control",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h2",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.weight": "300"
+  },
+  "note": "Control: weight 300 differs from the default 500 (typography probe ty-h-weight-300)."
+ },
+ {
+  "id": "lt-heading-dead-weight-500",
+  "block": "heading",
+  "expect": "PASS(css-only)",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h2",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.weight": "500"
+  },
+  "note": "Default-value check (not a dead path): 500 is the module default, so Divi emits the CSS but the computed style is unchanged (css-only, computedDiffs 0 at every width)."
+ },
+ {
+  "id": "lt-heading-weight-300",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h2",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.weight": "300"
+  },
+  "note": "Weight 300 on the heading carrier (family Inter, variable 100-900)."
+ },
+ {
+  "id": "lt-heading-weight-400",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h2",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.weight": "400"
+  },
+  "note": "Weight 400 on the heading carrier (family Inter, variable 100-900)."
+ },
+ {
+  "id": "lt-heading-weight-600",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h2",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.weight": "600"
+  },
+  "note": "Weight 600 on the heading carrier (family Inter, variable 100-900)."
+ },
+ {
+  "id": "lt-heading-weight-700",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h2",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.weight": "700"
+  },
+  "note": "Weight 700 on the heading carrier (family Inter, variable 100-900)."
+ },
+ {
+  "id": "lt-heading-weight-800",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h2",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.weight": "800"
+  },
+  "note": "Weight 800 on the heading carrier (family Inter, variable 100-900)."
+ },
+ {
+  "id": "lt-heading-weight-900",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h2",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.weight": "900"
+  },
+  "note": "Weight 900 on the heading carrier (family Inter, variable 100-900)."
+ },
+ {
+  "id": "lt-heading-weight-500",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h2",
+         "size": "44px",
+         "family": "Inter",
+         "weight": "300"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.weight": "500"
+  },
+  "note": "Weight 500 from a base of 300 (500 equals the default, so the base is moved first)."
+ },
+ {
+  "id": "lt-heading-tracking--3px",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h2",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.letterSpacing": "-3px"
+  },
+  "note": "Letter spacing -3px on the heading carrier."
+ },
+ {
+  "id": "lt-heading-tracking--2px",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h2",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.letterSpacing": "-2px"
+  },
+  "note": "Letter spacing -2px on the heading carrier."
+ },
+ {
+  "id": "lt-heading-tracking--1px",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h2",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.letterSpacing": "-1px"
+  },
+  "note": "Letter spacing -1px on the heading carrier."
+ },
+ {
+  "id": "lt-heading-tracking-1px",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h2",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.letterSpacing": "1px"
+  },
+  "note": "Letter spacing 1px on the heading carrier."
+ },
+ {
+  "id": "lt-heading-tracking-2px",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h2",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.letterSpacing": "2px"
+  },
+  "note": "Letter spacing 2px on the heading carrier."
+ },
+ {
+  "id": "lt-heading-tracking-3px",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h2",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.letterSpacing": "3px"
+  },
+  "note": "Letter spacing 3px on the heading carrier."
+ },
+ {
+  "id": "lt-heading-tracking-4px",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h2",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.letterSpacing": "4px"
+  },
+  "note": "Letter spacing 4px on the heading carrier."
+ },
+ {
+  "id": "lt-heading-tracking-0px",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h2",
+         "size": "44px",
+         "family": "Inter",
+         "letterSpacing": "2px"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.letterSpacing": "0px"
+  },
+  "note": "0px from a base of 2px (0px equals the default)."
+ },
+ {
+  "id": "lt-heading-caps-uppercase",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h2",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.capitalization": "uppercase"
+  },
+  "note": "Capitalization uppercase."
+ },
+ {
+  "id": "lt-heading-caps-none",
+  "block": "heading",
+  "expect": "DEAD",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h2",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.capitalization": "none"
+  },
+  "note": "Divi has no `none` capitalization value: Font.php 543-561 emits text-transform for uppercase|lowercase|capitalize only."
+ },
+ {
+  "id": "lt-heading-cascade",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h2",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.weight": "300",
+   "title.decoration.font.font.desktop.value.letterSpacing": "-1px",
+   "title.decoration.font.font.desktop.value.capitalization": "uppercase"
+  },
+  "note": "The three keys at desktop only: must reach tablet (900) and phone (400)."
+ },
+ {
+  "id": "lt-text-control",
+  "block": "text",
+  "expect": "PASS",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>Category label</p>"
+     }
+    },
+    "decoration": {
+     "bodyFont": {
+      "body": {
+       "font": {
+        "desktop": {
+         "value": {
+          "size": "13px",
+          "family": "Inter"
+         }
+        },
+        "phone": {
+         "value": {
+          "size": "12px"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.weight": "300"
+  },
+  "note": "Control: weight 300 differs from the default 500 (typography probe ty-tb-weight-300)."
+ },
+ {
+  "id": "lt-text-dead-weight-500",
+  "block": "text",
+  "expect": "PASS(css-only)",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>Category label</p>"
+     }
+    },
+    "decoration": {
+     "bodyFont": {
+      "body": {
+       "font": {
+        "desktop": {
+         "value": {
+          "size": "13px",
+          "family": "Inter"
+         }
+        },
+        "phone": {
+         "value": {
+          "size": "12px"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.weight": "500"
+  },
+  "note": "Default-value check (not a dead path): 500 is the module default, so Divi emits the CSS but the computed style is unchanged (css-only, computedDiffs 0 at every width)."
+ },
+ {
+  "id": "lt-text-weight-300",
+  "block": "text",
+  "expect": "PASS",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>Category label</p>"
+     }
+    },
+    "decoration": {
+     "bodyFont": {
+      "body": {
+       "font": {
+        "desktop": {
+         "value": {
+          "size": "13px",
+          "family": "Inter"
+         }
+        },
+        "phone": {
+         "value": {
+          "size": "12px"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.weight": "300"
+  },
+  "note": "Weight 300 on the text carrier (family Inter, variable 100-900)."
+ },
+ {
+  "id": "lt-text-weight-400",
+  "block": "text",
+  "expect": "PASS",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>Category label</p>"
+     }
+    },
+    "decoration": {
+     "bodyFont": {
+      "body": {
+       "font": {
+        "desktop": {
+         "value": {
+          "size": "13px",
+          "family": "Inter"
+         }
+        },
+        "phone": {
+         "value": {
+          "size": "12px"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.weight": "400"
+  },
+  "note": "Weight 400 on the text carrier (family Inter, variable 100-900)."
+ },
+ {
+  "id": "lt-text-weight-600",
+  "block": "text",
+  "expect": "PASS",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>Category label</p>"
+     }
+    },
+    "decoration": {
+     "bodyFont": {
+      "body": {
+       "font": {
+        "desktop": {
+         "value": {
+          "size": "13px",
+          "family": "Inter"
+         }
+        },
+        "phone": {
+         "value": {
+          "size": "12px"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.weight": "600"
+  },
+  "note": "Weight 600 on the text carrier (family Inter, variable 100-900)."
+ },
+ {
+  "id": "lt-text-weight-700",
+  "block": "text",
+  "expect": "PASS",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>Category label</p>"
+     }
+    },
+    "decoration": {
+     "bodyFont": {
+      "body": {
+       "font": {
+        "desktop": {
+         "value": {
+          "size": "13px",
+          "family": "Inter"
+         }
+        },
+        "phone": {
+         "value": {
+          "size": "12px"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.weight": "700"
+  },
+  "note": "Weight 700 on the text carrier (family Inter, variable 100-900)."
+ },
+ {
+  "id": "lt-text-weight-800",
+  "block": "text",
+  "expect": "PASS",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>Category label</p>"
+     }
+    },
+    "decoration": {
+     "bodyFont": {
+      "body": {
+       "font": {
+        "desktop": {
+         "value": {
+          "size": "13px",
+          "family": "Inter"
+         }
+        },
+        "phone": {
+         "value": {
+          "size": "12px"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.weight": "800"
+  },
+  "note": "Weight 800 on the text carrier (family Inter, variable 100-900)."
+ },
+ {
+  "id": "lt-text-weight-900",
+  "block": "text",
+  "expect": "PASS",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>Category label</p>"
+     }
+    },
+    "decoration": {
+     "bodyFont": {
+      "body": {
+       "font": {
+        "desktop": {
+         "value": {
+          "size": "13px",
+          "family": "Inter"
+         }
+        },
+        "phone": {
+         "value": {
+          "size": "12px"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.weight": "900"
+  },
+  "note": "Weight 900 on the text carrier (family Inter, variable 100-900)."
+ },
+ {
+  "id": "lt-text-weight-500",
+  "block": "text",
+  "expect": "PASS",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>Category label</p>"
+     }
+    },
+    "decoration": {
+     "bodyFont": {
+      "body": {
+       "font": {
+        "desktop": {
+         "value": {
+          "size": "13px",
+          "family": "Inter",
+          "weight": "300"
+         }
+        },
+        "phone": {
+         "value": {
+          "size": "12px"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.weight": "500"
+  },
+  "note": "Weight 500 from a base of 300 (500 equals the default, so the base is moved first)."
+ },
+ {
+  "id": "lt-text-tracking-1px",
+  "block": "text",
+  "expect": "PASS",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>Category label</p>"
+     }
+    },
+    "decoration": {
+     "bodyFont": {
+      "body": {
+       "font": {
+        "desktop": {
+         "value": {
+          "size": "13px",
+          "family": "Inter"
+         }
+        },
+        "phone": {
+         "value": {
+          "size": "12px"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.letterSpacing": "1px"
+  },
+  "note": "Letter spacing 1px on the text carrier."
+ },
+ {
+  "id": "lt-text-tracking-2px",
+  "block": "text",
+  "expect": "PASS",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>Category label</p>"
+     }
+    },
+    "decoration": {
+     "bodyFont": {
+      "body": {
+       "font": {
+        "desktop": {
+         "value": {
+          "size": "13px",
+          "family": "Inter"
+         }
+        },
+        "phone": {
+         "value": {
+          "size": "12px"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.letterSpacing": "2px"
+  },
+  "note": "Letter spacing 2px on the text carrier."
+ },
+ {
+  "id": "lt-text-tracking-3px",
+  "block": "text",
+  "expect": "PASS",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>Category label</p>"
+     }
+    },
+    "decoration": {
+     "bodyFont": {
+      "body": {
+       "font": {
+        "desktop": {
+         "value": {
+          "size": "13px",
+          "family": "Inter"
+         }
+        },
+        "phone": {
+         "value": {
+          "size": "12px"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.letterSpacing": "3px"
+  },
+  "note": "Letter spacing 3px on the text carrier."
+ },
+ {
+  "id": "lt-text-tracking-4px",
+  "block": "text",
+  "expect": "PASS",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>Category label</p>"
+     }
+    },
+    "decoration": {
+     "bodyFont": {
+      "body": {
+       "font": {
+        "desktop": {
+         "value": {
+          "size": "13px",
+          "family": "Inter"
+         }
+        },
+        "phone": {
+         "value": {
+          "size": "12px"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.letterSpacing": "4px"
+  },
+  "note": "Letter spacing 4px on the text carrier."
+ },
+ {
+  "id": "lt-text-tracking-0px",
+  "block": "text",
+  "expect": "PASS",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>Category label</p>"
+     }
+    },
+    "decoration": {
+     "bodyFont": {
+      "body": {
+       "font": {
+        "desktop": {
+         "value": {
+          "size": "13px",
+          "family": "Inter",
+          "letterSpacing": "2px"
+         }
+        },
+        "phone": {
+         "value": {
+          "size": "12px"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.letterSpacing": "0px"
+  },
+  "note": "0px from a base of 2px (0px equals the default)."
+ },
+ {
+  "id": "lt-text-caps-uppercase",
+  "block": "text",
+  "expect": "PASS",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>Category label</p>"
+     }
+    },
+    "decoration": {
+     "bodyFont": {
+      "body": {
+       "font": {
+        "desktop": {
+         "value": {
+          "size": "13px",
+          "family": "Inter"
+         }
+        },
+        "phone": {
+         "value": {
+          "size": "12px"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.capitalization": "uppercase"
+  },
+  "note": "Capitalization uppercase."
+ },
+ {
+  "id": "lt-text-caps-none",
+  "block": "text",
+  "expect": "DEAD",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>Category label</p>"
+     }
+    },
+    "decoration": {
+     "bodyFont": {
+      "body": {
+       "font": {
+        "desktop": {
+         "value": {
+          "size": "13px",
+          "family": "Inter"
+         }
+        },
+        "phone": {
+         "value": {
+          "size": "12px"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.capitalization": "none"
+  },
+  "note": "Divi has no `none` capitalization value: Font.php 543-561 emits text-transform for uppercase|lowercase|capitalize only."
+ },
+ {
+  "id": "lt-text-cascade",
+  "block": "text",
+  "expect": "PASS",
+  "base": {
+   "content": {
+    "innerContent": {
+     "desktop": {
+      "value": "<p>Category label</p>"
+     }
+    },
+    "decoration": {
+     "bodyFont": {
+      "body": {
+       "font": {
+        "desktop": {
+         "value": {
+          "size": "13px",
+          "family": "Inter"
+         }
+        },
+        "phone": {
+         "value": {
+          "size": "12px"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "content.decoration.bodyFont.body.font.desktop.value.weight": "300",
+   "content.decoration.bodyFont.body.font.desktop.value.letterSpacing": "2px",
+   "content.decoration.bodyFont.body.font.desktop.value.capitalization": "uppercase"
+  },
+  "note": "The three keys at desktop only: must reach tablet (900) and phone (400)."
+ },
+ {
+  "id": "lt-heading-level-h1",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h1",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.weight": "300",
+   "title.decoration.font.font.desktop.value.letterSpacing": "-1px",
+   "title.decoration.font.font.desktop.value.capitalization": "uppercase"
+  },
+  "note": "The same three keys on a h1 heading."
+ },
+ {
+  "id": "lt-heading-level-h3",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h3",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.weight": "300",
+   "title.decoration.font.font.desktop.value.letterSpacing": "-1px",
+   "title.decoration.font.font.desktop.value.capitalization": "uppercase"
+  },
+  "note": "The same three keys on a h3 heading."
+ },
+ {
+  "id": "lt-heading-level-h4",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h4",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.weight": "300",
+   "title.decoration.font.font.desktop.value.letterSpacing": "-1px",
+   "title.decoration.font.font.desktop.value.capitalization": "uppercase"
+  },
+  "note": "The same three keys on a h4 heading."
+ },
+ {
+  "id": "lt-heading-in-card",
+  "block": "heading",
+  "expect": "PASS",
+  "base": {
+   "title": {
+    "decoration": {
+     "font": {
+      "font": {
+       "desktop": {
+        "value": {
+         "headingLevel": "h3",
+         "size": "44px",
+         "family": "Inter"
+        }
+       },
+       "tablet": {
+        "value": {
+         "size": "36px"
+        }
+       },
+       "phone": {
+        "value": {
+         "size": "28px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "title.decoration.font.font.desktop.value.weight": "300",
+   "title.decoration.font.font.desktop.value.letterSpacing": "-1px",
+   "title.decoration.font.font.desktop.value.capitalization": "uppercase"
+  },
+  "note": "The three keys on a heading inside a card group.",
+  "parent": "group",
+  "wrapperBase": {
+   "group": {
+    "module": {
+     "decoration": {
+      "background": {
+       "desktop": {
+        "value": {
+         "color": "#ffffff"
+        }
+       }
+      },
+      "spacing": {
+       "desktop": {
+        "value": {
+         "padding": {
+          "top": "24px",
+          "bottom": "24px",
+          "left": "24px",
+          "right": "24px"
+         }
+        }
+       }
+      },
+      "border": {
+       "desktop": {
+        "value": {
+         "radius": {
+          "topLeft": "16px",
+          "topRight": "16px",
+          "bottomRight": "16px",
+          "bottomLeft": "16px"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+]
