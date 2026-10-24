@@ -1,0 +1,228 @@
+{
+    "divi": "5.15.1",
+    "source": "Divi/core/json-data/google-fonts.json inside Divi.zip",
+    "generated_by": "php scripts/extract-font-weights.php divi/Divi.zip",
+    "families": {
+        "Archivo": {
+            "variants": [
+                "regular",
+                "italic"
+            ],
+            "axes": {
+                "wght": [
+                    100,
+                    900
+                ]
+            }
+        },
+        "Cormorant Garamond": {
+            "variants": [
+                "regular",
+                "italic"
+            ],
+            "axes": {
+                "wght": [
+                    300,
+                    700
+                ]
+            }
+        },
+        "DM Sans": {
+            "variants": [
+                "regular",
+                "italic"
+            ],
+            "axes": {
+                "wght": [
+                    100,
+                    1000
+                ]
+            }
+        },
+        "Figtree": {
+            "variants": [
+                "regular",
+                "italic"
+            ],
+            "axes": {
+                "wght": [
+                    300,
+                    900
+                ]
+            }
+        },
+        "Fraunces": {
+            "variants": [
+                "regular",
+                "italic"
+            ],
+            "axes": {
+                "wght": [
+                    100,
+                    900
+                ]
+            }
+        },
+        "Fredoka": {
+            "variants": [
+                "regular"
+            ],
+            "axes": {
+                "wght": [
+                    300,
+                    700
+                ]
+            }
+        },
+        "IBM Plex Sans": {
+            "variants": [
+                "regular",
+                "italic"
+            ],
+            "axes": {
+                "wght": [
+                    100,
+                    700
+                ]
+            }
+        },
+        "Inter": {
+            "variants": [
+                "regular",
+                "italic"
+            ],
+            "axes": {
+                "wght": [
+                    100,
+                    900
+                ]
+            }
+        },
+        "JetBrains Mono": {
+            "variants": [
+                "regular",
+                "italic"
+            ],
+            "axes": {
+                "wght": [
+                    100,
+                    800
+                ]
+            }
+        },
+        "Jost": {
+            "variants": [
+                "regular",
+                "italic"
+            ],
+            "axes": {
+                "wght": [
+                    100,
+                    900
+                ]
+            }
+        },
+        "Nunito": {
+            "variants": [
+                "regular",
+                "italic"
+            ],
+            "axes": {
+                "wght": [
+                    200,
+                    1000
+                ]
+            }
+        },
+        "Playfair Display": {
+            "variants": [
+                "regular",
+                "italic"
+            ],
+            "axes": {
+                "wght": [
+                    400,
+                    900
+                ]
+            }
+        },
+        "Plus Jakarta Sans": {
+            "variants": [
+                "regular",
+                "italic"
+            ],
+            "axes": {
+                "wght": [
+                    200,
+                    800
+                ]
+            }
+        },
+        "Public Sans": {
+            "variants": [
+                "regular",
+                "italic"
+            ],
+            "axes": {
+                "wght": [
+                    100,
+                    900
+                ]
+            }
+        },
+        "Source Sans 3": {
+            "variants": [
+                "regular",
+                "italic"
+            ],
+            "axes": {
+                "wght": [
+                    200,
+                    900
+                ]
+            }
+        },
+        "Space Grotesk": {
+            "variants": [
+                "regular"
+            ],
+            "axes": {
+                "wght": [
+                    300,
+                    700
+                ]
+            }
+        },
+        "Space Mono": {
+            "variants": [
+                "regular",
+                "italic",
+                "700",
+                "700italic"
+            ]
+        },
+        "Unbounded": {
+            "variants": [
+                "regular"
+            ],
+            "axes": {
+                "wght": [
+                    200,
+                    900
+                ]
+            }
+        },
+        "Work Sans": {
+            "variants": [
+                "regular",
+                "italic"
+            ],
+            "axes": {
+                "wght": [
+                    100,
+                    900
+                ]
+            }
+        }
+    }
+}

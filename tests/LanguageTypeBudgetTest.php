@@ -16,11 +16,11 @@ require_once __DIR__ . '/../wp-plugin/src/StyleGuide.php';
  *
  * The numbers were measured at main 77abc24. Everything the type adapter does not own must not move; what it
  * owns (one generated Type line per language topic, one typography sentence) may only grow within its cap.
- * Tasks 2 and 3 tighten the "at most" checks to exact equalities once the generated text exists.
+ * Task 2 tightened the language topics to an exact equality; Task 3 tightens the typography topic.
  */
 final class LanguageTypeBudgetTest extends TestCase
 {
-    /** Bytes of each `design-language:<id>` topic before the Type line. */
+    /** Bytes of each `design-language:<id>` topic before the Type line (luxe: 2,758 at 77abc24 less the 2 B its "0.1em" -> "3px" prose fix removed). */
     private const BEFORE_LANGUAGE_TOPICS = [
         'editorial'       => 1818,
         'glass-dark'      => 2151,
@@ -31,13 +31,10 @@ final class LanguageTypeBudgetTest extends TestCase
         'soft-saas'       => 3258,
         'bold-vibrant'    => 3019,
         'brutalist-flat'  => 2550,
-        'luxe'            => 2758,
+        'luxe'            => 2756,
     ];
 
     private const BEFORE_TYPOGRAPHY = 7496;
-
-    /** A generated Type line (<= 260 B) plus the newline that ends it. */
-    private const LANGUAGE_LINE_GROWTH_MAX = 261;
 
     private const TYPOGRAPHY_SENTENCE_MAX = 450;
 
@@ -56,13 +53,14 @@ final class LanguageTypeBudgetTest extends TestCase
         self::assertSame( 8331, strlen( StyleGuide::markdown( 'controls' ) ) );
     }
 
-    public function testEachLanguageTopicGrowsByAtMostOneGeneratedLine(): void
+    public function testEachLanguageTopicGrowsByExactlyItsTypeLine(): void
     {
         self::assertSame( array_keys( self::BEFORE_LANGUAGE_TOPICS ), DesignLanguages::ids(), 'the budget table lists every language' );
         foreach ( self::BEFORE_LANGUAGE_TOPICS as $id => $before ) {
-            $now = strlen( StyleGuide::markdown( 'design-language:' . $id ) );
-            self::assertLessThanOrEqual( $before + self::LANGUAGE_LINE_GROWTH_MAX, $now, "design-language:$id grew by more than one Type line" );
-            self::assertGreaterThanOrEqual( $before, $now, "design-language:$id shrank" );
+            $now      = strlen( StyleGuide::markdown( 'design-language:' . $id ) );
+            $typeLine = DesignLanguages::typeLine( (array) DesignLanguages::get( $id ) );
+            self::assertLessThanOrEqual( DesignLanguages::GENERATED_LINE_MAX, strlen( $typeLine ), "design-language:$id Type line is over its cap" );
+            self::assertSame( $before + strlen( $typeLine ) + 1, $now, "design-language:$id must grow by exactly its Type line and one newline" );
             self::assertLessThanOrEqual( self::TOPIC_BOUND, $now );
         }
     }

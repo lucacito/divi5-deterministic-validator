@@ -956,4 +956,304 @@ class DesignLanguagesTest extends TestCase
             $this->assertContains('- Style kit: ' . DesignLanguages::get($id)['kit'], $lines, $id);
         }
     }
+
+    // ---- Type adapter (plan 2026-10-24-type-adapter.md, Task 2): language-owned headline type ----
+
+    /** Languages whose own prose asks for capital headlines. Shrink-only (Ruling 6); the cap is asserted. */
+    private const UPPERCASE_HEADLINE_LANGUAGES = [ 'brutalist-flat' ];
+
+    /**
+     * Every sentence of the prose that names a weight, capital letters or a letter spacing, with the data it claims.
+     * [ language, field, exact phrase, role, key, expected value ]
+     */
+    private const PROSE_CLAIMS = [
+        [ 'editorial', 'hero', 'small uppercase eyebrow', 'eyebrow', 'capitalization', 'uppercase' ],
+        [ 'glass-dark', 'hero', 'a bold headline', 'display', 'weight', '700' ],
+        [ 'bold-vibrant', 'hero', 'weight 800', 'display', 'weight', '800' ],
+        [ 'brutalist-flat', 'hero', 'weight 900, in capital letters', 'display', 'weight', '900' ],
+        [ 'brutalist-flat', 'hero', 'weight 900, in capital letters', 'display', 'capitalization', 'uppercase' ],
+        [ 'brutalist-flat', 'cta', 'a headline in capital letters', 'display', 'capitalization', 'uppercase' ],
+        [ 'brutalist-flat', 'rhythm', 'mono face in capital letters for labels', 'eyebrow', 'capitalization', 'uppercase' ],
+        [ 'luxe', 'rhythm', 'serif at weight 300', 'display', 'weight', '300' ],
+        [ 'luxe', 'rhythm', 'Eyebrow labels are in capital letters with 3px letter spacing', 'eyebrow', 'capitalization', 'uppercase' ],
+        [ 'luxe', 'rhythm', 'Eyebrow labels are in capital letters with 3px letter spacing', 'eyebrow', 'letterSpacing', '3px' ],
+        [ 'luxe', 'hero', 'a small eyebrow in capital letters', 'eyebrow', 'capitalization', 'uppercase' ],
+    ];
+
+    /** @return array<string,mixed> Divi's own font facts for the families the languages use (fixtures/shapes/font-weights.json) */
+    private function fontWeights(): array
+    {
+        $fixture = json_decode((string) file_get_contents(__DIR__ . '/../fixtures/shapes/font-weights.json'), true);
+        $this->assertIsArray($fixture);
+        $this->assertIsArray($fixture['families'] ?? null);
+        return $fixture;
+    }
+
+    /** @return list<string> the family names of every font role of every shipped language, sorted */
+    private function languageFamilies(): array
+    {
+        $out = [];
+        foreach (DesignLanguages::ids() as $id) {
+            foreach ((array) DesignLanguages::get($id)['fonts'] as $stack) {
+                foreach (explode(',', (string) $stack) as $family) {
+                    $out[trim($family)] = true;
+                }
+            }
+        }
+        $names = array_keys($out);
+        sort($names, SORT_STRING);
+        return $names;
+    }
+
+    public function testTheFontWeightsFixtureIsDivisOwnFileAndCoversEveryLanguageFamily(): void
+    {
+        $fixture = $this->fontWeights();
+        $this->assertSame('5.15.1', $fixture['divi']);
+        $this->assertStringContainsString('Divi/core/json-data/google-fonts.json', (string) $fixture['source']);
+        $this->assertSame($this->languageFamilies(), array_keys($fixture['families']), 'exactly the families the languages use, sorted');
+        $known = $this->knownFonts();
+        foreach ($fixture['families'] as $family => $entry) {
+            $this->assertContains($family, $known, $family);
+            $this->assertIsArray($entry['variants'] ?? null, $family);
+            if (isset($entry['axes'])) {
+                $this->assertCount(2, $entry['axes']['wght'], $family);
+                $this->assertLessThan($entry['axes']['wght'][1], $entry['axes']['wght'][0], $family);
+            }
+        }
+        $this->assertArrayNotHasKey('axes', $fixture['families']['Space Mono'], 'the one static family');
+        $this->assertSame([400, 900], $fixture['families']['Playfair Display']['axes']['wght']);
+    }
+
+    public function testEveryTypeWeightExistsInItsRolesFont(): void
+    {
+        $fixture = $this->fontWeights();
+        foreach (DesignLanguages::ids() as $id) {
+            $lang = (array) DesignLanguages::get($id);
+            $this->assertSame([], DesignLanguages::typeProblems($lang, $fixture['families']), $id);
+            $this->assertSame([], DesignLanguages::valid($lang, $this->knownFonts(), $fixture['families']), $id . ' via valid()');
+        }
+        // Planted failures: each names the weight it refuses.
+        $lang = $this->okLanguage();
+
+        $mono = $lang;
+        $mono['fonts']['eyebrow'] = 'Space Mono';
+        $mono['type']['eyebrow']['weight'] = '600';
+        $this->assertStringContainsString('type.eyebrow.weight', implode("\n", DesignLanguages::typeProblems($mono, $fixture['families'])));
+        $mono['type']['eyebrow']['weight'] = '700';
+        $this->assertSame([], DesignLanguages::typeProblems($mono, $fixture['families']), 'Space Mono has a 700');
+        $mono['type']['eyebrow']['weight'] = '400';
+        $this->assertSame([], DesignLanguages::typeProblems($mono, $fixture['families']), 'regular is 400');
+
+        $heavy = $lang;
+        $heavy['fonts']['display'] = 'Cormorant Garamond';
+        $heavy['type']['display']['weight'] = '800';
+        $this->assertStringContainsString('type.display.weight', implode("\n", DesignLanguages::typeProblems($heavy, $fixture['families'])));
+
+        $light = $lang;
+        $light['fonts']['eyebrow'] = 'Fredoka';
+        $light['type']['eyebrow']['weight'] = '200';
+        $this->assertStringContainsString('type.eyebrow.weight', implode("\n", DesignLanguages::typeProblems($light, $fixture['families'])));
+
+        $unknown = $lang;
+        $unknown['fonts']['display'] = 'Mystery Sans';
+        $this->assertStringContainsString('type.display.weight', implode("\n", DesignLanguages::typeProblems($unknown, $fixture['families'])));
+        $this->assertSame([], DesignLanguages::typeProblems($unknown), 'without the fixture the font facts are not checked');
+    }
+
+    public function testTheTypeBoundsHold(): void
+    {
+        foreach (DesignLanguages::ids() as $id) {
+            $type = (array) DesignLanguages::get($id)['type'];
+            $this->assertSame(DesignLanguages::TYPE_KEYS, array_keys($type), $id);
+            foreach (DesignLanguages::TYPE_KEYS as $role) {
+                $this->assertSame(DesignLanguages::TYPE_ROLE_KEYS, array_keys((array) $type[$role]), "$id.$role");
+                $this->assertContains($type[$role]['weight'], DesignLanguages::TYPE_WEIGHTS, "$id.$role weight");
+                $this->assertSame(1, preg_match('/^(0|-?[1-9][0-9]?)px\z/', $type[$role]['letterSpacing']), "$id.$role tracking");
+                [$lo, $hi] = DesignLanguages::TYPE_TRACKING_BOUNDS[$role];
+                $this->assertGreaterThanOrEqual($lo, (int) $type[$role]['letterSpacing'], "$id.$role tracking lower bound");
+                $this->assertLessThanOrEqual($hi, (int) $type[$role]['letterSpacing'], "$id.$role tracking upper bound");
+                $this->assertContains($type[$role]['capitalization'], ['none', 'uppercase'], "$id.$role");
+            }
+            if ('uppercase' === $type['eyebrow']['capitalization']) {
+                $this->assertGreaterThanOrEqual(0, (int) $type['eyebrow']['letterSpacing'], "$id capital eyebrows are never tightened");
+            }
+        }
+    }
+
+    /** @return array<string,array{0:callable(array<string,mixed>):array<string,mixed>,1:string}> */
+    public static function brokenTypes(): array
+    {
+        return [
+            'missing type'        => [static function (array $l): array { unset($l['type']); return $l; }, 'type'],
+            'type not an object'  => [static function (array $l): array { $l['type'] = 'bold'; return $l; }, 'type'],
+            'extra role'          => [static function (array $l): array { $l['type']['caption'] = $l['type']['title']; return $l; }, 'type.caption'],
+            'missing role'        => [static function (array $l): array { unset($l['type']['title']); return $l; }, 'type.title'],
+            'missing key'         => [static function (array $l): array { unset($l['type']['display']['weight']); return $l; }, 'type.display.weight'],
+            'extra key'           => [static function (array $l): array { $l['type']['display']['size'] = '44px'; return $l; }, 'type.display.size'],
+            'weight 650'          => [static function (array $l): array { $l['type']['display']['weight'] = '650'; return $l; }, 'type.display.weight'],
+            'weight as int'       => [static function (array $l): array { $l['type']['display']['weight'] = 600; return $l; }, 'type.display.weight'],
+            'half pixel'          => [static function (array $l): array { $l['type']['display']['letterSpacing'] = '-0.5px'; return $l; }, 'type.display.letterSpacing'],
+            'negative zero'       => [static function (array $l): array { $l['type']['display']['letterSpacing'] = '-0px'; return $l; }, 'type.display.letterSpacing'],
+            'em spacing'          => [static function (array $l): array { $l['type']['title']['letterSpacing'] = '1em'; return $l; }, 'type.title.letterSpacing'],
+            'display tracked out' => [static function (array $l): array { $l['type']['display']['letterSpacing'] = '1px'; return $l; }, 'type.display.letterSpacing'],
+            'display too tight'   => [static function (array $l): array { $l['type']['display']['letterSpacing'] = '-4px'; return $l; }, 'type.display.letterSpacing'],
+            'title too wide'      => [static function (array $l): array { $l['type']['title']['letterSpacing'] = '2px'; return $l; }, 'type.title.letterSpacing'],
+            'eyebrow tightened'   => [static function (array $l): array { $l['type']['eyebrow']['letterSpacing'] = '-1px'; return $l; }, 'type.eyebrow.letterSpacing'],
+            'eyebrow too wide'    => [static function (array $l): array { $l['type']['eyebrow']['letterSpacing'] = '5px'; return $l; }, 'type.eyebrow.letterSpacing'],
+            'lowercase'           => [static function (array $l): array { $l['type']['eyebrow']['capitalization'] = 'lowercase'; return $l; }, 'type.eyebrow.capitalization'],
+            'capitalised word'    => [static function (array $l): array { $l['type']['eyebrow']['capitalization'] = 'None'; return $l; }, 'type.eyebrow.capitalization'],
+        ];
+    }
+
+    #[DataProvider('brokenTypes')]
+    /**
+     * @param callable(array<string,mixed>):array<string,mixed> $break
+     */
+    public function testTypeProblemsCatchesEachBrokenShape(callable $break, string $field): void
+    {
+        $fixture = $this->fontWeights();
+        $this->assertSame([], DesignLanguages::typeProblems($this->okLanguage(), $fixture['families']), 'the base fixture is valid');
+        $broken = $break($this->okLanguage());
+        $lines  = DesignLanguages::typeProblems($broken, $fixture['families']);
+        $this->assertNotSame([], $lines);
+        $this->assertStringContainsString($field, implode("\n", $lines));
+        // valid() reports the same lines, so a language with a broken type cannot be accepted anywhere.
+        $this->assertStringContainsString($field, implode("\n", DesignLanguages::valid($broken, $this->knownFonts(), $fixture['families'])));
+    }
+
+    public function testUppercaseHeadlinesOnlyWhereTheProseAsksForCapitals(): void
+    {
+        $this->assertCount(1, self::UPPERCASE_HEADLINE_LANGUAGES, 'shrink-only list, cap 1');
+        foreach (DesignLanguages::ids() as $id) {
+            $type = (array) DesignLanguages::get($id)['type'];
+            $caps = 'uppercase' === $type['display']['capitalization'] || 'uppercase' === $type['title']['capitalization'];
+            $this->assertSame($caps, in_array($id, self::UPPERCASE_HEADLINE_LANGUAGES, true), "$id uppercase headlines");
+        }
+        foreach (self::UPPERCASE_HEADLINE_LANGUAGES as $id) {
+            $lang = (array) DesignLanguages::get($id);
+            $this->assertTrue(str_contains((string) $lang['hero'], 'capital letters') || str_contains((string) $lang['cta'], 'capital letters'), $id);
+        }
+    }
+
+    public function testTheTypeDataMatchesEveryProseClaim(): void
+    {
+        foreach (self::PROSE_CLAIMS as [$id, $field, $phrase, $role, $key, $expected]) {
+            $lang = DesignLanguages::get($id);
+            $this->assertIsArray($lang, $id);
+            $this->assertStringContainsString($phrase, (string) $lang[$field], "$id.$field says: $phrase");
+            $this->assertSame($expected, $lang['type'][$role][$key], "$id.$field claims $role $key = $expected");
+        }
+    }
+
+    /**
+     * The places in a language's prose that name a weight, capital letters or a letter spacing and are not inside a
+     * phrase PROSE_CLAIMS checks.
+     *
+     * @param array<string,mixed> $lang
+     * @return list<string>
+     */
+    private function uncoveredProseClaims(array $lang): array
+    {
+        $out = [];
+        foreach (['title', 'summary', 'radius', 'section_padding', 'shadow', 'rhythm', 'hero', 'cta'] as $field) {
+            $text = (string) ($lang[$field] ?? '');
+            if (!preg_match_all('/weight \d+|capital letters|uppercase|upper-case|all caps|letter spacing|letter-spacing/i', $text, $m, PREG_OFFSET_CAPTURE)) {
+                continue;
+            }
+            foreach ($m[0] as [$hit, $at]) {
+                $covered = false;
+                foreach (self::PROSE_CLAIMS as [$id, $claimField, $phrase]) {
+                    if ($id !== $lang['id'] || $claimField !== $field) {
+                        continue;
+                    }
+                    $from = strpos($text, $phrase);
+                    if (false !== $from && $at >= $from && $at + strlen($hit) <= $from + strlen($phrase)) {
+                        $covered = true;
+                    }
+                }
+                if (!$covered) {
+                    $out[] = $lang['id'] . '.' . $field . ': ' . $hit;
+                }
+            }
+        }
+        return $out;
+    }
+
+    public function testEveryNamedWeightInTheProseIsAClaimTheTestChecks(): void
+    {
+        foreach (DesignLanguages::ids() as $id) {
+            $this->assertSame([], $this->uncoveredProseClaims((array) DesignLanguages::get($id)), $id);
+        }
+        $lang = $this->okLanguage();
+        $lang['hero'] .= ' Set the headline at weight 700 and in capital letters.';
+        $this->assertCount(2, $this->uncoveredProseClaims($lang), 'a new claim without a check is found');
+    }
+
+    /**
+     * @param list<array<string,mixed>> $languages
+     * @return array<string,list<string>> type triples more than one language has
+     */
+    private static function sharedTriples(array $languages): array
+    {
+        $triples = [];
+        foreach ($languages as $lang) {
+            $triples[json_encode([ $lang['type']['display'], $lang['type']['title'], $lang['type']['eyebrow'] ])][] = $lang['id'];
+        }
+        return array_filter($triples, static fn(array $ids): bool => count($ids) > 1);
+    }
+
+    public function testNoTwoLanguagesShareATypeTriple(): void
+    {
+        $all = array_map(static fn(string $id): array => (array) DesignLanguages::get($id), DesignLanguages::ids());
+        $this->assertSame([], self::sharedTriples($all), 'cap 0, no exemption file');
+        // Planted: a copy of one language is found.
+        $copy       = $all[0];
+        $copy['id'] = 'copy';
+        $this->assertCount(1, self::sharedTriples([ ...$all, $copy ]));
+    }
+
+    public function testTheTypeLineIsGeneratedFromTheData(): void
+    {
+        foreach (DesignLanguages::ids() as $id) {
+            $lang  = (array) DesignLanguages::get($id);
+            $line  = DesignLanguages::typeLine($lang);
+            $md    = DesignLanguages::markdown($id);
+            $this->assertSame(1, substr_count($md, $line), "$id Type line appears once");
+            $lines = explode("\n", $md);
+            $at    = array_search($line, $lines, true);
+            $this->assertIsInt($at, $id);
+            $this->assertStringStartsWith('- headings: ', $lines[$at - 1], "$id: right after the fonts line");
+            $this->assertStringStartsWith('- Type: ', $line);
+            $caps = 0;
+            foreach (DesignLanguages::TYPE_KEYS as $role) {
+                $this->assertStringContainsString('weight ' . $lang['type'][$role]['weight'], $line, "$id.$role");
+                $this->assertStringContainsString('letter spacing ' . $lang['type'][$role]['letterSpacing'], $line, "$id.$role");
+                $caps += 'uppercase' === $lang['type'][$role]['capitalization'] ? 1 : 0;
+            }
+            $this->assertSame($caps, substr_count($line, 'capital letters'), "$id: capital letters named once per uppercase role");
+            $this->assertStringContainsString('topic=typography', $line);
+            $this->assertLessThanOrEqual(DesignLanguages::GENERATED_LINE_MAX, strlen($line), $id);
+            foreach (['{{', '<', '`'] as $bad) {
+                $this->assertStringNotContainsString($bad, $line, $id);
+            }
+        }
+        // Capitals are named only for an uppercase role.
+        $lang = $this->okLanguage();
+        foreach (DesignLanguages::TYPE_KEYS as $role) {
+            $lang['type'][$role]['capitalization'] = 'none';
+        }
+        $this->assertStringNotContainsString('capital letters', DesignLanguages::typeLine($lang));
+    }
+
+    public function testEveryGeneratedLineFitsTheCap(): void
+    {
+        $this->assertSame(260, DesignLanguages::GENERATED_LINE_MAX);
+        foreach (DesignLanguages::ids() as $id) {
+            $lines = DesignLanguages::generatedLines((array) DesignLanguages::get($id));
+            $this->assertSame(['type'], array_keys($lines), $id);
+            foreach ($lines as $name => $line) {
+                $this->assertLessThanOrEqual(DesignLanguages::GENERATED_LINE_MAX, strlen($line), "$id.$name");
+            }
+        }
+    }
 }
