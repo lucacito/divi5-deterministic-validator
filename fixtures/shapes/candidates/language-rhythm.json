@@ -1,0 +1,2080 @@
+[
+ {
+  "id": "lr-section-control",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "120px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "120px"
+  },
+  "note": "Control: desktop top and bottom 120px over the default 56px. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-section-default-56",
+  "block": "section",
+  "expect": "PASS(css-only)",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "56px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "56px",
+   "module.decoration.spacing.tablet.value.padding.top": "56px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "56px",
+   "module.decoration.spacing.phone.value.padding.top": "56px",
+   "module.decoration.spacing.phone.value.padding.bottom": "56px"
+  },
+  "note": "Default-value check (not a dead path): 56px is the divi/section default at every width, so the CSS is emitted but the computed style does not change. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-section-sync-alone",
+  "block": "section",
+  "expect": "DEAD",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "syncVertical alone is an inert toggle (the layout-sizing topic says so): no value written, no computed change. Default-value style check, not a dead path. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-editorial-section",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "120px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "120px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "80px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "80px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "56px",
+   "module.decoration.spacing.phone.value.padding.bottom": "56px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "editorial section: 120/80/56 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-editorial-open",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "152px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "152px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "104px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "104px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "72px",
+   "module.decoration.spacing.phone.value.padding.bottom": "72px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "editorial open: 152/104/72 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-editorial-tight",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "72px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "72px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "48px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "48px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "32px",
+   "module.decoration.spacing.phone.value.padding.bottom": "32px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "editorial tight: 72/48/32 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-glass-dark-section",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "100px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "100px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "72px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "72px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "48px",
+   "module.decoration.spacing.phone.value.padding.bottom": "48px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "glass-dark section: 100/72/48 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-glass-dark-open",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "128px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "128px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "88px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "88px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "64px",
+   "module.decoration.spacing.phone.value.padding.bottom": "64px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "glass-dark open: 128/88/64 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-glass-dark-tight",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "64px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "64px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "40px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "40px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "32px",
+   "module.decoration.spacing.phone.value.padding.bottom": "32px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "glass-dark tight: 64/40/32 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-organic-warm-section",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "96px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "96px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "64px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "64px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "44px",
+   "module.decoration.spacing.phone.value.padding.bottom": "44px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "organic-warm section: 96/64/44 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-organic-warm-open",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "120px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "120px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "80px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "80px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "56px",
+   "module.decoration.spacing.phone.value.padding.bottom": "56px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "organic-warm open: 120/80/56 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-organic-warm-tight",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "56px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "56px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "40px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "40px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "28px",
+   "module.decoration.spacing.phone.value.padding.bottom": "28px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "organic-warm tight: 56/40/28 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-tech-mono-section",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "88px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "88px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "64px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "64px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "40px",
+   "module.decoration.spacing.phone.value.padding.bottom": "40px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "tech-mono section: 88/64/40 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-tech-mono-open",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "112px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "112px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "80px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "80px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "48px",
+   "module.decoration.spacing.phone.value.padding.bottom": "48px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "tech-mono open: 112/80/48 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-tech-mono-tight",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "56px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "56px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "40px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "40px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "28px",
+   "module.decoration.spacing.phone.value.padding.bottom": "28px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "tech-mono tight: 56/40/28 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-playful-pastel-section",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "88px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "88px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "60px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "60px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "40px",
+   "module.decoration.spacing.phone.value.padding.bottom": "40px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "playful-pastel section: 88/60/40 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-playful-pastel-open",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "112px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "112px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "72px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "72px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "48px",
+   "module.decoration.spacing.phone.value.padding.bottom": "48px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "playful-pastel open: 112/72/48 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-playful-pastel-tight",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "56px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "56px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "40px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "40px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "28px",
+   "module.decoration.spacing.phone.value.padding.bottom": "28px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "playful-pastel tight: 56/40/28 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-corporate-trust-section",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "96px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "96px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "68px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "68px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "44px",
+   "module.decoration.spacing.phone.value.padding.bottom": "44px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "corporate-trust section: 96/68/44 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-corporate-trust-open",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "120px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "120px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "88px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "88px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "56px",
+   "module.decoration.spacing.phone.value.padding.bottom": "56px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "corporate-trust open: 120/88/56 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-corporate-trust-tight",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "56px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "56px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "40px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "40px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "28px",
+   "module.decoration.spacing.phone.value.padding.bottom": "28px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "corporate-trust tight: 56/40/28 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-soft-saas-section",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "104px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "104px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "72px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "72px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "48px",
+   "module.decoration.spacing.phone.value.padding.bottom": "48px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "soft-saas section: 104/72/48 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-soft-saas-open",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "128px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "128px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "88px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "88px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "64px",
+   "module.decoration.spacing.phone.value.padding.bottom": "64px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "soft-saas open: 128/88/64 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-soft-saas-tight",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "64px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "64px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "40px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "40px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "32px",
+   "module.decoration.spacing.phone.value.padding.bottom": "32px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "soft-saas tight: 64/40/32 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-bold-vibrant-section",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "80px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "80px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "56px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "56px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "36px",
+   "module.decoration.spacing.phone.value.padding.bottom": "36px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "bold-vibrant section: 80/56/36 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-bold-vibrant-open",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "104px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "104px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "72px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "72px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "48px",
+   "module.decoration.spacing.phone.value.padding.bottom": "48px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "bold-vibrant open: 104/72/48 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-bold-vibrant-tight",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "56px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "56px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "32px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "32px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "28px",
+   "module.decoration.spacing.phone.value.padding.bottom": "28px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "bold-vibrant tight: 56/32/28 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-brutalist-flat-section",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "64px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "64px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "48px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "48px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "32px",
+   "module.decoration.spacing.phone.value.padding.bottom": "32px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "brutalist-flat section: 64/48/32 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-brutalist-flat-open",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "80px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "80px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "64px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "64px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "40px",
+   "module.decoration.spacing.phone.value.padding.bottom": "40px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "brutalist-flat open: 80/64/40 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-brutalist-flat-tight",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "56px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "56px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "32px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "32px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "28px",
+   "module.decoration.spacing.phone.value.padding.bottom": "28px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "brutalist-flat tight: 56/32/28 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-luxe-section",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "160px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "160px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "112px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "112px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "72px",
+   "module.decoration.spacing.phone.value.padding.bottom": "72px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "luxe section: 160/112/72 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-luxe-open",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "200px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "200px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "144px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "144px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "88px",
+   "module.decoration.spacing.phone.value.padding.bottom": "88px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "luxe open: 200/144/88 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-luxe-tight",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "96px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "96px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "64px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "64px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "40px",
+   "module.decoration.spacing.phone.value.padding.bottom": "40px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "luxe tight: 96/64/40 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-section-image",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9",
+        "image": {
+         "url": "@SITE@/wp-content/plugins/jhmg-ai-editor-for-divi-5/assets/images/hero-blue-1.svg"
+        }
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "152px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "152px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "104px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "104px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "72px",
+   "module.decoration.spacing.phone.value.padding.bottom": "72px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "A section with a background image keeps the image when the padding changes (editorial open keys). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-section-first",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "neighbours": {
+   "after": [
+    {
+     "block": "section",
+     "base": {
+      "module": {
+       "decoration": {
+        "background": {
+         "desktop": {
+          "value": {
+           "color": "#0f172a"
+          }
+         }
+        },
+        "spacing": {
+         "desktop": {
+          "value": {
+           "padding": {
+            "top": "80px",
+            "bottom": "80px",
+            "syncVertical": "on"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "120px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "120px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "80px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "80px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "56px",
+   "module.decoration.spacing.phone.value.padding.bottom": "56px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "The first section of a page takes the editorial section keys. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-section-later",
+  "block": "section",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "neighbours": {
+   "before": [
+    {
+     "block": "section",
+     "base": {
+      "module": {
+       "decoration": {
+        "background": {
+         "desktop": {
+          "value": {
+           "color": "#0f172a"
+          }
+         }
+        },
+        "spacing": {
+         "desktop": {
+          "value": {
+           "padding": {
+            "top": "80px",
+            "bottom": "80px",
+            "syncVertical": "on"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "72px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "72px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "48px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "48px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "32px",
+   "module.decoration.spacing.phone.value.padding.bottom": "32px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "A later section of a page takes the editorial tight keys. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ },
+ {
+  "id": "lr-section-overlap",
+  "block": "section",
+  "expect": "PASS",
+  "geometry": true,
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f1f5f9"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        },
+        "margin": {
+         "top": "-80px"
+        }
+       }
+      },
+      "tablet": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      },
+      "phone": {
+       "value": {
+        "padding": {
+         "top": "24px",
+         "bottom": "24px"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "neighbours": {
+   "before": [
+    {
+     "block": "section",
+     "base": {
+      "module": {
+       "decoration": {
+        "background": {
+         "desktop": {
+          "value": {
+           "color": "#0f172a"
+          }
+         }
+        },
+        "spacing": {
+         "desktop": {
+          "value": {
+           "padding": {
+            "top": "80px",
+            "bottom": "80px",
+            "syncVertical": "on"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  "set": {
+   "module.decoration.spacing.desktop.value.padding.top": "120px",
+   "module.decoration.spacing.desktop.value.padding.bottom": "120px",
+   "module.decoration.spacing.desktop.value.padding.syncVertical": "on",
+   "module.decoration.spacing.tablet.value.padding.top": "80px",
+   "module.decoration.spacing.tablet.value.padding.bottom": "80px",
+   "module.decoration.spacing.tablet.value.padding.syncVertical": "on",
+   "module.decoration.spacing.phone.value.padding.top": "56px",
+   "module.decoration.spacing.phone.value.padding.bottom": "56px",
+   "module.decoration.spacing.phone.value.padding.syncVertical": "on"
+  },
+  "note": "A section that overlaps the one above (margin.top -80px, the lay-neg-section-top shape) takes the editorial section keys; the overlap area must not change. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123."
+ }
+]

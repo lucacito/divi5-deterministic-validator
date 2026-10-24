@@ -23635,3 +23635,1061 @@ Candidates from `language-type.json` that were measured and are not taught, with
 - `lt-heading-caps-none`: no effect (dead). Divi has no `none` capitalization value: Font.php 543-561 emits text-transform for uppercase|lowercase|capitalize only.
 - `lt-text-dead-weight-500`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). Default-value check (not a dead path): 500 is the module default, so Divi emits the CSS but the computed style is unchanged (css-only, computedDiffs 0 at every width).
 - `lt-text-caps-none`: no effect (dead). Divi has no `none` capitalization value: Font.php 543-561 emits text-transform for uppercase|lowercase|capitalize only.
+
+## lr-section-control
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"120px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"120px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 152px -> 280px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 152px -> 280px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 152px -> 280px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Control: desktop top and bottom 120px over the default 56px. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-editorial-section
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"120px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"120px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"80px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"80px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"56px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"56px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 280px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 200px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 152px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: editorial section: 120/80/56 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-editorial-open
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"152px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"152px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"104px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"104px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"72px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"72px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 344px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 248px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 184px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: editorial open: 152/104/72 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-editorial-tight
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"72px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"72px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"48px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"48px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"32px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"32px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 184px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 136px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 104px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: editorial tight: 72/48/32 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-glass-dark-section
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"100px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"100px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"72px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"72px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"48px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"48px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 240px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 184px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 136px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: glass-dark section: 100/72/48 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-glass-dark-open
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"128px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"128px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"88px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"88px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"64px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"64px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 296px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 216px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 168px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: glass-dark open: 128/88/64 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-glass-dark-tight
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"64px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"64px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"40px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"40px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"32px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"32px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 168px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 120px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 104px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: glass-dark tight: 64/40/32 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-organic-warm-section
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"96px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"96px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"64px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"64px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"44px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"44px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 232px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 168px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 128px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: organic-warm section: 96/64/44 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-organic-warm-open
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"120px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"120px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"80px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"80px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"56px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"56px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 280px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 200px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 152px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: organic-warm open: 120/80/56 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-organic-warm-tight
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"56px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"56px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"40px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"40px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"28px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"28px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 152px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 120px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 96px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: organic-warm tight: 56/40/28 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-tech-mono-section
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"88px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"88px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"64px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"64px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"40px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"40px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 216px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 168px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 120px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: tech-mono section: 88/64/40 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-tech-mono-open
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"112px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"112px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"80px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"80px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"48px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"48px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 264px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 200px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 136px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: tech-mono open: 112/80/48 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-tech-mono-tight
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"56px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"56px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"40px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"40px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"28px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"28px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 152px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 120px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 96px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: tech-mono tight: 56/40/28 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-playful-pastel-section
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"88px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"88px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"60px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"60px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"40px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"40px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 216px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 160px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 120px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: playful-pastel section: 88/60/40 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-playful-pastel-open
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"112px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"112px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"72px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"72px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"48px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"48px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 264px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 184px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 136px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: playful-pastel open: 112/72/48 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-playful-pastel-tight
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"56px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"56px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"40px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"40px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"28px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"28px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 152px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 120px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 96px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: playful-pastel tight: 56/40/28 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-corporate-trust-section
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"96px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"96px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"68px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"68px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"44px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"44px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 232px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 176px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 128px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: corporate-trust section: 96/68/44 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-corporate-trust-open
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"120px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"120px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"88px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"88px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"56px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"56px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 280px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 216px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 152px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: corporate-trust open: 120/88/56 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-corporate-trust-tight
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"56px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"56px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"40px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"40px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"28px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"28px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 152px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 120px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 96px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: corporate-trust tight: 56/40/28 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-soft-saas-section
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"104px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"104px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"72px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"72px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"48px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"48px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 248px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 184px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 136px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: soft-saas section: 104/72/48 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-soft-saas-open
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"128px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"128px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"88px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"88px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"64px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"64px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 296px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 216px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 168px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: soft-saas open: 128/88/64 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-soft-saas-tight
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"64px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"64px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"40px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"40px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"32px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"32px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 168px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 120px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 104px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: soft-saas tight: 64/40/32 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-bold-vibrant-section
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"80px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"80px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"56px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"56px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"36px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"36px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 200px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 152px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 112px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: bold-vibrant section: 80/56/36 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-bold-vibrant-open
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"104px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"104px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"72px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"72px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"48px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"48px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 248px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 184px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 136px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: bold-vibrant open: 104/72/48 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-bold-vibrant-tight
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"56px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"56px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"32px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"32px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"28px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"28px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 152px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 104px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 96px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: bold-vibrant tight: 56/32/28 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-brutalist-flat-section
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"64px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"64px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"48px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"48px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"32px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"32px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 168px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 136px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 104px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: brutalist-flat section: 64/48/32 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-brutalist-flat-open
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"80px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"80px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"64px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"64px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"40px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"40px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 200px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 168px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 120px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: brutalist-flat open: 80/64/40 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-brutalist-flat-tight
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"56px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"56px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"32px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"32px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"28px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"28px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 152px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 104px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 96px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: brutalist-flat tight: 56/32/28 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-luxe-section
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"160px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"160px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"112px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"112px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"72px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"72px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 360px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 264px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 184px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: luxe section: 160/112/72 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-luxe-open
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"200px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"200px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"144px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"144px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"88px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"88px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 440px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 328px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 216px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: luxe open: 200/144/88 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-luxe-tight
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"96px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"96px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"64px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"64px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"40px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"40px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 232px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 168px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 120px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: luxe tight: 96/64/40 px top and bottom from a 24px base (24 is no written value; the default 56 would read css-only). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-section-image
+
+Block: `section`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"152px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"152px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"104px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"104px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"72px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"72px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 344px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 248px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 184px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: A section with a background image keeps the image when the padding changes (editorial open keys). Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-section-first
+
+Block: `section`, with 1 plain neighbour section(s) after it. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"120px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"120px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"80px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"80px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"56px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"56px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 280px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 200px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 152px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: The first section of a page takes the editorial section keys. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-section-later
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"72px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"72px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"48px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"48px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"32px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"32px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:block-size: 88px -> 184px` |
+| 900 px | yes | 8 | yes | `0:div:block-size: 88px -> 136px` |
+| 400 px | yes | 8 | yes | `0:div:block-size: 88px -> 104px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: A later section of a page takes the editorial tight keys. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lr-section-overlap
+
+Block: `section`, with 1 plain neighbour section(s) before it. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"120px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"120px"`
+- `module.decoration.spacing.desktop.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.tablet.value.padding.top` = `"80px"`
+- `module.decoration.spacing.tablet.value.padding.bottom` = `"80px"`
+- `module.decoration.spacing.tablet.value.padding.syncVertical` = `"on"`
+- `module.decoration.spacing.phone.value.padding.top` = `"56px"`
+- `module.decoration.spacing.phone.value.padding.bottom` = `"56px"`
+- `module.decoration.spacing.phone.value.padding.syncVertical` = `"on"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 9 | yes | `0:div:block-size: 88px -> 280px` |
+| 900 px | yes | 9 | yes | `0:div:block-size: 88px -> 200px` |
+| 400 px | yes | 9 | yes | `0:div:block-size: 88px -> 152px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-top`, `perspective-origin`, `rect:height`, `transform-origin`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 0, 252, 1280 x 88 | 0, 252, 1280 x 280 | 1280 -> 1280 | 102400 (prev) -> 102400 (prev) | measured -> measured |
+| 900 px | 0, 306, 900 x 88 | 0, 306, 900 x 200 | 900 -> 900 | 72000 (prev) -> 72000 (prev) | measured -> measured |
+| 400 px | 0, 266, 400 x 88 | 0, 266, 400 x 152 | 400 -> 400 | 32000 (prev) -> 32000 (prev) | measured -> measured |
+
+Phone overflow at 400 px: no.
+
+Note: A section that overlaps the one above (margin.top -80px, the lay-neg-section-top shape) takes the editorial section keys; the overlap area must not change. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## Not taught (language-rhythm)
+
+Candidates from `language-rhythm.json` that were measured and are not taught, with the reason:
+
+- `lr-section-default-56`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). Default-value check (not a dead path): 56px is the divi/section default at every width, so the CSS is emitted but the computed style does not change. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+- `lr-section-sync-alone`: no effect (dead). syncVertical alone is an inert toggle (the layout-sizing topic says so): no value written, no computed change. Default-value style check, not a dead path. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
