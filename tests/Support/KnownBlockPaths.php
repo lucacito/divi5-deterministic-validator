@@ -4,17 +4,11 @@ declare(strict_types=1);
 
 namespace Divi5Validator\Tests\Support;
 
-use AiEditorDivi5\WP\KitResolver;
-use AiEditorDivi5\WP\StyleKits;
-
-require_once __DIR__ . '/../../wp-plugin/src/RecipeTokens.php';
-require_once __DIR__ . '/../../wp-plugin/src/StyleKits.php';
-require_once __DIR__ . '/../../wp-plugin/src/KitAdapters.php';
-require_once __DIR__ . '/../../wp-plugin/src/KitResolver.php';
+require_once __DIR__ . '/ServedVariants.php';
 
 /**
  * Per block, every attribute path (leaf or container, list indexes folded into []) that a real Divi 5 export
- * (fixtures/valid) or a served recipe (every style kit's markers resolved) carries ON that block name. Dev/test-side
+ * (fixtures/valid) or a served recipe (every language's and every style kit's markers resolved, ServedVariants) carries ON that block name. Dev/test-side
  * only. DiviMarkupTest and HtmlToDiviGroundingTest both read it, so "proven ON its own block" means one thing.
  */
 final class KnownBlockPaths
@@ -36,10 +30,9 @@ final class KnownBlockPaths
             }
         }
         foreach ( (array) json_decode( (string) file_get_contents( __DIR__ . '/../../wp-plugin/data/section-recipes.json' ), true ) as $r ) {
-            // As served: every style kit's markers resolved (a kit marker is not a Divi attribute and grounds nothing).
-            foreach ( StyleKits::ids() as $kit ) {
-                $sources[] = KitResolver::resolve( (string) ( $r['markup'] ?? '' ), (array) StyleKits::get( $kit ) );
-            }
+            // As served: every language's and every style kit's markers resolved (a marker is not a Divi attribute and
+            // grounds nothing).
+            array_push( $sources, ...ServedVariants::of( (string) ( $r['markup'] ?? '' ) ) );
         }
         $known = [];
         foreach ( $sources as $content ) {

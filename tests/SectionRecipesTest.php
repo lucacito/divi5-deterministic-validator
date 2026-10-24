@@ -17,6 +17,7 @@ require_once __DIR__ . '/../wp-plugin/src/ImagePack.php';
 require_once __DIR__ . '/../wp-plugin/src/ImageTokens.php';
 require_once __DIR__ . '/../wp-plugin/src/SectionRecipes.php';
 require_once __DIR__ . '/../wp-plugin/src/DesignVariety.php';
+require_once __DIR__ . '/../wp-plugin/src/StyleGuide.php';
 
 /**
  * The recipe library is content the AI copies verbatim, so EVERY recipe must
@@ -881,11 +882,15 @@ class SectionRecipesTest extends TestCase
 
     // ---- style kits: the recipe a language (or an explicit kit) serves ----
 
-    /** A one-button recipe carrying a kit marker (no shipped recipe is migrated yet), planted through the memo. */
-    private function plantMarkedRecipe(string $marker = '"aied":{"kit":"control"}'): void
+    /**
+     * A one-button recipe carrying a kit marker (no shipped recipe is migrated yet), planted through the memo; $before is
+     * markup (a type-marked heading, say) placed in the column before the button.
+     */
+    private function plantMarkedRecipe(string $marker = '"aied":{"kit":"control"}', string $before = ''): void
     {
         $markup = '<!-- wp:divi/section {"builderVersion":"5.15.1"} --><!-- wp:divi/row {"builderVersion":"5.15.1"} -->'
             . '<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.15.1"} -->'
+            . $before
             . '<!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"Start here"}}},'
             . '"decoration":{"font":{"font":{"desktop":{"value":{"family":"{{aied:font:body}}"}}}}}},'
             . '"builderVersion":"5.15.1",' . $marker . '} /-->'
@@ -1014,6 +1019,84 @@ class SectionRecipesTest extends TestCase
                     $this->assertStringNotContainsString('{{aied:', $served, $label);
                 }
             }
+        }
+    }
+
+    // ---- design language type: the language step of the pipeline ----
+
+    private const TYPE_HEADING = '<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"A headline"}},"decoration":{"font":{"font":{"desktop":{"value":{"headingLevel":"h2","size":"44px","family":"{{aied:font:display}}","weight":"300"}}}}}},"builderVersion":"5.15.1","aied":{"type":"display"}} /-->';
+
+    private const TYPE_EYEBROW = '<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"<p>Label</p>"}},"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"size":"13px","family":"{{aied:font:eyebrow}}"}}}}}}},"builderVersion":"5.15.1","aied":{"type":"eyebrow"}} /-->';
+
+    public function testATypeMarkedHeadingIsServedInTheLanguagesType(): void
+    {
+        $this->plantMarkedRecipe('"aied":{"kit":"control"}', self::TYPE_EYEBROW . self::TYPE_HEADING);
+        try {
+            $seen = [];
+            foreach (DesignLanguages::ids() as $id) {
+                $lang   = (array) DesignLanguages::get($id);
+                $served = SectionRecipes::recipe('kit-fixture', $id);
+                $this->assertNotNull($served, $id);
+                $this->assertStringNotContainsString('"aied"', $served, $id);
+                $this->assertStringNotContainsString('{{aied:', $served, $id);
+                $this->assertSame(1, preg_match('/<!-- wp:divi\/heading (\{.*?\}) \/-->/s', $served, $h));
+                $value = json_decode($h[1], true)['title']['decoration']['font']['font']['desktop']['value'];
+                $this->assertSame($lang['type']['display']['weight'], $value['weight'], "$id: the language's display weight wins over the literal");
+                $this->assertSame($lang['type']['display']['letterSpacing'], $value['letterSpacing']);
+                $this->assertSame($lang['fonts']['display'], $value['family'], 'the font token is still resolved');
+                $this->assertSame('uppercase' === $lang['type']['display']['capitalization'], array_key_exists('capitalization', $value));
+                $this->assertSame(1, preg_match('/<!-- wp:divi\/text (\{.*?\}) \/-->/s', $served, $t));
+                $eyebrow = json_decode($t[1], true)['content']['decoration']['bodyFont']['body']['font']['desktop']['value'];
+                $this->assertSame($lang['type']['eyebrow']['weight'], $eyebrow['weight']);
+                $this->assertSame($lang['type']['eyebrow']['letterSpacing'], $eyebrow['letterSpacing']);
+                $this->assertNotNull($this->buttonAttrs($served)['button'] ?? null, 'the kit step still ran');
+                $seen[$value['weight'] . '/' . $value['letterSpacing'] . '/' . ($value['capitalization'] ?? '')] = true;
+            }
+            $this->assertGreaterThan(3, count($seen), 'the languages serve different headline type');
+            $this->assertSame(SectionRecipes::recipe('kit-fixture', 'editorial'), SectionRecipes::recipe('kit-fixture'), 'no language = editorial');
+        } finally {
+            SectionRecipes::clearCache();
+        }
+    }
+
+    public function testAnUnresolvableTypeMarkerIsNeverServed(): void
+    {
+        foreach ([
+            ['"aied":{"type":"eyebrow"}', ''],
+            ['"aied":{"kit":"control"}', str_replace('"aied":{"type":"eyebrow"}', '"aied":{"type":"display"}', self::TYPE_EYEBROW)],
+            ['"aied":{"kit":"control"}', str_replace('"aied":{"type":"display"}', '"aied":{"type":"display","on":"light"}', self::TYPE_HEADING)],
+            ['"aied":{"type":"display","kit":"control"}', ''],
+        ] as [$marker, $before]) {
+            $this->plantMarkedRecipe($marker, $before);
+            try {
+                foreach ([null, 'editorial', 'brutalist-flat'] as $language) {
+                    $this->assertNull(SectionRecipes::recipe('kit-fixture', $language), "never a recipe with a type marker left in it ($marker)");
+                }
+            } finally {
+                SectionRecipes::clearCache();
+            }
+        }
+    }
+
+    public function testResolveMarkupIsThePipelineRecipeUses(): void
+    {
+        foreach (['hero-cta', 'pricing-three-tier', 'portfolio-featured-grid'] as $name) {
+            $this->assertStringContainsString('{{aied:image:', (string) SectionRecipes::rawMarkup('portfolio-featured-grid'), 'one of the three has images');
+            foreach ([['editorial', null], ['brutalist-flat', null], ['glass-dark', 'outline-2']] as [$language, $kit]) {
+                $lang     = (array) DesignLanguages::get($language);
+                $styleKit = (array) StyleKits::get($kit ?? (string) $lang['kit']);
+                $raw      = ImageTokens::resolve((string) SectionRecipes::rawMarkup($name), plugins_url('assets/images/', AI_EDITOR_DIVI5_FILE), null, static fn (?string $u, string $t): ?string => apply_filters('jhmg_aied_image_token', $u, $t));
+                $this->assertSame(SectionRecipes::recipe($name, $language, $kit), SectionRecipes::resolveMarkup($raw, $lang, $styleKit), "$name / $language");
+            }
+        }
+    }
+
+    public function testTheStyleGuideKitSamplesCarryNoTypeMarker(): void
+    {
+        $source = (string) file_get_contents(__DIR__ . '/../wp-plugin/src/StyleGuide.php');
+        $this->assertDoesNotMatchRegularExpression('/[\'"]aied[\'"]\s*(?:=>|:)\s*(?:\[|\{)\s*[\'"]type[\'"]/', $source, 'the hand-built kit samples hold no type marker (they resolve through KitResolver alone)');
+        foreach (StyleKits::ids() as $id) {
+            $this->assertStringNotContainsString('"aied"', \AiEditorDivi5\WP\StyleGuide::markdown('style-kit:' . $id), $id);
         }
     }
 }

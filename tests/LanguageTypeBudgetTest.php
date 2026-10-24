@@ -16,7 +16,7 @@ require_once __DIR__ . '/../wp-plugin/src/StyleGuide.php';
  *
  * The numbers were measured at main 77abc24. Everything the type adapter does not own must not move; what it
  * owns (one generated Type line per language topic, one typography sentence) may only grow within its cap.
- * Task 2 tightened the language topics to an exact equality; Task 3 tightens the typography topic.
+ * Task 2 tightened the language topics to an exact equality; Task 3 tightened the typography topic to an exact equality too.
  */
 final class LanguageTypeBudgetTest extends TestCase
 {
@@ -65,11 +65,13 @@ final class LanguageTypeBudgetTest extends TestCase
         }
     }
 
-    public function testTheTypographyTopicGrowsByAtMostOneSentence(): void
+    public function testTheTypographyTopicGrowsByExactlyItsSentence(): void
     {
-        $now = strlen( StyleGuide::markdown( 'typography' ) );
-        self::assertGreaterThanOrEqual( self::BEFORE_TYPOGRAPHY, $now );
-        self::assertLessThanOrEqual( self::BEFORE_TYPOGRAPHY + self::TYPOGRAPHY_SENTENCE_MAX, $now );
+        $now      = strlen( StyleGuide::markdown( 'typography' ) );
+        $sentence = strlen( StyleGuide::typographyLanguageSentence() );
+        self::assertGreaterThan( 0, $sentence, 'the typography topic names the language type' );
+        self::assertLessThanOrEqual( self::TYPOGRAPHY_SENTENCE_MAX, $sentence );
+        self::assertSame( self::BEFORE_TYPOGRAPHY + $sentence, $now, 'typography grows by exactly typographyLanguageSentence()' );
         self::assertLessThanOrEqual( 9500, $now );
     }
 }

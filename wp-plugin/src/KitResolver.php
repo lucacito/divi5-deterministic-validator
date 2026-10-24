@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+require_once __DIR__ . '/BlockAttrs.php';
 require_once __DIR__ . '/RecipeTokens.php';
 require_once __DIR__ . '/StyleKits.php';
 
@@ -39,6 +40,9 @@ require_once __DIR__ . '/StyleKits.php';
  * value can break the comment); every other block comment stays byte-identical. Anything this code does not know
  * (unknown role, surface or block, a marker that is not top level or has extra keys, malformed JSON, a partial or
  * unknown token, an invalid kit) is left untouched and reported by leftovers(), never guessed, never a warning.
+ * A top-level `"aied"` of ANY kind is reported as LEFT_MARKER, so a design-language marker the language step
+ * (LanguageResolver, which runs first) left is still reported here. The block scanner, the decoder and the merge are
+ * BlockAttrs', shared with LanguageResolver.
  * Pure and deterministic: no site access.
  */
 final class KitResolver
@@ -83,18 +87,14 @@ final class KitResolver
     ];
     private const GROUND_SURFACES = [ 'light', 'surface' ];
 
-    /**
-     * An opening divi block comment with attributes: (prefix)(name)(json)(suffix). The JSON never spans a `-->` and
-     * ends at the first `}` followed by the comment's end. Possessive throughout, so a block of any size is matched
-     * without backtracking (a lazy tempered dot ran out of PCRE JIT stack on a 40 KB block).
-     */
-    private const BLOCK = '/(<!--\s+wp:(divi\/[a-z0-9-]+)\s+)(\{(?:[^-}]++|-(?!->)|\}(?!\s+\/?-->))*+\})(\s+\/?-->)/s';
+    /** An opening divi block comment with attributes: (prefix)(name)(json)(suffix) (BlockAttrs::BLOCK). */
+    private const BLOCK = BlockAttrs::BLOCK;
 
     /** A whole-value kit token. */
     private const WHOLE_TOKEN = '/^\{\{aied:kit:([a-z0-9-]+)\}\}\z/';
 
-    /** How deep attribute JSON is decoded (recipes are about 10 deep); deeper is treated as malformed. */
-    private const DEPTH = 64;
+    /** How deep attribute JSON is decoded; deeper is treated as malformed (BlockAttrs::DEPTH). */
+    private const DEPTH = BlockAttrs::DEPTH;
 
     /** Fixed leftover descriptions (never the content's own text). */
     public const LEFT_MARKER    = '{"aied":{"kit":...}}';
@@ -207,12 +207,10 @@ final class KitResolver
         return array_keys( $found );
     }
 
-    /** The decoded attribute object, or null when $json is not a JSON object within DEPTH. */
+    /** The decoded attribute object, or null when $json is not a JSON object within DEPTH (BlockAttrs::decode). */
     private static function decode( string $json ): ?object
     {
-        $attrs = json_decode( $json, false, self::DEPTH );
-
-        return $attrs instanceof \stdClass ? $attrs : null;
+        return BlockAttrs::decode( $json );
     }
 
     /**
@@ -253,21 +251,14 @@ final class KitResolver
     }
 
     /**
-     * Deep-merge $patch into $node: the patch wins; an associative patch array merges into an existing object, anything
-     * else (a list, a scalar, a new key) replaces or is appended. Existing keys keep their place.
+     * Deep-merge $patch into $node (BlockAttrs::merge): the patch wins; an associative patch array merges into an existing
+     * object, anything else (a list, a scalar, a new key) replaces or is appended. Existing keys keep their place.
      *
      * @param array<mixed> $patch
      */
     private static function merge( \stdClass $node, array $patch ): void
     {
-        foreach ( $patch as $key => $value ) {
-            $key = (string) $key;
-            if ( is_array( $value ) && [] !== $value && array_keys( $value ) !== range( 0, count( $value ) - 1 ) && isset( $node->{$key} ) && $node->{$key} instanceof \stdClass ) {
-                self::merge( $node->{$key}, $value );
-            } else {
-                $node->{$key} = $value;
-            }
-        }
+        BlockAttrs::merge( $node, $patch );
     }
 
     /**

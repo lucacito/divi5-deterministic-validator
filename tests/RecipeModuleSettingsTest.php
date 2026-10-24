@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/Support/ShapePaths.php';
 require_once __DIR__ . '/Support/ShapeRegistry.php';
+require_once __DIR__ . '/Support/ServedVariants.php';
 foreach ( [ 'ImagePack', 'ImageTokens', 'SectionRecipes', 'StyleKits', 'KitAdapters', 'KitResolver' ] as $recipeModuleSettingsClass ) {
     require_once __DIR__ . '/../wp-plugin/src/' . $recipeModuleSettingsClass . '.php';
 }
@@ -168,9 +169,9 @@ final class RecipeModuleSettingsTest extends TestCase
         $registry = ShapeRegistry::load();
         $used     = [];
         foreach ( SectionRecipes::names() as $name ) {
-            // As served: every style kit's markers resolved, so a dead path an adapter wrote would be caught too.
-            foreach ( \AiEditorDivi5\WP\StyleKits::ids() as $kit ) {
-                $served = \AiEditorDivi5\WP\KitResolver::resolve( (string) SectionRecipes::rawMarkup( $name ), (array) \AiEditorDivi5\WP\StyleKits::get( $kit ) );
+            // As served: every language's and every style kit's markers resolved, so a dead path an adapter wrote would be
+            // caught too.
+            foreach ( \Divi5Validator\Tests\Support\ServedVariants::of( (string) SectionRecipes::rawMarkup( $name ) ) as $served ) {
                 foreach ( ShapePaths::fromMarkup( $served ) as $p ) {
                     $used[ $p ] = true;
                 }

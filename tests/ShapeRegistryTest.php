@@ -11,11 +11,13 @@ use AiEditorDivi5\WP\StyleKits;
 use Divi5Validator\Tests\Support\ShapePaths;
 use Divi5Validator\Tests\Support\ShapeRegistry;
 use Divi5Validator\Tests\Support\DeadOnModule;
+use Divi5Validator\Tests\Support\ServedVariants;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/Support/ShapePaths.php';
 require_once __DIR__ . '/Support/ShapeRegistry.php';
 require_once __DIR__ . '/Support/DeadOnModule.php';
+require_once __DIR__ . '/Support/ServedVariants.php';
 foreach ( [ 'ImagePack', 'ImageTokens', 'SectionRecipes', 'StyleGuide', 'StyleKits', 'KitAdapters', 'KitResolver' ] as $shapeRegistryClass ) {
     require_once __DIR__ . '/../wp-plugin/src/' . $shapeRegistryClass . '.php';
 }
@@ -66,13 +68,9 @@ final class ShapeRegistryTest extends TestCase
         foreach ( SectionRecipes::names() as $name ) {
             $markup = SectionRecipes::rawMarkup( $name );
             $this->assertNotNull( $markup, "recipe $name should resolve" );
-            // The paths a recipe really uses are those it is SERVED with: every style kit's markers resolved (a marker
-            // is not a Divi attribute), so the paths each kit's adapter writes are linted too.
-            $served = [];
-            foreach ( StyleKits::ids() as $kit ) {
-                $served[] = KitResolver::resolve( (string) $markup, (array) StyleKits::get( $kit ) );
-            }
-            $markups[ $name ] = implode( "\n", $served );
+            // The paths a recipe really uses are those it is SERVED with: every language's type markers and every style
+            // kit's markers resolved (a marker is not a Divi attribute), so the paths each adapter writes are linted too.
+            $markups[ $name ] = implode( "\n", ServedVariants::of( (string) $markup ) );
         }
         $problems = $this->recipeProblems( $registry, $markups, $this->lines( 'ungrounded-recipe-paths.txt' ) );
         $lines = [];
