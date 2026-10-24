@@ -338,7 +338,7 @@ final class SectionRecipes
      *
      * The style kit is $kit when given, otherwise the language's own `kit` (the default language,
      * editorial, when no language is requested). Four steps, in this order: image tokens (ImageTokens),
-     * the language's markers (LanguageResolver), the kit's markers and whole-value kit tokens
+     * the language's markers (LanguageResolver: type on headings and labels, rhythm on sections), the kit's markers and whole-value kit tokens
      * (KitResolver), then colour and font tokens with the language (RecipeTokens); the last three are
      * resolveMarkup(). The markup handed out never contains a token or a marker: an unknown or invalid
      * kit, kit data that cannot be read, or a marker the language or the kit cannot resolve returns
@@ -372,8 +372,8 @@ final class SectionRecipes
     /**
      * The serve-time pipeline after the image step, the one place it is spelled: the language's markers
      * (LanguageResolver), then the kit's markers and whole-value kit tokens (KitResolver), then colour and
-     * font tokens (RecipeTokens). Null when the language step leaves a language marker (so a type marker
-     * never reaches the kit step) or the kit step leaves anything (KitResolver::leftovers()).
+     * font tokens (RecipeTokens). Null when the language step leaves a language marker (so a type or rhythm
+     * marker never reaches the kit step) or the kit step leaves anything (KitResolver::leftovers()).
      *
      * @param array<string,mixed> $language
      * @param array<string,mixed> $kit

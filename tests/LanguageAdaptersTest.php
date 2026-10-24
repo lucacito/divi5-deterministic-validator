@@ -170,8 +170,8 @@ class LanguageAdaptersTest extends TestCase
 
     public function testTheConstantsAgree(): void
     {
-        $this->assertSame( [ 'type' ], LanguageAdapters::KINDS );
-        $this->assertSame( [ 'type' => [ 'divi/heading' => [ 'display', 'title', 'eyebrow' ], 'divi/text' => [ 'eyebrow' ] ] ], LanguageAdapters::APPLIED );
+        $this->assertSame( [ 'type', 'rhythm' ], LanguageAdapters::KINDS );
+        $this->assertSame( [ 'type' => [ 'divi/heading' => [ 'display', 'title', 'eyebrow' ], 'divi/text' => [ 'eyebrow' ] ], 'rhythm' => [ 'divi/section' => [ 'section', 'open', 'tight' ] ] ], LanguageAdapters::APPLIED );
         $this->assertSame( DesignLanguages::TYPE_KEYS, LanguageAdapters::TYPE_ROLES );
         $this->assertSame( [ 'display' => 'display', 'title' => 'display', 'eyebrow' => 'eyebrow' ], LanguageAdapters::TYPE_FONT );
         $this->assertSame( self::PATHS, LanguageAdapters::TYPE_PATHS );
@@ -348,7 +348,8 @@ class LanguageAdaptersTest extends TestCase
                 $this->assertNull( LanguageAdapters::patch( $block, 'type', $role, $lang ), "$role on $block" );
             }
         }
-        $this->assertNull( LanguageAdapters::patch( 'divi/heading', 'rhythm', 'display', $lang ) );
+        $this->assertNull( LanguageAdapters::patch( 'divi/heading', 'rhythm', 'display', $lang ), 'a heading takes no rhythm role' );
+        $this->assertNull( LanguageAdapters::patch( 'divi/section', 'type', 'display', $lang ), 'a section takes no type role' );
         $this->assertNull( LanguageAdapters::patch( 'divi/heading', 'kit', 'display', $lang ) );
         $this->assertNull( LanguageAdapters::patch( 'divi/heading', 'Type', 'display', $lang ) );
         foreach ( [ 'body', 'Display', '', 'h1' ] as $role ) {

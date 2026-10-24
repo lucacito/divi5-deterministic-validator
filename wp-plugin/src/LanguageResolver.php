@@ -18,17 +18,22 @@ require_once __DIR__ . '/LanguageAdapters.php';
  *
  * A marker is a TOP-LEVEL attribute `"aied":{"<kind>":"<role>"}` with exactly one key, a kind in LanguageAdapters::KINDS
  * and a string role LanguageAdapters::APPLIED lists for the block (today `"aied":{"type":"display|title|eyebrow"}` on a
- * `divi/heading`, `"aied":{"type":"eyebrow"}` on a `divi/text`). The adapter's patch is deep-merged into the attributes
- * (BlockAttrs::merge: the language wins over a recipe literal at the same key; untouched keys keep their place), the marker
- * is removed and the block is re-encoded with RecipeTokens::encodeJson. Anything else (a style kit marker, an extra key,
- * an unknown kind, role or block, a marker below the top level, malformed JSON, a language the adapter refuses) leaves
- * the block byte-identical; every untouched block stays byte-identical. leftovers() reports the type markers left; the kit
- * step's KitResolver::leftovers() stays the catch-all for everything else. Pure and deterministic: no site access.
+ * `divi/heading`, `"aied":{"type":"eyebrow"}` on a `divi/text` and `"aied":{"rhythm":"section|open|tight"}` on a
+ * `divi/section`; a type and a rhythm marker in one markup resolve in the same pass). The adapter's patch is deep-merged
+ * into the attributes (BlockAttrs::merge: the language wins over a recipe literal at the same key; untouched keys keep their
+ * place), the marker is removed and the block is re-encoded with RecipeTokens::encodeJson. Anything else (a style kit
+ * marker, an extra key, an unknown kind, role or block, a marker below the top level, malformed JSON, a language the adapter
+ * refuses) leaves the block byte-identical; every untouched block stays byte-identical. leftovers() reports the type and
+ * rhythm markers left; the kit step's KitResolver::leftovers() stays the catch-all for everything else. Pure and
+ * deterministic: no site access.
  */
 final class LanguageResolver
 {
     /** Kind => the fixed leftover description (never the content's own text). */
-    public const LEFT = [ 'type' => '{"aied":{"type":...}}' ];
+    public const LEFT = [
+        'type'   => '{"aied":{"type":...}}',
+        'rhythm' => '{"aied":{"rhythm":...}}',
+    ];
 
     /**
      * $markup with every language marker it can resolve resolved. $adapter has the signature of LanguageAdapters::patch()

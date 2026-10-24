@@ -63,7 +63,7 @@ final class ServedVariants
     {
         $markup = LanguageResolver::resolve( $raw, $lang );
         if ( [] !== LanguageResolver::leftovers( $markup ) ) {
-            throw new \RuntimeException( 'the language step of ' . (string) ( $lang['id'] ?? '?' ) . ' left a type marker' );
+            throw new \RuntimeException( 'the language step of ' . (string) ( $lang['id'] ?? '?' ) . ' left a language marker' );
         }
 
         return $markup;
