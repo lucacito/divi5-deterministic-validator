@@ -53,7 +53,7 @@ t('the sheet has the five slots of the plan, each found by a unique text', () =>
   assert.deepStrictEqual(T.TYPE_SLOTS.map((s) => s.module), ['heading', 'heading', 'heading', 'heading', 'text']);
   assert.deepStrictEqual(T.TYPE_SLOTS.map((s) => s.tag), ['h1', 'h2', 'h3', 'h4', 'p']);
   assert.strictEqual(new Set(T.TYPE_SLOTS.map((s) => s.text)).size, 5, 'unique texts');
-  assert.strictEqual(T.TYPE_SLOTS[0].text, 'Craftsmanship, delivered', 'a long word, so uppercase widening shows at 400 px');
+  assert.strictEqual(T.TYPE_SLOTS[0].text, 'Remarkable results, delivered', 'the longest word of any library display heading (Remarkable), so uppercase widening shows at 400 px');
   assert.deepStrictEqual(T.TYPE_SLOTS[0].sizes, { desktop: '104px', tablet: '68px', phone: '40px' });
   assert.deepStrictEqual(T.TYPE_SLOTS[1].sizes, { desktop: '44px', tablet: '36px', phone: '30px' });
   assert.strictEqual(T.TYPE_SLOTS[2].sizes.desktop, '22px');

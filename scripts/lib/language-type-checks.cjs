@@ -37,7 +37,7 @@ const WIDTHS = [1280, 900, 400];
  * Every slot is found by its UNIQUE text.
  */
 const TYPE_SLOTS = [
-  { key: 'display-h1', module: 'heading', tag: 'h1', role: 'display', fontRole: 'display', text: 'Craftsmanship, delivered', sizes: { desktop: '104px', tablet: '68px', phone: '40px' }, lineHeight: '1em', inGroup: false },
+  { key: 'display-h1', module: 'heading', tag: 'h1', role: 'display', fontRole: 'display', text: 'Remarkable results, delivered', sizes: { desktop: '104px', tablet: '68px', phone: '40px' }, lineHeight: '1em', inGroup: false },
   { key: 'display-h2', module: 'heading', tag: 'h2', role: 'display', fontRole: 'display', text: 'Everything you need and nothing you do not', sizes: { desktop: '44px', tablet: '36px', phone: '30px' }, lineHeight: '1.2em', inGroup: false },
   { key: 'title-h3', module: 'heading', tag: 'h3', role: 'title', fontRole: 'display', text: 'Placeholder card title', sizes: { desktop: '22px' }, lineHeight: '1.3em', inGroup: true },
   { key: 'eyebrow-h4', module: 'heading', tag: 'h4', role: 'eyebrow', fontRole: 'eyebrow', text: 'Eyebrow label', sizes: { desktop: '13px' }, lineHeight: '1.4em', inGroup: false },
