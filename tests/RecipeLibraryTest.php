@@ -1744,7 +1744,9 @@ class RecipeLibraryTest extends TestCase
     {
         $problems = [];
         foreach ( (array) json_decode( (string) file_get_contents( __DIR__ . '/../wp-plugin/data/section-recipes.json' ), true ) as $recipe ) {
-            if ( ! str_contains( (string) $recipe['markup'], '"aied"' ) ) {
+            // Selected by a KIT marker: a type marker (`"aied":{"type"`, type adapter Task 5) is the language's, not a kit's
+            // (Spec issue 11 of the type adapter plan; every kit marker of the library is spelled `"aied":{"kit"`).
+            if ( ! str_contains( (string) $recipe['markup'], '"aied":{"kit"' ) ) {
                 continue;
             }
             foreach ( [ 'title', 'description', 'when' ] as $field ) {
@@ -1762,7 +1764,9 @@ class RecipeLibraryTest extends TestCase
     {
         $checked = 0;
         foreach ( SectionRecipes::names() as $name ) {
-            if ( ! str_contains( (string) SectionRecipes::rawMarkup( $name ), '"aied"' ) ) {
+            // Selected by a KIT marker, so the count stays 45: the 56 type-marked recipes are served under every language with
+            // its own kit by TypeMigrationTest (type adapter plan, Spec issue 11).
+            if ( ! str_contains( (string) SectionRecipes::rawMarkup( $name ), '"aied":{"kit"' ) ) {
                 continue;
             }
             ++$checked;

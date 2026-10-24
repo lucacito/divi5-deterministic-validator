@@ -162,12 +162,15 @@ class TypeAuditTest extends TestCase
         }
     }
 
-    public function testTheLibraryIsNotMarkedYet(): void
+    public function testEveryClassifiedBlockIsMarked(): void
     {
-        // Task 5 flips this: every classified block carries its marker. Until then none does.
+        // Flipped by Task 5 (scripts/migrate-type-markers.php): every classified block carries its marker, no exempt one does.
+        $marked = 0;
         foreach ( TypeAudit::blocks( self::library() ) as $r ) {
-            $this->assertFalse( $r['marked'], TypeAudit::key( $r ) );
+            $this->assertSame( null !== $r['role'], $r['marked'], TypeAudit::key( $r ) );
+            $marked += $r['marked'] ? 1 : 0;
         }
+        $this->assertSame( 206, $marked );
     }
 
     public function testTheAuditClassifiesPlantedBlocks(): void
