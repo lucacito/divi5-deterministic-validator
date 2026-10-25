@@ -87,6 +87,9 @@ class ValidatorSchemaTest extends TestCase
             // Pass 5 — render-critical
             'scalar-where-object'             => [$dir . '/scalar-where-object.json',             Validator::E_SCALAR_WHERE_OBJECT],
             'scalar-where-object-video'       => [$dir . '/scalar-where-object-video.json',       Validator::E_SCALAR_WHERE_OBJECT],
+            'scalar-where-object-testimonial-company' => [$dir . '/scalar-where-object-testimonial-company.json', Validator::E_SCALAR_WHERE_OBJECT],
+            'scalar-where-object-testimonial-portrait' => [$dir . '/scalar-where-object-testimonial-portrait.json', Validator::E_SCALAR_WHERE_OBJECT],
+            'scalar-where-object-contact-form-button' => [$dir . '/scalar-where-object-contact-form-button.json', Validator::E_SCALAR_WHERE_OBJECT],
         ];
     }
 }

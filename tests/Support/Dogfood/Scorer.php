@@ -88,7 +88,7 @@ final class Scorer
     /** class => the candidate roles: [marker role, ground or null, label], in KitAdapters::APPLIED order (grounds last). */
     private const CANDIDATES = [
         'button'      => [ [ 'control', null, 'control' ], [ 'control-secondary', null, 'control-secondary' ] ],
-        'rule'        => [ [ 'rule', null, 'rule' ], [ 'rule-strong', null, 'rule-strong' ] ],
+        'rule'        => [ [ 'rule', null, 'rule' ], [ 'rule-strong', null, 'rule-strong' ], [ 'rule-accent', null, 'rule-accent' ] ],
         'chip'        => [ [ 'chip', null, 'chip' ] ],
         'framed'      => [ [ 'card', null, 'card' ], [ 'panel', null, 'panel' ], [ 'card', 'inverted', 'card+inverted' ], [ 'card', 'accent', 'card+accent' ] ],
         'item'        => [ [ 'item', null, 'item' ], [ 'item-rule', null, 'item-rule' ] ],

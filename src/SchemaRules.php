@@ -229,6 +229,15 @@ class SchemaRules
                 ['separator', false, true],
             ],
 
+            // Added 2026-10-25 after a live render check: a plain string here made Divi 5.15.1 answer HTTP 500 for the whole page
+            // (TypeError in ArrayUtility::get_value() while rendering the module). Each key was rendered as a string and as
+            // an object on the real Divi (the object form is the one the library's real-export shapes use); docs/SCHEMA.md.
+            'divi/testimonial'       => [
+                ['company',  false, true],
+                ['portrait', false, true],
+            ],
+            'divi/contact-form'      => [['button', false, true]],
+
             // Compound children — object fields must be object when present
             'divi/slide'             => [['button', false, true]],
             'divi/icon-list-item'    => [['icon',   true,  true]],
