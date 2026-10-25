@@ -359,12 +359,12 @@ t('offline: one language can be asked for; an unknown one and a marker the pipel
 });
 
 // ---- the Makefile ----
-t('the Makefile target runs the pure tests, the synthetic page tests and then the live gate', () => {
+t('the Makefile target runs the pure tests, the synthetic page tests, the rhythm tests and then the live gate', () => {
   const mk = fs.readFileSync(path.join(ROOT, 'Makefile'), 'utf8');
   assert.match(mk.split('\n')[0], /\.PHONY:.* verify-language-type\b/);
   const target = /^verify-language-type:\n((?:\t.*\n)+)/m.exec(mk);
   assert.ok(target, 'the target exists');
-  assert.deepStrictEqual(target[1].trim().split('\n').map((l) => l.trim()), ['@node scripts/test-verify-language-type.cjs', '@node scripts/test-language-type-run.cjs', '@node scripts/verify-language-type.cjs $(ARGS)']);
+  assert.deepStrictEqual(target[1].trim().split('\n').map((l) => l.trim()), ['@node scripts/test-verify-language-type.cjs', '@node scripts/test-language-type-run.cjs', '@node scripts/test-verify-language-rhythm.cjs', '@node scripts/test-language-rhythm-run.cjs', '@node scripts/verify-language-type.cjs $(ARGS)']);
 });
 t('the live script keeps its guards: dev site only, run-prefixed deletion, orphans, no typed expectation', () => {
   const src = fs.readFileSync(path.join(__dirname, 'verify-language-type.cjs'), 'utf8');

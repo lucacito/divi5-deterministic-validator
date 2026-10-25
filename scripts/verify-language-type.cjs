@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 /*
- * Dev-only: the language-type render gate (type adapter plan, Task 6). For each design language it builds ONE "type sheet" through the REAL pipeline
+ * Dev-only: the language render gate (type adapter plan Task 6, extended by rhythm adapter plan Task 6). For each design language it builds ONE "type sheet" through the REAL pipeline
  * (the sheet template of scripts/lib/language-type-checks.cjs: a display h1 and h2, a title h3 inside a padded group, an eyebrow h4 and an
  * eyebrow text, each carrying a type marker `"aied":{"type":"<role>"}` and the language's font tokens; resolved in PHP exactly as
- * SectionRecipes::recipe serves a recipe: SectionRecipes::resolveMarkup() with the language and ITS OWN kit), gates it through
+ * SectionRecipes::recipe serves a recipe: ImageTokens, then SectionRecipes::resolveMarkup() with the language and ITS OWN kit), gates it through
  * LayoutGate::check, saves it as a throwaway DRAFT and opens it with the real Divi in Chromium at 1280, 900 and 400 px.
+ * The SAME page then carries four rhythm sections (scripts/lib/language-rhythm-checks.cjs: `section`, `open`, `tight` and `open` over a photo, each a
+ * divi/section with NO padding of its own and a rhythm marker `"aied":{"rhythm":"<role>"}`, one row, one column, one text): the expected top and bottom
+ * padding at desktop, tablet and phone is read from the resolved markup (what LanguageAdapters wrote from DesignLanguages::sectionSpace()), never typed.
  *
  *   node scripts/verify-language-type.cjs [--languages a,b] [--clean-orphans]    (needs `make up`; Playwright from ../layoutlab)
  *
@@ -20,20 +23,25 @@
  *   type-font-loaded      after document.fonts.ready, with the slot scrolled into view: a FontFace of that family, status loaded, whose weight descriptor
  *                         contains the weight (the web font really loaded at that weight; proven on the dev site only)
  *   type-overflow         the heading or text wider than its box, its column or the window
+ *   rhythm                a rhythm section missing from the page or on it twice (nothing else of the rhythm is then checked); a run that checked no rhythm slot fails with `FAIL rhythm:`
+ *   rhythm-expectation    a rhythm expectation read from the resolved markup has a hole (no px top or bottom at a breakpoint): the fail-closed guard, never a skip
+ *   rhythm-padding        the computed padding-top or padding-bottom of the section (0.5 px tolerance) at its breakpoint: 1280 desktop, 900 tablet, 400 phone
+ *   rhythm-order          the MEASURED paddings are not strictly open > section > tight (top and bottom, at every width), or the expectations are not
+ *   rhythm-image          the photo section's computed background-image is none
  *   overflow              the page wider than the window
  * A sheet the gate or the resolver refuses FAILs once as `<language>/gate`. Problems in the script's own page handling are `render-error`. A preview
  * that comes back as a 404 or without the page content is retried once with a fresh login.
  *
  * Output: PASS/FAIL lines and a summary; dist/type-sheet/<language>-<width>.png (the full page), dist/type-sheet/observations.json (the expected and
- * the computed values of every slot) and dist/type-sheet/index.html (one row per language at 1280 and 400 px). dist/ is git-ignored; writing the sheet
+ * the computed values of every type slot), dist/type-sheet/rhythm-observations.json (the same for the rhythm sections) and dist/type-sheet/index.html (one row per language at 1280 and 400 px). dist/ is git-ignored; writing the sheet
  * never fails the run.
  *
  * Dev site only (localhost). RUN ONE RUN AT A TIME, from the MAIN checkout with the branch checked out (the site runs ./wp-plugin of that checkout).
  * Every throwaway page is titled `aied type <runToken> <language>`; the run deletes ONLY pages whose title starts with `aied type <runToken> `
  * (after every language, at the end, and on SIGINT/SIGTERM/SIGHUP). `--clean-orphans` deletes ALL pages whose title starts with `aied type ` and
  * exits: use it only when no other run is going.
- * Pure parts: scripts/test-verify-language-type.cjs; the page measurement against synthetic pages: scripts/test-language-type-run.cjs
- * (both run first by `make verify-language-type`).
+ * Pure parts: scripts/test-verify-language-type.cjs and scripts/test-verify-language-rhythm.cjs; the page measurements against synthetic pages:
+ * scripts/test-language-type-run.cjs and scripts/test-language-rhythm-run.cjs (all four run first by `make verify-language-type`).
  */
 'use strict';
 
@@ -67,6 +75,8 @@ let cleanOrphans = false;
 const T = require('./lib/language-type-checks.cjs');
 const { measureInPage, PHP_ERROR } = require('./lib/recipe-checks.cjs');
 const { checkType } = require('./lib/language-type-run.cjs');
+const R = require('./lib/language-rhythm-checks.cjs');
+const { checkRhythm } = require('./lib/language-rhythm-run.cjs');
 
 const wp = makeWp(ROOT);
 const pages = throwawayPages(wp, T.TITLE_PREFIX, 'type');
@@ -81,10 +91,11 @@ const { chromium } = require(PW);
 function makePage(language) {
   if (run.cleaning) throw new Error('interrupted');
   // Everything travels as one base64 JSON payload, so nothing can break out of the PHP string.
-  const b64 = Buffer.from(JSON.stringify({ title: T.runTitle(RUN_TOKEN, language), language, markup: T.sheetMarkup() })).toString('base64');
+  const b64 = Buffer.from(JSON.stringify({ title: T.runTitle(RUN_TOKEN, language), language, markup: T.sheetMarkup() + '\n' + R.rhythmSheetMarkup() })).toString('base64');
   const NS = 'AiEditorDivi5' + BS + 'WP' + BS;
   const out = wp('eval', `$p=json_decode(base64_decode('${b64}'),true);$l=${NS}DesignLanguages::get($p['language']);$k=null===$l||!is_string($l['kit']??null)?null:${NS}StyleKits::get($l['kit']);if($l===null||$k===null||[]!==${NS}StyleKits::problems($k)){echo '0|INVALID language unknown or its kit invalid';return;}`
-    + `$m=${NS}SectionRecipes::resolveMarkup($p['markup'],$l,$k);if(null===$m){echo '0|INVALID unresolved (resolveMarkup refused the sheet)';return;}if(str_contains($m,'{{aied:')){echo '0|INVALID unresolved token';return;}`
+    + `$im=${NS}ImageTokens::resolve($p['markup'],plugins_url('assets/images/',AI_EDITOR_DIVI5_FILE),null,static fn(?string $u,string $t):?string=>apply_filters('jhmg_aied_image_token',$u,$t));`
+    + `$m=${NS}SectionRecipes::resolveMarkup($im,$l,$k);if(null===$m){echo '0|INVALID unresolved (resolveMarkup refused the sheet)';return;}if(str_contains($m,'{{aied:')){echo '0|INVALID unresolved token';return;}`
     + `$c='<!-- wp:divi/placeholder -->'.$m.'<!-- /wp:divi/placeholder -->';$g=${NS}LayoutGate::check($c);if(!$g->isValid()){echo '0|INVALID '.implode(',',array_map(fn($v)=>$v->toArray()['code'],$g->violations()));return;}`
     + `$id=wp_insert_post(wp_slash(['post_type'=>'page','post_title'=>$p['title'],'post_content'=>$c,'post_status'=>'draft','meta_input'=>['_et_pb_use_divi_5'=>'on','_et_pb_use_builder'=>'on']]));echo $id.'|valid|'.base64_encode($m);`);
   const [id, verdict, m64] = out.split('|');
@@ -112,7 +123,7 @@ function writeSheet(status, selected) {
     const rows = selected.map((l) => `<tr><th><strong>${esc(l)}</strong></th>${cell(l, 1280)}${cell(l, 400)}</tr>`).join('\n');
     const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Type sheet</title>
+<title>Type and rhythm sheet</title>
 <style>
 body{font:14px/1.4 system-ui,sans-serif;margin:16px;background:#f4f4f4;color:#111}
 h1{font-size:20px}p{max-width:70em}
@@ -125,8 +136,8 @@ td.w1280{width:520px;min-width:520px}td.w400{width:160px;min-width:160px}
 .b{display:inline-block;font:700 11px sans-serif;padding:1px 6px;border-radius:8px;margin-bottom:4px;color:#fff}
 .b.pass{background:#1a7f37}.b.fail{background:#b3261e}
 </style></head><body>
-<h1>Type sheet</h1>
-<p>Generated by <code>make verify-language-type</code> (${esc(new Date().toISOString())}). Each sheet is a display h1 and h2, a title h3, an eyebrow h4 and an eyebrow text in one design language, rendered on the real Divi at desktop (1280 px) and phone (400 px); a 900 px screenshot of each is in the same folder, and <code>observations.json</code> has the expected and the computed values.</p>
+<h1>Type and rhythm sheet</h1>
+<p>Generated by <code>make verify-language-type</code> (${esc(new Date().toISOString())}). Each sheet is a display h1 and h2, a title h3, an eyebrow h4 and an eyebrow text in one design language, followed by four rhythm sections (section, open, tight and open over a photo, each with only the language's own top and bottom padding), rendered on the real Divi at desktop (1280 px) and phone (400 px); a 900 px screenshot of each is in the same folder, and <code>observations.json</code> and <code>rhythm-observations.json</code> have the expected and the computed values.</p>
 <div class="wrap"><table>
 <thead><tr><th>Language</th><th>1280 px</th><th>400 px</th></tr></thead>
 <tbody>
@@ -172,7 +183,9 @@ async function openPreview(ctx, id, state) {
   let passes = 0;
   const status = new Map();
   const observations = [];
+  const rhythmObservations = [];
   let typeChecked = 0;
+  let rhythmChecked = 0;
   const state = { cookies: null, token: null };
   cleanupOnSignals(run, sweep, pages.runPrefix);
   let selected = [];
@@ -187,7 +200,7 @@ async function openPreview(ctx, id, state) {
     fs.mkdirSync(OUT_DIR, { recursive: true });
     browser = await chromium.launch({ handleSIGINT: false, handleSIGTERM: false, handleSIGHUP: false });
     run.browser = browser;
-    console.log(`${selected.length} language(s) x ${T.WIDTHS.length} widths x ${T.TYPE_SLOTS.length} slots, run ${RUN_TOKEN}`);
+    console.log(`${selected.length} language(s) x ${T.WIDTHS.length} widths x (${T.TYPE_SLOTS.length} type + ${R.RHYTHM_SLOTS.length} rhythm) slots, run ${RUN_TOKEN}`);
 
     const report = (lang, width, problems) => {
       if (run.cleaning) return;
@@ -211,6 +224,13 @@ async function openPreview(ctx, id, state) {
         const expects = blocks.map((b) => T.expectTypeFromAttrs(b.attrs, b.slot));
         const missing = expects.flatMap((e, i) => T.missingTypeExpectations(e).map((f) => `${blocks[i].slot.key} ${f}`));
         if (missing.length) { report(lang, 'gate', [['gate', 'type expectation missing (the marker did not resolve, or a path drifted): ' + missing.slice(0, 6).join(', ') + (missing.length > 6 ? ` and ${missing.length - 6} more` : '')]]); continue; }
+        // The rhythm sections found again in the RESOLVED markup, with complete expectations: a hole is a gate failure here, never a skipped check.
+        const rhythmBlocks = R.pageRhythmAttrs(page.markup);
+        const rhythmAbsent = rhythmBlocks.filter((b) => !b.attrs).map((b) => b.slot.key);
+        if (rhythmAbsent.length) { report(lang, 'gate', [['rhythm', 'rhythm sections not found in the resolved sheet (by their text): ' + rhythmAbsent.join(', ')]]); continue; }
+        const rhythmExpects = rhythmBlocks.map((b) => R.expectRhythmFromAttrs(b.attrs));
+        const rhythmMissing = rhythmExpects.flatMap((e, i) => R.missingRhythmExpectations(e).map((f) => `${rhythmBlocks[i].slot.key} ${f}`));
+        if (rhythmMissing.length) { report(lang, 'gate', [['rhythm-expectation', 'rhythm expectation missing (the marker did not resolve, or a path drifted): ' + rhythmMissing.slice(0, 6).join(', ') + (rhythmMissing.length > 6 ? ` and ${rhythmMissing.length - 6} more` : '')]]); continue; }
         for (const width of T.WIDTHS) {
           const ctx = await browser.newContext({ viewport: { width, height: 900 } });
           const problems = [];
@@ -231,6 +251,10 @@ async function openPreview(ctx, id, state) {
               typeChecked += tr.typeChecked;
               for (const pr of tr.problems) problems.push(pr);
               for (const o of tr.observations) observations.push({ language: lang, ...o });
+              const rr = await checkRhythm(p, { width, expects: rhythmExpects });
+              rhythmChecked += rr.rhythmChecked;
+              for (const pr of rr.problems) problems.push(pr);
+              for (const o of rr.observations) rhythmObservations.push({ language: lang, ...o });
             }
             try { await p.screenshot({ path: path.join(OUT_DIR, `${lang}-${width}.png`), fullPage: true }); } catch (e) { console.log(`WARNING screenshot failed for ${lang}/${width}`); }
             if (consoleErrors.length) problems.push(['console-error', [...new Set(consoleErrors)].slice(0, 3).join(' | ')]);
@@ -240,7 +264,9 @@ async function openPreview(ctx, id, state) {
           } finally {
             await ctx.close();
           }
-          report(lang, width, problems);
+          // The page-wide overflow is judged by both halves: say it once.
+          const seen = new Set();
+          report(lang, width, problems.filter(([c, d]) => { const k = c + '\u0000' + d; if (seen.has(k)) return false; seen.add(k); return true; }));
         }
       } catch (e) {
         report(lang, 'prepare', [['render-error', 'could not prepare the page: ' + (e && e.message ? e.message : e)]]);
@@ -250,6 +276,7 @@ async function openPreview(ctx, id, state) {
     }
     if (run.cleaning) return;
     try { fs.writeFileSync(path.join(OUT_DIR, 'observations.json'), JSON.stringify(observations, null, 1)); } catch (e) { console.log('WARNING could not write observations.json'); }
+    try { fs.writeFileSync(path.join(OUT_DIR, 'rhythm-observations.json'), JSON.stringify(rhythmObservations, null, 1)); } catch (e) { console.log('WARNING could not write rhythm-observations.json'); }
     writeSheet(status, selected);
   } catch (e) {
     console.log('ERROR script: ' + (e && e.message ? e.message : e));
@@ -263,7 +290,8 @@ async function openPreview(ctx, id, state) {
   }
   if (run.cleaning) return;
   for (const why of T.emptyTypeRunProblems({ checked: passes + failures, typeChecked })) { failures++; console.log('FAIL type: ' + why); }
+  for (const why of R.emptyRhythmRunProblems({ rhythmChecked })) { failures++; console.log('FAIL rhythm: ' + why); }
   console.log(`\n${passes} PASS, ${failures} FAIL (language/width lines) over ${selected.length} language(s)`);
-  console.log(failures ? 'FAILED' : 'Every selected language renders its type as it says on the real Divi.');
+  console.log(failures ? 'FAILED' : 'Every selected language renders its type and its section rhythm as it says on the real Divi.');
   process.exit(failures ? 1 : 0);
 })();
