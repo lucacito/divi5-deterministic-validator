@@ -1,6 +1,6 @@
 # Token usage of the AI Editor for Divi 5 (free plugin)
 
-Measured 2026-10-24 by `scripts/measure-tokens.php`. Tokens are ESTIMATED as bytes / 4; the real count depends on the model.
+Measured 2026-10-25 by `scripts/measure-tokens.php`. Tokens are ESTIMATED as bytes / 4; the real count depends on the model.
 
 Checking a layout runs in PHP on your server and costs **0 tokens**. What costs tokens is what the assistant has to read.
 
@@ -21,16 +21,16 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | A preview (dry run) of a one-line text change | verdict plus a capped diff, on the median page | 394 | 99 |
 | The style guide (default) | get_style_guide with no topic, read once before building a layout | 28,975 | 7,244 |
 | The style guide, topic design-languages | get_style_guide with topic "design-languages", only when asked for | 2,592 | 648 |
-| The style guide, topic design-language:editorial | get_style_guide with topic "design-language:editorial", only when asked for | 2,026 | 507 |
-| The style guide, topic design-language:glass-dark | get_style_guide with topic "design-language:glass-dark", only when asked for | 2,359 | 590 |
-| The style guide, topic design-language:organic-warm | get_style_guide with topic "design-language:organic-warm", only when asked for | 2,354 | 589 |
-| The style guide, topic design-language:tech-mono | get_style_guide with topic "design-language:tech-mono", only when asked for | 2,481 | 621 |
-| The style guide, topic design-language:playful-pastel | get_style_guide with topic "design-language:playful-pastel", only when asked for | 2,667 | 667 |
-| The style guide, topic design-language:corporate-trust | get_style_guide with topic "design-language:corporate-trust", only when asked for | 2,788 | 697 |
-| The style guide, topic design-language:soft-saas | get_style_guide with topic "design-language:soft-saas", only when asked for | 3,466 | 867 |
-| The style guide, topic design-language:bold-vibrant | get_style_guide with topic "design-language:bold-vibrant", only when asked for | 3,227 | 807 |
-| The style guide, topic design-language:brutalist-flat | get_style_guide with topic "design-language:brutalist-flat", only when asked for | 2,775 | 694 |
-| The style guide, topic design-language:luxe | get_style_guide with topic "design-language:luxe", only when asked for | 2,963 | 741 |
+| The style guide, topic design-language:editorial | get_style_guide with topic "design-language:editorial", only when asked for | 2,265 | 567 |
+| The style guide, topic design-language:glass-dark | get_style_guide with topic "design-language:glass-dark", only when asked for | 2,597 | 650 |
+| The style guide, topic design-language:organic-warm | get_style_guide with topic "design-language:organic-warm", only when asked for | 2,591 | 648 |
+| The style guide, topic design-language:tech-mono | get_style_guide with topic "design-language:tech-mono", only when asked for | 2,728 | 682 |
+| The style guide, topic design-language:playful-pastel | get_style_guide with topic "design-language:playful-pastel", only when asked for | 2,904 | 726 |
+| The style guide, topic design-language:corporate-trust | get_style_guide with topic "design-language:corporate-trust", only when asked for | 3,025 | 757 |
+| The style guide, topic design-language:soft-saas | get_style_guide with topic "design-language:soft-saas", only when asked for | 3,704 | 926 |
+| The style guide, topic design-language:bold-vibrant | get_style_guide with topic "design-language:bold-vibrant", only when asked for | 3,464 | 866 |
+| The style guide, topic design-language:brutalist-flat | get_style_guide with topic "design-language:brutalist-flat", only when asked for | 3,011 | 753 |
+| The style guide, topic design-language:luxe | get_style_guide with topic "design-language:luxe", only when asked for | 3,203 | 801 |
 | The style guide, topic backgrounds | get_style_guide with topic "backgrounds", only when asked for | 8,894 | 2,224 |
 | The style guide, topic dividers | get_style_guide with topic "dividers", only when asked for | 8,869 | 2,218 |
 | The style guide, topic motion | get_style_guide with topic "motion", only when asked for | 9,800 | 2,450 |
