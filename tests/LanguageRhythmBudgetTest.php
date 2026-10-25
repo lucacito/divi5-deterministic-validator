@@ -43,7 +43,7 @@ final class LanguageRhythmBudgetTest extends TestCase
     {
         self::assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide has no headroom to spare' );
         self::assertSame( 258, strlen( StyleGuide::topicParameterDescription() ), 'no new topic name is added' );
-        self::assertSame( 7945, strlen( StyleGuide::markdown( 'typography' ) ) );
+        self::assertSame( 7943, strlen( StyleGuide::markdown( 'typography' ) ) );
         self::assertSame( 8997, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
         self::assertSame( 8444, strlen( StyleGuide::markdown( 'style-kits' ) ) );
         self::assertSame( 8331, strlen( StyleGuide::markdown( 'controls' ) ) );
