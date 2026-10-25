@@ -26,9 +26,12 @@ require_once __DIR__ . '/StyleKits.php';
  *   submit button and captcha) on `divi/contact-form`, on `light`, `surface`, `accent` or `dark` (`surface` is a card, item
  *   and form band only, `panel` a button and rule surface only), and `rule` / `rule-strong` (a thin line: the line of a
  *   `divi/divider` or the top edge of a `divi/group` or `divi/column`) on `light`, `surface`, `accent`, `dark` or `panel`, and
- *   `chip` (a tag on a `divi/group`, an icon chip on a `divi/icon`) on `light`, `surface`, `accent` or `dark`. `on` defaults
- *   to `light`. `ground` (`inverted`
- *   or `accent`, a string) is accepted only for the card roles and only on a `light` or `surface` band. The adapter's
+ *   `chip` (a tag on a `divi/group`, an icon chip on a `divi/icon` or on a `divi/blurb`'s icon) on `light`, `surface`, `accent`
+ *   or `dark`. The carriers: `card` and `panel` also on a `divi/testimonial`, `rule` and `rule-strong` also on a
+ *   `divi/number-counter` (its top edge), and `rule-accent` (the accent mark) on a `divi/divider`, on `light` or `surface` only.
+ *   `on` defaults to `light`. `ground` (`inverted`
+ *   or `accent`, a string) is accepted only for the card roles, only on a `divi/group` or `divi/column` (never a testimonial)
+ *   and only on a `light` or `surface` band. The adapter's
  *   patch for (block, role, on, kit, ground) is deep-merged into the
  *   attributes (the patch wins over a recipe literal at the same key; lists are replaced, not appended; untouched keys
  *   keep their place) and the marker is removed. A role on a block it does not belong to, or a surface the role does not
@@ -51,21 +54,22 @@ final class KitResolver
     private const ROLE_BLOCKS = [
         'control'           => [ 'divi/button' ],
         'control-secondary' => [ 'divi/button' ],
-        'card'              => [ 'divi/group', 'divi/column' ],
-        'panel'             => [ 'divi/group', 'divi/column' ],
-        'rule'              => [ 'divi/group', 'divi/column', 'divi/divider' ],
-        'rule-strong'       => [ 'divi/group', 'divi/column', 'divi/divider' ],
-        'chip'              => [ 'divi/group', 'divi/icon' ],
+        'card'              => [ 'divi/group', 'divi/column', 'divi/testimonial' ],
+        'panel'             => [ 'divi/group', 'divi/column', 'divi/testimonial' ],
+        'rule'              => [ 'divi/group', 'divi/column', 'divi/divider', 'divi/number-counter' ],
+        'rule-strong'       => [ 'divi/group', 'divi/column', 'divi/divider', 'divi/number-counter' ],
+        'chip'              => [ 'divi/group', 'divi/icon', 'divi/blurb' ],
         'item'              => [ 'divi/accordion', 'divi/toggle' ],
         'item-rule'         => [ 'divi/accordion', 'divi/toggle' ],
         'form'              => [ 'divi/contact-form' ],
+        'rule-accent'       => [ 'divi/divider' ],
     ];
 
     /**
      * Marker role => the surfaces (bands) it may name; `light` when it names none. `surface` is for the card and item roles
      * only, `panel` for the button and rule roles only; a rule row (`item-rule`) sits on a light or surface band only; a form
      * (`form`) takes the four bands a card does; a rule (`rule`, `rule-strong`) takes five (the four and `panel`) and a chip
-     * the four.
+     * the four; the accent mark (`rule-accent`) a light or surface band only.
      */
     private const ROLE_SURFACES = [
         'control'           => [ 'light', 'accent', 'dark', 'panel' ],
@@ -78,6 +82,7 @@ final class KitResolver
         'rule'              => [ 'light', 'surface', 'accent', 'dark', 'panel' ],
         'rule-strong'       => [ 'light', 'surface', 'accent', 'dark', 'panel' ],
         'chip'              => [ 'light', 'surface', 'accent', 'dark' ],
+        'rule-accent'       => [ 'light', 'surface' ],
     ];
 
     /** Marker role => the grounds it may name, and the surfaces a ground may sit on. Only the card roles take a ground. */
@@ -86,6 +91,9 @@ final class KitResolver
         'panel' => [ 'inverted', 'accent' ],
     ];
     private const GROUND_SURFACES = [ 'light', 'surface' ];
+
+    /** The blocks a ground may sit on (KitAdapters::GROUND_BLOCKS, pinned equal by a test): a testimonial takes no ground. */
+    private const GROUND_BLOCKS = [ 'divi/group', 'divi/column' ];
 
     /** An opening divi block comment with attributes: (prefix)(name)(json)(suffix) (BlockAttrs::BLOCK). */
     private const BLOCK = BlockAttrs::BLOCK;
@@ -242,7 +250,7 @@ final class KitResolver
         $ground = null;
         if ( array_key_exists( 'ground', $vars ) ) {
             $ground = $vars['ground'];
-            if ( ! is_string( $ground ) || ! in_array( $ground, self::ROLE_GROUNDS[ $role ] ?? [], true ) || ! in_array( $on, self::GROUND_SURFACES, true ) ) {
+            if ( ! is_string( $ground ) || ! in_array( $ground, self::ROLE_GROUNDS[ $role ] ?? [], true ) || ! in_array( $on, self::GROUND_SURFACES, true ) || ! in_array( $block, self::GROUND_BLOCKS, true ) ) {
                 return null;
             }
         }

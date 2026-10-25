@@ -178,7 +178,8 @@ class DogfoodScorerTest extends TestCase
                                 $got      = $expected->attrs( $block, $role, $band, $ground );
                                 if ( null === $got ) {
                                     $this->assertStringContainsString( '"aied"', $resolved, "$kitId $block $role $ground on $band is refused" );
-                                    $this->assertContains( $band, [ 'accent', 'dark', 'panel' ], 'a ground sits on a light or surface band only' );
+                                    // carriers adapter: a testimonial takes the card roles but never a ground (KitAdapters::GROUND_BLOCKS): refused on every band.
+                                    $this->assertContains( $band, in_array( $block, KitAdapters::GROUND_BLOCKS, true ) ? [ 'accent', 'dark', 'panel' ] : Expected::BANDS, 'a ground sits on a light or surface band only, on a group or column only' );
                                     continue;
                                 }
                                 $this->assertSame( 1, preg_match( '/^<!-- wp:[a-z0-9\/-]+ (\{.*\}) \/-->$/s', $resolved, $m ) );

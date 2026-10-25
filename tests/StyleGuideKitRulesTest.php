@@ -85,15 +85,17 @@ class StyleGuideKitRulesTest extends TestCase
         $shipped = StyleGuide::notAppliedSentence();
         // Forms left the list with the form adapter (the sentence is generated from KitAdapters::APPLIED).
         // Image radius left the list with the media-radius const (the sentence is generated from KitAdapters::MEDIA_RADIUS_BLOCKS too).
-        $this->assertSame( 'Blurbs, testimonials and every other module keep the recipe\'s own styling.', $shipped );
-        $this->assertSame( 'Blurbs, testimonials, image radius and every other module keep the recipe\'s own styling.', StyleGuide::notAppliedSentence( null, [] ), 'with no block taking the media radius the sentence names it again' );
+        // carriers adapter: 'Blurbs, testimonials and every other module keep' -> 'Every other module keeps' (blurbs and testimonials are carriers; Ruling 9).
+        $this->assertSame( 'Every other module keeps the recipe\'s own styling.', $shipped );
+        // carriers adapter: 'Blurbs, testimonials, image radius and every other module keep' -> 'Image radius and every other module keep'.
+        $this->assertSame( 'Image radius and every other module keep the recipe\'s own styling.', StyleGuide::notAppliedSentence( null, [] ), 'with no block taking the media radius the sentence names it again' );
         $this->assertStringNotContainsStringIgnoringCase( 'accordion', $shipped, 'accordions are kit-driven now' );
         $this->assertStringContainsString( 'accordion and toggle items (`divi/accordion`, `divi/toggle`: `item`, `item-rule`)', StyleGuide::appliedSentence() );
         $this->assertSame( 'Accordions, forms, blurbs, testimonials, image radius and every other module keep the recipe\'s own styling.', StyleGuide::notAppliedSentence( [ 'divi/button' => [ 'control' ] ], [] ) );
         $this->assertSame( 'Accordions, forms, testimonials, image radius and every other module keep the recipe\'s own styling.', StyleGuide::notAppliedSentence( [ 'divi/blurb' => [ 'tile' ] ], [] ) );
-        foreach ( [ 'style-kits', 'kit-rules' ] as $topic ) {
-            $this->assertStringContainsString( StyleGuide::appliedSentence() . ' ' . $shipped, StyleGuide::markdown( $topic ), $topic );
-        }
+        // carriers adapter: the catalog prints the noun-only applied sentence before the same not-applied sentence (Ruling 7).
+        $this->assertStringContainsString( StyleGuide::appliedSentence() . ' ' . $shipped, StyleGuide::markdown( 'kit-rules' ), 'kit-rules' );
+        $this->assertStringContainsString( StyleGuide::appliedNounsSentence() . ' ' . $shipped, StyleGuide::markdown( 'style-kits' ), 'style-kits' );
     }
 
     public function testKitRulesHasAnImagesParagraphGeneratedFromTheConst(): void
@@ -126,7 +128,8 @@ class StyleGuideKitRulesTest extends TestCase
         // deliberately (rules and chips adapter T3, plan 2026-10-21): the applied tail (+119 B) and the Rules and chips paragraph
         // (+529 B with its heading) take the bound to 4,607 + 650.
         // Guide polish (plan 2026-10-21-guide-polish-rules-chips) replaces the self-imposed 4,607 + 650 pin with 7,000 B (the real bound is 10,000 B).
-        $this->assertLessThanOrEqual( 9000, strlen( $text ) );
+        // carriers adapter: 9000 -> 9600 (Ruling 8: the full applied sentence and the More carriers paragraph).
+        $this->assertLessThanOrEqual( 9600, strlen( $text ) );
         $this->assertLessThanOrEqual( self::BUDGET, strlen( $text ) );
         $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
         $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
@@ -145,7 +148,9 @@ class StyleGuideKitRulesTest extends TestCase
             }
             $this->assertSame( 1, substr_count( $text, 'topic=kit-rules' ), "$id: one pointer to kit-rules" );
         }
-        $this->assertSame( 1, substr_count( StyleGuide::markdown( 'style-kits' ), 'topic=kit-rules' ), 'the catalog\'s pointer sentence names kit-rules' );
+        // carriers adapter: 1 -> 2: the catalog's noun-only applied sentence (Ruling 7) also points to kit-rules, besides the pointer sentence.
+        $this->assertSame( 2, substr_count( StyleGuide::markdown( 'style-kits' ), 'topic=kit-rules' ), 'the catalog\'s pointer sentence and its applied sentence name kit-rules' );
+        $this->assertSame( 1, substr_count( StyleGuide::markdown( 'style-kits' ), 'What each module takes: topic=kit-rules.' ), 'the pointer sentence, once' );
         $this->assertStringContainsString( 'topic=kit-rules', StyleGuide::markdown( 'toggles' ) );
     }
 
@@ -242,11 +247,14 @@ class StyleGuideKitRulesTest extends TestCase
         // Guide polish second pass (spec Ruling 5), re-pinned deliberately: the tag fill/padding sentence, the form field padding path and the accordion paths: 6,289 -> 6,996 (6,595 -> 7,302 with the Images paragraph; the pin is 7,600).
         // Left items pass (guide), re-pinned deliberately: the accordion clause split per role and the toggle clause: 6,996 -> 7,558 (7,302 -> 7,864 with the Images paragraph; the bound is 7,900).
         // Round 3 of the guide polish (spec "Round 3"), re-pinned deliberately: the band sentence, the framed-block rule sentence, the side-edge sentence, the tag frame colour, the icon-chip size and glyph codes and the accordion-item shape: 7,558 -> 8,691 (7,864 -> 8,997 with the Images paragraph; the bound is 9,000).
-        $this->assertSame( 8691, strlen( StyleGuide::kitRules( null, null, [] ) ), 'kit-rules without the Images paragraph (4,301 before the rules and chips adapter)' );
+        // carriers adapter: 8691 -> 9294 (the applied sentences and the More carriers paragraph).
+        $this->assertSame( 9294, strlen( StyleGuide::kitRules( null, null, [] ) ), 'kit-rules without the Images paragraph (4,301 before the rules and chips adapter)' );
         // Image radius pass (Task 1): the Images paragraph replaces the "recorded but unused" clause: +291 B net. Rules and chips T3: 4,607 -> 5,255 (plan bound: 4,607 + 650).
-        $this->assertSame( 8997, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
+        // carriers adapter: 8997 -> 9598.
+        $this->assertSame( 9598, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
         // Rules and chips adapter Step 0 (plan 2026-10-21): the catalog's fixed prose was reworded to reclaim headroom BEFORE the applied sentence gained its rules and chips tail: 8,439 -> 8,325 B (50-kit projection 9,923 -> 9,809 B); the tail then added 119 B: 8,444 B (9,928 B with 50 kits).
-        $this->assertSame( 8444, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog (was 8,464, then 8,423 before the form adapter, 8,453 with it, 8,439 at image radius; 8,325 after the Step 0 rewording, 8,444 with the rules and chips tail)' );
+        // carriers adapter: 8444 -> 8178 (Ruling 7: the catalog prints the noun-only applied sentence).
+        $this->assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog (was 8,464, then 8,423 before the form adapter, 8,453 with it, 8,439 at image radius; 8,325 after the Step 0 rewording, 8,444 with the rules and chips tail, 8,178 with the noun-only sentence)' );
     }
 
     public function testTheGroundSentenceNamesTheAdaptersFillsAndFailsClosed(): void
@@ -345,8 +353,9 @@ class StyleGuideKitRulesTest extends TestCase
         // (`button.decoration.*`, not `module.decoration`) were added after review. The bound below is the real one, the cap is 10,000 B.
         // Re-bounded deliberately (rules and chips adapter T3): + the applied tail and the Rules and chips paragraph (648 B in all; the bound is 650).
         // Guide polish (plan 2026-10-21-guide-polish-rules-chips): the self-imposed 3,525 + 800 + 650 and 4,301 + 400 + 650 pins are replaced by 7,000 B.
-        $this->assertLessThanOrEqual( 9000, strlen( StyleGuide::kitRules( null, null, [] ) ), 'kit-rules without the Images paragraph' );
-        $this->assertLessThanOrEqual( 9000, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules with the Images paragraph' );
+        // carriers adapter: 9000 -> 9600 (Ruling 8).
+        $this->assertLessThanOrEqual( 9600, strlen( StyleGuide::kitRules( null, null, [] ) ), 'kit-rules without the Images paragraph' );
+        $this->assertLessThanOrEqual( 9600, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules with the Images paragraph' );
         $this->assertLessThanOrEqual( 10000, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
         $this->assertLessThanOrEqual( 10000, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog' );
         $max = 0;
@@ -415,7 +424,12 @@ class StyleGuideKitRulesTest extends TestCase
     {
         $text = StyleGuide::kitRules( $applied, null, null, $ruleProven, $chipProven );
         $at   = strpos( $text, '## Rules and chips' );
-        return false === $at ? '' : substr( $text, $at );
+        if ( false === $at ) {
+            return '';
+        }
+        // Carriers adapter T3: the paragraph ends where the next one (`## More carriers`, carrierRules()) starts.
+        $end = strpos( $text, "\n## ", $at );
+        return false === $end ? substr( $text, $at ) : substr( $text, $at, $end + 1 - $at );
     }
 
     public function testKitRulesHasARulesAndChipsParagraphGeneratedFromTheMapAndTheDecisions(): void
@@ -516,7 +530,8 @@ class StyleGuideKitRulesTest extends TestCase
             '`rule` (quiet), `rule-strong`: a `divi/divider` (colour, weight, style) or the top edge of a `divi/group` or `divi/column`; `on`: light, surface, accent, dark or panel. Width from the kit: 1-2px quiet, 2-4px strong, 3px+ for a double. Quiet: hairline colour on light and surface, 40% ink elsewhere; strong: full ink. `chip`: tag (`divi/group`: control radius, outline frame) or icon (`divi/icon`: control radius, accent fill, accent-text glyph; surface/text on accent); `on`: light, surface, accent or dark.',
             $body
         );
-        $this->assertSame( 8997, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'the shipped kit-rules (5,255 before the guide polish, 6,595 before the second pass, 7,302 before the per-role item clauses, 7,864 before round 3)' );
+        // carriers adapter: 8997 -> 9598.
+        $this->assertSame( 9598, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'the shipped kit-rules (5,255 before the guide polish, 6,595 before the second pass, 7,302 before the per-role item clauses, 7,864 before round 3, 8,997 before the carriers adapter)' );
 
         $yes    = KitAdapters::RULE_PROVEN;
         $cyes   = KitAdapters::CHIP_PROVEN;
@@ -650,7 +665,8 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertLessThanOrEqual( 9500, strlen( StyleGuide::markdown( 'controls' ) ), 'StyleGuideRecipeVocabularyTopicTest keeps controls <= 9,500' );
         // Review fix: re-pinned deliberately (8,317 -> 8,331): the sentence says what really follows the kit (width, style, corners)
         // and that colours come from the design language, and names only the carriers in the map.
-        $this->assertSame( 8331, strlen( StyleGuide::markdown( 'controls' ) ) );
+        // carriers adapter: 8331 -> 8348 (Ruling 10: the divider's marker list gains `rule-accent`, generated).
+        $this->assertSame( 8348, strlen( StyleGuide::markdown( 'controls' ) ) );
         $this->assertStringContainsString( 'colours come from the design language', $sentence );
         $this->assertStringNotContainsString( 'colour and corners follow the kit', $sentence );
         $this->assertStringNotContainsString( 'A divider or an icon chip', $sentence );
@@ -663,11 +679,12 @@ class StyleGuideKitRulesTest extends TestCase
     public function testTheAppliedSentenceGroupsByNoun(): void
     {
         $old = 'Kit-driven today: buttons (`divi/button`: `control`, `control-secondary`), cards (`divi/group`, `divi/column`: `card`, `panel`), accordion and toggle items (`divi/accordion`, `divi/toggle`: `item`, `item-rule`)';
+        // carriers adapter: cards gain `divi/testimonial`, rules gain `divi/number-counter` and `rule-accent`, chips gain `divi/blurb` (the map, by itself).
         $this->assertSame(
-            $old . ', forms (`divi/contact-form`: `form`), rules (`divi/group`, `divi/column`, `divi/divider`: `rule`, `rule-strong`) and chips (`divi/group`, `divi/icon`: `chip`).',
+            str_replace( '`divi/column`: `card`', '`divi/column`, `divi/testimonial`: `card`', $old ) . ', forms (`divi/contact-form`: `form`), rules (`divi/group`, `divi/column`, `divi/divider`, `divi/number-counter`: `rule`, `rule-strong`, `rule-accent`) and chips (`divi/group`, `divi/icon`, `divi/blurb`: `chip`).',
             StyleGuide::appliedSentence()
         );
-        $this->assertStringStartsWith( $old, StyleGuide::appliedSentence(), 'today\'s text is kept up to the forms' );
+        $this->assertStringStartsWith( 'Kit-driven today: buttons (`divi/button`: `control`, `control-secondary`), cards (', StyleGuide::appliedSentence(), 'today\'s text is kept up to the cards' );
         $this->assertSame( 1, substr_count( StyleGuide::appliedSentence(), 'rules (' ) );
         $this->assertSame( 1, substr_count( StyleGuide::appliedSentence(), 'chips (' ) );
         // A block that carries roles of two nouns is named under each, with only that noun's roles.
@@ -680,10 +697,9 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertStringContainsString( '`row`', $other );
         $this->assertLessThan( (int) strpos( $other, '`tile`' ), (int) strpos( $other, 'buttons' ), 'named roles come after the nouns' );
         $this->assertSame( 'Kit-driven today: nothing.', StyleGuide::appliedSentence( [] ) );
-        // The sentence is in the catalog and kit-rules, and in no kit topic.
-        foreach ( [ 'style-kits', 'kit-rules' ] as $topic ) {
-            $this->assertStringContainsString( StyleGuide::appliedSentence(), StyleGuide::markdown( $topic ), $topic );
-        }
+        // The sentence is in kit-rules, and in no kit topic. // carriers adapter: the catalog prints the noun-only form instead (Ruling 7).
+        $this->assertStringContainsString( StyleGuide::appliedSentence(), StyleGuide::markdown( 'kit-rules' ), 'kit-rules' );
+        $this->assertStringContainsString( StyleGuide::appliedNounsSentence(), StyleGuide::markdown( 'style-kits' ), 'style-kits' );
         foreach ( StyleKits::ids() as $id ) {
             $this->assertStringNotContainsString( 'rules (`divi/group`', StyleGuide::markdown( 'style-kit:' . $id ), "$id: the applied sentence is not repeated in a kit topic" );
         }
@@ -738,7 +754,8 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
         $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ), 'no topic name was added' );
         $rules = strlen( StyleGuide::markdown( 'kit-rules' ) );
-        $this->assertLessThanOrEqual( 9000, $rules, 'kit-rules (guide polish replaced the 4,607 + 650 pin; the real bound is 10,000 B)' );
+        // carriers adapter: 9000 -> 9600 (Ruling 8).
+        $this->assertLessThanOrEqual( 9600, $rules, 'kit-rules (guide polish replaced the 4,607 + 650 pin; the real bound is 10,000 B)' );
         $paragraph = $this->rulesParagraph();
         $split     = (int) strpos( $paragraph, "\n\nWidth by hand:" );
         $this->assertGreaterThan( 0, $split, 'the shapes passage follows the paragraph' );
@@ -988,7 +1005,8 @@ class StyleGuideKitRulesTest extends TestCase
         // An icon with only a fill or glyph colour proven takes no corners: the corner claim follows icon-radius.
         $noRadius = StyleGuide::controlsKitSentence( null, $yes, array_merge( $cyes, [ 'icon-radius' => false ] ) );
         $this->assertStringNotContainsString( 'corners', $noRadius );
-        $this->assertSame( 8331, strlen( StyleGuide::markdown( 'controls' ) ), 'the shipped controls topic did not move' );
+        // carriers adapter: 8331 -> 8348 (Ruling 10).
+        $this->assertSame( 8348, strlen( StyleGuide::markdown( 'controls' ) ), 'the shipped controls topic' );
     }
 
     public function testTheCompositionOneSideRuleSectionSaysTheKitDecides(): void
@@ -1314,11 +1332,12 @@ class StyleGuideKitRulesTest extends TestCase
     {
         // Deliberate raise from 7,600 B to 7,900 B for the per-role accordion clauses and the toggle clause; the real bound is 10,000 B.
         $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
-        $this->assertLessThanOrEqual( 9000, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
-        $this->assertSame( 8331, strlen( StyleGuide::markdown( 'controls' ) ) );
+        // carriers adapter: kit-rules 9000 -> 9600 (Ruling 8), controls 8331 -> 8348 (Ruling 10), catalog 8444 -> 8178 (Ruling 7).
+        $this->assertLessThanOrEqual( 9600, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
+        $this->assertSame( 8348, strlen( StyleGuide::markdown( 'controls' ) ) );
         $this->assertSame( 6474, strlen( StyleGuide::markdown( 'forms' ) ) );
         $this->assertSame( 8706, strlen( StyleGuide::markdown( 'composition' ) ) );
-        $this->assertSame( 8444, strlen( StyleGuide::markdown( 'style-kits' ) ) );
+        $this->assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ) );
         $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
         $max = 0;
         foreach ( StyleKits::ids() as $id ) {
@@ -1336,10 +1355,11 @@ class StyleGuideKitRulesTest extends TestCase
         // The default guide does not grow (owner rule): the Structure fix is size-neutral.
         $this->assertSame( 28975, $size, 'the default guide, pinned exactly' );
         $this->assertLessThanOrEqual( 29108, $size, 'Ruling 5 ceiling' );
-        $this->assertLessThanOrEqual( 9000, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules (spec Ruling 5 raised the 7,000 B pin to 7,600 B; the real bound is 10,000 B)' );
-        $this->assertSame( 8331, strlen( StyleGuide::markdown( 'controls' ) ) );
+        // carriers adapter: kit-rules 9000 -> 9600 (Ruling 8), controls 8331 -> 8348 (Ruling 10), catalog 8444 -> 8178 (Ruling 7).
+        $this->assertLessThanOrEqual( 9600, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules (spec Ruling 5 raised the 7,000 B pin to 7,600 B; the real bound is 10,000 B)' );
+        $this->assertSame( 8348, strlen( StyleGuide::markdown( 'controls' ) ) );
         $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
-        $this->assertSame( 8444, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog did not move' );
+        $this->assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog' );
         $max = 0;
         foreach ( StyleKits::ids() as $id ) {
             $max = max( $max, strlen( StyleGuide::markdown( 'style-kit:' . $id ) ) );
@@ -1354,11 +1374,13 @@ class StyleGuideKitRulesTest extends TestCase
     public function testTheBudgetsOfTheGuidePolish(): void
     {
         $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
-        $this->assertLessThanOrEqual( 9000, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules (plan 2026-10-21-guide-polish-rules-chips; the real bound is 10,000 B)' );
+        // carriers adapter: 9000 -> 9600 (Ruling 8).
+        $this->assertLessThanOrEqual( 9600, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules (plan 2026-10-21-guide-polish-rules-chips; the real bound is 10,000 B)' );
         $this->assertLessThanOrEqual( 9500, strlen( StyleGuide::markdown( 'controls' ) ) );
         $this->assertLessThanOrEqual( 10000, strlen( StyleGuide::markdown( 'composition' ) ) );
         $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
-        $this->assertSame( 8444, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog did not move' );
+        // carriers adapter: 8444 -> 8178 (Ruling 7).
+        $this->assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog' );
         $max = 0;
         foreach ( self::KIT_TOPIC_SIZES_BEFORE as $id => $before ) {
             $len = strlen( StyleGuide::markdown( 'style-kit:' . $id ) );
@@ -1643,12 +1665,13 @@ class StyleGuideKitRulesTest extends TestCase
     {
         $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide is exactly as it was' );
         // Deliberate raise of the 7,900 B pin (7,864 B served before round 3): the real bound is 10,000 B.
-        $this->assertLessThanOrEqual( 9000, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
+        // carriers adapter: kit-rules 9000 -> 9600 (Ruling 8), controls 8331 -> 8348 (Ruling 10), catalog 8444 -> 8178 (Ruling 7).
+        $this->assertLessThanOrEqual( 9600, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
         $this->assertGreaterThan( 7864, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'round 3 added its clauses' );
-        $this->assertSame( 8331, strlen( StyleGuide::markdown( 'controls' ) ) );
+        $this->assertSame( 8348, strlen( StyleGuide::markdown( 'controls' ) ) );
         $this->assertSame( 6474, strlen( StyleGuide::markdown( 'forms' ) ) );
         $this->assertSame( 8706, strlen( StyleGuide::markdown( 'composition' ) ) );
-        $this->assertSame( 8444, strlen( StyleGuide::markdown( 'style-kits' ) ) );
+        $this->assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ) );
         $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
         $max = 0;
         foreach ( self::KIT_TOPIC_SIZES_BEFORE as $id => $before ) {
@@ -1661,5 +1684,135 @@ class StyleGuideKitRulesTest extends TestCase
             $this->assertStringNotContainsString( 'aied', StyleGuide::markdown( $topic ), "$topic names no marker token" );
         }
         $this->assertStringNotContainsString( 'aied', StyleGuide::markdown() );
+    }
+
+    /** The `## More carriers` paragraph of kit-rules for a map and a decision table ('' when there is none). */
+    private static function carriersParagraph( ?array $applied = null, ?array $proven = null ): string
+    {
+        return StyleGuide::carrierRules( $applied, $proven );
+    }
+
+    /** KitAdapters::APPLIED without the four carriers of the carriers adapter (the map before it). @return array<string,list<string>> */
+    private static function withoutCarriers(): array
+    {
+        $map = KitAdapters::APPLIED;
+        unset( $map['divi/testimonial'], $map['divi/blurb'], $map['divi/number-counter'] );
+        $map['divi/divider'] = array_values( array_diff( $map['divi/divider'], [ 'rule-accent' ] ) );
+        return $map;
+    }
+
+    public function testTheMoreCarriersParagraphFollowsTheMapAndTheDecisions(): void
+    {
+        $text = StyleGuide::markdown( 'kit-rules' );
+        $para = StyleGuide::carrierRules();
+        $this->assertSame( $para, StyleGuide::carrierRules( KitAdapters::APPLIED, KitAdapters::CARRIER_PROVEN ), 'the default is the shipped map and decisions' );
+        $this->assertStringStartsWith( "\n## More carriers\n\n", $para );
+        $this->assertStringEndsWith( "\n", $para );
+        $this->assertSame( 1, substr_count( $text, '## More carriers' ) );
+        $this->assertStringEndsWith( $para, $text, 'appended after the Rules and chips paragraph' );
+        $this->assertLessThan( strpos( $text, '## More carriers' ), (int) strpos( $text, '## Rules and chips' ) );
+        $this->assertLessThanOrEqual( 560, strlen( $para ), 'Ruling 8: at most 560 B with its heading' );
+        $this->assertStringNotContainsString( 'aied', $para );
+
+        // Nothing without the four carriers, and kit-rules is then exactly the text before the adapter plus nothing.
+        $this->assertSame( '', StyleGuide::carrierRules( self::withoutCarriers() ) );
+        $this->assertStringNotContainsString( '## More carriers', StyleGuide::kitRules( self::withoutCarriers() ) );
+
+        // Each clause appears only while its carrier is in the map (and its base decision is proven).
+        $clauses = [
+            'divi/testimonial'    => [ '`divi/testimonial`', [ 'divi/testimonial' => [ 'card', 'panel' ] ], [ 'testimonial-fill', 'testimonial-frame', 'testimonial-radius', 'testimonial-quote' ] ],
+            'divi/blurb'          => [ '`divi/blurb`', [ 'divi/blurb' => [ 'chip' ] ], [ 'blurb-icon-radius' ] ],
+            'divi/number-counter' => [ '`divi/number-counter`', [ 'divi/number-counter' => [ 'rule', 'rule-strong' ] ], [ 'counter-top' ] ],
+            'rule-accent'         => [ '`rule-accent`', [ 'divi/divider' => [ 'rule', 'rule-strong', 'rule-accent' ] ], [ 'divider-accent-over-preset' ] ],
+        ];
+        foreach ( $clauses as $name => [ $needle, $only, $bases ] ) {
+            $this->assertStringContainsString( $needle, $para, "$name is offered by the shipped map" );
+            $one = self::carriersParagraph( array_merge( self::withoutCarriers(), $only ) );
+            $this->assertStringContainsString( $needle, $one, "$name alone" );
+            foreach ( $clauses as $other => [ $otherNeedle ] ) {
+                if ( $other !== $name ) {
+                    $this->assertStringNotContainsString( $otherNeedle, $one, "$name alone does not name $other" );
+                }
+            }
+            foreach ( $bases as $base ) {
+                $planted = array_merge( KitAdapters::CARRIER_PROVEN, [ $base => false ] );
+                $this->assertStringNotContainsString( $needle, self::carriersParagraph( null, $planted ), "$base unproven: the $name clause is not offered" );
+                $this->assertSame( '', self::carriersParagraph( array_merge( self::withoutCarriers(), $only ), $planted ), "$base unproven and $name alone: no paragraph" );
+            }
+        }
+        $this->assertStringContainsString( '`card` or `panel` on a `divi/testimonial`', self::carriersParagraph( array_merge( self::withoutCarriers(), [ 'divi/testimonial' => [ 'card', 'panel' ] ] ) ) );
+        $this->assertStringContainsString( '`panel` on a `divi/testimonial`', self::carriersParagraph( array_merge( self::withoutCarriers(), [ 'divi/testimonial' => [ 'panel' ] ] ) ) );
+        $this->assertStringNotContainsString( '`card`', self::carriersParagraph( array_merge( self::withoutCarriers(), [ 'divi/testimonial' => [ 'panel' ] ] ) ), 'only the roles in the map' );
+
+        // A fallback is said only while its decision is false; the shipped text claims every proven one.
+        $fallbacks = [
+            'testimonial-padding'      => 'no kit padding',
+            'testimonial-shadow'       => 'no kit shadow',
+            'testimonial-hover-shadow' => 'no kit hover shadow',
+            'testimonial-hover-lift'   => 'no kit lift',
+            'testimonial-hover-frame'  => 'no kit hover frame',
+            'testimonial-underline'    => 'an underline kit frames it at 1px',
+            'blurb-icon-fill'          => 'not on an accent band',
+            'blurb-icon-glyph'         => 'not on an accent band',
+            'counter-top-dashed'       => 'dashed is drawn as solid',
+            'counter-top-dotted'       => 'dotted is drawn as solid',
+            'counter-top-double'       => 'double is drawn as solid',
+            'counter-top-alpha'        => 'quiet takes the strong colour off light and surface',
+            'divider-accent-style'     => '(drawn solid)',
+        ];
+        foreach ( $fallbacks as $key => $phrase ) {
+            $this->assertStringNotContainsString( $phrase, $para, "$key is proven: no fallback" );
+            $this->assertStringContainsString( $phrase, self::carriersParagraph( null, array_merge( KitAdapters::CARRIER_PROVEN, [ $key => false ] ) ), "$key unproven: the fallback is said" );
+        }
+        // An unproven fill or glyph is not claimed: its path is not printed.
+        $this->assertStringNotContainsString( 'imageIcon.decoration.background', self::carriersParagraph( null, array_merge( KitAdapters::CARRIER_PROVEN, [ 'blurb-icon-fill' => false ] ) ) );
+        $this->assertStringNotContainsString( 'imageIcon.advanced.color', self::carriersParagraph( null, array_merge( KitAdapters::CARRIER_PROVEN, [ 'blurb-icon-glyph' => false ] ) ) );
+
+        // Every path printed is a registered shape (generated from the patch, never typed), and is a leaf the adapter writes.
+        $registry = ShapeRegistry::load();
+        $paths    = ShapePaths::fromGuideText( $para );
+        $this->assertSame( [ 'imageIcon.advanced.color.{bp}.value', 'imageIcon.decoration.background.{bp}.value.color', 'imageIcon.decoration.border.{bp}.value.radius' ], $paths );
+        foreach ( $paths as $path ) {
+            $this->assertTrue( $registry->covers( $path ), "$path is in the shape registry" );
+        }
+        $kit    = StyleKits::get( StyleKits::ids()[0] );
+        $this->assertIsArray( $kit );
+        $leaves = [];
+        $walk   = static function ( array $node, string $prefix ) use ( &$walk, &$leaves ): void {
+            foreach ( $node as $k => $v ) {
+                $p = '' === $prefix ? (string) $k : $prefix . '.' . $k;
+                is_array( $v ) && [] !== $v ? $walk( $v, $p ) : $leaves[] = $p;
+            }
+        };
+        $walk( (array) KitAdapters::patch( 'divi/blurb', 'chip', 'light', $kit ), '' );
+        foreach ( $leaves as $leaf ) {
+            $this->assertStringContainsString( '`' . $leaf . '`', $para, "the blurb leaf $leaf is printed" );
+        }
+    }
+
+    public function testTheCatalogPrintsTheNounOnlySentence(): void
+    {
+        $catalog = StyleGuide::markdown( 'style-kits' );
+        $this->assertSame( 1, substr_count( $catalog, StyleGuide::appliedNounsSentence() ), 'Ruling 7: the noun-only sentence, once' );
+        $this->assertStringNotContainsString( StyleGuide::appliedSentence(), $catalog, 'the block-and-role sentence is in kit-rules only' );
+        $this->assertStringContainsString( StyleGuide::notAppliedSentence(), $catalog );
+        $this->assertStringContainsString( StyleGuide::appliedSentence(), StyleGuide::markdown( 'kit-rules' ), 'kit-rules keeps the full sentence' );
+        $this->assertSame( 'Kit-driven today: buttons, cards, accordion and toggle items, forms, rules and chips (blocks and marker roles: topic=kit-rules).', StyleGuide::appliedNounsSentence() );
+        $this->assertSame( StyleGuide::appliedNounsSentence( KitAdapters::APPLIED ), StyleGuide::appliedNounsSentence() );
+        // The same nouns as the full sentence, from the same map.
+        foreach ( [ [ 'divi/button' => [ 'control' ] ], [ 'divi/group' => [ 'card' ], 'divi/icon' => [ 'chip' ] ], [ 'divi/x' => [ 'odd-role' ] ] ] as $map ) {
+            $nouns = StyleGuide::appliedNounsSentence( $map );
+            preg_match_all( '/(?:^Kit-driven today: |, | and )([a-z`][a-z` -]*?) \(/', StyleGuide::appliedSentence( $map ), $m );
+            $this->assertSame( 'Kit-driven today: ' . ( count( $m[1] ) > 1 ? implode( ', ', array_slice( $m[1], 0, -1 ) ) . ' and ' . end( $m[1] ) : $m[1][0] ) . ' (blocks and marker roles: topic=kit-rules).', $nouns );
+        }
+        $this->assertSame( 'Kit-driven today: `odd-role` (blocks and marker roles: topic=kit-rules).', StyleGuide::appliedNounsSentence( [ 'divi/x' => [ 'odd-role' ] ] ), 'a role without a noun is named by its id' );
+    }
+
+    public function testTheNotAppliedSentenceAgreesInNumber(): void
+    {
+        $this->assertSame( "Every other module keeps the recipe's own styling.", StyleGuide::notAppliedSentence(), 'Ruling 9: one noun left, the verb is singular' );
+        $this->assertSame( "Blurbs, testimonials and every other module keep the recipe's own styling.", StyleGuide::notAppliedSentence( self::withoutCarriers() ) );
+        $this->assertSame( "Blurbs and every other module keep the recipe's own styling.", StyleGuide::notAppliedSentence( array_merge( self::withoutCarriers(), [ 'divi/testimonial' => [ 'card', 'panel' ] ] ) ) );
+        $this->assertSame( "Every other module keeps the recipe's own styling.", StyleGuide::notAppliedSentence( KitAdapters::APPLIED, [ 'divi/image' ] ) );
     }
 }

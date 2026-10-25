@@ -137,6 +137,9 @@ class StyleGuideKitTopicsTest extends TestCase
                 continue;
             }
             $this->assertSame( 1, preg_match( '/Kit-driven today: [^\n]*?\.(?= |\n)/', $text, $m ), $topic . ' has the generated sentence' );
+            // carriers adapter: the catalog's sentence is the noun-only form (Ruling 7); the blocks and roles are judged in the full sentence of kit-rules.
+            $this->assertSame( StyleGuide::appliedNounsSentence(), $m[0], $topic . ': the noun-only sentence' );
+            $this->assertSame( 1, preg_match( '/Kit-driven today: [^\n]*?\.(?= |\n)/', StyleGuide::markdown( 'kit-rules' ), $m ), 'kit-rules has the full generated sentence' );
             preg_match_all( '/`(divi\/[a-z0-9-]+)`/', $m[0], $b );
             $this->assertEqualsCanonicalizing( $blocks, array_values( array_unique( $b[1] ) ), $topic . ': the blocks named are the blocks in APPLIED' );
             foreach ( $roles as $role ) {
@@ -161,8 +164,12 @@ class StyleGuideKitTopicsTest extends TestCase
     public function testTheCatalogSaysWhatIsAndIsNotKitDrivenAndHowToBuildOne(): void
     {
         $catalog = StyleGuide::markdown( 'style-kits' );
-        foreach ( [ 'forms', 'blurbs', 'testimonials' ] as $word ) {
+        // carriers adapter: 'blurbs' and 'testimonials' left the not-applied sentence (a blurb icon and a testimonial are carriers now); forms stay named (kit-driven).
+        foreach ( [ 'forms' ] as $word ) {
             $this->assertStringContainsStringIgnoringCase( $word, $catalog );
+        }
+        foreach ( [ 'blurbs', 'testimonials' ] as $word ) {
+            $this->assertStringNotContainsStringIgnoringCase( $word, $catalog, "$word are not named as keeping the recipe's styling" );
         }
         // Image radius left the not-applied sentence in the image radius pass: a kit's media radius rounds photos now.
         $this->assertStringNotContainsStringIgnoringCase( 'image radius', $catalog );
@@ -170,7 +177,9 @@ class StyleGuideKitTopicsTest extends TestCase
         $this->assertStringContainsString( 'accordion and toggle items', $catalog );
         $this->assertStringNotContainsStringIgnoringCase( 'accordions', $catalog );
         $this->assertStringContainsString( 'card', $catalog );
-        $this->assertStringContainsString( 'panel', $catalog );
+        // carriers adapter: the role `panel` is named in the full sentence of kit-rules, which the catalog's noun-only sentence points to (Ruling 7).
+        $this->assertStringContainsString( 'cards', $catalog );
+        $this->assertStringContainsString( '`panel`', StyleGuide::markdown( 'kit-rules' ) );
         $this->assertStringContainsString( 'copy the block from the kit\'s topic', $catalog );
         $this->assertStringNotContainsString( 'will follow later', $catalog );
     }
@@ -586,7 +595,8 @@ class StyleGuideKitTopicsTest extends TestCase
         // Re-pinned deliberately (image radius pass): -14 B, ", image radius" left the not-applied sentence.
         // Rules and chips adapter Step 0 (plan 2026-10-21): fixed prose reworded to reclaim headroom for the new applied-sentence tail: 8,439 -> 8,325 B.
         // Rules and chips adapter T3: the applied sentence gained "rules (...) and chips (...)": +119 B, 8,325 -> 8,444 B.
-        $this->assertSame( 8444, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog topic (8,464 before kit-rules, 8,423 before the form adapter, 8,453 after it, 8,439 at image radius, 8,325 after the Step 0 rewording, 8,444 with the rules and chips tail)' );
+        // carriers adapter: 8444 -> 8178 (Ruling 7: the catalog prints the noun-only applied sentence, -266 B).
+        $this->assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog topic (8,464 before kit-rules, 8,423 before the form adapter, 8,453 after it, 8,439 at image radius, 8,325 after the Step 0 rewording, 8,444 with the rules and chips tail, 8,178 with the noun-only sentence)' );
     }
 
     /** @return list<array{0:string,1:array<string,mixed>}> block comment text and its decoded attributes, in document order */

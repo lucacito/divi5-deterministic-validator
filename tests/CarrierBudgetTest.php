@@ -17,8 +17,8 @@ foreach ( [ 'SectionRecipes', 'ImagePack', 'ImageTokens', 'DesignLanguages', 'St
  * Size budgets of the carriers adapter (plan docs/superpowers/plans/2026-10-24-carriers-adapter.md, Task 0).
  *
  * Measured at feat/carriers-adapter f1a370a; every number equals the plan's table. Everything the carriers adapter does not
- * own must not move: the default guide, the topic description and every style-kit:<id> topic. Task 3 tightens kit-rules,
- * the catalog and controls to exact equalities once the generated wording exists; until then they only have an upper bound.
+ * own must not move: the default guide, the topic description and every style-kit:<id> topic. Task 3 tightened kit-rules,
+ * the catalog and controls to exact equalities (testTheCarrierBudgets).
  */
 final class CarrierBudgetTest extends TestCase
 {
@@ -107,6 +107,56 @@ final class CarrierBudgetTest extends TestCase
             $this->assertLessThanOrEqual( 9950, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the 50-kit catalog' );
         } finally {
             StyleKits::clearCache();
+        }
+    }
+
+    /**
+     * Task 3: the exact sizes of the three topics the carriers adapter changes, each derived from what it adds. kit-rules =
+     * the 8,997 B at the base + the growth of the applied sentence (370 B at the base) + the change of the not-applied sentence
+     * (74 B at the base, Ruling 9 and two nouns fewer) + the More carriers paragraph; the catalog prints the noun-only sentence
+     * (Ruling 7); controls grows only by its generated sentence (Ruling 10).
+     */
+    public function testTheCarrierBudgets(): void
+    {
+        $oldApplied = [
+            'divi/button'       => [ 'control', 'control-secondary' ],
+            'divi/group'        => [ 'card', 'panel', 'rule', 'rule-strong', 'chip' ],
+            'divi/column'       => [ 'card', 'panel', 'rule', 'rule-strong' ],
+            'divi/accordion'    => [ 'item', 'item-rule' ],
+            'divi/toggle'       => [ 'item', 'item-rule' ],
+            'divi/contact-form' => [ 'form' ],
+            'divi/divider'      => [ 'rule', 'rule-strong' ],
+            'divi/icon'         => [ 'chip' ],
+        ];
+        $this->assertSame( 370, strlen( StyleGuide::appliedSentence( $oldApplied ) ), 'the applied sentence at the base' );
+        $this->assertSame( 74, strlen( StyleGuide::notAppliedSentence( $oldApplied ) ), 'the not-applied sentence at the base' );
+        $this->assertSame( '', StyleGuide::carrierRules( $oldApplied ), 'the base map has no More carriers paragraph' );
+        $this->assertSame( 8997, strlen( StyleGuide::kitRules( $oldApplied ) ), 'kit-rules at the base, regenerated from the base map' );
+
+        $applied    = strlen( StyleGuide::appliedSentence() );
+        $notApplied = strlen( StyleGuide::notAppliedSentence() );
+        $carriers   = strlen( StyleGuide::carrierRules() );
+        $this->assertSame( 442, $applied );
+        $this->assertSame( 50, $notApplied, '"Every other module keeps the recipe\'s own styling."' );
+        $this->assertSame( 553, $carriers );
+        $this->assertLessThanOrEqual( 560, $carriers, 'Ruling 8: the More carriers paragraph is at most 560 B with its heading' );
+        $kitRules = strlen( StyleGuide::markdown( 'kit-rules' ) );
+        $this->assertSame( 8997 + ( $applied - 370 ) + ( $notApplied - 74 ) + $carriers, $kitRules );
+        $this->assertSame( 9598, $kitRules );
+        $this->assertLessThanOrEqual( 9600, $kitRules, 'Ruling 8: pin 9,000 -> 9,600' );
+
+        $this->assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ), 'Ruling 7: the catalog with the noun-only sentence (8,444 at the base)' );
+        $this->assertSame( 8444 - 370 - 74 + strlen( StyleGuide::appliedNounsSentence() ) + $notApplied, strlen( StyleGuide::markdown( 'style-kits' ) ) );
+
+        $controlsDelta = strlen( StyleGuide::controlsKitSentence() ) - strlen( StyleGuide::controlsKitSentence( $oldApplied ) );
+        $this->assertSame( strlen( ' or `rule-accent`' ), $controlsDelta, 'Ruling 10: the divider marker list gains `rule-accent`, nothing else' );
+        $this->assertSame( 8331 + $controlsDelta, strlen( StyleGuide::markdown( 'controls' ) ) );
+        $this->assertSame( 8348, strlen( StyleGuide::markdown( 'controls' ) ) );
+
+        $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
+        $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
+        foreach ( self::KIT_TOPIC_SIZES as $id => $size ) {
+            $this->assertSame( $size, strlen( StyleGuide::markdown( 'style-kit:' . $id ) ), "$id: a kit topic does not move" );
         }
     }
 

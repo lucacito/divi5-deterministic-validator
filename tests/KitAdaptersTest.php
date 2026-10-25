@@ -687,6 +687,9 @@ class KitAdaptersTest extends TestCase
         'divi/group'   => [ 'rule' => [ 'light', 'surface', 'accent', 'dark', 'panel' ], 'rule-strong' => [ 'light', 'surface', 'accent', 'dark', 'panel' ], 'chip' => [ 'light', 'surface', 'accent', 'dark' ] ],
         'divi/column'  => [ 'rule' => [ 'light', 'surface', 'accent', 'dark', 'panel' ], 'rule-strong' => [ 'light', 'surface', 'accent', 'dark', 'panel' ] ],
         'divi/icon'    => [ 'chip' => [ 'light', 'surface', 'accent', 'dark' ] ],
+        // carriers adapter: the two carriers that take a rule or chip role are walked too (the guard covers them; a stronger walk).
+        'divi/number-counter' => [ 'rule' => [ 'light', 'surface', 'accent', 'dark', 'panel' ], 'rule-strong' => [ 'light', 'surface', 'accent', 'dark', 'panel' ] ],
+        'divi/blurb'          => [ 'chip' => [ 'light', 'surface', 'accent', 'dark' ] ],
     ];
 
     public function testTheDeadOnModuleGuardCoversRulesAndChips(): void
@@ -724,7 +727,8 @@ class KitAdaptersTest extends TestCase
                 }
             }
         }
-        $this->assertSame( 40 * ( 3 * 2 * 5 + 2 * 4 ), $walked, 'rules: 3 carriers x 2 roles x 5 bands; chips: 2 carriers x 4 bands, per kit' );
+        // carriers adapter: 3 -> 4 rule carriers (+ the counter), 2 -> 3 chip carriers (+ the blurb).
+        $this->assertSame( 40 * ( 4 * 2 * 5 + 3 * 4 ), $walked, 'rules: 4 carriers x 2 roles x 5 bands; chips: 3 carriers x 4 bands, per kit' );
 
         // 2. Planted dead lines make exactly their own carrier's resolved patch fail. A breakpoint is `{bp}` in a path (a literal
         //    `desktop` in a line would never match, which the last assertion pins).

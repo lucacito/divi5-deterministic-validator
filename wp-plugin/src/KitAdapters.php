@@ -19,8 +19,9 @@ require_once __DIR__ . '/StyleKits.php';
  * on a light or surface band only), and the items, `divi/accordion` (one marker styles every item) and `divi/toggle`, in two
  * roles (`item` on four bands, `item-rule` on `light` and `surface` only), and the contact form, `divi/contact-form` in one
  * role (`form`) on four bands, and the thin things: rules (`divi/divider`, `divi/group`, `divi/column` in two roles, `rule` and
- * `rule-strong`, on five bands) and chips (a tag on `divi/group`, an icon chip on `divi/icon`, one role `chip`, on four bands);
- * see the card, ground, item, form, rule and chip tables at the end.
+ * `rule-strong`, on five bands) and chips (a tag on `divi/group`, an icon chip on `divi/icon`, one role `chip`, on four bands),
+ * and the carriers: a testimonial card or panel, a blurb icon chip, a number counter rule and the accent mark `rule-accent` on a
+ * divider (light and surface only); see the card, ground, item, form, rule, chip and carrier tables at the end.
  *
  * The button patch writes only `button.decoration.{background,border,font}` and `module.decoration.spacing` at
  * `desktop`, plus `module.decoration.boxShadow` when the kit has a shadow and `module.decoration.transform` when its hover
@@ -216,8 +217,9 @@ require_once __DIR__ . '/StyleKits.php';
  * - Proofs: KitRuleAdapterTest (every leaf a probed PASS path ON its carrier, the width table, the colour table, the planted
  *   unproven branches, the real-layout gate), the contrast proof over every kit x language x band x role (4,000 cells, zero
  *   exceptions, QUIET_RULE_FLOOR 1.1 measured from the shipped library: fixtures/shapes/rule-floor.md), the golden
- *   tests/golden/kit-rule-patches.json and the 6 distinct rule looks pinned in StyleKitsTest (no pair list). The accent
- *   dividers, step badges, timeline dots, the [Most popular] badge and the counters are shape decisions and stay literal.
+ *   tests/golden/kit-rule-patches.json and the 6 distinct rule looks pinned in StyleKitsTest (no pair list). Step badges,
+ *   timeline dots and the [Most popular] badge are shape decisions and stay literal; the accent dividers and the counters'
+ *   top rules are carriers since the carriers adapter (see the carrier table).
  *
  * Chip table (role `chip` on `divi/group` as a tag and on `divi/icon` as an icon chip; probe fixtures/shapes/kit-chip-vocabulary.md:
  * 20 candidates, every decision PASSED ON its carrier). Bands (CHIP_BANDS): `light` | `surface` | `accent` | `dark`; no `panel`, no
@@ -234,6 +236,28 @@ require_once __DIR__ . '/StyleKits.php';
  * - Not probed: any hover on a chip, a chip fill on a tag, the chip's own padding.
  * - Proofs: KitChipAdapterTest (1,600 contrast cells, zero exceptions), tests/golden/kit-chip-patches.json, the shrink-only
  *   fixtures/shapes/chip-near-duplicates.txt (46 of 780 kit pairs).
+ *
+ * Carrier table (spec 2026-10-24-carriers-adapter-design.md, probe fixtures/shapes/kit-carrier-vocabulary.md: 48 candidates ON
+ * the four carriers, every one of the twenty decisions PASSED; CARRIER_PROVEN is that table). The existing roles reach four
+ * more carriers and one role is new:
+ * - `divi/testimonial`, roles `card` and `panel`, bands light|surface|accent|dark: card()'s patch, byte-identical to the group
+ *   card while every `testimonial-*` decision is true. Never a ground (GROUND_BLOCKS, in KitResolver too). Never `overflow`:
+ *   the recipe keeps `overflow: visible`, so the hanging quote disc (`::before`, Divi's own colours) is not clipped by the
+ *   radius (kx-testimonial-quote). Fallbacks: a false base (fill, frame, radius, quote) refuses the carrier; underline false
+ *   -> the full frame at 1px; padding, shadow, hover shadow, lift or hover frame false -> that key is not written.
+ * - `divi/blurb`, role `chip`, bands light|surface|accent|dark: the icon chip at `imageIcon.*`: radius
+ *   `{{aied:kit:radius-control}}` at `imageIcon.decoration.border.desktop.value.radius` (printed on the element that paints the
+ *   fill, kx-blurb-icon-radius-on-fill), fill `accent` (`surface` on an accent band) at
+ *   `imageIcon.decoration.background.desktop.value.color`, glyph `accent-text` (`text` on accent) at
+ *   `imageIcon.advanced.color.desktop.value`. The recipe keeps padding and glyph size (Ruling 5). Radius false refuses the
+ *   carrier; fill or glyph false writes nothing for it and refuses the accent band.
+ * - `divi/number-counter`, roles `rule` and `rule-strong`, the five rule bands: the group top edge (rulePatch(), prefix
+ *   `counter-top`), byte-identical to the group rule while every `counter-top*` decision is true.
+ * - `rule-accent` (new) on `divi/divider` only, bands ACCENT_RULE_BANDS (light, surface): the line in ACCENT_RULE_COLOUR at the
+ *   strong width (ruleWidth()) in the kit's style (solid where `divider-<style>` or `divider-accent-style` is false); nothing
+ *   when `divider-accent-over-preset` is false. A decorative brand mark, judged against RuleChipAudit::ACCENT_RULE_FLOOR (2.3).
+ * - Proofs: KitCarrierAdapterTest (every leaf a probed PASS path ON its carrier, the twin identities, the planted fallbacks,
+ *   the real-layout gate) and the carrier contrast proofs and golden (tests/golden/kit-carrier-patches.json).
  *
  * Pure and deterministic: no site access.
  */
@@ -257,9 +281,57 @@ final class KitAdapters
         'divi/accordion' => [ 'item', 'item-rule' ],
         'divi/toggle'    => [ 'item', 'item-rule' ],
         'divi/contact-form' => [ 'form' ],
-        'divi/divider'   => [ 'rule', 'rule-strong' ],
+        'divi/divider'   => [ 'rule', 'rule-strong', 'rule-accent' ],
         'divi/icon'      => [ 'chip' ],
+        'divi/testimonial'    => [ 'card', 'panel' ],
+        'divi/blurb'          => [ 'chip' ],
+        'divi/number-counter' => [ 'rule', 'rule-strong' ],
     ];
+
+    /**
+     * The twenty carrier decisions => whether the effect probe proved them ON their carrier (the "Adapter decisions" table of
+     * fixtures/shapes/kit-carrier-vocabulary.md, in its order; a test pins this constant to that table). `testimonial-*` on
+     * `divi/testimonial` (the card patch), `blurb-icon-*` on a `divi/blurb` icon (the icon chip), `counter-top*` on
+     * `divi/number-counter` (the top-edge rule; read by rulePatch() through the `counter-top` prefix) and `divider-accent-*` on
+     * `divi/divider` over the library's site preset (`rule-accent`). The base decisions (testimonial-fill, -frame, -radius,
+     * -quote, blurb-icon-radius, counter-top, divider-accent-over-preset) refuse the carrier when false; every other decision
+     * writes nothing (or its stated fallback) when false. The generated guide wording follows the same constant.
+     *
+     * @var array<string,bool>
+     */
+    public const CARRIER_PROVEN = [
+        'testimonial-fill'           => true,
+        'testimonial-frame'          => true,
+        'testimonial-underline'      => true,
+        'testimonial-radius'         => true,
+        'testimonial-quote'          => true,
+        'testimonial-padding'        => true,
+        'testimonial-shadow'         => true,
+        'testimonial-hover-lift'     => true,
+        'testimonial-hover-frame'    => true,
+        'testimonial-hover-shadow'   => true,
+        'blurb-icon-radius'          => true,
+        'blurb-icon-fill'            => true,
+        'blurb-icon-glyph'           => true,
+        'counter-top'                => true,
+        'counter-top-dashed'         => true,
+        'counter-top-dotted'         => true,
+        'counter-top-double'         => true,
+        'counter-top-alpha'          => true,
+        'divider-accent-over-preset' => true,
+        'divider-accent-style'       => true,
+    ];
+
+    /**
+     * `rule-accent` (a decorative brand mark on `divi/divider`, carriers spec Ruling 1): the colour role it is drawn in and the
+     * bands it may sit on. The accent is at least RuleChipAudit::ACCENT_RULE_FLOOR (2.3, the shipped library's minimum) on a
+     * light or surface band in every language and below it on accent, dark and panel, so only these two.
+     */
+    public const ACCENT_RULE_COLOUR = 'accent';
+    public const ACCENT_RULE_BANDS  = [ 'light', 'surface' ];
+
+    /** The blocks a card ground (`inverted`, `accent`) may sit on: a testimonial takes the card roles but never a ground. */
+    public const GROUND_BLOCKS = [ 'divi/group', 'divi/column' ];
 
     /**
      * The blocks whose corners take a kit's MEDIA radius through the whole-value token `{{aied:kit:radius-media}}`
@@ -351,7 +423,10 @@ final class KitAdapters
     public const CHIP_BANDS = [ 'light', 'surface', 'accent', 'dark' ];
 
     /** The rule carriers => the prefix of their RULE_PROVEN keys. */
-    private const RULE_CARRIERS = [ 'divi/divider' => 'divider', 'divi/group' => 'group-top', 'divi/column' => 'column-top' ];
+    private const RULE_CARRIERS = [ 'divi/divider' => 'divider', 'divi/group' => 'group-top', 'divi/column' => 'column-top', 'divi/number-counter' => 'counter-top' ];
+
+    /** The testimonial's base decisions (CARRIER_PROVEN): when any is false the carrier is refused (carriers plan, controller ruling 12). */
+    private const TESTIMONIAL_BASE = [ 'testimonial-fill', 'testimonial-frame', 'testimonial-radius', 'testimonial-quote' ];
 
     /** The bands a button may sit on (`panel`: inside an inverted, `text`-filled panel). */
     private const SURFACES = [ 'light', 'accent', 'dark', 'panel' ];
@@ -402,7 +477,8 @@ final class KitAdapters
     /**
      * The attribute subtree to merge into $blockName for a marker of $role on surface $on (and, for a card role, the
      * optional $ground), or null when this adapter does not know the combination (any other block, role, surface or
-     * ground, a ground on a button, an item or an accent or dark band, a rule row on an accent or dark band, or an invalid kit). A null $ground is the plain card.
+     * ground, a ground on a button, an item, a testimonial or an accent or dark band, a rule row on an accent or dark band, a
+     * `rule-accent` off a light or surface band, or an invalid kit). A null $ground is the plain card.
      *
      * @param array<string,mixed> $kit
      * @return array<string,mixed>|null
@@ -412,12 +488,14 @@ final class KitAdapters
         if ( ! in_array( $role, self::APPLIED[ $blockName ] ?? [], true ) ) {
             return null;
         }
-        if ( 'rule' === $role || 'rule-strong' === $role || 'chip' === $role ) {
-            // The thin things: a rule (quiet or strong) or a chip. No ground; an empty answer means the decision is not proven.
-            if ( null !== $ground || ! in_array( $on, 'chip' === $role ? self::CHIP_BANDS : self::RULE_BANDS, true ) || [] !== StyleKits::problems( $kit ) ) {
+        if ( 'rule' === $role || 'rule-strong' === $role || 'rule-accent' === $role || 'chip' === $role ) {
+            // The thin things: a rule (quiet, strong or the accent mark) or a chip. No ground; an empty answer means the decision
+            // is not proven. The rule decisions of the counter and the accent mark live in CARRIER_PROVEN.
+            $bands = 'chip' === $role ? self::CHIP_BANDS : ( 'rule-accent' === $role ? self::ACCENT_RULE_BANDS : self::RULE_BANDS );
+            if ( null !== $ground || ! in_array( $on, $bands, true ) || [] !== StyleKits::problems( $kit ) ) {
                 return null;
             }
-            $thin = 'chip' === $role ? self::chipPatch( $blockName, $on, $kit ) : self::rulePatch( $blockName, $role, $on, $kit );
+            $thin = 'chip' === $role ? self::chipPatch( $blockName, $on, $kit ) : self::rulePatch( $blockName, $role, $on, $kit, self::RULE_PROVEN + self::CARRIER_PROVEN );
             return [] === $thin ? null : $thin;
         }
         $card = in_array( $role, self::CARD_ROLES, true );
@@ -426,7 +504,7 @@ final class KitAdapters
         if ( ! in_array( $on, $form ? self::FORM_BANDS : ( $item ? self::ITEM_BANDS[ $role ] : ( $card ? self::CARD_SURFACES : self::SURFACES ) ), true ) ) {
             return null;
         }
-        if ( null !== $ground && ( ! $card || ! isset( self::GROUNDS[ $ground ] ) || ! in_array( $on, self::GROUND_BANDS, true ) ) ) {
+        if ( null !== $ground && ( ! $card || ! in_array( $blockName, self::GROUND_BLOCKS, true ) || ! isset( self::GROUNDS[ $ground ] ) || ! in_array( $on, self::GROUND_BANDS, true ) ) ) {
             return null;
         }
         if ( [] !== StyleKits::problems( $kit ) ) {
@@ -438,7 +516,11 @@ final class KitAdapters
         if ( $item ) {
             return self::item( $blockName, $role, $on, $kit );
         }
-        return $card ? self::card( $role, $on, $kit, $ground ) : self::button( $role, $on, $kit );
+        if ( $card ) {
+            $patch = self::card( $role, $on, $kit, $ground, $blockName );
+            return [] === $patch ? null : $patch;
+        }
+        return self::button( $role, $on, $kit );
     }
 
     /**
@@ -459,9 +541,11 @@ final class KitAdapters
     }
 
     /**
-     * The rule patch (roles `rule` and `rule-strong`, on `divi/divider`, `divi/group`, `divi/column`): see the class docblock's
-     * rule table. [] when the carrier's base decision is not proven (patch() then answers null). Public only so a test can
-     * prove each conditional decision's branch with a planted $proven map; callers go through patch().
+     * The rule patch (roles `rule` and `rule-strong`, on `divi/divider`, `divi/group`, `divi/column`, `divi/number-counter`, and
+     * `rule-accent` on `divi/divider` only): see the class docblock's rule and carrier tables. [] when the carrier's base
+     * decision is not proven (patch() then answers null). Public only so a test can prove each conditional decision's branch
+     * with a planted $proven map; callers go through patch(), which passes RULE_PROVEN + CARRIER_PROVEN (the counter's and the
+     * accent mark's decisions are carrier decisions).
      *
      * @param array<string,mixed> $kit    a valid kit
      * @param array<string,bool>  $proven decision => proven on its carrier (defaults to RULE_PROVEN)
@@ -471,16 +555,22 @@ final class KitAdapters
     {
         $prefix = self::RULE_CARRIERS[ $blockName ] ?? null;
         $is     = static fn ( string $decision ): bool => true === ( $proven[ $decision ] ?? false );
-        if ( null === $prefix || ! isset( self::RULE_COLOUR[ $role ][ $on ] ) || ! $is( 'divider' === $prefix ? 'divider-line' : $prefix ) ) {
+        $accent = 'rule-accent' === $role;
+        if ( null === $prefix || ! $is( 'divider' === $prefix ? 'divider-line' : $prefix ) ) {
+            return [];
+        }
+        if ( $accent ? ( 'divider' !== $prefix || ! in_array( $on, self::ACCENT_RULE_BANDS, true ) || ! $is( 'divider-accent-over-preset' ) ) : ! isset( self::RULE_COLOUR[ $role ][ $on ] ) ) {
+            // The accent mark: a divider only, on a light or surface band, over the library's preset only where proven.
             return [];
         }
 
         $border = (array) $kit['border'];
         $style  = (string) $border['style'];
-        if ( 'solid' !== $style && ! $is( $prefix . '-' . $style ) ) {
+        if ( 'solid' !== $style && ( ! $is( $prefix . '-' . $style ) || ( $accent && ! $is( 'divider-accent-style' ) ) ) ) {
             $style = 'solid';
         }
-        $colourRole = self::RULE_COLOUR[ $role ][ $on ];
+        // The accent mark is drawn in the accent colour at the strong width (ruleWidth()'s non-`rule` branch).
+        $colourRole = $accent ? self::ACCENT_RULE_COLOUR : self::RULE_COLOUR[ $role ][ $on ];
         if ( 'rule' === $role && str_contains( $colourRole, ':' ) && ! $is( $prefix . '-alpha' ) ) {
             // The alpha form is not proven on this carrier: the quiet rule takes the strong colour.
             $colourRole = self::RULE_COLOUR['rule-strong'][ $on ];
@@ -493,7 +583,8 @@ final class KitAdapters
             return [ 'divider' => [ 'advanced' => [ 'line' => [ 'desktop' => [ 'value' => [ 'color' => $colour, 'weight' => $width, 'style' => $style ] ] ] ] ] ];
         }
 
-        // The top edge: every side at 0px, then the top at the rule width, all in one style and colour (the library form).
+        // The top edge (a group, a column or a number counter): every side at 0px, then the top at the rule width, all in one
+        // style and colour (the library form).
         return [ 'module' => [ 'decoration' => [ 'border' => [ 'desktop' => [ 'value' => [ 'styles' => [
             'all' => [ 'width' => '0px', 'style' => $style, 'color' => $colour ],
             'top' => [ 'width' => $width, 'style' => $style, 'color' => $colour ],
@@ -508,13 +599,33 @@ final class KitAdapters
      * @param array<string,mixed> $kit    a valid kit
      * @param array<string,bool>  $proven decision => proven on its carrier (defaults to CHIP_PROVEN)
      * @param array<string,bool>  $ruleProven the rule decisions the tag reuses (`group-top-alpha`: the 40% frame colour on a group); defaults to RULE_PROVEN
+     * @param array<string,bool>  $carrierProven the blurb icon decisions (`blurb-icon-*`); defaults to CARRIER_PROVEN
      * @return array<string,mixed>
      */
-    public static function chipPatch( string $blockName, string $on, array $kit, array $proven = self::CHIP_PROVEN, array $ruleProven = self::RULE_PROVEN ): array
+    public static function chipPatch( string $blockName, string $on, array $kit, array $proven = self::CHIP_PROVEN, array $ruleProven = self::RULE_PROVEN, array $carrierProven = self::CARRIER_PROVEN ): array
     {
         $is = static fn ( string $decision ): bool => true === ( $proven[ $decision ] ?? false );
         if ( ! in_array( $on, self::CHIP_BANDS, true ) ) {
             return [];
+        }
+
+        if ( 'divi/blurb' === $blockName ) {
+            // The icon chip at the blurb's own `imageIcon.*` paths (probe kx-blurb-icon-*): the icon chip's colours, the control
+            // radius on the element that paints the fill (kx-blurb-icon-radius-on-fill); the recipe keeps padding and glyph size.
+            $c = static fn ( string $decision ): bool => true === ( $carrierProven[ $decision ] ?? false );
+            if ( ! $c( 'blurb-icon-radius' ) || ( 'accent' === $on && ( ! $c( 'blurb-icon-fill' ) || ! $c( 'blurb-icon-glyph' ) ) ) ) {
+                // The radius is the carrier's base; on an accent band the chip needs both its own fill and glyph colour.
+                return [];
+            }
+            $decoration = [ 'border' => [ 'desktop' => [ 'value' => [ 'radius' => '{{aied:kit:radius-control}}' ] ] ] ];
+            if ( $c( 'blurb-icon-fill' ) ) {
+                $decoration['background'] = [ 'desktop' => [ 'value' => [ 'color' => self::colour( 'accent' === $on ? 'surface' : 'accent' ) ] ] ];
+            }
+            $icon = [ 'decoration' => $decoration ];
+            if ( $c( 'blurb-icon-glyph' ) ) {
+                $icon['advanced'] = [ 'color' => [ 'desktop' => [ 'value' => self::colour( 'accent' === $on ? 'text' : 'accent-text' ) ] ] ];
+            }
+            return [ 'imageIcon' => $icon ];
         }
 
         if ( 'divi/group' === $blockName ) {
@@ -571,25 +682,45 @@ final class KitAdapters
     }
 
     /**
-     * The card patch (roles `card` and `panel`, on `divi/group` and `divi/column`): only `module.decoration` at desktop.
-     * See the class docblock's card table and ground table ($ground null = the plain card).
+     * The card patch (roles `card` and `panel`, on `divi/group`, `divi/column` and `divi/testimonial`): only `module.decoration`
+     * at desktop. See the class docblock's card, ground and carrier tables ($ground null = the plain card). On a testimonial
+     * every key follows its CARRIER_PROVEN decision ([] when a base decision is false or a ground is asked for); a group or
+     * column patch never reads $carrierProven. Public only so a test can plant a $carrierProven map; callers go through patch().
      *
      * @param array<string,mixed> $kit a valid kit
+     * @param array<string,bool>  $carrierProven the `testimonial-*` decisions (defaults to CARRIER_PROVEN)
      * @return array<string,mixed>
      */
-    private static function card( string $role, string $on, array $kit, ?string $ground = null ): array
+    public static function card( string $role, string $on, array $kit, ?string $ground = null, string $blockName = 'divi/group', array $carrierProven = self::CARRIER_PROVEN ): array
     {
+        $testimonial = 'divi/testimonial' === $blockName;
+        // On a group or column every decision is the card probe's (all PASS); on a testimonial each is its own.
+        $t = static fn ( string $decision ): bool => ! $testimonial || true === ( $carrierProven[ 'testimonial-' . $decision ] ?? false );
+        if ( $testimonial ) {
+            if ( null !== $ground ) {
+                return [];
+            }
+            foreach ( self::TESTIMONIAL_BASE as $decision ) {
+                if ( true !== ( $carrierProven[ $decision ] ?? false ) ) {
+                    return [];
+                }
+            }
+        }
+
         $border = (array) $kit['border'];
         $fill   = null === $ground ? ( 'surface' === $on ? 'bg' : 'surface' ) : self::GROUNDS[ $ground ];
         // On a ground the frame is the fill colour (the shape comes from the fill; the frame keeps the box's size).
         $frame  = null !== $ground ? $fill : self::cardFrameRole( $border );
         $bottom = 'bottom' === ( $border['sides'] ?? 'all' );
+        // An underline kit's card takes the underline form; on a testimonial whose underline is not proven, the full frame at
+        // 1px (the form adapter's field fallback).
+        $underline = $bottom && $t( 'underline' );
 
-        $frameAttrs = [ 'desktop' => [ 'value' => [ 'radius' => '{{aied:kit:radius-card}}', 'styles' => self::frameStyles( $border, $frame, $bottom ) ] ] ];
+        $frameAttrs = [ 'desktop' => [ 'value' => [ 'radius' => '{{aied:kit:radius-card}}', 'styles' => self::frameStyles( $bottom && ! $underline ? array_merge( $border, [ 'width' => '1px' ] ) : $border, $frame, $underline ) ] ] ];
 
         $hover = (string) $kit['hover'];
         $isCard = 'card' === $role;
-        if ( null === $ground && $isCard && ! $bottom && self::CARD_HOVER_FRAME !== $frame && ( 'fill-swap' === $hover || 'invert' === $hover ) ) {
+        if ( null === $ground && $isCard && ! $bottom && self::CARD_HOVER_FRAME !== $frame && ( 'fill-swap' === $hover || 'invert' === $hover ) && $t( 'hover-frame' ) ) {
             // kc-hover-frame (the hover colour path, proven with an accent value; the role is the colour token only). Never
             // on a bottom-only card (its hover frame colour is not proven) and never when the frame already is that colour
             // (a redundant key): only a `border` hairline frame darkens to `text` on hover. Never on a ground (it would be the fill).
@@ -600,16 +731,26 @@ final class KitAdapters
             'background' => [ 'desktop' => [ 'value' => [ 'color' => self::colour( $fill ) ] ] ],
             'border'     => $frameAttrs,
         ];
-        if ( $isCard ) {
+        if ( $isCard && $t( 'padding' ) ) {
             $module['spacing'] = [ 'desktop' => [ 'value' => [ 'padding' => '{{aied:kit:space-card}}' ] ] ];
         }
         // A surface band is a light band for the shadow's ink; a panel takes the rest shadow only.
         $shadow = $isCard ? self::shadow( (array) $kit['shadow'], 'surface' === $on ? 'light' : $on ) : self::restShadow( $kit, $on );
+        if ( null !== $shadow && $testimonial ) {
+            // Each half of the shadow pair by its own decision (kx-testimonial-shadow-*, kx-testimonial-hover-shadow).
+            if ( ! $t( 'shadow' ) ) {
+                unset( $shadow['desktop']['value'] );
+            }
+            if ( ! $t( 'hover-shadow' ) ) {
+                unset( $shadow['desktop']['hover'] );
+            }
+            $shadow = [] === $shadow['desktop'] ? null : $shadow;
+        }
         if ( null !== $shadow ) {
             $module['boxShadow'] = $shadow;
         }
-        if ( $isCard && 'lift' === $hover ) {
-            // kc-hover-lift.
+        if ( $isCard && 'lift' === $hover && $t( 'hover-lift' ) ) {
+            // kc-hover-lift (kx-testimonial-hover-lift).
             $module['transform'] = [ 'desktop' => [ 'hover' => [ 'translate' => [ 'y' => '-4px' ] ] ] ];
         }
 
