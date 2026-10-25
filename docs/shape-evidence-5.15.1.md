@@ -25783,3 +25783,69 @@ Candidates from `kit-carrier.json` that were measured and are not taught, with t
 - `kx-blurb-icon-dead-radius-0px`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). Default-value check (not a dead path): radius 0px is the .et-pb-icon default, so the CSS is emitted and no computed style changes.
 - `kx-counter-dead-all-0px`: no effect (dead). Default-value check (not a dead path): styles.all.width 0px is already the base value and Divi's default, so nothing changes. Source: the library's stats-counter-band shape (base). Divi's CSS default: a number counter draws no border (border-top none). The adapter writes styles.all and styles.top together; module.decoration.border is NOT yet proven on number-counter.
 - `kx-divider-accent-weight-4px`: no effect (dead). Default-value check (not a dead path): the site preset 1ep0co506u renders the line at 4px on the dev site (weights 2px and 3px changed 4px -> 2px/3px), so writing 4px changes nothing.
+
+## kp-icon-left-maxwidth-48
+
+Block: `icon`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.maxWidth` = `"48px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:max-inline-size: none -> 48px` |
+| 900 px | yes | 2 | yes | `0:div:max-inline-size: none -> 48px` |
+| 400 px | yes | 2 | yes | `0:div:max-inline-size: none -> 48px` |
+
+Properties that changed (any width): `max-inline-size`, `max-width`.
+
+Phone overflow at 400 px: no.
+
+Note: A kit icon chip (fill, radius 8px, padding 10px, 20px glyph) with align left in a plain column; maxWidth 48px. The sample shows the module box width before and after: a box that already hugs its glyph would read DEAD or a tiny change.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kp-icon-center-maxwidth-48
+
+Block: `icon`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.maxWidth` = `"48px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:max-inline-size: none -> 48px` |
+| 900 px | yes | 2 | yes | `0:div:max-inline-size: none -> 48px` |
+| 400 px | yes | 2 | yes | `0:div:max-inline-size: none -> 48px` |
+
+Properties that changed (any width): `max-inline-size`, `max-width`.
+
+Phone overflow at 400 px: no.
+
+Note: A kit icon chip (fill, radius 8px, padding 10px, 20px glyph) with align default (centre) in a plain column; maxWidth 48px. The sample shows the module box width before and after: a box that already hugs its glyph would read DEAD or a tiny change.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kp-icon-left-maxwidth-48-in-row
+
+Block: `icon`, placed inside a `group`, with base settings on its wrapper(s) `group`. Set on top of the base block:
+
+- `module.decoration.sizing.desktop.value.maxWidth` = `"48px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:max-inline-size: none -> 48px` |
+| 900 px | yes | 2 | yes | `0:div:max-inline-size: none -> 48px` |
+| 400 px | yes | 2 | yes | `0:div:max-inline-size: none -> 48px` |
+
+Properties that changed (any width): `max-inline-size`, `max-width`.
+
+Phone overflow at 400 px: no.
+
+Note: The same left-aligned chip inside a flex-row wrap group (as a row of chips would be): maxWidth 48px; the sample shows the box width with and without the cap.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
