@@ -72,7 +72,7 @@ final class DesignLanguages
     public const RHYTHM_FACTORS = [ 'section' => [ 1, 1 ], 'open' => [ 5, 4 ], 'tight' => [ 3, 5 ] ];
 
     /** Where each generated line is printed in a language topic: after the named line (see markdown()). */
-    private const GENERATED_PLACE = [ 'type' => 'fonts', 'section_space' => 'section_padding' ];
+    private const GENERATED_PLACE = [ 'type' => 'fonts', 'section_space' => 'section_padding', 'kit' => 'style_kit' ];
 
     /** @var ?list<array<string,mixed>> the decoded languages, read once per request */
     private static ?array $cache = null;
@@ -211,6 +211,7 @@ final class DesignLanguages
             '- Shadow and borders: ' . (string) $lang['shadow'],
             '- Motion: ' . (string) $lang['motion'],
             '- Style kit: ' . (string) ( $lang['kit'] ?? '' ),
+            ...self::generatedAt( $lang, 'style_kit' ),
             '',
             '## Section rhythm',
             (string) $lang['rhythm'],
@@ -570,7 +571,34 @@ final class DesignLanguages
      */
     public static function generatedLines( array $language ): array
     {
-        return [ 'type' => self::typeLine( $language ), 'section_space' => self::sectionSpaceLine( $language ) ];
+        return [ 'type' => self::typeLine( $language ), 'section_space' => self::sectionSpaceLine( $language ), 'kit' => self::kitLine( $language ) ];
+    }
+
+    /**
+     * "- Kit: raw-frame sets corners, borders, shadow and hover of buttons, cards, ... and chips; where this prose
+     * differs, the kit wins (a section's opening line is its strong rule: 4px). Patterns: topic=kit-patterns."
+     * (wording gaps, spec Design 2 / Ruling 4: "the kit wins" is read early, in the language topic itself). The nouns are
+     * StyleGuide::appliedNouns() (the kit-driven modules of KitAdapters::APPLIED), the width is
+     * KitAdapters::ruleWidth('rule-strong', ...) of the language's own kit; '' for a language without a known kit. At most
+     * GENERATED_LINE_MAX bytes.
+     *
+     * @param array<string,mixed> $language
+     */
+    public static function kitLine( array $language ): string
+    {
+        require_once __DIR__ . '/StyleGuide.php';
+        $id  = is_string( $language['kit'] ?? null ) ? $language['kit'] : '';
+        $kit = '' === $id ? null : StyleKits::get( $id );
+        if ( null === $kit ) {
+            return '';
+        }
+
+        return sprintf(
+            "- Kit: %s sets corners, borders, shadow and hover of %s; where this prose differs, the kit wins (a section's opening line is its strong rule: %s). Patterns: topic=kit-patterns.",
+            $id,
+            StyleGuide::joinAnd( StyleGuide::appliedNouns() ),
+            KitAdapters::ruleWidth( 'rule-strong', (array) $kit['border'] )
+        );
     }
 
     /**
