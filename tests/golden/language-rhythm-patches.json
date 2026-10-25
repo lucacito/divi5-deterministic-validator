@@ -1,0 +1,1142 @@
+{
+    "editorial": {
+        "section_space": {
+            "desktop": 120,
+            "tablet": 80,
+            "phone": 56
+        },
+        "patches": {
+            "divi/section|section": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "120px",
+                                        "bottom": "120px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "80px",
+                                        "bottom": "80px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "56px",
+                                        "bottom": "56px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/section|open": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "152px",
+                                        "bottom": "152px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "104px",
+                                        "bottom": "104px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "72px",
+                                        "bottom": "72px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/section|tight": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "72px",
+                                        "bottom": "72px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "48px",
+                                        "bottom": "48px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "32px",
+                                        "bottom": "32px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "glass-dark": {
+        "section_space": {
+            "desktop": 100,
+            "tablet": 72,
+            "phone": 48
+        },
+        "patches": {
+            "divi/section|section": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "100px",
+                                        "bottom": "100px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "72px",
+                                        "bottom": "72px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "48px",
+                                        "bottom": "48px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/section|open": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "128px",
+                                        "bottom": "128px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "88px",
+                                        "bottom": "88px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "64px",
+                                        "bottom": "64px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/section|tight": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "64px",
+                                        "bottom": "64px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "40px",
+                                        "bottom": "40px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "32px",
+                                        "bottom": "32px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "organic-warm": {
+        "section_space": {
+            "desktop": 96,
+            "tablet": 64,
+            "phone": 44
+        },
+        "patches": {
+            "divi/section|section": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "96px",
+                                        "bottom": "96px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "64px",
+                                        "bottom": "64px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "44px",
+                                        "bottom": "44px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/section|open": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "120px",
+                                        "bottom": "120px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "80px",
+                                        "bottom": "80px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "56px",
+                                        "bottom": "56px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/section|tight": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "56px",
+                                        "bottom": "56px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "40px",
+                                        "bottom": "40px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "28px",
+                                        "bottom": "28px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "tech-mono": {
+        "section_space": {
+            "desktop": 88,
+            "tablet": 64,
+            "phone": 40
+        },
+        "patches": {
+            "divi/section|section": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "88px",
+                                        "bottom": "88px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "64px",
+                                        "bottom": "64px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "40px",
+                                        "bottom": "40px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/section|open": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "112px",
+                                        "bottom": "112px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "80px",
+                                        "bottom": "80px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "48px",
+                                        "bottom": "48px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/section|tight": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "56px",
+                                        "bottom": "56px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "40px",
+                                        "bottom": "40px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "28px",
+                                        "bottom": "28px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "playful-pastel": {
+        "section_space": {
+            "desktop": 88,
+            "tablet": 60,
+            "phone": 40
+        },
+        "patches": {
+            "divi/section|section": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "88px",
+                                        "bottom": "88px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "60px",
+                                        "bottom": "60px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "40px",
+                                        "bottom": "40px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/section|open": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "112px",
+                                        "bottom": "112px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "72px",
+                                        "bottom": "72px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "48px",
+                                        "bottom": "48px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/section|tight": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "56px",
+                                        "bottom": "56px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "40px",
+                                        "bottom": "40px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "28px",
+                                        "bottom": "28px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "corporate-trust": {
+        "section_space": {
+            "desktop": 96,
+            "tablet": 68,
+            "phone": 44
+        },
+        "patches": {
+            "divi/section|section": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "96px",
+                                        "bottom": "96px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "68px",
+                                        "bottom": "68px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "44px",
+                                        "bottom": "44px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/section|open": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "120px",
+                                        "bottom": "120px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "88px",
+                                        "bottom": "88px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "56px",
+                                        "bottom": "56px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/section|tight": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "56px",
+                                        "bottom": "56px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "40px",
+                                        "bottom": "40px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "28px",
+                                        "bottom": "28px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "soft-saas": {
+        "section_space": {
+            "desktop": 104,
+            "tablet": 72,
+            "phone": 48
+        },
+        "patches": {
+            "divi/section|section": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "104px",
+                                        "bottom": "104px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "72px",
+                                        "bottom": "72px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "48px",
+                                        "bottom": "48px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/section|open": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "128px",
+                                        "bottom": "128px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "88px",
+                                        "bottom": "88px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "64px",
+                                        "bottom": "64px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/section|tight": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "64px",
+                                        "bottom": "64px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "40px",
+                                        "bottom": "40px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "32px",
+                                        "bottom": "32px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "bold-vibrant": {
+        "section_space": {
+            "desktop": 80,
+            "tablet": 56,
+            "phone": 36
+        },
+        "patches": {
+            "divi/section|section": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "80px",
+                                        "bottom": "80px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "56px",
+                                        "bottom": "56px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "36px",
+                                        "bottom": "36px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/section|open": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "104px",
+                                        "bottom": "104px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "72px",
+                                        "bottom": "72px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "48px",
+                                        "bottom": "48px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/section|tight": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "56px",
+                                        "bottom": "56px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "32px",
+                                        "bottom": "32px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "28px",
+                                        "bottom": "28px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "brutalist-flat": {
+        "section_space": {
+            "desktop": 64,
+            "tablet": 48,
+            "phone": 32
+        },
+        "patches": {
+            "divi/section|section": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "64px",
+                                        "bottom": "64px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "48px",
+                                        "bottom": "48px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "32px",
+                                        "bottom": "32px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/section|open": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "80px",
+                                        "bottom": "80px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "64px",
+                                        "bottom": "64px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "40px",
+                                        "bottom": "40px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/section|tight": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "56px",
+                                        "bottom": "56px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "32px",
+                                        "bottom": "32px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "28px",
+                                        "bottom": "28px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "luxe": {
+        "section_space": {
+            "desktop": 160,
+            "tablet": 112,
+            "phone": 72
+        },
+        "patches": {
+            "divi/section|section": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "160px",
+                                        "bottom": "160px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "112px",
+                                        "bottom": "112px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "72px",
+                                        "bottom": "72px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/section|open": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "200px",
+                                        "bottom": "200px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "144px",
+                                        "bottom": "144px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "88px",
+                                        "bottom": "88px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/section|tight": {
+                "module": {
+                    "decoration": {
+                        "spacing": {
+                            "desktop": {
+                                "value": {
+                                    "padding": {
+                                        "top": "96px",
+                                        "bottom": "96px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "tablet": {
+                                "value": {
+                                    "padding": {
+                                        "top": "64px",
+                                        "bottom": "64px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            },
+                            "phone": {
+                                "value": {
+                                    "padding": {
+                                        "top": "40px",
+                                        "bottom": "40px",
+                                        "syncVertical": "on"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
