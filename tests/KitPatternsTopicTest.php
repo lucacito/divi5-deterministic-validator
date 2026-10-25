@@ -122,7 +122,7 @@ class KitPatternsTopicTest extends TestCase
         $text = self::topic();
 
         // The tag frame: the kit's border width, at least 1px (a 0px kit), 3px for a double under 3px (KitAdapters::chipPatch()).
-        $this->assertStringContainsString( "the kit's border width and style, at least 1px (3px for a double)", $text );
+        $this->assertStringContainsString( "the kit's border width and style, at least 1px; a double at least 3px", $text );
         foreach ( StyleKits::ids() as $id ) {
             $kit    = (array) StyleKits::get( $id );
             $w      = (int) $kit['border']['width'];
@@ -515,11 +515,11 @@ class KitPatternsTopicTest extends TestCase
     public function testTheTagClauseSaysTheKitWidth(): void
     {
         $text = StyleGuide::markdown( 'kit-rules' );
-        $this->assertStringContainsString( "`styles.all` (width and style: the kit's, 1px at least, 3px for a double). Its fill stays transparent", $text );
+        $this->assertStringContainsString( "`styles.all` (the kit's width and style, 1px at least; a double at least 3px). Its fill stays transparent", $text );
         // The double width follows the tag's own decision (KitAdapters::CHIP_PROVEN `tag-double`), not the rule carriers'.
         $noTagDouble = StyleGuide::kitRules( null, null, null, null, array_merge( KitAdapters::CHIP_PROVEN, [ 'tag-double' => false ] ) );
-        $this->assertStringContainsString( "`styles.all` (width and style: the kit's, 1px at least)", $noTagDouble );
-        $this->assertStringNotContainsString( '3px for a double', $noTagDouble );
+        $this->assertStringContainsString( "`styles.all` (the kit's width and style, 1px at least)", $noTagDouble );
+        $this->assertStringNotContainsString( 'a double at least', $noTagDouble );
         $this->assertStringNotContainsString( '(width, style, colour; 1px at least)', $text );
     }
 

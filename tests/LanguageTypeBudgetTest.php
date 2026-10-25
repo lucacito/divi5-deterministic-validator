@@ -44,7 +44,9 @@ final class LanguageTypeBudgetTest extends TestCase
      * cards with `surface`): the three colour lines become the standard `surface (cards)` line (-187 B), and the prose rewords
      * "translucent cards" -> "layered cards" (-4), the shadow's semi-transparent background -> the surface colour (-17), and the
      * rhythm's and cta's "translucent " dropped (-12, -12): -232 B. The design-languages index carries the summary (-4 B: 2592 -> 2588). */
-    private const TASK_7_DELTA = [ 'glass-dark' => -232 ];
+    // wording fixes (review): glass-dark's card border reworded "1px border at about 12% white" -> "hairline border" (-14 B): -232 -> -246.
+    // brutalist-flat (review fix): the rhythm no longer describes a hover colour (-31 B) and the cta says "a single button" (-45 B): -76.
+    private const TASK_7_DELTA = [ 'glass-dark' => -246, 'brutalist-flat' => -76 ];
 
     private const BEFORE_TYPOGRAPHY = 7496;
 
@@ -61,7 +63,7 @@ final class LanguageTypeBudgetTest extends TestCase
     public function testTheKitTopicsDoNotMove(): void
     {
         // carriers adapter: kit-rules 8997 -> 9598 (Ruling 8), style-kits 8444 -> 8178 (Ruling 7), controls 8331 -> 8348 (Ruling 10), then 9105 (object-values paragraph, round 2), then 9271 (render-fatal sweep: 9105 + 166 B, the generated slide/pricing-table keys and the plain-string sentence).
-        self::assertSame( 9585, strlen( StyleGuide::markdown( 'kit-rules' ) ) ); // wording gaps T4 (plan 2026-10-25-wording-gaps): 9598 -> 9585 (Ruling 8, within the 9,600 pin).
+        self::assertSame( 9589, strlen( StyleGuide::markdown( 'kit-rules' ) ) ); // wording fixes (review): the tag width reword (a double at least 3px) moved kit-rules 9585 -> 9589; // wording gaps T4 (plan 2026-10-25-wording-gaps): 9598 -> 9585 (Ruling 8, within the 9,600 pin).
         self::assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ) );
         // render-fatal sweep: 9105 -> 9271 (+166 B = the longer generated object-values paragraph, StyleGuideObjectValuesTest).
         // wording gaps T4 (plan 2026-10-25-wording-gaps): 9271 -> 9355 (+84 B = StyleGuide::controlsFormClause(), spec gap 14).

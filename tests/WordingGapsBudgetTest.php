@@ -51,7 +51,9 @@ final class WordingGapsBudgetTest extends TestCase
      * cards with `surface`): the three colour lines become the standard `surface (cards)` line (-187 B), and the prose rewords
      * "translucent cards" -> "layered cards" (-4), the shadow's semi-transparent background -> the surface colour (-17), and the
      * rhythm's and cta's "translucent " dropped (-12, -12): -232 B. The design-languages index carries the summary (-4 B: 2592 -> 2588). */
-    private const TASK_7_DELTA = [ 'glass-dark' => -232 ];
+    // wording fixes (review): glass-dark's card border reworded "1px border at about 12% white" -> "hairline border" (-14 B): -232 -> -246.
+    // brutalist-flat (review fix): the rhythm no longer describes a hover colour (-31 B) and the cta says "a single button" (-45 B): -76.
+    private const TASK_7_DELTA = [ 'glass-dark' => -246, 'brutalist-flat' => -76 ];
 
     /** Bytes of every other topic the wording-gaps plan does not name (they must not move). */
     private const UNTOUCHED_TOPIC_SIZES = [

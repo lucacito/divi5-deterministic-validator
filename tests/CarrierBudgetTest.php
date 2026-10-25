@@ -132,7 +132,7 @@ final class CarrierBudgetTest extends TestCase
         $this->assertSame( 74, strlen( StyleGuide::notAppliedSentence( $oldApplied ) ), 'the not-applied sentence at the base' );
         $this->assertSame( '', StyleGuide::carrierRules( $oldApplied ), 'the base map has no More carriers paragraph' );
         // wording gaps T4 (plan 2026-10-25-wording-gaps): the base map's kit-rules moved 8,997 -> 8,984 with the new band, accordion, tag and pointer wording (Step 4).
-        $this->assertSame( 8984, strlen( StyleGuide::kitRules( $oldApplied ) ), 'kit-rules at the base, regenerated from the base map' );
+        $this->assertSame( 8988, strlen( StyleGuide::kitRules( $oldApplied ) ), 'kit-rules at the base, regenerated from the base map' );
 
         $applied    = strlen( StyleGuide::appliedSentence() );
         $notApplied = strlen( StyleGuide::notAppliedSentence() );
@@ -142,8 +142,8 @@ final class CarrierBudgetTest extends TestCase
         $this->assertSame( 553, $carriers );
         $this->assertLessThanOrEqual( 560, $carriers, 'Ruling 8: the More carriers paragraph is at most 560 B with its heading' );
         $kitRules = strlen( StyleGuide::markdown( 'kit-rules' ) );
-        $this->assertSame( 8984 + ( $applied - 370 ) + ( $notApplied - 74 ) + $carriers, $kitRules );
-        $this->assertSame( 9585, $kitRules ); // wording gaps T4 (plan 2026-10-25-wording-gaps): 9598 -> 9585 (Ruling 8, within the 9,600 pin).
+        $this->assertSame( 8988 + ( $applied - 370 ) + ( $notApplied - 74 ) + $carriers, $kitRules );
+        $this->assertSame( 9589, $kitRules ); // wording fixes (review): 9585 -> 9589 (the tag width reword, a double at least 3px); // wording gaps T4 (plan 2026-10-25-wording-gaps): 9598 -> 9585 (Ruling 8, within the 9,600 pin).
         $this->assertLessThanOrEqual( 9600, $kitRules, 'Ruling 8: pin 9,000 -> 9,600' );
 
         $this->assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ), 'Ruling 7: the catalog with the noun-only sentence (8,444 at the base)' );

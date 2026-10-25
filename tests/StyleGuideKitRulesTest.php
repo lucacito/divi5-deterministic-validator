@@ -249,10 +249,10 @@ class StyleGuideKitRulesTest extends TestCase
         // Round 3 of the guide polish (spec "Round 3"), re-pinned deliberately: the band sentence, the framed-block rule sentence, the side-edge sentence, the tag frame colour, the icon-chip size and glyph codes and the accordion-item shape: 7,558 -> 8,691 (7,864 -> 8,997 with the Images paragraph; the bound is 9,000).
         // carriers adapter: 8691 -> 9294 (the applied sentences and the More carriers paragraph).
         // wording gaps T4 (plan 2026-10-25-wording-gaps): 9294 -> 9281 (the band roles, the accordion and tag clauses and the kit-patterns pointer, paid for by the Step 4 trims).
-        $this->assertSame( 9281, strlen( StyleGuide::kitRules( null, null, [] ) ), 'kit-rules without the Images paragraph (4,301 before the rules and chips adapter)' );
+        $this->assertSame( 9285, strlen( StyleGuide::kitRules( null, null, [] ) ), 'kit-rules without the Images paragraph (4,301 before the rules and chips adapter)' );
         // Image radius pass (Task 1): the Images paragraph replaces the "recorded but unused" clause: +291 B net. Rules and chips T3: 4,607 -> 5,255 (plan bound: 4,607 + 650).
         // carriers adapter: 8997 -> 9598. wording gaps T4 (plan 2026-10-25-wording-gaps): 9598 -> 9585 (Ruling 8, within the 9,600 pin).
-        $this->assertSame( 9585, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
+        $this->assertSame( 9589, strlen( StyleGuide::markdown( 'kit-rules' ) ) ); // wording fixes (review): 9585 -> 9589 (the tag width reword, a double at least 3px)
         // Rules and chips adapter Step 0 (plan 2026-10-21): the catalog's fixed prose was reworded to reclaim headroom BEFORE the applied sentence gained its rules and chips tail: 8,439 -> 8,325 B (50-kit projection 9,923 -> 9,809 B); the tail then added 119 B: 8,444 B (9,928 B with 50 kits).
         // carriers adapter: 8444 -> 8178 (Ruling 7: the catalog prints the noun-only applied sentence).
         $this->assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog (was 8,464, then 8,423 before the form adapter, 8,453 with it, 8,439 at image radius; 8,325 after the Step 0 rewording, 8,444 with the rules and chips tail, 8,178 with the noun-only sentence)' );
@@ -532,7 +532,7 @@ class StyleGuideKitRulesTest extends TestCase
             $body
         );
         // carriers adapter: 8997 -> 9598. wording gaps T4 (plan 2026-10-25-wording-gaps): 9598 -> 9585.
-        $this->assertSame( 9585, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'the shipped kit-rules (5,255 before the guide polish, 6,595 before the second pass, 7,302 before the per-role item clauses, 7,864 before round 3, 8,997 before the carriers adapter)' );
+        $this->assertSame( 9589, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'the shipped kit-rules (5,255 before the guide polish, 6,595 before the second pass, 7,302 before the per-role item clauses, 7,864 before round 3, 8,997 before the carriers adapter)' );
 
         $yes    = KitAdapters::RULE_PROVEN;
         $cyes   = KitAdapters::CHIP_PROVEN;

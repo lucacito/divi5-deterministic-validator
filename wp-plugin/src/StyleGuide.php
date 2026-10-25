@@ -616,7 +616,7 @@ final class StyleGuide
             : '';
         $out[] = "## Tags\n\n" . $tags
             . 'Each tag is a `divi/group` padded at `module.decoration.spacing.desktop.value.padding` = `' . (string) json_encode( self::PATTERN_TAG_PADDING ) . '` holding ONE `divi/text` label in the language\'s eyebrow style' . $eyebrow . ', in the muted colour (the band\'s ink on a dark band); it hugs its label, no width' . ( $noHover ? ', no hover' : '' ) . '. '
-            . 'Its frame takes the kit\'s border width and style, at least ' . $widths['zero'] . ( null === $widths['double'] ? '' : ' (' . $widths['double'] . ' for a double)' ) . ', its corners the control radius: a square kit gives square tags even where a language says pill (the kit wins). Recipe: `portfolio-featured-grid`.';
+            . 'Its frame takes the kit\'s border width and style, at least ' . $widths['zero'] . ( null === $widths['double'] ? '' : '; a double at least ' . $widths['double'] ) . ', its corners the control radius: a square kit gives square tags even where a language says pill (the kit wins). Recipe: `portfolio-featured-grid`.';
 
         // Icon chips (gap 1b).
         if ( $is( 'icon-hugs-left' ) ) {
@@ -978,7 +978,7 @@ final class StyleGuide
             $tag    = array_values( array_filter( [
                 $is( $chipProven, 'tag-radius' ) ? '`radius` (the four corners, the kit\'s control radius)' : '',
                 // The kit's width, not "1px" (wording gaps, spec gap 1a: round 1 read "1px at least" as 1px).
-                $is( $chipProven, 'tag-frame' ) ? '`styles.all` (width and style: the kit\'s, ' . $widths['zero'] . ' at least' . ( null === $widths['double'] ? '' : ', ' . $widths['double'] . ' for a double' ) . ')' : '',
+                $is( $chipProven, 'tag-frame' ) ? '`styles.all` (the kit\'s width and style, ' . $widths['zero'] . ' at least' . ( null === $widths['double'] ? '' : '; a double at least ' . $widths['double'] ) . ')' : '',
             ] ) );
             $parts[] = 'Tag: `module.decoration.border.desktop.value` with ' . implode( ' and ', $tag ) . '. Its fill stays transparent; its padding and size are yours.'
                 . ( $is( $chipProven, 'tag-frame' ) ? ' Frame colour: the quiet colour when the kit\'s border colour is `border` or `same`, else the strong one.' : '' );
