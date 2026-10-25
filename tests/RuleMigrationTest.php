@@ -43,6 +43,12 @@ class RuleMigrationTest extends TestCase
 {
     private const ROLES = [ 'rule', 'rule-strong' ];
 
+    /**
+     * The carriers this test was written for. Carriers adapter (plan 2026-10-24, Task 5, Ruling 11): a counter's
+     * `rule-strong` marker is CarrierMigrationTest's, so ruleMarker() answers only on these three blocks.
+     */
+    private const RULE_BLOCKS = [ 'divi/divider', 'divi/group', 'divi/column' ];
+
     /** The bands a rule may sit on (KitAdapters::RULE_BANDS). */
     private const BANDS = [ 'light', 'surface', 'accent', 'dark', 'panel' ];
 
@@ -90,7 +96,8 @@ class RuleMigrationTest extends TestCase
      * read from git or the recipes, so a lost, added or re-roled marker fails here. The role is the colour the old rule drew
      * (`border` or an alpha colour = `rule`, every other colour = `rule-strong`, Spec issue 6); the band is what the walk makes
      * it (`panel` = inside an inverted, `text`-filled band or panel). 28 dividers, 26 groups and 3 columns; 22 `rule` and 35
-     * `rule-strong`. The two accent dividers (blog-feed 0, icon-values 0) are brand marks and stay literal (Ruling 8).
+     * `rule-strong`. The two accent dividers (blog-feed 0, icon-values 0) were brand marks left literal (Ruling 8); since the
+     * carriers adapter they carry `rule-accent`, which CarrierMigrationTest pins.
      */
     private const MIGRATED_RULES = [
         'card-grid-4|divi/divider|0'                     => 'rule-strong on dark',
@@ -155,8 +162,8 @@ class RuleMigrationTest extends TestCase
     /**
      * The exempt blocks: key => [what the raw scan makes of the block, a literal the block must still carry]. Four step
      * badges (48px circles) and four timeline dots (14px squares) are shape decisions (Ruling 6), the filled "[Most popular]"
-     * badge is a filled pill, not an outline tag (Spec issue 3), the four counters are out (Ruling 7), the two accent dividers
-     * sit on a site preset and are a brand decision (Ruling 8).
+     * badge is a filled pill, not an outline tag (Spec issue 3). Carriers adapter (plan 2026-10-24, Task 5): the four counters
+     * and the two accent dividers left this list (15 -> 9 blocks); they carry carrier markers (CarrierMigrationTest).
      */
     private const EXEMPT_LOOKS = [
         'steps-horizontal|divi/group|5'  => 'filled',
@@ -168,19 +175,13 @@ class RuleMigrationTest extends TestCase
         'timeline-vertical|divi/group|13' => 'filled',
         'timeline-vertical|divi/group|18' => 'filled',
         'pricing-three-tier|divi/group|10' => 'filled',
-        'stats-counter-band|divi/number-counter|0' => 'rule',
-        'stats-counter-band|divi/number-counter|1' => 'rule',
-        'stats-counter-band|divi/number-counter|2' => 'rule',
-        'stats-counter-band|divi/number-counter|3' => 'rule',
-        'blog-feed|divi/divider|0'   => 'rule',
-        'icon-values|divi/divider|0' => 'rule',
     ];
 
     /**
      * Phrases that describe the line a style kit now decides (its weight, style and name), banned from the title, description
      * and `when` of a recipe with a rule marker: the prose must be true under every kit.
      */
-    private const RULE_DECIDED_PHRASES = [
+    public const RULE_DECIDED_PHRASES = [
         '/\b(hairlines?|hairline-ruled)\b/i',
         '/\b(thin|thick|heavy|fine|slim|bold|1px|2px|3px|4px)\s+(\w+\s+)?(rules?|lines?|dividers?|borders?)\b/i',
         '/\b(solid|dashed|dotted|double)\s+(\w+\s+)?(rules?|lines?|dividers?)\b/i',
@@ -190,13 +191,17 @@ class RuleMigrationTest extends TestCase
 
     /**
      * [role, on] of a rule marker in $attrs, or null (no marker, or any other role). A rule marker without a string `on`
-     * throws: the resolver would default it, and a recipe rule must say where it sits.
+     * throws: the resolver would default it, and a recipe rule must say where it sits. With $block, only a divider, group
+     * or column answers (carriers adapter, Ruling 11: a counter's rule is CarrierMigrationTest's).
      *
      * @param array<string,mixed> $attrs
      * @return array{0:string,1:string}|null
      */
-    public static function ruleMarker( array $attrs ): ?array
+    public static function ruleMarker( array $attrs, ?string $block = null ): ?array
     {
+        if ( null !== $block && ! in_array( $block, self::RULE_BLOCKS, true ) ) {
+            return null;
+        }
         $m = $attrs['aied'] ?? null;
         if ( ! is_array( $m ) || ! in_array( $m['kit'] ?? null, self::ROLES, true ) ) {
             return null;
@@ -250,7 +255,7 @@ class RuleMigrationTest extends TestCase
     /** How many rule markers the block comments of $markup carry (parsed, so key order does not matter). */
     private static function markerCount( string $markup ): int
     {
-        return count( array_filter( self::blocks( $markup ), static fn ( array $b ): bool => null !== self::ruleMarker( $b[1] ) ) );
+        return count( array_filter( self::blocks( $markup ), static fn ( array $b ): bool => null !== self::ruleMarker( $b[1], $b[0] ) ) );
     }
 
     /**
@@ -263,7 +268,7 @@ class RuleMigrationTest extends TestCase
     {
         $out = [];
         foreach ( self::blocks( $markup ) as [ $name, $attrs, $i ] ) {
-            $marker = self::ruleMarker( $attrs );
+            $marker = self::ruleMarker( $attrs, $name );
             if ( null === $marker ) {
                 continue;
             }
@@ -288,6 +293,9 @@ class RuleMigrationTest extends TestCase
     {
         $out = [];
         foreach ( RecipeLibraryTest::markerBands( $markup, static fn ( array $a ): ?array => self::ruleMarker( $a ) ) as $key => [ $marker, $band ] ) {
+            if ( null === self::ruleMarker( [ 'aied' => [ 'kit' => $marker[0], 'on' => $marker[1] ] ], substr( $key, 0, (int) strrpos( $key, '#' ) ) ) ) {
+                continue; // a counter's rule: CarrierMigrationTest's (carriers adapter, Ruling 11)
+            }
             ++$checked;
             $band = 'other:text' === $band ? 'panel' : $band;
             if ( $marker[1] !== $band ) {
@@ -298,7 +306,7 @@ class RuleMigrationTest extends TestCase
             }
         }
         foreach ( self::blocks( $markup ) as [ $name, $attrs, $i ] ) {
-            if ( in_array( $name, [ 'divi/group', 'divi/column' ], true ) && null !== self::ruleMarker( $attrs ) && isset( $attrs['module']['decoration']['background'] ) ) {
+            if ( in_array( $name, [ 'divi/group', 'divi/column' ], true ) && null !== self::ruleMarker( $attrs, $name ) && isset( $attrs['module']['decoration']['background'] ) ) {
                 $out[] = "$label $name#$i: a marked rule with a background of its own (the band walk would not see it)";
             }
         }
@@ -322,7 +330,7 @@ class RuleMigrationTest extends TestCase
             $after[ "$name#$i" ] = $attrs;
         }
         foreach ( self::blocks( $raw ) as [ $name, $attrs, $i ] ) {
-            $marker = self::ruleMarker( $attrs );
+            $marker = self::ruleMarker( $attrs, $name );
             if ( null === $marker ) {
                 continue;
             }
@@ -355,7 +363,14 @@ class RuleMigrationTest extends TestCase
         return $out;
     }
 
-    /** The rule markers of the recipe FILE: [parsed from block comments, spelled `"kit":"rule"` or `"kit":"rule-strong"`]. @return array{0:int,1:int} */
+    /**
+     * The rule markers of the recipe FILE: [parsed from block comments, spelled `"kit":"rule"` or `"kit":"rule-strong"` in
+     * the block comments of a divider, group or column]. Carriers adapter (plan 2026-10-24, Task 5, Ruling 11): the spelled
+     * count was over the whole markup and would count the four counters' `rule-strong`; it is now per block comment of the
+     * three carriers this test was written for.
+     *
+     * @return array{0:int,1:int}
+     */
     private static function markersInFile(): array
     {
         $parsed  = 0;
@@ -363,7 +378,12 @@ class RuleMigrationTest extends TestCase
         foreach ( (array) json_decode( (string) file_get_contents( __DIR__ . '/../wp-plugin/data/section-recipes.json' ), true ) as $recipe ) {
             $markup   = (string) $recipe['markup'];
             $parsed  += self::markerCount( $markup );
-            $spelled += substr_count( $markup, '"kit":"rule"' ) + substr_count( $markup, '"kit":"rule-strong"' );
+            preg_match_all( '/<!--\s+wp:(divi\/[a-z0-9-]+)\s.*?-->/s', $markup, $comments, PREG_SET_ORDER );
+            foreach ( $comments as $c ) {
+                if ( in_array( $c[1], self::RULE_BLOCKS, true ) ) {
+                    $spelled += substr_count( $c[0], '"kit":"rule"' ) + substr_count( $c[0], '"kit":"rule-strong"' );
+                }
+            }
         }
         return [ $parsed, $spelled ];
     }
@@ -452,7 +472,9 @@ class RuleMigrationTest extends TestCase
             $this->assertArrayHasKey( $key, RuleChipAudit::SHAPE_EXEMPTIONS, "$key looks like a rule with no rule marker: give it one (BESPOKE_RULES never grows)" );
             $this->assertArrayNotHasKey( $key, self::BESPOKE_RULES );
         }
-        $this->assertSame( [ 'blog-feed|divi/divider|0', 'icon-values|divi/divider|0' ], $unmarked, 'only the two accent dividers (Ruling 8) are left, as rules that stay literal' );
+        // Carriers adapter (plan 2026-10-24, Task 5): the two accent dividers were the only unmarked rule-like blocks (Ruling 8);
+        // they carry `rule-accent` now (CarrierMigrationTest), so none is left.
+        $this->assertSame( [], $unmarked, 'every rule-like block of the recipes carries a rule marker' );
         $this->assertLessThanOrEqual( self::BESPOKE_RULES_MAX, count( self::BESPOKE_RULES ), 'shrink-only: BESPOKE_RULES can never grow' );
         $this->assertSame( 0, self::BESPOKE_RULES_MAX, 'cap 0: every rule in the recipes is kit-driven or a named shape decision' );
         $this->assertSame( [], self::BESPOKE_RULES );
@@ -461,7 +483,7 @@ class RuleMigrationTest extends TestCase
     public function testTheShapeExemptionsAreExactlyTheNamedBlocks(): void
     {
         $recipes = (array) json_decode( (string) file_get_contents( __DIR__ . '/../wp-plugin/data/section-recipes.json' ), true );
-        $this->assertSame( array_keys( self::EXEMPT_LOOKS ), array_keys( RuleChipAudit::SHAPE_EXEMPTIONS ), 'the audit names exactly these 15 blocks, in this order' );
+        $this->assertSame( array_keys( self::EXEMPT_LOOKS ), array_keys( RuleChipAudit::SHAPE_EXEMPTIONS ), 'the audit names exactly these 9 blocks, in this order (15 before the carriers adapter)' );
         $seen = RuleChipAudit::exemptionsSeen( $recipes );
         foreach ( self::EXEMPT_LOOKS as $key => $looks ) {
             $this->assertNotSame( '', trim( RuleChipAudit::SHAPE_EXEMPTIONS[ $key ] ), "$key has a reason" );
@@ -476,10 +498,12 @@ class RuleMigrationTest extends TestCase
                 }
             }
         }
-        // The two accent dividers still draw the accent line on their site preset.
+        // Carriers adapter (plan 2026-10-24, Task 5): the two accent dividers no longer draw their own accent line; they carry
+        // `rule-accent` on their site preset, and the kit writes the accent line (CarrierMigrationTest pins them).
         foreach ( [ 'blog-feed', 'icon-values' ] as $name ) {
             $divider = array_values( array_filter( self::blocks( (string) SectionRecipes::rawMarkup( $name ) ), static fn ( array $b ): bool => 'divi/divider' === $b[0] ) )[0][1];
-            $this->assertSame( '{{aied:color:accent}}', $divider['divider']['advanced']['line']['desktop']['value']['color'] ?? null, "$name keeps its accent line" );
+            $this->assertSame( [ 'kit' => 'rule-accent', 'on' => 'light' ], $divider['aied'] ?? null, "$name: its accent mark is kit-driven" );
+            $this->assertNull( self::ruleMarker( $divider, 'divi/divider' ), "$name: a rule-accent marker is not a rule marker of this test" );
         }
     }
 
@@ -542,7 +566,7 @@ class RuleMigrationTest extends TestCase
             self::BLOCK,
             static function ( array $m ): string {
                 $attrs = isset( $m[2] ) && '' !== $m[2] ? json_decode( $m[2], true ) : null;
-                if ( ! is_array( $attrs ) || null === self::ruleMarker( $attrs ) ) {
+                if ( ! is_array( $attrs ) || null === self::ruleMarker( $attrs, $m[1] ) ) {
                     return $m[0];
                 }
                 return str_replace( $m[2], RecipeTokens::encodeJson( array_replace_recursive( $attrs, self::oldInk( $m[1] ) ) ), $m[0] );
@@ -558,7 +582,7 @@ class RuleMigrationTest extends TestCase
             self::BLOCK,
             static function ( array $m ) use ( $on ): string {
                 $attrs = isset( $m[2] ) && '' !== $m[2] ? json_decode( $m[2], true ) : null;
-                if ( ! is_array( $attrs ) || null === self::ruleMarker( $attrs ) ) {
+                if ( ! is_array( $attrs ) || null === self::ruleMarker( $attrs, $m[1] ) ) {
                     return $m[0];
                 }
                 $attrs['aied']['on'] = $on;
@@ -575,7 +599,7 @@ class RuleMigrationTest extends TestCase
             self::BLOCK,
             static function ( array $m ): string {
                 $attrs = isset( $m[2] ) && '' !== $m[2] ? json_decode( $m[2], true ) : null;
-                if ( ! is_array( $attrs ) || null === self::ruleMarker( $attrs ) ) {
+                if ( ! is_array( $attrs ) || null === self::ruleMarker( $attrs, $m[1] ) ) {
                     return $m[0];
                 }
                 $clean = [];

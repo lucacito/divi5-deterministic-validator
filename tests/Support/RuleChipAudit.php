@@ -70,6 +70,9 @@ final class RuleChipAudit
     /**
      * recipe|block|index => why this block stays literal although it looks like a rule or a chip.
      *
+     * Carriers adapter (plan 2026-10-24, Task 5, Ruling 11): 15 -> 9. The four counters (`rule-strong` on accent) and the
+     * two accent dividers (`rule-accent` on light) are kit-driven now and pinned in CarrierMigrationTest.
+     *
      * @var array<string,string>
      */
     public const SHAPE_EXEMPTIONS = [
@@ -82,13 +85,10 @@ final class RuleChipAudit
         'timeline-vertical|divi/group|13' => 'timeline dot: a 14px square, a shape decision, Ruling 6',
         'timeline-vertical|divi/group|18' => 'timeline dot: a 14px square, a shape decision, Ruling 6',
         'pricing-three-tier|divi/group|10' => 'the filled [Most popular] badge on the accent ground: a filled pill, not an outline tag; Spec issue 3',
-        'stats-counter-band|divi/number-counter|0' => 'a top rule on a counter: counters are out, Ruling 7; Spec issue 4',
-        'stats-counter-band|divi/number-counter|1' => 'a top rule on a counter: counters are out, Ruling 7; Spec issue 4',
-        'stats-counter-band|divi/number-counter|2' => 'a top rule on a counter: counters are out, Ruling 7; Spec issue 4',
-        'stats-counter-band|divi/number-counter|3' => 'a top rule on a counter: counters are out, Ruling 7; Spec issue 4',
-        'blog-feed|divi/divider|0'   => 'accent mark on a site preset: a brand decision, not a separator; Ruling 8',
-        'icon-values|divi/divider|0' => 'accent mark on a site preset: a brand decision, not a separator; Ruling 8',
     ];
+
+    /** The blocks the carriers adapter added (plan 2026-10-24): their markers are CarrierAudit's and CarrierMigrationTest's. */
+    private const CARRIER_BLOCKS = [ 'divi/number-counter', 'divi/blurb', 'divi/testimonial' ];
 
     /** The block names whose top-edge-only border reads as a rule when raw rows are scanned (a counter is exempt, never listed). */
     private const RULE_CARRIERS = [ 'divi/divider', 'divi/group', 'divi/column' ];
@@ -313,6 +313,12 @@ final class RuleChipAudit
     private static function kindOf( string $block, array $attrs ): ?array
     {
         $kit = is_array( $attrs['aied'] ?? null ) ? ( $attrs['aied']['kit'] ?? null ) : null;
+        // Carriers adapter (plan 2026-10-24, Task 5, Ruling 11): a `rule-accent` marker, and any marker on the carriers
+        // that adapter added (a counter's rule, a blurb's icon chip, a testimonial's card or panel), are
+        // CarrierMigrationTest's, not this audit's.
+        if ( null !== $kit && ( 'rule-accent' === $kit || in_array( $block, self::CARRIER_BLOCKS, true ) ) ) {
+            return null;
+        }
         if ( 'rule' === $kit || 'rule-strong' === $kit ) {
             return [ 'kind' => 'rule', 'role' => $kit, 'colour' => null, 'marked' => true ];
         }

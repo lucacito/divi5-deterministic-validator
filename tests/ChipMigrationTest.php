@@ -40,6 +40,12 @@ require_once __DIR__ . '/Support/RuleChipAudit.php';
  */
 class ChipMigrationTest extends TestCase
 {
+    /**
+     * The carriers this test was written for. Carriers adapter (plan 2026-10-24, Task 5, Ruling 11): a blurb's icon chip
+     * marker is CarrierMigrationTest's, so chipMarker() answers only on these two blocks.
+     */
+    private const CHIP_BLOCKS = [ 'divi/group', 'divi/icon' ];
+
     /** The bands a chip may sit on (KitAdapters::CHIP_BANDS). */
     private const BANDS = [ 'light', 'surface', 'accent', 'dark' ];
 
@@ -97,20 +103,24 @@ class ChipMigrationTest extends TestCase
      * Phrases that describe the tag or icon shape a style kit now decides (corners, frame), banned from the title, description
      * and `when` of a recipe with a chip marker: the prose must be true under every kit.
      */
-    private const CHIP_DECIDED_PHRASES = [
+    public const CHIP_DECIDED_PHRASES = [
         '/\b(pill|pill-shaped|rounded|round|circular|circle|square|bordered|outlined|framed|hairline)\s+(\w+\s+)?(tags?|chips?|badges?|icons?|labels?)\b/i',
         '/\b(tags?|chips?|badges?|icons?)\s+(with|in)\s+(rounded|square|sharp|hairline|pill)\b/i',
     ];
 
     /**
      * [role, on] of a chip marker in $attrs, or null (no marker, or any other role). A chip marker without a string `on`
-     * throws: the resolver would default it, and a recipe chip must say where it sits.
+     * throws: the resolver would default it, and a recipe chip must say where it sits. With $block, only a group or an icon
+     * answers (carriers adapter, Ruling 11: a blurb's icon chip is CarrierMigrationTest's).
      *
      * @param array<string,mixed> $attrs
      * @return array{0:string,1:string}|null
      */
-    public static function chipMarker( array $attrs ): ?array
+    public static function chipMarker( array $attrs, ?string $block = null ): ?array
     {
+        if ( null !== $block && ! in_array( $block, self::CHIP_BLOCKS, true ) ) {
+            return null;
+        }
         $m = $attrs['aied'] ?? null;
         if ( ! is_array( $m ) || 'chip' !== ( $m['kit'] ?? null ) ) {
             return null;
@@ -124,7 +134,7 @@ class ChipMigrationTest extends TestCase
     /** How many chip markers the block comments of $markup carry (parsed, so key order does not matter). */
     private static function markerCount( string $markup ): int
     {
-        return count( array_filter( RuleMigrationTest::blocks( $markup ), static fn ( array $b ): bool => null !== self::chipMarker( $b[1] ) ) );
+        return count( array_filter( RuleMigrationTest::blocks( $markup ), static fn ( array $b ): bool => null !== self::chipMarker( $b[1], $b[0] ) ) );
     }
 
     /**
@@ -136,7 +146,7 @@ class ChipMigrationTest extends TestCase
     {
         $out = [];
         foreach ( RuleMigrationTest::blocks( $markup ) as [ $name, $attrs, $i ] ) {
-            $marker = self::chipMarker( $attrs );
+            $marker = self::chipMarker( $attrs, $name );
             if ( null === $marker ) {
                 continue;
             }
@@ -161,6 +171,9 @@ class ChipMigrationTest extends TestCase
     {
         $out = [];
         foreach ( RecipeLibraryTest::markerBands( $markup, static fn ( array $a ): ?array => self::chipMarker( $a ) ) as $key => [ $marker, $band ] ) {
+            if ( ! in_array( substr( $key, 0, (int) strrpos( $key, '#' ) ), self::CHIP_BLOCKS, true ) ) {
+                continue; // a blurb's icon chip: CarrierMigrationTest's (carriers adapter, Ruling 11)
+            }
             ++$checked;
             $band = 'other:text' === $band ? 'panel' : $band;
             if ( $marker[1] !== $band ) {
@@ -171,7 +184,7 @@ class ChipMigrationTest extends TestCase
             }
         }
         foreach ( RuleMigrationTest::blocks( $markup ) as [ $name, $attrs, $i ] ) {
-            if ( 'divi/group' === $name && null !== self::chipMarker( $attrs ) && isset( $attrs['module']['decoration']['background'] ) ) {
+            if ( 'divi/group' === $name && null !== self::chipMarker( $attrs, $name ) && isset( $attrs['module']['decoration']['background'] ) ) {
                 $out[] = "$label $name#$i: a marked tag with a background of its own (the band walk would not see it)";
             }
         }
@@ -195,7 +208,7 @@ class ChipMigrationTest extends TestCase
             $after[ "$name#$i" ] = $attrs;
         }
         foreach ( RuleMigrationTest::blocks( $raw ) as [ $name, $attrs, $i ] ) {
-            $marker = self::chipMarker( $attrs );
+            $marker = self::chipMarker( $attrs, $name );
             if ( null === $marker ) {
                 continue;
             }
@@ -229,7 +242,13 @@ class ChipMigrationTest extends TestCase
         return $out;
     }
 
-    /** The chip markers of the recipe FILE: [parsed from block comments, spelled `"kit":"chip"`]. @return array{0:int,1:int} */
+    /**
+     * The chip markers of the recipe FILE: [parsed from block comments, spelled `"kit":"chip"` in the block comments of a
+     * group or an icon]. Carriers adapter (plan 2026-10-24, Task 5, Ruling 11): the spelled count was over the whole markup
+     * and would count the four blurbs' chips; it is now per block comment of the two carriers this test was written for.
+     *
+     * @return array{0:int,1:int}
+     */
     private static function markersInFile(): array
     {
         $parsed  = 0;
@@ -237,7 +256,12 @@ class ChipMigrationTest extends TestCase
         foreach ( (array) json_decode( (string) file_get_contents( __DIR__ . '/../wp-plugin/data/section-recipes.json' ), true ) as $recipe ) {
             $markup   = (string) $recipe['markup'];
             $parsed  += self::markerCount( $markup );
-            $spelled += substr_count( $markup, '"kit":"chip"' );
+            preg_match_all( '/<!--\s+wp:(divi\/[a-z0-9-]+)\s.*?-->/s', $markup, $comments, PREG_SET_ORDER );
+            foreach ( $comments as $c ) {
+                if ( in_array( $c[1], self::CHIP_BLOCKS, true ) ) {
+                    $spelled += substr_count( $c[0], '"kit":"chip"' );
+                }
+            }
         }
         return [ $parsed, $spelled ];
     }
@@ -420,7 +444,7 @@ class ChipMigrationTest extends TestCase
             '/<!--\s+wp:(divi\/[a-z0-9-]+)(?:\s+(\{(?:[^-}]++|-(?!->)|\}(?!\s+\/?-->))*+\}))?\s+\/?-->/s',
             static function ( array $m ) use ( $fn ): string {
                 $attrs = isset( $m[2] ) && '' !== $m[2] ? json_decode( $m[2], true ) : null;
-                if ( ! is_array( $attrs ) || null === self::chipMarker( $attrs ) ) {
+                if ( ! is_array( $attrs ) || null === self::chipMarker( $attrs, $m[1] ) ) {
                     return $m[0];
                 }
                 return str_replace( $m[2], RecipeTokens::encodeJson( $fn( $m[1], $attrs ) ), $m[0] );
@@ -453,7 +477,7 @@ class ChipMigrationTest extends TestCase
                 $this->assertStringContainsString( "the migrated block must drop its own $path", $own, "$name $path" );
             }
             // (c) the band matches; a wrong band is caught, and so is a band a chip does not take.
-            $band = (string) array_values( array_filter( RuleMigrationTest::blocks( $raw ), static fn ( array $b ): bool => null !== self::chipMarker( $b[1] ) ) )[0][1]['aied']['on'];
+            $band = (string) array_values( array_filter( RuleMigrationTest::blocks( $raw ), static fn ( array $b ): bool => null !== self::chipMarker( $b[1], $b[0] ) ) )[0][1]['aied']['on'];
             $this->assertSame( [], self::bandProblems( $name, $planted ) );
             $wrong = 'light' === $band ? 'dark' : 'light';
             $this->assertStringContainsString( "chip marker on=$wrong, but the nearest ground makes it $band", implode( "\n", self::bandProblems( $name, self::withBand( $raw, $wrong ) ) ), "$name a wrong band" );
@@ -473,7 +497,7 @@ class ChipMigrationTest extends TestCase
                 $this->assertSame( [], self::mergeTrapProblems( $name, $clean, RecipeTokens::resolve( KitResolver::resolve( $clean, $kit ), $lang ), $kit, $lang ), "$name {$kit['id']} clean in luxe" );
             }
             // The clean shape kept its structure: the chip's padding, and an icon's glyph, size and alignment.
-            $first = array_values( array_filter( RuleMigrationTest::blocks( $clean ), static fn ( array $b ): bool => null !== self::chipMarker( $b[1] ) ) )[0][1];
+            $first = array_values( array_filter( RuleMigrationTest::blocks( $clean ), static fn ( array $b ): bool => null !== self::chipMarker( $b[1], $b[0] ) ) )[0][1];
             $this->assertArrayHasKey( 'builderVersion', $first, "$name keeps its version" );
             $this->assertNotEmpty( $first['module']['decoration']['spacing']['desktop']['value']['padding'] ?? null, "$name keeps its chip's padding" );
             if ( 'divi/icon' === $carrier ) {
