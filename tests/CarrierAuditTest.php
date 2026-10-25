@@ -102,7 +102,8 @@ class CarrierAuditTest extends TestCase
         $this->assertCount( 11, $rows );
         $this->assertCount( 5, array_unique( array_column( $rows, 'recipe' ) ) );
         foreach ( $rows as $r ) {
-            $this->assertFalse( $r['marked'], CarrierAudit::key( $r ) . ': the library is unmigrated at this commit; after Task 5 the pinned table must still hold with marked=true' );
+            // Carriers adapter Task 5 migrated the library (scripts/migrate-carrier-markers.php): the pinned table holds with marked=true.
+            $this->assertTrue( $r['marked'], CarrierAudit::key( $r ) . ': the library is migrated since Task 5; every carrier block carries its marker' );
         }
     }
 
