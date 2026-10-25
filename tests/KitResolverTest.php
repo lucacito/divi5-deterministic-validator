@@ -847,4 +847,142 @@ class KitResolverTest extends TestCase
             $this->assertSame( [ KitResolver::LEFT_MARKER ], KitResolver::leftovers( $out ), "$label: reported" );
         }
     }
+
+    private function testimonial( string $marker ): string
+    {
+        return '<!-- wp:divi/testimonial {"author":{"innerContent":{"desktop":{"value":"A"}}},"module":{"decoration":{"overflow":{"desktop":{"value":{"x":"visible","y":"visible"}}}}},"builderVersion":"5.15.1"' . $marker . '} /-->';
+    }
+
+    private function blurb( string $marker ): string
+    {
+        return '<!-- wp:divi/blurb {"imageIcon":{"innerContent":{"desktop":{"value":{"useIcon":"on","icon":{"unicode":"&#xf005;","type":"fa","weight":"900"}}}},"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":"16px","right":"16px","bottom":"16px","left":"16px"}}}}}},"builderVersion":"5.15.1"' . $marker . '} /-->';
+    }
+
+    private function counter( string $marker ): string
+    {
+        return '<!-- wp:divi/number-counter {"module":{"decoration":{"spacing":{"desktop":{"value":{"padding":{"top":"20px"}}}}}},"builderVersion":"5.15.1"' . $marker . '} /-->';
+    }
+
+    /** A marker with its keys in the given order. */
+    private static function carrierMarker( string $role, string $on, bool $onFirst ): string
+    {
+        return $onFirst ? ',"aied":{"on":"' . $on . '","kit":"' . $role . '"}' : ',"aied":{"kit":"' . $role . '","on":"' . $on . '"}';
+    }
+
+    public function testCarrierMarkersResolveAndAreStripped(): void
+    {
+        $kit   = $this->shipped( 'soft-solid' );
+        $cells = [
+            'testimonial' => [ [ 'card', 'panel' ], [ 'light', 'surface', 'accent', 'dark' ] ],
+            'blurb'       => [ [ 'chip' ], [ 'light', 'surface', 'accent', 'dark' ] ],
+            'counter'     => [ [ 'rule', 'rule-strong' ], [ 'light', 'surface', 'accent', 'dark', 'panel' ] ],
+            'divider'     => [ [ 'rule-accent' ], [ 'light', 'surface' ] ],
+        ];
+        foreach ( $cells as $block => [ $roles, $bands ] ) {
+            foreach ( $roles as $role ) {
+                foreach ( $bands as $on ) {
+                    foreach ( [ true, false ] as $onFirst ) {
+                        $markup = $this->{$block}( self::carrierMarker( $role, $on, $onFirst ) );
+                        $out    = $this->noWarnings( fn() => KitResolver::resolve( $markup, $kit ) );
+                        $attrs  = json_decode( $this->comments( $out )[0], true );
+                        $this->assertIsArray( $attrs );
+                        $this->assertArrayNotHasKey( 'aied', $attrs, "$role on $block / $on: the marker is stripped" );
+                        $this->assertSame( [], KitResolver::leftovers( $out ), "$role on $block / $on" );
+                        if ( 'testimonial' === $block ) {
+                            $this->assertSame( '{{aied:color:' . ( 'surface' === $on ? 'bg' : 'surface' ) . '}}', $attrs['module']['decoration']['background']['desktop']['value']['color'] );
+                            $this->assertSame( $kit['radius']['card'], $attrs['module']['decoration']['border']['desktop']['value']['radius']['topLeft'] ?? null, 'the card radius token is resolved in the same pass' );
+                            $this->assertSame( 'visible', $attrs['module']['decoration']['overflow']['desktop']['value']['x'], 'the recipe overflow survives' );
+                        } elseif ( 'blurb' === $block ) {
+                            $this->assertSame( $kit['radius']['control'], $attrs['imageIcon']['decoration']['border']['desktop']['value']['radius']['topLeft'] ?? null, 'the control radius token is resolved in the same pass' );
+                            $this->assertSame( '16px', $attrs['imageIcon']['decoration']['spacing']['desktop']['value']['padding']['top'], 'the recipe padding is the chip size' );
+                            $this->assertArrayNotHasKey( 'module', $attrs, 'a blurb chip writes only imageIcon' );
+                        } elseif ( 'counter' === $block ) {
+                            $this->assertSame( '0px', $attrs['module']['decoration']['border']['desktop']['value']['styles']['all']['width'] );
+                            $this->assertSame( 'rule' === $role ? '1px' : '2px', $attrs['module']['decoration']['border']['desktop']['value']['styles']['top']['width'], 'soft-solid is a 0px kit' );
+                            $this->assertSame( '20px', $attrs['module']['decoration']['spacing']['desktop']['value']['padding']['top'], 'the counter keeps its padding' );
+                        } else {
+                            $this->assertSame( '{{aied:color:accent}}', $attrs['divider']['advanced']['line']['desktop']['value']['color'] );
+                            $this->assertSame( '2px', $attrs['divider']['advanced']['line']['desktop']['value']['weight'], 'the strong width of a 0px kit' );
+                        }
+                    }
+                }
+            }
+        }
+        $this->assertSame(
+            KitResolver::resolve( $this->divider( ',"aied":{"kit":"rule-accent","on":"light"}' ), $kit ),
+            KitResolver::resolve( $this->divider( ',"aied":{"kit":"rule-accent"}' ), $kit ),
+            'no `on` is a light band'
+        );
+    }
+
+    public function testCarrierMarkersTheResolverDoesNotKnowAreLeftAndReported(): void
+    {
+        $kit   = $this->shipped( 'soft-solid' );
+        $cases = [
+            'a ground on a testimonial card'   => $this->testimonial( ',"aied":{"kit":"card","on":"light","ground":"inverted"}' ),
+            'a ground on a testimonial panel'  => $this->testimonial( ',"aied":{"ground":"accent","kit":"panel","on":"surface"}' ),
+            'a ground on a testimonial (no on)' => $this->testimonial( ',"aied":{"kit":"panel","ground":"accent"}' ),
+            'rule-accent on accent'            => $this->divider( ',"aied":{"kit":"rule-accent","on":"accent"}' ),
+            'rule-accent on dark'              => $this->divider( ',"aied":{"kit":"rule-accent","on":"dark"}' ),
+            'rule-accent on panel'             => $this->divider( ',"aied":{"kit":"rule-accent","on":"panel"}' ),
+            'rule-accent on a group'           => $this->group( ',"aied":{"kit":"rule-accent"}' ),
+            'rule-accent on a column'          => $this->column( ',"aied":{"kit":"rule-accent"}' ),
+            'rule-accent on a counter'         => $this->counter( ',"aied":{"kit":"rule-accent"}' ),
+            'a ground on rule-accent'          => $this->divider( ',"aied":{"kit":"rule-accent","on":"light","ground":"accent"}' ),
+            'chip on a testimonial'            => $this->testimonial( ',"aied":{"kit":"chip"}' ),
+            'rule on a testimonial'            => $this->testimonial( ',"aied":{"kit":"rule"}' ),
+            'card on a blurb'                  => $this->blurb( ',"aied":{"kit":"card"}' ),
+            'chip on a blurb on panel'         => $this->blurb( ',"aied":{"kit":"chip","on":"panel"}' ),
+            'a ground on a blurb chip'         => $this->blurb( ',"aied":{"kit":"chip","on":"light","ground":"inverted"}' ),
+            'card on a counter'                => $this->counter( ',"aied":{"kit":"card"}' ),
+            'chip on a counter'                => $this->counter( ',"aied":{"kit":"chip"}' ),
+            'a ground on a counter rule'       => $this->counter( ',"aied":{"kit":"rule","on":"light","ground":"inverted"}' ),
+            'a counter rule on photo'          => $this->counter( ',"aied":{"kit":"rule","on":"photo"}' ),
+            'extra key on a testimonial'       => $this->testimonial( ',"aied":{"kit":"card","on":"light","x":1}' ),
+        ];
+        foreach ( $cases as $label => $markup ) {
+            $out = $this->noWarnings( fn() => KitResolver::resolve( $markup, $kit ) );
+            $this->assertSame( $markup, $out, "$label: left untouched, nothing guessed" );
+            $this->assertSame( [ KitResolver::LEFT_MARKER ], KitResolver::leftovers( $out ), "$label: reported" );
+        }
+        // The resolver refuses a ground on a testimonial by itself, before any adapter is asked.
+        $asked   = false;
+        $adapter = static function ( string $block, string $role, string $on, array $k, ?string $ground = null ) use ( &$asked ): ?array {
+            $asked = true;
+            return [ 'module' => [ 'decoration' => [ 'background' => [ 'desktop' => [ 'value' => [ 'color' => 'x' ] ] ] ] ] ];
+        };
+        $markup = $this->testimonial( ',"aied":{"kit":"card","on":"light","ground":"inverted"}' );
+        $this->assertSame( $markup, KitResolver::resolve( $markup, $kit, $adapter ) );
+        $this->assertFalse( $asked, 'a ground on a testimonial never reaches the adapter' );
+    }
+
+    public function testRoleSurfacesNameTheAdaptersBands(): void
+    {
+        $surfaces = ( new \ReflectionClass( KitResolver::class ) )->getConstant( 'ROLE_SURFACES' );
+        $blocks   = ( new \ReflectionClass( KitResolver::class ) )->getConstant( 'ROLE_BLOCKS' );
+        $this->assertIsArray( $surfaces );
+        $this->assertIsArray( $blocks );
+        $this->assertEqualsCanonicalizing( array_keys( $blocks ), array_keys( $surfaces ), 'every role has its bands' );
+        $kits = array_map( static fn ( string $id ): array => (array) StyleKits::get( $id ), StyleKits::ids() );
+        $this->assertCount( 40, $kits );
+        foreach ( $surfaces as $role => $bands ) {
+            $answered = [];
+            foreach ( $blocks[ $role ] as $block ) {
+                foreach ( [ 'light', 'surface', 'accent', 'dark', 'panel', 'photo' ] as $on ) {
+                    foreach ( $kits as $kit ) {
+                        if ( null !== KitAdapters::patch( $block, $role, $on, $kit ) ) {
+                            $answered[ $on ] = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            $this->assertEqualsCanonicalizing( $bands, array_keys( $answered ), "$role: ROLE_SURFACES is exactly the bands the adapter answers" );
+        }
+    }
+
+    public function testTheResolverGroundBlocksAreTheAdapters(): void
+    {
+        $this->assertSame( KitAdapters::GROUND_BLOCKS, ( new \ReflectionClass( KitResolver::class ) )->getConstant( 'GROUND_BLOCKS' ) );
+    }
 }

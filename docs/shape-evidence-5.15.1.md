@@ -24693,3 +24693,1093 @@ Candidates from `language-rhythm.json` that were measured and are not taught, wi
 
 - `lr-section-default-56`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). Default-value check (not a dead path): 56px is the divi/section default at every width, so the CSS is emitted but the computed style does not change. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
 - `lr-section-sync-alone`: no effect (dead). syncVertical alone is an inert toggle (the layout-sizing topic says so): no value written, no computed change. Default-value style check, not a dead path. Source: Divi 5.15.1 includes/builder-5/server/Packages/StyleLibrary/Declarations/Spacing/Spacing.php:112-123.
+
+## kx-testimonial-control
+
+Block: `testimonial`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.color` = `"#fde68a"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-color: rgb(224, 242, 254) -> rgb(253, 230, 138)` |
+| 900 px | yes | 1 | yes | `0:div:background-color: rgb(224, 242, 254) -> rgb(253, 230, 138)` |
+| 400 px | yes | 1 | yes | `0:div:background-color: rgb(224, 242, 254) -> rgb(253, 230, 138)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Control: the testimonial's module background over the base #e0f2fe (a different colour from the base, so it must change the painted fill). Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-dead-padding-30px
+
+Block: `testimonial`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"30px"`
+- `module.decoration.spacing.desktop.value.padding.right` = `"30px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"30px"`
+- `module.decoration.spacing.desktop.value.padding.left` = `"30px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 0 | yes |  |
+| 900 px | yes | 0 | yes |  |
+| 400 px | yes | 6 | yes | `0:div:block-size: 157px -> 155px` |
+
+Properties that changed (any width): `block-size`, `height`, `padding-block-start`, `padding-top`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Default-value check that was NOT a default: setting padding 30px on all four sides changed the computed padding-top (height 157 -> 155 px), so Divi's testimonial default is not 30px on every side; the padding path is live. Source: testimonial/module.json.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-fill
+
+Block: `testimonial`. Set on top of the base block:
+
+- `module.decoration.background.desktop.value.color` = `"#bbf7d0"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:background-color: rgb(224, 242, 254) -> rgb(187, 247, 208)` |
+| 900 px | yes | 1 | yes | `0:div:background-color: rgb(224, 242, 254) -> rgb(187, 247, 208)` |
+| 400 px | yes | 1 | yes | `0:div:background-color: rgb(224, 242, 254) -> rgb(187, 247, 208)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Fill: module.decoration.background colour over the base #e0f2fe, the path the card patch writes. Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-frame-width-1px
+
+Block: `testimonial`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"1px"`
+- `module.decoration.border.desktop.value.styles.all.style` = `"solid"`
+- `module.decoration.border.desktop.value.styles.all.color` = `"#1e3a8a"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 52 | yes | `0:div:block-size: 155px -> 157px` |
+| 900 px | yes | 52 | yes | `0:div:block-size: 155px -> 157px` |
+| 400 px | yes | 52 | yes | `0:div:block-size: 157px -> 159px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-style`, `border-block-end-width`, `border-block-start-color`, `border-block-start-style`, `border-block-start-width`, `border-bottom-color`, `border-bottom-style`, `border-bottom-width`, `border-inline-end-color`, `border-inline-end-style`, `border-inline-end-width`, `border-inline-start-color`, `border-inline-start-style`, `border-inline-start-width`, `border-left-color`, `border-left-style`, `border-left-width`, `border-right-color`, `border-right-style`, `border-right-width`, `border-top-color`, `border-top-style`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame 1px solid on a testimonial with no frame (the full width/style/colour triple, as the card patch writes it); read the computed border-*-width at 1280/900/400. Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-frame-width-2px
+
+Block: `testimonial`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"2px"`
+- `module.decoration.border.desktop.value.styles.all.style` = `"solid"`
+- `module.decoration.border.desktop.value.styles.all.color` = `"#1e3a8a"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 52 | yes | `0:div:block-size: 155px -> 159px` |
+| 900 px | yes | 52 | yes | `0:div:block-size: 155px -> 159px` |
+| 400 px | yes | 52 | yes | `0:div:block-size: 157px -> 161px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-style`, `border-block-end-width`, `border-block-start-color`, `border-block-start-style`, `border-block-start-width`, `border-bottom-color`, `border-bottom-style`, `border-bottom-width`, `border-inline-end-color`, `border-inline-end-style`, `border-inline-end-width`, `border-inline-start-color`, `border-inline-start-style`, `border-inline-start-width`, `border-left-color`, `border-left-style`, `border-left-width`, `border-right-color`, `border-right-style`, `border-right-width`, `border-top-color`, `border-top-style`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame 2px solid on a testimonial with no frame (the full width/style/colour triple, as the card patch writes it); read the computed border-*-width at 1280/900/400. Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-frame-width-4px
+
+Block: `testimonial`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"4px"`
+- `module.decoration.border.desktop.value.styles.all.style` = `"solid"`
+- `module.decoration.border.desktop.value.styles.all.color` = `"#1e3a8a"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 52 | yes | `0:div:block-size: 155px -> 163px` |
+| 900 px | yes | 52 | yes | `0:div:block-size: 155px -> 163px` |
+| 400 px | yes | 52 | yes | `0:div:block-size: 157px -> 165px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-style`, `border-block-end-width`, `border-block-start-color`, `border-block-start-style`, `border-block-start-width`, `border-bottom-color`, `border-bottom-style`, `border-bottom-width`, `border-inline-end-color`, `border-inline-end-style`, `border-inline-end-width`, `border-inline-start-color`, `border-inline-start-style`, `border-inline-start-width`, `border-left-color`, `border-left-style`, `border-left-width`, `border-right-color`, `border-right-style`, `border-right-width`, `border-top-color`, `border-top-style`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame 4px solid on a testimonial with no frame (the full width/style/colour triple, as the card patch writes it); read the computed border-*-width at 1280/900/400. Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-style-dashed
+
+Block: `testimonial`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"3px"`
+- `module.decoration.border.desktop.value.styles.all.style` = `"dashed"`
+- `module.decoration.border.desktop.value.styles.all.color` = `"#1e3a8a"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 52 | yes | `0:div:block-size: 155px -> 161px` |
+| 900 px | yes | 52 | yes | `0:div:block-size: 155px -> 161px` |
+| 400 px | yes | 52 | yes | `0:div:block-size: 157px -> 163px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-style`, `border-block-end-width`, `border-block-start-color`, `border-block-start-style`, `border-block-start-width`, `border-bottom-color`, `border-bottom-style`, `border-bottom-width`, `border-inline-end-color`, `border-inline-end-style`, `border-inline-end-width`, `border-inline-start-color`, `border-inline-start-style`, `border-inline-start-width`, `border-left-color`, `border-left-style`, `border-left-width`, `border-right-color`, `border-right-style`, `border-right-width`, `border-top-color`, `border-top-style`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame style dashed at 3px (a double needs at least 3px to show two lines) on a testimonial with no frame; border-*-style must change to dashed. Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-style-dotted
+
+Block: `testimonial`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"3px"`
+- `module.decoration.border.desktop.value.styles.all.style` = `"dotted"`
+- `module.decoration.border.desktop.value.styles.all.color` = `"#1e3a8a"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 52 | yes | `0:div:block-size: 155px -> 161px` |
+| 900 px | yes | 52 | yes | `0:div:block-size: 155px -> 161px` |
+| 400 px | yes | 52 | yes | `0:div:block-size: 157px -> 163px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-style`, `border-block-end-width`, `border-block-start-color`, `border-block-start-style`, `border-block-start-width`, `border-bottom-color`, `border-bottom-style`, `border-bottom-width`, `border-inline-end-color`, `border-inline-end-style`, `border-inline-end-width`, `border-inline-start-color`, `border-inline-start-style`, `border-inline-start-width`, `border-left-color`, `border-left-style`, `border-left-width`, `border-right-color`, `border-right-style`, `border-right-width`, `border-top-color`, `border-top-style`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame style dotted at 3px (a double needs at least 3px to show two lines) on a testimonial with no frame; border-*-style must change to dotted. Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-style-double
+
+Block: `testimonial`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"3px"`
+- `module.decoration.border.desktop.value.styles.all.style` = `"double"`
+- `module.decoration.border.desktop.value.styles.all.color` = `"#1e3a8a"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 52 | yes | `0:div:block-size: 155px -> 161px` |
+| 900 px | yes | 52 | yes | `0:div:block-size: 155px -> 161px` |
+| 400 px | yes | 52 | yes | `0:div:block-size: 157px -> 163px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-style`, `border-block-end-width`, `border-block-start-color`, `border-block-start-style`, `border-block-start-width`, `border-bottom-color`, `border-bottom-style`, `border-bottom-width`, `border-inline-end-color`, `border-inline-end-style`, `border-inline-end-width`, `border-inline-start-color`, `border-inline-start-style`, `border-inline-start-width`, `border-left-color`, `border-left-style`, `border-left-width`, `border-right-color`, `border-right-style`, `border-right-width`, `border-top-color`, `border-top-style`, `border-top-width`, `height`, `inline-size`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame style double at 3px (a double needs at least 3px to show two lines) on a testimonial with no frame; border-*-style must change to double. Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-frame-colour
+
+Block: `testimonial`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+
+Properties that changed (any width): `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Frame colour over a 2px solid navy frame (the base of this candidate carries the frame so only the colour differs). Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-edge-bottom
+
+Block: `testimonial`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.width` = `"0px"`
+- `module.decoration.border.desktop.value.styles.all.style` = `"solid"`
+- `module.decoration.border.desktop.value.styles.all.color` = `"#f59e0b"`
+- `module.decoration.border.desktop.value.styles.bottom.width` = `"2px"`
+- `module.decoration.border.desktop.value.styles.bottom.style` = `"solid"`
+- `module.decoration.border.desktop.value.styles.bottom.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 22 | yes | `0:div:block-size: 155px -> 157px` |
+| 900 px | yes | 22 | yes | `0:div:block-size: 155px -> 157px` |
+| 400 px | yes | 22 | yes | `0:div:block-size: 157px -> 159px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-color`, `border-block-end-style`, `border-block-end-width`, `border-block-start-color`, `border-block-start-style`, `border-bottom-color`, `border-bottom-style`, `border-bottom-width`, `border-inline-end-color`, `border-inline-end-style`, `border-inline-start-color`, `border-inline-start-style`, `border-left-color`, `border-left-style`, `border-right-color`, `border-right-style`, `border-top-color`, `border-top-style`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: The underline form the card patch writes (styles.all width 0px plus styles.bottom 2px). Expect only border-bottom-* to change; the other three sides stay 0px. Hover half not measured here (kx-testimonial-hover-frame is separate). Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-radius-16
+
+Block: `testimonial`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"16px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"16px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"16px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"16px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 0px -> 16px` |
+| 900 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 0px -> 16px` |
+| 400 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 0px -> 16px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`.
+
+Phone overflow at 400 px: no.
+
+Note: Four-corner radius 16px on the testimonial module box (no sync key, as the token resolves). Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-radius-pill
+
+Block: `testimonial`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"999px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"999px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"999px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"999px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 0px -> 999px` |
+| 900 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 0px -> 999px` |
+| 400 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 0px -> 999px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`.
+
+Phone overflow at 400 px: no.
+
+Note: Four-corner radius 999px on the testimonial module box. Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-padding-48
+
+Block: `testimonial`. Set on top of the base block:
+
+- `module.decoration.spacing.desktop.value.padding.top` = `"48px"`
+- `module.decoration.spacing.desktop.value.padding.right` = `"48px"`
+- `module.decoration.spacing.desktop.value.padding.bottom` = `"48px"`
+- `module.decoration.spacing.desktop.value.padding.left` = `"48px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 36 | yes | `0:div:block-size: 155px -> 191px` |
+| 900 px | yes | 36 | yes | `0:div:block-size: 155px -> 191px` |
+| 400 px | yes | 36 | yes | `0:div:block-size: 157px -> 191px` |
+
+Properties that changed (any width): `block-size`, `height`, `inline-size`, `padding-block-end`, `padding-block-start`, `padding-bottom`, `padding-inline-end`, `padding-inline-start`, `padding-left`, `padding-right`, `padding-top`, `perspective-origin`, `transform-origin`, `width`.
+
+Phone overflow at 400 px: no.
+
+Note: Padding 48px x4 on module.decoration.spacing, the card patch's padding path (the card role's padding value form), over Divi's 30px default. Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-shadow-soft
+
+Block: `testimonial`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset1"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"8px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"24px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"rgba(0,0,0,0.18)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+| 900 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+| 400 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.18) 0px 8px 24px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Soft shadow in the exact form KitAdapters::shadow() writes (preset1, vertical 8px, blur 24px, overlay at 18%). Expect rgba(0, 0, 0, 0.18) 0px 8px 24px 0px. Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-shadow-hard
+
+Block: `testimonial`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset4"`
+- `module.decoration.boxShadow.desktop.value.horizontal` = `"6px"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"6px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"#111827"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+| 900 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+| 400 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 6px 6px 0px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Hard offset shadow in the exact form KitAdapters::shadow() writes (preset4, 6px 6px 0px, ink). Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-shadow-edge
+
+Block: `testimonial`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset4"`
+- `module.decoration.boxShadow.desktop.value.horizontal` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"4px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"#111827"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+| 900 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+| 400 px | yes | 1 | yes | `0:div:box-shadow: none -> rgb(17, 24, 39) 0px 4px 0px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Edge shadow straight down in the exact form KitAdapters::shadow() writes (preset4, 0px 4px 0px, ink). Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-shadow-glow
+
+Block: `testimonial`. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.value.style` = `"preset1"`
+- `module.decoration.boxShadow.desktop.value.vertical` = `"0px"`
+- `module.decoration.boxShadow.desktop.value.blur` = `"16px"`
+- `module.decoration.boxShadow.desktop.value.color` = `"rgba(245,158,11,0.45)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+| 900 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+| 400 px | yes | 1 | yes | `0:div:box-shadow: none -> rgba(245, 158, 11, 0.45) 0px 0px 16px 0px` |
+
+Properties that changed (any width): `box-shadow`.
+
+Phone overflow at 400 px: no.
+
+Note: Glow in the exact form KitAdapters::shadow() writes (preset1, vertical 0px, blur 16px, accent at 45%). Expect rgba(245, 158, 11, 0.45) 0px 0px 16px 0px. Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-hover-lift
+
+Block: `testimonial`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.transform.desktop.hover.translate.y` = `"-4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -4)` |
+| 900 px | yes | 3 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -4)` |
+| 400 px | yes | 3 | yes | `0:div:transform: none -> matrix(1, 0, 0, 1, 0, -4)` |
+
+Properties that changed (any width): `transform`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: Hover lift translate.y -4px (the form the card patch writes), measured with the pointer on the testimonial. Expect transform matrix(1, 0, 0, 1, 0, -4) only in the hover state. Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-hover-frame
+
+Block: `testimonial`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.border.desktop.hover.styles.all.color` = `"#f59e0b"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 10 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 900 px | yes | 10 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+| 400 px | yes | 10 | yes | `0:div:border-block-end-color: rgb(30, 58, 138) -> rgb(245, 158, 11)` |
+
+Properties that changed (any width): `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: Hover frame colour (border.hover.styles.all.color) over a 2px solid navy frame, measured with the pointer on the testimonial. Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-hover-shadow
+
+Block: `testimonial`, measured in the `hover` state. Set on top of the base block:
+
+- `module.decoration.boxShadow.desktop.hover.style` = `"preset1"`
+- `module.decoration.boxShadow.desktop.hover.vertical` = `"12px"`
+- `module.decoration.boxShadow.desktop.hover.blur` = `"24px"`
+- `module.decoration.boxShadow.desktop.hover.color` = `"rgba(0,0,0,0.25)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px` |
+| 900 px | yes | 3 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px` |
+| 400 px | yes | 3 | yes | `0:div:box-shadow: none -> rgba(0, 0, 0, 0.25) 0px 12px 24px 0px` |
+
+Properties that changed (any width): `box-shadow`, `transition-duration`, `transition-property`.
+
+Phone overflow at 400 px: no.
+
+Note: Hover shadow over no rest shadow, the form KitAdapters::shadow() writes for rest none / hover soft (preset1, 12px down, 24px blur, overlay at 25%), measured with the pointer on the testimonial. Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-testimonial-quote
+
+Block: `testimonial`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.radius.topLeft` = `"16px"`
+- `module.decoration.border.desktop.value.radius.topRight` = `"16px"`
+- `module.decoration.border.desktop.value.radius.bottomRight` = `"16px"`
+- `module.decoration.border.desktop.value.radius.bottomLeft` = `"16px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 0px -> 16px` |
+| 900 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 0px -> 16px` |
+| 400 px | yes | 8 | yes | `0:div:border-bottom-left-radius: 0px -> 16px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 188, 1024 x 155 | 128, 188, 1024 x 155 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 242, 720 x 155 | 90, 242, 720 x 155 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 202, 320 x 157 | 40, 202, 320 x 157 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: Quote check: radius 16px with the base's overflow x/y visible. PASS = the module's border-radius changes while the ::before quote disc (Divi: top -16px, background #f5f5f5) keeps its top above the module box and is not clipped; read detail.geometry (the ::before is compared via pseudo, the module rect via geometry) and confirm the disc's computed top/background are unchanged. A radius that makes Divi print overflow:hidden here would clip the disc: record it. Source: the library's testimonial recipe shape (base) and Divi 5.15.1 testimonial/module.json (border propertySelectors, quoteIcon selector `:before`). Divi's CSS default: .et_pb_testimonial{padding:30px}, .et_pb_testimonial_no_bg{padding:30px 0 0}; module.decoration paths are proven on group/column/icon, NOT yet on the testimonial.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-blurb-icon-control
+
+Block: `blurb`. Set on top of the base block:
+
+- `imageIcon.decoration.background.desktop.value.color` = `"#2563eb"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `4:span:background-color: rgb(245, 158, 11) -> rgb(37, 99, 235)` |
+| 900 px | yes | 1 | yes | `4:span:background-color: rgb(245, 158, 11) -> rgb(37, 99, 235)` |
+| 400 px | yes | 1 | yes | `4:span:background-color: rgb(245, 158, 11) -> rgb(37, 99, 235)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Control: the icon fill over the base #f59e0b. Its changedElements name the element that paints the fill (expected `.et-pb-icon`); kx-blurb-icon-radius-on-fill must change the SAME element. Source: BlurbModule.php (imageIcon.decoration.border selector `.et_pb_main_blurb_image .et-pb-icon`) and the library's blurb-grid shape (base). Divi's CSS default: .et-pb-icon border-radius 0, border `0 solid #333`; fill and glyph paths are already proven (ty-bl-icon-background, ty-bl-icon-color), the radius path is not in the registry.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-blurb-icon-radius-4px
+
+Block: `blurb`. Set on top of the base block:
+
+- `imageIcon.decoration.border.desktop.value.radius.topLeft` = `"4px"`
+- `imageIcon.decoration.border.desktop.value.radius.topRight` = `"4px"`
+- `imageIcon.decoration.border.desktop.value.radius.bottomRight` = `"4px"`
+- `imageIcon.decoration.border.desktop.value.radius.bottomLeft` = `"4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 12 | yes | `4:span:border-bottom-left-radius: 0px -> 4px` |
+| 900 px | yes | 12 | yes | `4:span:border-bottom-left-radius: 0px -> 4px` |
+| 400 px | yes | 12 | yes | `4:span:border-bottom-left-radius: 0px -> 4px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: Four-corner radius 4px at imageIcon.decoration.border.desktop.value.radius (no sync key, as the kit token resolves); read which element's border-radius changed in changedElements. Source: BlurbModule.php (imageIcon.decoration.border selector `.et_pb_main_blurb_image .et-pb-icon`) and the library's blurb-grid shape (base). Divi's CSS default: .et-pb-icon border-radius 0, border `0 solid #333`; fill and glyph paths are already proven (ty-bl-icon-background, ty-bl-icon-color), the radius path is not in the registry.
+
+Registered paths added:
+
+- `imageIcon.decoration.border.{bp}.value.radius.bottomLeft`
+- `imageIcon.decoration.border.{bp}.value.radius.bottomRight`
+- `imageIcon.decoration.border.{bp}.value.radius.topLeft`
+- `imageIcon.decoration.border.{bp}.value.radius.topRight`
+
+## kx-blurb-icon-radius-12px
+
+Block: `blurb`. Set on top of the base block:
+
+- `imageIcon.decoration.border.desktop.value.radius.topLeft` = `"12px"`
+- `imageIcon.decoration.border.desktop.value.radius.topRight` = `"12px"`
+- `imageIcon.decoration.border.desktop.value.radius.bottomRight` = `"12px"`
+- `imageIcon.decoration.border.desktop.value.radius.bottomLeft` = `"12px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 12 | yes | `4:span:border-bottom-left-radius: 0px -> 12px` |
+| 900 px | yes | 12 | yes | `4:span:border-bottom-left-radius: 0px -> 12px` |
+| 400 px | yes | 12 | yes | `4:span:border-bottom-left-radius: 0px -> 12px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: Four-corner radius 12px at imageIcon.decoration.border.desktop.value.radius (no sync key, as the kit token resolves); read which element's border-radius changed in changedElements. Source: BlurbModule.php (imageIcon.decoration.border selector `.et_pb_main_blurb_image .et-pb-icon`) and the library's blurb-grid shape (base). Divi's CSS default: .et-pb-icon border-radius 0, border `0 solid #333`; fill and glyph paths are already proven (ty-bl-icon-background, ty-bl-icon-color), the radius path is not in the registry.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-blurb-icon-radius-999px
+
+Block: `blurb`. Set on top of the base block:
+
+- `imageIcon.decoration.border.desktop.value.radius.topLeft` = `"999px"`
+- `imageIcon.decoration.border.desktop.value.radius.topRight` = `"999px"`
+- `imageIcon.decoration.border.desktop.value.radius.bottomRight` = `"999px"`
+- `imageIcon.decoration.border.desktop.value.radius.bottomLeft` = `"999px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 12 | yes | `4:span:border-bottom-left-radius: 0px -> 999px` |
+| 900 px | yes | 12 | yes | `4:span:border-bottom-left-radius: 0px -> 999px` |
+| 400 px | yes | 12 | yes | `4:span:border-bottom-left-radius: 0px -> 999px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: Four-corner radius 999px at imageIcon.decoration.border.desktop.value.radius (no sync key, as the kit token resolves); read which element's border-radius changed in changedElements. Source: BlurbModule.php (imageIcon.decoration.border selector `.et_pb_main_blurb_image .et-pb-icon`) and the library's blurb-grid shape (base). Divi's CSS default: .et-pb-icon border-radius 0, border `0 solid #333`; fill and glyph paths are already proven (ty-bl-icon-background, ty-bl-icon-color), the radius path is not in the registry.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-blurb-icon-radius-on-fill
+
+Block: `blurb`. Set on top of the base block:
+
+- `imageIcon.decoration.border.desktop.value.radius.topLeft` = `"12px"`
+- `imageIcon.decoration.border.desktop.value.radius.topRight` = `"12px"`
+- `imageIcon.decoration.border.desktop.value.radius.bottomRight` = `"12px"`
+- `imageIcon.decoration.border.desktop.value.radius.bottomLeft` = `"12px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 12 | yes | `4:span:border-bottom-left-radius: 0px -> 12px` |
+| 900 px | yes | 12 | yes | `4:span:border-bottom-left-radius: 0px -> 12px` |
+| 400 px | yes | 12 | yes | `4:span:border-bottom-left-radius: 0px -> 12px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Phone overflow at 400 px: no.
+
+Note: Radius 12px over the base fill #f59e0b. PASS only when the element whose border-radius changed (changedElements) is the same element that kx-blurb-icon-control reports as changing its background (the `.et-pb-icon` that paints the fill), at all three widths; a radius on a different element than the fill would leave a square coloured box. Source: BlurbModule.php (imageIcon.decoration.border selector `.et_pb_main_blurb_image .et-pb-icon`) and the library's blurb-grid shape (base). Divi's CSS default: .et-pb-icon border-radius 0, border `0 solid #333`; fill and glyph paths are already proven (ty-bl-icon-background, ty-bl-icon-color), the radius path is not in the registry.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-blurb-icon-fill
+
+Block: `blurb`. Set on top of the base block:
+
+- `imageIcon.decoration.background.desktop.value.color` = `"#16a34a"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `4:span:background-color: rgb(245, 158, 11) -> rgb(22, 163, 74)` |
+| 900 px | yes | 1 | yes | `4:span:background-color: rgb(245, 158, 11) -> rgb(22, 163, 74)` |
+| 400 px | yes | 1 | yes | `4:span:background-color: rgb(245, 158, 11) -> rgb(22, 163, 74)` |
+
+Properties that changed (any width): `background-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Icon fill colour over the base #f59e0b (imageIcon.decoration.background.desktop.value.color, the chip fill the adapter writes). Source: BlurbModule.php (imageIcon.decoration.border selector `.et_pb_main_blurb_image .et-pb-icon`) and the library's blurb-grid shape (base). Divi's CSS default: .et-pb-icon border-radius 0, border `0 solid #333`; fill and glyph paths are already proven (ty-bl-icon-background, ty-bl-icon-color), the radius path is not in the registry.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-blurb-icon-glyph
+
+Block: `blurb`. Set on top of the base block:
+
+- `imageIcon.advanced.color.desktop.value` = `"#ffffff"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 17 | yes | `4:span:border-block-end-color: rgb(17, 24, 39) -> rgb(255, 255, 255)` |
+| 900 px | yes | 17 | yes | `4:span:border-block-end-color: rgb(17, 24, 39) -> rgb(255, 255, 255)` |
+| 400 px | yes | 17 | yes | `4:span:border-block-end-color: rgb(17, 24, 39) -> rgb(255, 255, 255)` |
+
+Properties that changed (any width): `-webkit-text-fill-color`, `-webkit-text-stroke-color`, `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`, `caret-color`, `color`, `column-rule-color`, `outline-color`, `row-rule-color`, `text-decoration-color`, `text-emphasis-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Icon glyph colour over the base #111827 (imageIcon.advanced.color.desktop.value, the chip glyph the adapter writes). Source: BlurbModule.php (imageIcon.decoration.border selector `.et_pb_main_blurb_image .et-pb-icon`) and the library's blurb-grid shape (base). Divi's CSS default: .et-pb-icon border-radius 0, border `0 solid #333`; fill and glyph paths are already proven (ty-bl-icon-background, ty-bl-icon-color), the radius path is not in the registry.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-blurb-icon-pill-in-column
+
+Block: `blurb`. Set on top of the base block:
+
+- `imageIcon.decoration.border.desktop.value.radius.topLeft` = `"999px"`
+- `imageIcon.decoration.border.desktop.value.radius.topRight` = `"999px"`
+- `imageIcon.decoration.border.desktop.value.radius.bottomRight` = `"999px"`
+- `imageIcon.decoration.border.desktop.value.radius.bottomLeft` = `"999px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 12 | yes | `4:span:border-bottom-left-radius: 0px -> 999px` |
+| 900 px | yes | 12 | yes | `4:span:border-bottom-left-radius: 0px -> 999px` |
+| 400 px | yes | 12 | yes | `4:span:border-bottom-left-radius: 0px -> 999px` |
+
+Properties that changed (any width): `border-bottom-left-radius`, `border-bottom-right-radius`, `border-end-end-radius`, `border-end-start-radius`, `border-start-end-radius`, `border-start-start-radius`, `border-top-left-radius`, `border-top-right-radius`, `overflow-block`, `overflow-inline`, `overflow-x`, `overflow-y`.
+
+Geometry (document coordinates, rounded px; control = page A, candidate = page B; `overlap` is the area shared with the previous or next sibling and which element is on top at its centre):
+
+| Width | Control rect (left, top, w x h) | Candidate rect | Parent width (control -> candidate) | Overlap area | On top |
+|---|---|---|---|---|---|
+| 1280 px | 128, 188, 1024 x 146 | 128, 188, 1024 x 146 | 1024 -> 1024 | 0 -> 0 | - -> - |
+| 900 px | 90, 242, 720 x 146 | 90, 242, 720 x 146 | 720 -> 720 | 0 -> 0 | - -> - |
+| 400 px | 40, 202, 320 x 146 | 40, 202, 320 x 146 | 320 -> 320 | 0 -> 0 | - -> - |
+
+Phone overflow at 400 px: no.
+
+Note: 999px with the recipe's 16px padding and 32px glyph: no phoneOverflow (overflowPx 0) and the icon box stays inside its column at 400 px (geometry parent rect). Source: BlurbModule.php (imageIcon.decoration.border selector `.et_pb_main_blurb_image .et-pb-icon`) and the library's blurb-grid shape (base). Divi's CSS default: .et-pb-icon border-radius 0, border `0 solid #333`; fill and glyph paths are already proven (ty-bl-icon-background, ty-bl-icon-color), the radius path is not in the registry.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-counter-control
+
+Block: `number-counter`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.color` = `"#2563eb"`
+- `module.decoration.border.desktop.value.styles.top.color` = `"#2563eb"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(17, 24, 39) -> rgb(37, 99, 235)` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(17, 24, 39) -> rgb(37, 99, 235)` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(17, 24, 39) -> rgb(37, 99, 235)` |
+
+Properties that changed (any width): `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Control: the top rule colour #2563eb over #111827 (written on all and top together). border-top-color must change. Source: the library's stats-counter-band shape (base). Divi's CSS default: a number counter draws no border (border-top none). The adapter writes styles.all and styles.top together; module.decoration.border is NOT yet proven on number-counter.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-counter-top-solid
+
+Block: `number-counter`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"solid"`
+- `module.decoration.border.desktop.value.styles.top.style` = `"solid"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: dashed -> solid` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: dashed -> solid` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: dashed -> solid` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Top rule style solid (all and top written together) over a dashed base at 1px. Source: the library's stats-counter-band shape (base). Divi's CSS default: a number counter draws no border (border-top none). The adapter writes styles.all and styles.top together; module.decoration.border is NOT yet proven on number-counter.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-counter-top-dashed
+
+Block: `number-counter`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"dashed"`
+- `module.decoration.border.desktop.value.styles.top.style` = `"dashed"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dashed` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Top rule style dashed (all and top written together) over a solid base at 1px. Source: the library's stats-counter-band shape (base). Divi's CSS default: a number counter draws no border (border-top none). The adapter writes styles.all and styles.top together; module.decoration.border is NOT yet proven on number-counter.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-counter-top-dotted
+
+Block: `number-counter`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"dotted"`
+- `module.decoration.border.desktop.value.styles.top.style` = `"dotted"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-style: solid -> dotted` |
+
+Properties that changed (any width): `border-block-end-style`, `border-block-start-style`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Top rule style dotted (all and top written together) over a solid base at 1px. Source: the library's stats-counter-band shape (base). Divi's CSS default: a number counter draws no border (border-top none). The adapter writes styles.all and styles.top together; module.decoration.border is NOT yet proven on number-counter.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-counter-top-double
+
+Block: `number-counter`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.style` = `"double"`
+- `module.decoration.border.desktop.value.styles.top.style` = `"double"`
+- `module.decoration.border.desktop.value.styles.top.width` = `"3px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 14 | yes | `0:div:block-size: 141px -> 143px` |
+| 900 px | yes | 14 | yes | `0:div:block-size: 141px -> 143px` |
+| 400 px | yes | 14 | yes | `0:div:block-size: 141px -> 143px` |
+
+Properties that changed (any width): `block-size`, `border-block-end-style`, `border-block-start-style`, `border-block-start-width`, `border-bottom-style`, `border-inline-end-style`, `border-inline-start-style`, `border-left-style`, `border-right-style`, `border-top-style`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Top rule style double (all and top written together) at 3px (a double needs at least 3px to show two lines) over a solid 1px base. Source: the library's stats-counter-band shape (base). Divi's CSS default: a number counter draws no border (border-top none). The adapter writes styles.all and styles.top together; module.decoration.border is NOT yet proven on number-counter.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-counter-top-width-1px
+
+Block: `number-counter`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.top.width` = `"1px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:block-size: 143px -> 141px` |
+| 900 px | yes | 6 | yes | `0:div:block-size: 143px -> 141px` |
+| 400 px | yes | 6 | yes | `0:div:block-size: 143px -> 141px` |
+
+Properties that changed (any width): `block-size`, `border-block-start-width`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Top rule width 1px over a 3px base (the recipe base is 1px, which would make a 1px write a default-value DEAD). Source: the library's stats-counter-band shape (base). Divi's CSS default: a number counter draws no border (border-top none). The adapter writes styles.all and styles.top together; module.decoration.border is NOT yet proven on number-counter.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-counter-top-width-2px
+
+Block: `number-counter`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.top.width` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:block-size: 141px -> 142px` |
+| 900 px | yes | 6 | yes | `0:div:block-size: 141px -> 142px` |
+| 400 px | yes | 6 | yes | `0:div:block-size: 141px -> 142px` |
+
+Properties that changed (any width): `block-size`, `border-block-start-width`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Top rule width 2px over the 1px base. Source: the library's stats-counter-band shape (base). Divi's CSS default: a number counter draws no border (border-top none). The adapter writes styles.all and styles.top together; module.decoration.border is NOT yet proven on number-counter.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-counter-top-width-3px
+
+Block: `number-counter`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.top.width` = `"3px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:block-size: 141px -> 143px` |
+| 900 px | yes | 6 | yes | `0:div:block-size: 141px -> 143px` |
+| 400 px | yes | 6 | yes | `0:div:block-size: 141px -> 143px` |
+
+Properties that changed (any width): `block-size`, `border-block-start-width`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Top rule width 3px over the 1px base. Source: the library's stats-counter-band shape (base). Divi's CSS default: a number counter draws no border (border-top none). The adapter writes styles.all and styles.top together; module.decoration.border is NOT yet proven on number-counter.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-counter-top-width-4px
+
+Block: `number-counter`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.top.width` = `"4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:block-size: 141px -> 144px` |
+| 900 px | yes | 6 | yes | `0:div:block-size: 141px -> 144px` |
+| 400 px | yes | 6 | yes | `0:div:block-size: 141px -> 144px` |
+
+Properties that changed (any width): `block-size`, `border-block-start-width`, `border-top-width`, `height`, `perspective-origin`, `transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Top rule width 4px over the 1px base. Source: the library's stats-counter-band shape (base). Divi's CSS default: a number counter draws no border (border-top none). The adapter writes styles.all and styles.top together; module.decoration.border is NOT yet proven on number-counter.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-counter-top-colour-alpha
+
+Block: `number-counter`. Set on top of the base block:
+
+- `module.decoration.border.desktop.value.styles.all.color` = `"rgba(17,24,39,0.4)"`
+- `module.decoration.border.desktop.value.styles.top.color` = `"rgba(17,24,39,0.4)"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(17, 24, 39) -> rgba(17, 24, 39, 0.4)` |
+| 900 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(17, 24, 39) -> rgba(17, 24, 39, 0.4)` |
+| 400 px | yes | 8 | yes | `0:div:border-block-end-color: rgb(17, 24, 39) -> rgba(17, 24, 39, 0.4)` |
+
+Properties that changed (any width): `border-block-end-color`, `border-block-start-color`, `border-bottom-color`, `border-inline-end-color`, `border-inline-start-color`, `border-left-color`, `border-right-color`, `border-top-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Top rule colour as the resolved alpha form (accent-text at 40%) over an opaque #111827 on all and top. Source: the library's stats-counter-band shape (base). Divi's CSS default: a number counter draws no border (border-top none). The adapter writes styles.all and styles.top together; module.decoration.border is NOT yet proven on number-counter.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-divider-accent-control
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.color` = `"#2563eb"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:::before:border-block-start-color: rgb(245, 158, 11) -> rgb(37, 99, 235)` |
+| 900 px | yes | 2 | yes | `0:div:::before:border-block-start-color: rgb(245, 158, 11) -> rgb(37, 99, 235)` |
+| 400 px | yes | 2 | yes | `0:div:::before:border-block-start-color: rgb(245, 158, 11) -> rgb(37, 99, 235)` |
+
+Properties that changed (any width): `::before:border-block-start-color`, `::before:border-top-color`.
+
+Phone overflow at 400 px: no.
+
+Note: Control: the accent line colour over #f59e0b on the preset divider. Source: the library's blog-feed and icon-values accent dividers (base: modulePreset 1ep0co506u). The preset may not exist on the dev site (Step 0 records what renders); the divider line is drawn on .et_pb_divider::before (rules adapter probe kr-*), but a weight or style over this preset is NOT yet proven.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-divider-accent-weight-2px
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.weight` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 4px -> 2px` |
+| 900 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 4px -> 2px` |
+| 400 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 4px -> 2px` |
+
+Properties that changed (any width): `::before:border-block-start-width`, `::before:border-top-width`, `::before:bottom`, `::before:inset-block-end`, `::before:perspective-origin`, `::before:transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Line weight 2px over the preset (PASS = the block's weight wins over the preset's). If the preset's own weight equals 2px Step 0 will show it; then re-probe against the measured weight. Source: the library's blog-feed and icon-values accent dividers (base: modulePreset 1ep0co506u). The preset may not exist on the dev site (Step 0 records what renders); the divider line is drawn on .et_pb_divider::before (rules adapter probe kr-*), but a weight or style over this preset is NOT yet proven.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-divider-accent-weight-3px
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.weight` = `"3px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 4px -> 3px` |
+| 900 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 4px -> 3px` |
+| 400 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 4px -> 3px` |
+
+Properties that changed (any width): `::before:border-block-start-width`, `::before:border-top-width`, `::before:bottom`, `::before:inset-block-end`, `::before:perspective-origin`, `::before:transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: Line weight 3px over the preset (PASS = the block's weight wins over the preset's). If the preset's own weight equals 3px Step 0 will show it; then re-probe against the measured weight. Source: the library's blog-feed and icon-values accent dividers (base: modulePreset 1ep0co506u). The preset may not exist on the dev site (Step 0 records what renders); the divider line is drawn on .et_pb_divider::before (rules adapter probe kr-*), but a weight or style over this preset is NOT yet proven.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-divider-accent-style-dashed
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.style` = `"dashed"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> dashed` |
+| 900 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> dashed` |
+| 400 px | yes | 2 | yes | `0:div:::before:border-block-start-style: solid -> dashed` |
+
+Properties that changed (any width): `::before:border-block-start-style`, `::before:border-top-style`.
+
+Phone overflow at 400 px: no.
+
+Note: Line style dashed over the preset (the block's style wins over the preset's). Source: the library's blog-feed and icon-values accent dividers (base: modulePreset 1ep0co506u). The preset may not exist on the dev site (Step 0 records what renders); the divider line is drawn on .et_pb_divider::before (rules adapter probe kr-*), but a weight or style over this preset is NOT yet proven.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## kx-divider-accent-alignself
+
+Block: `divider`, also comparing the computed styles of the pseudo-elements `::before`. Set on top of the base block:
+
+- `divider.advanced.line.desktop.value.weight` = `"3px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 4px -> 3px` |
+| 900 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 4px -> 3px` |
+| 400 px | yes | 6 | yes | `0:div:::before:border-block-start-width: 4px -> 3px` |
+
+Properties that changed (any width): `::before:border-block-start-width`, `::before:border-top-width`, `::before:bottom`, `::before:inset-block-end`, `::before:perspective-origin`, `::before:transform-origin`.
+
+Phone overflow at 400 px: no.
+
+Note: blog-feed's real base carries module.decoration.sizing.alignSelf flex-start; weight 3px must still win with it present. Source: the library's blog-feed and icon-values accent dividers (base: modulePreset 1ep0co506u). The preset may not exist on the dev site (Step 0 records what renders); the divider line is drawn on .et_pb_divider::before (rules adapter probe kr-*), but a weight or style over this preset is NOT yet proven.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## Not taught (kit-carrier)
+
+Candidates from `kit-carrier.json` that were measured and are not taught, with the reason:
+
+- `kx-blurb-icon-dead-radius-0px`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). Default-value check (not a dead path): radius 0px is the .et-pb-icon default, so the CSS is emitted and no computed style changes.
+- `kx-counter-dead-all-0px`: no effect (dead). Default-value check (not a dead path): styles.all.width 0px is already the base value and Divi's default, so nothing changes. Source: the library's stats-counter-band shape (base). Divi's CSS default: a number counter draws no border (border-top none). The adapter writes styles.all and styles.top together; module.decoration.border is NOT yet proven on number-counter.
+- `kx-divider-accent-weight-4px`: no effect (dead). Default-value check (not a dead path): the site preset 1ep0co506u renders the line at 4px on the dev site (weights 2px and 3px changed 4px -> 2px/3px), so writing 4px changes nothing.

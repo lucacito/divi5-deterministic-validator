@@ -142,7 +142,7 @@ class RecipeLibraryTest extends TestCase
      * Phrases that describe a card look a style kit now decides (corners, frame, shadow), banned from the description and
      * `when` of a recipe with a card or panel marker: the prose must be true under every kit.
      */
-    private const CARD_DECIDED_PHRASES = [
+    public const CARD_DECIDED_PHRASES = [
         '/\b(rounded|hairline[- ]bordered|bordered|framed|outlined|shadowed|square[- ]cornered)\s+(\w+\s+)?(card|panel|box|tile)s?\b/i',
         '/\brounded (and|or) |, rounded\b/i',
         '/\b(soft|drop|deep|long) shadows?\b/i',
@@ -1792,8 +1792,10 @@ class RecipeLibraryTest extends TestCase
         // recipes whose only kit marker is an item: faq-accordion, features-accordion-image, faq-toggle-list (accordion adapter Task 6),
         // plus contact-form, whose only kit marker is its form (forms adapter Task 4; the other three recipe forms already count above).
         // plus the 24 recipes that carry rules or chips: the 21 rule recipes and the 3 chip recipes, 45 minus the 12 that already counted
-        // for another marker (rules and chips Task 5; icon-values is both a card and a chip recipe).
-        $this->assertSame( 45, $checked, 'the recipes with a kit marker (button, card, item, form, rule or chip)' );
+        // for another marker (rules and chips Task 5; icon-values is both a card and a chip recipe),
+        // plus the 4 carrier recipes (carriers adapter, plan 2026-10-24, Task 5): testimonial, blurb-grid, stats-counter-band and
+        // blog-feed join; icon-values, the fifth carrier recipe, already counted (45 -> 49).
+        $this->assertSame( 49, $checked, 'the recipes with a kit marker (button, card, item, form, rule, chip or carrier)' );
     }
 
     public function testRecipesWithoutPairsAreOnlyTheFrozenBaselineAndItOnlyShrinks(): void

@@ -25,6 +25,7 @@ require_once __DIR__ . '/../wp-plugin/src/KitAdapters.php';
 require_once __DIR__ . '/../wp-plugin/src/LanguageAdapters.php';
 require_once __DIR__ . '/../wp-plugin/src/LanguageResolver.php';
 require_once __DIR__ . '/../wp-plugin/src/SectionRecipes.php';
+require_once __DIR__ . '/RuleMigrationTest.php';
 
 /**
  * The language step of the recipe pipeline (type adapter plan Task 3): a top-level `"aied":{"type":"<role>"}` on a block the
@@ -412,18 +413,33 @@ class LanguageResolverTest extends TestCase
             $kits[ (string) $lang['kit'] ] = (array) StyleKits::get( (string) $lang['kit'] );
         }
         $this->assertCount( 10, $kits, 'the ten default kits' );
+        // Carriers adapter (plan 2026-10-24, Task 5, Ruling 11): the frozen legacy resolver does not know the (block, role)
+        // pairs the carriers adapter added, so only recipes whose EVERY kit marker is a legacy pair are compared: 44 of the
+        // 49 kit-marker recipes. The five left out are exactly the carrier recipes (icon-values gained a `rule-accent`
+        // divider); LegacyKitResolver itself is not edited.
+        $legacy  = ( new \ReflectionClassConstant( LegacyKitResolver::class, 'ROLE_BLOCKS' ) )->getValue();
         $recipes = 0;
+        $left    = [];
         foreach ( SectionRecipes::names() as $name ) {
             $raw = (string) SectionRecipes::rawMarkup( $name );
             if ( ! str_contains( $raw, '"aied":{"kit"' ) ) {
                 continue;
+            }
+            foreach ( RuleMigrationTest::blocks( $raw ) as [ $block, $attrs ] ) {
+                $role = is_array( $attrs['aied'] ?? null ) ? ( $attrs['aied']['kit'] ?? null ) : null;
+                if ( is_string( $role ) && ! in_array( $block, $legacy[ $role ] ?? [], true ) ) {
+                    $left[] = $name;
+                    continue 2;
+                }
             }
             ++$recipes;
             foreach ( $kits as $id => $kit ) {
                 $this->assertSame( LegacyKitResolver::resolve( $raw, $kit ), KitResolver::resolve( $raw, $kit ), "$name / $id" );
             }
         }
-        $this->assertSame( 45, $recipes, 'the 45 kit-marker recipes' );
+        $this->assertSame( 44, $recipes, 'the 44 kit-marker recipes whose every marker the legacy resolver knows' );
+        sort( $left );
+        $this->assertSame( [ 'blog-feed', 'blurb-grid', 'icon-values', 'stats-counter-band', 'testimonial' ], $left, 'only the five carrier recipes are left out' );
         // The scanner edge cases of KitResolverTest, too.
         $kit = $kits['quiet-solid'] ?? reset( $kits );
         foreach ( [

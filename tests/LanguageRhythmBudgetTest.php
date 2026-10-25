@@ -44,9 +44,10 @@ final class LanguageRhythmBudgetTest extends TestCase
         self::assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide has no headroom to spare' );
         self::assertSame( 258, strlen( StyleGuide::topicParameterDescription() ), 'no new topic name is added' );
         self::assertSame( 7943, strlen( StyleGuide::markdown( 'typography' ) ) );
-        self::assertSame( 8997, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
-        self::assertSame( 8444, strlen( StyleGuide::markdown( 'style-kits' ) ) );
-        self::assertSame( 8331, strlen( StyleGuide::markdown( 'controls' ) ) );
+        // carriers adapter: kit-rules 8997 -> 9598 (Ruling 8), style-kits 8444 -> 8178 (Ruling 7), controls 8331 -> 8348 (Ruling 10).
+        self::assertSame( 9598, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
+        self::assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ) );
+        self::assertSame( 8348, strlen( StyleGuide::markdown( 'controls' ) ) );
         self::assertSame( 2592, strlen( StyleGuide::markdown( 'design-languages' ) ) );
         self::assertSame( 9972, strlen( StyleGuide::markdown( 'layout-sizing' ) ) );
     }

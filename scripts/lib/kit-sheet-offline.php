@@ -11,7 +11,10 @@
  * and the 1 image (a `divi/image` on the bg band whose radius token `{{aied:kit:radius-media}}` resolves to the kit's four media corners, its picture to a site-local pack URL).
  * and the 16 rules (a `rule` and a `rule-strong` divider and top-rule group on the bg and photo bands, a column rule, a divider in an inverted panel, a divider of each role on the
  * surface and accent bands and a top-rule group of each role in the inverted panel: the line's width, style and colour) and the 5 chips (a tag group and an icon chip on the bg band, a
- * tag on the surface and photo bands and an icon chip on the accent band: the control radius, the tag frame, the icon fill and glyph) of the rules-and-chips adapter.
+ * tag on the surface and photo bands and an icon chip on the accent band: the control radius, the tag frame, the icon fill and glyph) of the rules-and-chips adapter,
+ * and the 8 carriers (a testimonial card on bg and panel on surface, a blurb chip on surface and accent, a counter rule-strong on accent and rule on bg and a rule-accent divider on
+ * bg and surface) of the carriers adapter. Every row also carries `accentRuleFloor` = RuleChipAudit::ACCENT_RULE_FLOOR, the one number scripts/verify-kits.cjs judges the
+ * accent mark against (read from here, never typed in JavaScript).
  *
  * Usage: node -e '...' | php scripts/lib/kit-sheet-offline.php [--kit id] [--language id] [--no-markup]
  */
@@ -24,11 +27,13 @@ use AiEditorDivi5\WP\KitResolver;
 use AiEditorDivi5\WP\LayoutGate;
 use AiEditorDivi5\WP\RecipeTokens;
 use AiEditorDivi5\WP\StyleKits;
+use Divi5Validator\Tests\Support\RuleChipAudit;
 
 require_once __DIR__ . '/../../tests/bootstrap.php';
 foreach ( [ 'ImagePack', 'ImageTokens', 'DesignLanguages', 'RecipeTokens', 'StyleKits', 'KitResolver', 'KitAdapters', 'CodePolicy', 'LayoutGate' ] as $unit ) {
     require_once __DIR__ . '/../../wp-plugin/src/' . $unit . '.php';
 }
+require_once __DIR__ . '/../../tests/Support/RuleChipAudit.php';
 
 $opts   = getopt( '', [ 'kit:', 'language:', 'no-markup' ] );
 $markup = stream_get_contents( STDIN );
@@ -45,7 +50,7 @@ foreach ( $kits as $kitId ) {
     foreach ( $languages as $langId ) {
         $lang = DesignLanguages::get( $langId );
         if ( null === $kit || null === $lang || [] !== StyleKits::problems( $kit ) ) {
-            $out[] = [ 'kit' => $kitId, 'language' => $langId, 'leftovers' => [ 'unknown kit or language' ], 'tokenLeft' => true, 'valid' => false, 'violations' => [], 'markup' => '' ];
+            $out[] = [ 'kit' => $kitId, 'language' => $langId, 'leftovers' => [ 'unknown kit or language' ], 'tokenLeft' => true, 'valid' => false, 'violations' => [], 'markup' => '', 'accentRuleFloor' => RuleChipAudit::ACCENT_RULE_FLOOR ];
             continue;
         }
         $m = ImageTokens::resolve( $markup, 'https://example.test/assets/images/' );
@@ -54,6 +59,7 @@ foreach ( $kits as $kitId ) {
         $out[] = [
             'kit'        => $kitId,
             'language'   => $langId,
+            'accentRuleFloor' => RuleChipAudit::ACCENT_RULE_FLOOR,
             'leftovers'  => KitResolver::leftovers( $m ),
             'tokenLeft'  => str_contains( $m, '{{aied:' ),
             'valid'      => $g->isValid(),

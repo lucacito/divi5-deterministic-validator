@@ -112,6 +112,18 @@
  * language's `border` hairline or any alpha frame colour, 1.1: the PHP proof's isQuiet); overflow also covers every rule and chip. A cell whose rule or chip expectation has a hole stops at the gate before any
  * browser work.
  *
+ * Since the carriers adapter each cell also renders 8 carriers (K.CARRIER_SLOTS, each found by a UNIQUE author, title or heading text; expectations read from the RESOLVED markup, a
+ * null expectation fails the cell at the gate): a testimonial `card` on the bg band (a real hover) and a `panel` on the surface band (`divi/testimonial`: the card patch, no ground),
+ * a blurb `chip` on the surface band and on the accent band (`divi/blurb`: radius, fill and glyph at `imageIcon.*`, measured on `.et_pb_main_blurb_image .et-pb-icon`), a number counter
+ * `rule-strong` on the accent band and `rule` on the bg band (`divi/number-counter`: its own `border-top-*` with the other three sides at 0px) and a `rule-accent` divider on the bg
+ * and the surface band (`.et_pb_divider::before`, over the library's site preset). Codes: carrier (a slot missing, on the page twice, or a run that checked none: `FAIL carrier:`),
+ * testimonial-fill (computed and painted), testimonial-frame, testimonial-radius, testimonial-padding, testimonial-shadow, testimonial-hover (a card's lift, a panel does not move),
+ * testimonial-quote (the `::before` quote disc is rendered and the module's overflow is visible on both axes, so the hanging disc is not cut), testimonial-contrast (author and quote 4.5,
+ * a meaningful frame 3.0 on the painted fill); blurb-chip-radius, blurb-chip-fill (computed and painted), blurb-chip-glyph, blurb-chip-contrast (the glyph on the painted fill 3.0 and the
+ * fill not the band's colour); counter-rule-style|width|colour (the other three sides must be 0px) and counter-rule-contrast (a strong rule 3.0, a quiet one 1.1 on the painted band);
+ * accent-rule-style|width|colour and accent-rule-contrast (the line over the painted band at least the accent floor, a number the PHP exports as `accentRuleFloor` and this script reads
+ * from `scripts/lib/kit-sheet-offline.php` at the start, never types); `<family>-expectation` if the expectation gate is bypassed; overflow also covers every carrier.
+ *
  * A sheet the gate or the
  * resolver refuses FAILs once as `<kit>/<language>/gate`. Problems in the script's own page handling are `render-error`. A preview that
  * comes back as a 404 or without the page content is retried once with a fresh login.
@@ -171,6 +183,8 @@ const { checkItems } = require('./lib/kit-item-run.cjs');
 const { checkForms } = require('./lib/kit-form-run.cjs');
 const { checkMedia } = require('./lib/kit-media-run.cjs');
 const { checkRules, checkChips } = require('./lib/kit-rule-run.cjs');
+const { checkCarriers } = require('./lib/kit-carrier-run.cjs');
+const { spawnSync } = require('child_process');
 
 const wp = makeWp(ROOT);
 const pages = throwawayPages(wp, K.TITLE_PREFIX, 'kit');
@@ -296,12 +310,15 @@ async function openPreview(ctx, id, state) {
   const mediaObservations = [];
   const ruleObservations = [];
   const chipObservations = [];
+  const carrierObservations = [];
   let cardsChecked = 0;
   let itemsChecked = 0;
   let formsChecked = 0;
   let mediaChecked = 0;
   let rulesChecked = 0;
   let chipsChecked = 0;
+  let carriersChecked = 0;
+  let accentFloor = null;
   const state = { cookies: null, token: null };
   cleanupOnSignals(run, sweep, pages.runPrefix);
   let cells = [];
@@ -311,6 +328,10 @@ async function openPreview(ctx, id, state) {
       if (e.empty) { console.log('FAIL ' + e.message + '\nFAILED'); process.exit(1); }
       console.error(e.message); process.exit(2);
     }
+    // The accent mark's floor is the number the PHP exports (RuleChipAudit::ACCENT_RULE_FLOOR in the offline sheet), never typed here.
+    const floorRead = accentFloorFromOffline();
+    if (floorRead.problems.length) { console.log('FAIL carrier: ' + floorRead.problems.join('; ') + '\nFAILED'); process.exit(1); }
+    accentFloor = floorRead.floor;
     const foreign = pages.foreignCount();
     if (foreign > 0) console.log(`WARNING ${foreign} leftover or concurrent kit pages (not deleted; run with --clean-orphans when no other run is going)`);
     fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -388,6 +409,12 @@ async function openPreview(ctx, id, state) {
         const chipExpects = chipBlocks.map((b) => K.expectChipFromAttrs(b.attrs, b.slot.carrier));
         const chipMissing = chipExpects.flatMap((e, i) => K.missingChipExpectations(e).map((f) => `${chipBlocks[i].slot.key} ${f}`));
         if (chipMissing.length) { report(kit, lang, 'gate', [['gate', 'chip expectation missing (an adapter attribute path drifted): ' + chipMissing.slice(0, 6).join(', ') + (chipMissing.length > 6 ? ` and ${chipMissing.length - 6} more` : '')]]); continue; }
+        const carrierBlocks = K.carrierAttrs(page.markup);
+        const carrierAbsent = carrierBlocks.filter((b) => !b.attrs).map((b) => b.slot.key);
+        if (carrierAbsent.length) { report(kit, lang, 'gate', [['gate', 'carriers not found in the resolved sheet (by their author, title or heading): ' + carrierAbsent.join(', ')]]); continue; }
+        const carrierExpects = carrierBlocks.map((b) => K.expectCarrierFromAttrs(b.attrs, b.slot));
+        const carrierMissing = carrierExpects.flatMap((e, i) => K.missingCarrierExpectations(e, carrierBlocks[i].slot).map((f) => `${carrierBlocks[i].slot.key} ${f}`));
+        if (carrierMissing.length) { report(kit, lang, 'gate', [['gate', 'carrier expectation missing (an adapter attribute path drifted): ' + carrierMissing.slice(0, 6).join(', ') + (carrierMissing.length > 6 ? ` and ${carrierMissing.length - 6} more` : '')]]); continue; }
         for (const width of WIDTHS) {
           const ctx = await browser.newContext({ viewport: { width, height: 900 } });
           const problems = [];
@@ -484,6 +511,12 @@ async function openPreview(ctx, id, state) {
               for (const pr of hr.problems) problems.push(pr);
               for (const o of hr.observations) chipObservations.push({ kit, language: lang, ...o });
             }
+            if (m.hasRoot) {
+              const xr = await checkCarriers(p, { width, expects: carrierExpects, hairline: hairlines[lang], accentFloor });
+              carriersChecked += xr.carriersChecked;
+              for (const pr of xr.problems) problems.push(pr);
+              for (const o of xr.observations) carrierObservations.push({ kit, language: lang, ...o });
+            }
             if (consoleErrors.length) problems.push(['console-error', [...new Set(consoleErrors)].slice(0, 3).join(' | ')]);
             await p.close();
           } catch (e) {
@@ -507,6 +540,7 @@ async function openPreview(ctx, id, state) {
     try { fs.writeFileSync(path.join(OUT_DIR, 'media-observations.json'), JSON.stringify(mediaObservations, null, 1)); } catch (e) { console.log('WARNING could not write media-observations.json'); }
     try { fs.writeFileSync(path.join(OUT_DIR, 'rule-observations.json'), JSON.stringify(ruleObservations, null, 1)); } catch (e) { console.log('WARNING could not write rule-observations.json'); }
     try { fs.writeFileSync(path.join(OUT_DIR, 'chip-observations.json'), JSON.stringify(chipObservations, null, 1)); } catch (e) { console.log('WARNING could not write chip-observations.json'); }
+    try { fs.writeFileSync(path.join(OUT_DIR, 'carrier-observations.json'), JSON.stringify(carrierObservations, null, 1)); } catch (e) { console.log('WARNING could not write carrier-observations.json'); }
     printNotes(observations);
     printCardNotes(cardObservations);
     printItemNotes(itemObservations);
@@ -514,6 +548,7 @@ async function openPreview(ctx, id, state) {
     printMediaNotes(mediaObservations);
     printRuleNotes(ruleObservations);
     printChipNotes(chipObservations);
+    printCarrierNotes(carrierObservations);
     writeSheet(status, cells);
   } catch (e) {
     console.log('ERROR script: ' + (e && e.message ? e.message : e));
@@ -526,11 +561,12 @@ async function openPreview(ctx, id, state) {
     }
   }
   if (run.cleaning) return;
-  for (const why of K.emptyRunProblems({ checked: passes + failures, cardsChecked, itemsChecked })) { failures++; console.log('FAIL ' + why); }
+  for (const why of K.emptyRunProblems({ checked: passes + failures, cardsChecked, itemsChecked, carriersChecked })) { failures++; console.log('FAIL ' + why); }
   for (const why of K.emptyFormRunProblems({ formsChecked })) { failures++; console.log('FAIL form: ' + why); }
   for (const why of K.emptyMediaRunProblems({ mediaChecked })) { failures++; console.log('FAIL media: ' + why); }
   for (const why of K.emptyRuleRunProblems({ rulesChecked })) { failures++; console.log('FAIL rule: ' + why); }
   for (const why of K.emptyChipRunProblems({ chipsChecked })) { failures++; console.log('FAIL chip: ' + why); }
+  for (const why of K.emptyCarrierRunProblems({ carriersChecked })) { failures++; console.log('FAIL carrier: ' + why); }
   console.log(`\n${passes} PASS, ${failures} FAIL (cell/width lines) over ${cells.length} kit/language cell(s)`);
   console.log(failures ? 'FAILED' : 'Every selected kit renders as it says on the real Divi.');
   process.exit(failures ? 1 : 0);
@@ -635,5 +671,29 @@ function printChipNotes(obs) {
     const seg = (key, text) => { const o = list.find((x) => x.key === key); return o ? text(o) : `${key} n/a`; };
     const tagSeg = (label) => (o) => `${label} tag frame ${o.frame || 'n/a'} (vs band ${o.contrast.top !== undefined ? o.contrast.top : 'n/a'}:1)`;
     console.log(`NOTE chips ${k}: ${seg('chip-tag-surface', tagSeg('surface'))}; ${seg('chip-tag-dark', tagSeg('dark'))}; ${seg('chip-icon-accent', (o) => `accent icon radius ${o.radius}, glyph on fill ${o.contrast.glyph !== undefined ? o.contrast.glyph : 'n/a'}:1, fill vs band ${o.contrast.fillOnBand !== undefined ? o.contrast.fillOnBand : 'n/a'}:1`)}`);
+  }
+}
+
+/**
+ * The accent floor the PHP exports: one run of the offline sheet (scripts/lib/kit-sheet-offline.php, host PHP, no site) for the first kit and language, whose rows carry
+ * `accentRuleFloor` = RuleChipAudit::ACCENT_RULE_FLOOR. Returns { floor, problems } (K.accentFloorFromRow validates it: a failure here fails the run, never falls back to a number typed here).
+ */
+function accentFloorFromOffline() {
+  const r = spawnSync('php', [path.join(__dirname, 'lib', 'kit-sheet-offline.php'), '--kit', kitIds[0], '--language', languages[0].id, '--no-markup'], { input: K.sheetMarkup(), encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  if (r.status !== 0) return { floor: null, problems: ['the offline sheet failed: ' + (r.error ? r.error.message : (r.stderr || '').split('\n')[0])] };
+  let rows;
+  try { rows = JSON.parse(r.stdout); } catch (e) { return { floor: null, problems: ['the offline sheet printed no JSON'] }; }
+  return K.accentFloorFromRow(Array.isArray(rows) ? rows[0] : null);
+}
+
+/** NOTE lines for the carriers, one per kit/language at 1280 px: the testimonial's lift and quote disc, the blurb chip's corner and glyph contrast, the counter and accent lines and their contrast. */
+function printCarrierNotes(obs) {
+  const groups = new Map();
+  for (const o of obs.filter((x) => x.width === 1280)) { const k = o.kit + '/' + o.language; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(o); }
+  const num = (v) => (v === undefined || v === null ? 'n/a' : v);
+  for (const [k, list] of groups) {
+    const seg = (key, text) => { const o = list.find((x) => x.key === key); return o ? text(o) : `${key} n/a`; };
+    const line = (o) => (o.got ? `${o.got.borderTopWidth} ${o.got.borderTopStyle}` : 'n/a');
+    console.log(`NOTE carriers ${k}: ${seg('testimonial-card-bg', (o) => `testimonial card radius ${o.got.radius}, hover ${o.hoverTransform || 'n/a'}, quote disc ${o.quote && o.quote.hangs !== null ? (o.quote.hangs ? 'hangs' : 'inside') : 'n/a'}`)}; ${seg('blurb-chip-surface', (o) => `blurb chip radius ${o.got.radius}, glyph on fill ${num(o.contrast.glyph)}:1`)}; ${seg('blurb-chip-accent', (o) => `on accent glyph ${num(o.contrast.glyph)}:1`)}; ${seg('counter-rule-strong-accent', (o) => `counter strong ${line(o)} (${num(o.contrast.line)}:1)`)}; ${seg('counter-rule-bg', (o) => `quiet ${line(o)} (${num(o.contrast.line)}:1)`)}; ${seg('accent-rule-bg', (o) => `accent mark ${line(o)} (${num(o.contrast.line)}:1 of ${num(o.contrast.need)})`)}`);
   }
 }

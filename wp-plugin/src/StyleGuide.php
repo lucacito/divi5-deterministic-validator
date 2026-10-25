@@ -192,7 +192,7 @@ final class StyleGuide
             . "- Match the kit to the language: its corners (tight or soft) and weight (outline and thin, or filled and heavy) should read like the rest of the page.\n"
             . "- One kit per page. Don't mix kits: a soft filled button next to a tight outline one looks like two designs.\n\n"
             . "## What is kit-driven today\n\n"
-            . self::appliedSentence() . ' ' . self::notAppliedSentence() . ' '
+            . self::appliedNounsSentence() . ' ' . self::notAppliedSentence() . ' '
             . "To build one without a recipe, copy the block from the kit's topic and swap its colours for your design language's roles.\n";
     }
 
@@ -216,6 +216,7 @@ final class StyleGuide
         'form'              => 'forms',
         'rule'              => 'rules',
         'rule-strong'       => 'rules',
+        'rule-accent'       => 'rules',
         'chip'              => 'chips',
     ];
 
@@ -233,8 +234,8 @@ final class StyleGuide
     ];
 
     /**
-     * "Forms, blurbs, testimonials, image radius and every other module keep the recipe's own styling.", generated from
-     * KitAdapters::APPLIED (see NOT_APPLIED_NOUNS).
+     * "Blurbs, testimonials and every other module keep the recipe's own styling." (or, with every noun kit-driven, "Every other
+     * module keeps the recipe's own styling."), generated from KitAdapters::APPLIED (see NOT_APPLIED_NOUNS).
      *
      * @param array<string,list<string>>|null $applied defaults to KitAdapters::APPLIED
      * @param list<string>|null               $media   blocks that take the media radius; defaults to KitAdapters::MEDIA_RADIUS_BLOCKS (a block there is no longer named)
@@ -251,7 +252,8 @@ final class StyleGuide
         }
         $nouns[] = 'every other module';
 
-        return ucfirst( count( $nouns ) > 1 ? implode( ', ', array_slice( $nouns, 0, -1 ) ) . ' and ' . end( $nouns ) : $nouns[0] ) . " keep the recipe's own styling.";
+        // The verb agrees in number (carriers spec Ruling 9): "Every other module keeps", "Forms and every other module keep".
+        return ucfirst( count( $nouns ) > 1 ? implode( ', ', array_slice( $nouns, 0, -1 ) ) . ' and ' . end( $nouns ) : $nouns[0] ) . ( count( $nouns ) > 1 ? ' keep' : ' keeps' ) . " the recipe's own styling.";
     }
 
     /**
@@ -368,8 +370,8 @@ final class StyleGuide
 
     /**
      * Topic `kit-rules`: what each module takes from a kit, the same for every kit, said ONCE here instead of in every kit
-     * topic. Generated from KitAdapters::APPLIED: a module's section is served only while an adapter answers its roles. At
-     * most 10,000 bytes.
+     * topic. Generated from KitAdapters::APPLIED: a module's section is served only while an adapter answers its roles; the
+     * carriers of the carriers adapter close it in one paragraph (carrierRules()). At most 10,000 bytes (pinned at 9,600).
      *
      * @param array<string,list<string>>|null $applied defaults to KitAdapters::APPLIED (a parameter only so a test can prove the topic follows the map)
      * @param array<string,bool>|null          $proven  defaults to KitAdapters::FORM_PROVEN (a parameter only so a test can prove the Contact forms paragraph follows the probe's verdicts)
@@ -426,9 +428,94 @@ final class StyleGuide
             $rp    = $ruleProven ?? KitAdapters::RULE_PROVEN;
             $cp    = $chipProven ?? KitAdapters::CHIP_PROVEN;
             $shape = self::ruleChipShapes( $applied, $rp, $cp );
-            $out  .= "\n## Rules and chips\n\n" . self::ruleChipRules( $applied, $rp, $cp ) . ( '' === $shape ? '' : "\n\n" . $shape ) . "\n";
+            $body  = self::ruleChipRules( $applied, $rp, $cp );
+            if ( '' !== $body ) {
+                // Only the divider, group, column and icon are described here: a map whose rule or chip roles sit only on the
+                // carriers of the More carriers paragraph has no Rules and chips paragraph.
+                $out .= "\n## Rules and chips\n\n" . $body . ( '' === $shape ? '' : "\n\n" . $shape ) . "\n";
+            }
         }
 
+        return $out . self::carrierRules( $applied );
+    }
+
+    /**
+     * The `## More carriers` paragraph of `kit-rules` (carriers spec Ruling 8, at most 560 B with its heading): one clause per
+     * carrier in $applied whose base decision is proven (a testimonial card or panel, a blurb icon chip, a number counter rule,
+     * the accent mark on a divider), generated from the map, the probe's verdicts and the patch itself (the blurb paths are the
+     * leaves of KitAdapters::chipPatch(), never typed). A proven decision is said, an unproven one is never claimed and its
+     * fallback is stated. '' when none of the four carriers is offered.
+     *
+     * @param array<string,list<string>>|null $applied defaults to KitAdapters::APPLIED
+     * @param array<string,bool>|null          $proven  defaults to KitAdapters::CARRIER_PROVEN (a parameter only so a test can prove the clauses follow the probe's verdicts)
+     */
+    public static function carrierRules( ?array $applied = null, ?array $proven = null ): string
+    {
+        $applied ??= KitAdapters::APPLIED;
+        $proven  ??= KitAdapters::CARRIER_PROVEN;
+        $is      = static fn ( string $decision ): bool => true === ( $proven[ $decision ] ?? false );
+        $roleOf  = static fn ( string $block, string $role ): bool => in_array( $role, $applied[ $block ] ?? [], true );
+        $or      = static fn ( array $names ): string => count( $names ) > 1 ? implode( ', ', array_slice( $names, 0, -1 ) ) . ' or ' . end( $names ) : (string) ( $names[0] ?? '' );
+        $parts   = [];
+
+        $cardRoles = array_values( array_filter( [ 'card', 'panel' ], static fn ( string $r ): bool => $roleOf( 'divi/testimonial', $r ) ) );
+        if ( [] !== $cardRoles && $is( 'testimonial-fill' ) && $is( 'testimonial-frame' ) && $is( 'testimonial-radius' ) && $is( 'testimonial-quote' ) ) {
+            $missing = array_values( array_filter( [
+                $is( 'testimonial-padding' ) ? '' : 'padding',
+                $is( 'testimonial-shadow' ) ? '' : 'shadow',
+                $is( 'testimonial-hover-shadow' ) ? '' : 'hover shadow',
+                $is( 'testimonial-hover-lift' ) ? '' : 'lift',
+                $is( 'testimonial-hover-frame' ) ? '' : 'hover frame',
+            ] ) );
+            $parts[] = $or( array_map( static fn ( string $r ): string => '`' . $r . '`', $cardRoles ) ) . ' on a `divi/testimonial`: the group card, no ground; the quote icon stays Divi\'s'
+                . ( $is( 'testimonial-underline' ) ? '' : '; an underline kit frames it at 1px' )
+                . ( [] === $missing ? '' : '; no kit ' . implode( ', ', $missing ) ) . '.';
+        }
+
+        $kit = StyleKits::get( (string) ( StyleKits::ids()[0] ?? '' ) );
+        if ( $roleOf( 'divi/blurb', 'chip' ) && $is( 'blurb-icon-radius' ) && null !== $kit ) {
+            $names = [ 'radius' => 'control radius', 'background' => 'fill', 'advanced' => 'glyph' ];
+            $what  = [];
+            foreach ( array_keys( self::leafPaths( KitAdapters::chipPatch( 'divi/blurb', 'light', $kit, KitAdapters::CHIP_PROVEN, KitAdapters::RULE_PROVEN, $proven ) ) ) as $path ) {
+                foreach ( $names as $part => $name ) {
+                    if ( str_contains( $path, '.' . $part ) ) {
+                        $what[] = $name . ' `' . $path . '`';
+                        break;
+                    }
+                }
+            }
+            $parts[] = '`chip` on a `divi/blurb`: ' . implode( ', ', $what )
+                . ( $is( 'blurb-icon-fill' ) && $is( 'blurb-icon-glyph' ) ? '' : '; not on an accent band' ) . '; padding and size stay.';
+        }
+
+        $ruleRoles = array_values( array_filter( [ 'rule', 'rule-strong' ], static fn ( string $r ): bool => $roleOf( 'divi/number-counter', $r ) ) );
+        if ( [] !== $ruleRoles && $is( 'counter-top' ) ) {
+            $styles = array_values( array_filter( [ 'dashed', 'dotted', 'double' ], static fn ( string $style ): bool => ! $is( 'counter-top-' . $style ) ) );
+            $parts[] = $or( array_map( static fn ( string $r ): string => '`' . $r . '`', $ruleRoles ) ) . ' on a `divi/number-counter`: the top edge, as on a group'
+                . ( [] === $styles ? '' : '; ' . implode( ' or ', $styles ) . ' is drawn as solid' )
+                . ( $is( 'counter-top-alpha' ) ? '' : '; quiet takes the strong colour off light and surface' ) . '.';
+        }
+
+        if ( $roleOf( 'divi/divider', 'rule-accent' ) && $is( 'divider-accent-over-preset' ) && true === ( KitAdapters::RULE_PROVEN['divider-line'] ?? false ) ) {
+            $parts[] = '`rule-accent` on a `divi/divider`: accent colour, strong width, kit style' . ( $is( 'divider-accent-style' ) ? '' : ' (drawn solid)' )
+                . '; `on`: ' . implode( ' or ', KitAdapters::ACCENT_RULE_BANDS ) . '; a brand mark, not a separator.';
+        }
+
+        return [] === $parts ? '' : "\n## More carriers\n\n" . implode( ' ', $parts ) . "\n";
+    }
+
+    /** Dotted path => value of every leaf of $node. @param array<mixed> $node @return array<string,mixed> */
+    private static function leafPaths( array $node, string $prefix = '' ): array
+    {
+        $out = [];
+        foreach ( $node as $k => $v ) {
+            $path = '' === $prefix ? (string) $k : $prefix . '.' . $k;
+            if ( is_array( $v ) && [] !== $v ) {
+                $out += self::leafPaths( $v, $path );
+            } else {
+                $out[ $path ] = $v;
+            }
+        }
         return $out;
     }
 
@@ -636,7 +723,35 @@ final class StyleGuide
      */
     public static function appliedSentence( ?array $applied = null ): string
     {
-        $applied ??= KitAdapters::APPLIED;
+        $parts  = array_map( static fn ( array $p ): string => $p[1], self::appliedParts( $applied ?? KitAdapters::APPLIED ) );
+        $joined = count( $parts ) > 1 ? implode( ', ', array_slice( $parts, 0, -1 ) ) . ' and ' . end( $parts ) : (string) ( $parts[0] ?? 'nothing' );
+
+        return 'Kit-driven today: ' . $joined . '.';
+    }
+
+    /**
+     * The catalog's noun-only form of appliedSentence() (carriers spec Ruling 7): "Kit-driven today: buttons, cards, accordion
+     * and toggle items, forms, rules and chips (blocks and marker roles: topic=kit-rules)." The same nouns, in the same order and
+     * joined the same way, from the same map; a role without a noun is named by its id.
+     *
+     * @param array<string,list<string>>|null $applied defaults to KitAdapters::APPLIED (a parameter only so a test can prove the sentence follows the map)
+     */
+    public static function appliedNounsSentence( ?array $applied = null ): string
+    {
+        $nouns  = array_map( static fn ( array $p ): string => $p[0], self::appliedParts( $applied ?? KitAdapters::APPLIED ) );
+        $joined = count( $nouns ) > 1 ? implode( ', ', array_slice( $nouns, 0, -1 ) ) . ' and ' . end( $nouns ) : (string) ( $nouns[0] ?? 'nothing' );
+
+        return 'Kit-driven today: ' . $joined . ' (blocks and marker roles: topic=kit-rules).';
+    }
+
+    /**
+     * [noun, "noun (blocks: roles)"] per part of the applied sentence, in its order (see appliedSentence()).
+     *
+     * @param array<string,list<string>> $applied
+     * @return list<array{0:string,1:string}>
+     */
+    private static function appliedParts( array $applied ): array
+    {
         $ticks   = static fn ( array $names ): string => implode( ', ', array_map( static fn ( string $n ): string => '`' . $n . '`', $names ) );
         $byNoun  = [];
         foreach ( self::APPLIED_NOUNS as $role => $noun ) {
@@ -654,7 +769,7 @@ final class StyleGuide
                 }
             }
             if ( [] !== $blocks ) {
-                $parts[] = sprintf( '%s (%s: %s)', $noun, $ticks( $blocks ), $ticks( array_values( array_intersect( $nounRoles, $roles ) ) ) );
+                $parts[] = [ $noun, sprintf( '%s (%s: %s)', $noun, $ticks( $blocks ), $ticks( array_values( array_intersect( $nounRoles, $roles ) ) ) ) ];
             }
         }
         $unnamed = [];
@@ -666,11 +781,10 @@ final class StyleGuide
             }
         }
         foreach ( $unnamed as $role => $blocks ) {
-            $parts[] = sprintf( '`%s` (%s: `%s`)', $role, $ticks( $blocks ), $role );
+            $parts[] = [ '`' . $role . '`', sprintf( '`%s` (%s: `%s`)', $role, $ticks( $blocks ), $role ) ];
         }
-        $joined = count( $parts ) > 1 ? implode( ', ', array_slice( $parts, 0, -1 ) ) . ' and ' . end( $parts ) : (string) ( $parts[0] ?? 'nothing' );
 
-        return 'Kit-driven today: ' . $joined . '.';
+        return $parts;
     }
 
     /**

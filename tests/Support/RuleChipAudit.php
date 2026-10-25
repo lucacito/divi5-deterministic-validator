@@ -55,11 +55,23 @@ final class RuleChipAudit
     /** The weakest quiet rule any kit may draw: the library's measured minimum (1.184) rounded down. Never lowered. */
     public const QUIET_RULE_FLOOR = 1.1;
 
+    /**
+     * The weakest `rule-accent` (an accent line on a `light` or `surface` band) any kit may draw. Carriers adapter,
+     * Ruling 1: the accent-vs-band minimum is the `accent | light | 2.304 | playful-pastel` row of
+     * fixtures/shapes/rule-floor.md (the two accent dividers the library shipped), rounded DOWN to one decimal. No band is
+     * 3:1 in all ten languages (light 2.304, surface 2.448, accent 1.000, dark 1.401, panel 1.103), so the accent rule is a
+     * decorative brand mark judged at this measured floor. Written once, never lowered.
+     */
+    public const ACCENT_RULE_FLOOR = 2.3;
+
     /** The script's photo model: the language overlay over mid grey (KitAdaptersTest::PHOTO_GREY). */
     public const PHOTO_GREY = '#808080';
 
     /**
      * recipe|block|index => why this block stays literal although it looks like a rule or a chip.
+     *
+     * Carriers adapter (plan 2026-10-24, Task 5, Ruling 11): 15 -> 9. The four counters (`rule-strong` on accent) and the
+     * two accent dividers (`rule-accent` on light) are kit-driven now and pinned in CarrierMigrationTest.
      *
      * @var array<string,string>
      */
@@ -73,13 +85,10 @@ final class RuleChipAudit
         'timeline-vertical|divi/group|13' => 'timeline dot: a 14px square, a shape decision, Ruling 6',
         'timeline-vertical|divi/group|18' => 'timeline dot: a 14px square, a shape decision, Ruling 6',
         'pricing-three-tier|divi/group|10' => 'the filled [Most popular] badge on the accent ground: a filled pill, not an outline tag; Spec issue 3',
-        'stats-counter-band|divi/number-counter|0' => 'a top rule on a counter: counters are out, Ruling 7; Spec issue 4',
-        'stats-counter-band|divi/number-counter|1' => 'a top rule on a counter: counters are out, Ruling 7; Spec issue 4',
-        'stats-counter-band|divi/number-counter|2' => 'a top rule on a counter: counters are out, Ruling 7; Spec issue 4',
-        'stats-counter-band|divi/number-counter|3' => 'a top rule on a counter: counters are out, Ruling 7; Spec issue 4',
-        'blog-feed|divi/divider|0'   => 'accent mark on a site preset: a brand decision, not a separator; Ruling 8',
-        'icon-values|divi/divider|0' => 'accent mark on a site preset: a brand decision, not a separator; Ruling 8',
     ];
+
+    /** The blocks the carriers adapter added (plan 2026-10-24): their markers are CarrierAudit's and CarrierMigrationTest's. */
+    private const CARRIER_BLOCKS = [ 'divi/number-counter', 'divi/blurb', 'divi/testimonial' ];
 
     /** The block names whose top-edge-only border reads as a rule when raw rows are scanned (a counter is exempt, never listed). */
     private const RULE_CARRIERS = [ 'divi/divider', 'divi/group', 'divi/column' ];
@@ -304,6 +313,12 @@ final class RuleChipAudit
     private static function kindOf( string $block, array $attrs ): ?array
     {
         $kit = is_array( $attrs['aied'] ?? null ) ? ( $attrs['aied']['kit'] ?? null ) : null;
+        // Carriers adapter (plan 2026-10-24, Task 5, Ruling 11): a `rule-accent` marker, and any marker on the carriers
+        // that adapter added (a counter's rule, a blurb's icon chip, a testimonial's card or panel), are
+        // CarrierMigrationTest's, not this audit's.
+        if ( null !== $kit && ( 'rule-accent' === $kit || in_array( $block, self::CARRIER_BLOCKS, true ) ) ) {
+            return null;
+        }
         if ( 'rule' === $kit || 'rule-strong' === $kit ) {
             return [ 'kind' => 'rule', 'role' => $kit, 'colour' => null, 'marked' => true ];
         }

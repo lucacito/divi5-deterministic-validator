@@ -410,7 +410,8 @@ class KitChipAdapterTest extends TestCase
     public function testUnknownCombinationsAreNull(): void
     {
         $kit = $this->shippedKits()['soft-solid'];
-        foreach ( [ 'divi/divider', 'divi/column', 'divi/text', 'divi/button', 'divi/image', 'divi/blurb', 'divi/row', 'divi/accordion', 'divi/toggle', 'divi/contact-form' ] as $block ) {
+        // carriers adapter: 'divi/blurb' left this list: a blurb's icon is a chip carrier (KitCarrierAdapterTest).
+        foreach ( [ 'divi/divider', 'divi/column', 'divi/text', 'divi/button', 'divi/image', 'divi/row', 'divi/accordion', 'divi/toggle', 'divi/contact-form' ] as $block ) {
             $this->assertNull( KitAdapters::patch( $block, 'chip', 'light', $kit ), "chip on $block" );
         }
         foreach ( [ 'panel', 'photo', 'dark ', '', 'LIGHT' ] as $on ) {
