@@ -5,14 +5,18 @@ declare(strict_types=1);
 namespace Divi5Validator\Tests\Support\Dogfood;
 
 use AiEditorDivi5\WP\DesignLanguages;
+use AiEditorDivi5\WP\LanguageAdapters;
 use AiEditorDivi5\WP\StyleKits;
+use Divi5Validator\Tests\Support\RhythmAudit;
+
+require_once __DIR__ . '/../RhythmAudit.php';
 
 /**
  * The dogfood scorer (plan 2026-10-22, Task 2): judges a Divi 5 page that an assistant wrote by hand against what the REAL
  * kit adapters would have written for the same blocks, one named check at a time. Static and deterministic: it reads the
  * markup, the kit and the language, nothing else (no site, no clock, no network, no model). Dev tooling: never shipped.
  *
- * - A block is classified structurally and conservatively (button, rule, chip, framed, item, form, image). A block the
+ * - A block is classified structurally and conservatively (button, rule, chip, framed, item, form, image, type, rhythm). A block the
  *   scorer cannot place is listed as unclassified and counted neither as passed nor as failed; an undecorated wrapper is
  *   only counted (`ignored`).
  * - Every expected value is read from Expected::attrs(), the resolved output of the adapters, for the CANDIDATE roles of the
@@ -29,10 +33,27 @@ use AiEditorDivi5\WP\StyleKits;
  * except where the check says otherwise: an absent border width is 0, an absent radius is 0px (a button's radius stays strict),
  * and a BUTTON's border (and a form submit's) with no width written is Divi's own 2px solid (`.et_pb_button{border:2px solid}`).
  * A button background that is a gradient is filled with a colour that cannot be judged (`gradient`).
+ *
+ * Two categories are decided by the design LANGUAGE, not the kit (type and rhythm adapters, 2026-10-24); their expected values
+ * are LanguageAdapters::patch() output for the scorer's language, never typed:
+ *
+ * - `type`: a `divi/heading` is placed by the TypeAudit rule (h1 or h2 in the display font = display, h3 in the display font =
+ *   title, h4 in the eyebrow font = eyebrow), a `divi/text` whose desktop body font says `uppercase` in the eyebrow font is an
+ *   eyebrow. The font is the `{{aied:font:<role>}}` token, or a literal family whose first name equals the first name of the
+ *   language's font for that role (a family shared by several roles counts for each). A heading that carries neither a level
+ *   nor a family is ignored (Divi's own heading); any other heading or uppercase text the rule cannot place is unclassified.
+ *   The page's own weight, letter spacing and capitalisation are compared with the role's; a value the page does not write is
+ *   Divi's default (TYPE_DEFAULTS), so it passes only where the role's value IS that default. A `none` role passes with no
+ *   capitalisation or `none`, never with a transform.
+ * - `rhythm`: a `divi/section` whose desktop padding has top = bottom, both `Npx` with N > 0, is matched to the nearest of the
+ *   language's `section`, `open` and `tight` desktop values in ratio (a tie goes to the first); a value whose ratio to the
+ *   language's `section` lies outside RhythmAudit::BAND is near no role. Then desktop, tablet and phone are compared with the
+ *   role's; a breakpoint the page does not write takes the value of the one above (Divi's cascade). No padding, an asymmetric,
+ *   relative or 0px desktop padding, or one near no role is unclassified.
  */
 final class Scorer
 {
-    public const CATEGORIES = [ 'button', 'rule', 'chip', 'framed', 'item', 'form', 'image' ];
+    public const CATEGORIES = [ 'button', 'rule', 'chip', 'framed', 'item', 'form', 'image', 'type', 'rhythm' ];
 
     public const CHECKS = [
         'button.radius', 'button.edge', 'button.edge-style', 'button.fill', 'button.fill-colour',
@@ -43,7 +64,18 @@ final class Scorer
         'form.field-radius', 'form.field-frame', 'form.field-frame-style', 'form.field-fill-colour',
         'form.button-radius', 'form.button-edge', 'form.button-edge-style', 'form.button-fill-colour',
         'image.radius',
+        'type.weight', 'type.letter-spacing', 'type.capitalization',
+        'rhythm.desktop', 'rhythm.tablet', 'rhythm.phone',
     ];
+
+    /**
+     * Divi 5.15.1's own values when a heading or text sets none (measured: fixtures/shapes/language-type-vocabulary.md,
+     * "Defaults measured"): weight 500, letter spacing `normal` (no extra spacing: 0px), no text transform.
+     */
+    private const TYPE_DEFAULTS = [ 'weight' => '500', 'letterSpacing' => 0.0, 'capitalization' => 'none' ];
+
+    /** The breakpoints of a section's padding, in cascade order (a missing one takes the value of the one above). */
+    private const BREAKPOINTS = [ 'desktop', 'tablet', 'phone' ];
 
     /** A radius at or above this is a shape (a circle, an arch), not a corner decision. */
     private const SHAPE_RADIUS = 999.0;
@@ -241,9 +273,14 @@ final class Scorer
                 $unclassified[] = [ 'block' => $b['key'], 'reason' => $class['reason'] ];
                 continue;
             }
-            if ( 'image' === $class['class'] ) {
-                foreach ( $this->image( $b['attrs'] ) as [ $check, $pass, $exp, $obs ] ) {
-                    $results[] = [ 'check' => $check, 'block' => $b['key'], 'role' => 'media', 'band' => $b['band'], 'pass' => $pass, 'expected' => self::cut( $exp ), 'observed' => self::cut( $obs ) ];
+            if ( in_array( $class['class'], [ 'image', 'type', 'rhythm' ], true ) ) {
+                $rows = match ( $class['class'] ) {
+                    'image'  => $this->image( $b['attrs'] ),
+                    'type'   => $this->type( $b['name'], $b['attrs'], $class['role'] ),
+                    'rhythm' => $this->rhythm( $b['attrs'], $class['role'] ),
+                };
+                foreach ( $rows as [ $check, $pass, $exp, $obs ] ) {
+                    $results[] = [ 'check' => $check, 'block' => $b['key'], 'role' => $class['role'], 'band' => $b['band'], 'pass' => $pass, 'expected' => self::cut( $exp ), 'observed' => self::cut( $obs ) ];
                 }
                 continue;
             }
@@ -361,14 +398,20 @@ final class Scorer
     /**
      * @param array{key:string,name:string,attrs:array<string,mixed>,band:string,parentBand:string,hasContent:bool} $b
      *
-     * @return ?array{class:string,reason:string} null = a block this scorer does not look at
+     * @return ?array{class:string,reason:string,role:string} null = a block this scorer does not look at; `role` is set for
+     *                                                         the classes whose role the classification decides (image, type, rhythm)
      */
     private function classify( array $b, Page $page ): ?array
     {
         $a    = $b['attrs'];
         $name = $b['name'];
-        $is   = static fn ( string $class, string $reason = '' ): array => [ 'class' => $class, 'reason' => $reason ];
+        $is   = static fn ( string $class, string $reason = '', string $role = '' ): array => [ 'class' => $class, 'reason' => $reason, 'role' => $role ];
         switch ( $name ) {
+            case 'divi/heading':
+            case 'divi/text':
+                return $this->classifyType( $name, $a );
+            case 'divi/section':
+                return $this->classifyRhythm( $a );
             case 'divi/button':
                 return $is( 'button' );
             case 'divi/divider':
@@ -382,7 +425,7 @@ final class Scorer
                 $c = self::corners( self::at( $a, 'image.decoration.border.desktop.value.radius' ) );
                 $c = array_map( static fn ( $v ) => $v ?? 0.0, $c );
                 if ( self::cornersEqualBelowShape( $c ) ) {
-                    return $is( 'image' );
+                    return $is( 'image', '', 'media' );
                 }
 
                 return $is( 'unclassified', 'shaped image (corners differ or reach ' . (int) self::SHAPE_RADIUS . 'px): a shape decision, not a corner decision' );
@@ -741,6 +784,201 @@ final class Scorer
         $exp = self::fmtLen( $want );
 
         return [ [ 'image.radius', $ok, 0.0 === $want ? '0px' : $exp . ' or 0px', self::fmtCorners( $corners ) ] ];
+    }
+
+    // ------------------------------------------------------------------------------------------------------------
+    // Type and rhythm: decided by the design language (LanguageAdapters), classified by the TypeAudit / RhythmAudit rules
+    // ------------------------------------------------------------------------------------------------------------
+
+    /**
+     * The TypeAudit rule on a heading or a text (see the class docblock).
+     *
+     * @param array<string,mixed> $a
+     *
+     * @return ?array{class:string,reason:string,role:string}
+     */
+    private function classifyType( string $name, array $a ): ?array
+    {
+        $value  = self::arr( self::at( $a, LanguageAdapters::TYPE_PATHS[ $name ] . '.desktop.value' ) );
+        $family = self::str( $value['family'] ?? null );
+        $fonts  = $this->fontRoles( $family );
+        $font   = null === $family ? 'no family' : $family;
+        if ( 'divi/text' === $name ) {
+            if ( 'uppercase' !== strtolower( (string) self::str( $value['capitalization'] ?? null ) ) ) {
+                return null; // body copy: not a label
+            }
+            if ( in_array( 'eyebrow', $fonts, true ) ) {
+                return [ 'class' => 'type', 'reason' => '', 'role' => 'eyebrow' ];
+            }
+
+            return [ 'class' => 'unclassified', 'reason' => "an uppercase text in $font, not the eyebrow font: no type role", 'role' => '' ];
+        }
+        $level = self::str( $value['headingLevel'] ?? null );
+        if ( null === $level && null === $family ) {
+            return [ 'class' => 'ignored', 'reason' => '', 'role' => '' ]; // Divi's own heading: nothing to place it by
+        }
+        $role = match ( true ) {
+            in_array( $level, LanguageAdapters::TYPE_HEADING_LEVELS['display'], true ) && in_array( 'display', $fonts, true ) => 'display',
+            in_array( $level, LanguageAdapters::TYPE_HEADING_LEVELS['title'], true ) && in_array( 'display', $fonts, true )   => 'title',
+            in_array( $level, LanguageAdapters::TYPE_HEADING_LEVELS['eyebrow'], true ) && in_array( 'eyebrow', $fonts, true ) => 'eyebrow',
+            default                                                                                                       => null,
+        };
+        if ( null === $role ) {
+            return [ 'class' => 'unclassified', 'reason' => 'a heading ' . ( $level ?? 'with no level' ) . " in $font: no type role (h1/h2 or h3 in the display font, h4 in the eyebrow font)", 'role' => '' ];
+        }
+
+        return [ 'class' => 'type', 'reason' => '', 'role' => $role ];
+    }
+
+    /**
+     * The font roles of the language a family stands for: the role of a `{{aied:font:<role>}}` token, or every role whose
+     * font's first family equals the family's first (case and quotes ignored).
+     *
+     * @return list<string>
+     */
+    private function fontRoles( ?string $family ): array
+    {
+        if ( null === $family ) {
+            return [];
+        }
+        if ( 1 === preg_match( '/^\{\{aied:font:([a-z-]+)\}\}$/', $family, $m ) ) {
+            return [ $m[1] ];
+        }
+        $first = static fn ( string $stack ): string => strtolower( trim( explode( ',', $stack )[0], " \t\"'" ) );
+        $out   = [];
+        foreach ( self::arr( $this->language['fonts'] ?? null ) as $role => $stack ) {
+            if ( is_string( $stack ) && '' !== $first( $stack ) && $first( $stack ) === $first( $family ) ) {
+                $out[] = (string) $role;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param array<string,mixed> $a
+     *
+     * @return list<array{0:string,1:bool,2:string,3:string}>
+     */
+    private function type( string $name, array $a, string $role ): array
+    {
+        $patch = LanguageAdapters::patch( $name, 'type', $role, $this->language );
+        $path  = LanguageAdapters::TYPE_PATHS[ $name ] . '.desktop.value';
+        $want  = self::arr( self::at( $patch, $path ) );
+        $own   = self::arr( self::at( $a, $path ) );
+        $rows  = [];
+
+        $ew     = self::weight( $want['weight'] ?? null ) ?? 'absent';
+        $ow     = self::weight( $own['weight'] ?? null );
+        $rows[] = [ 'type.weight', $ow === $ew || ( null === $ow && self::TYPE_DEFAULTS['weight'] === $ew ), $ew, $ow ?? 'absent (Divi ' . self::TYPE_DEFAULTS['weight'] . ')' ];
+
+        $es     = self::len( $want['letterSpacing'] ?? null );
+        $raw    = $own['letterSpacing'] ?? null;
+        $os     = 'normal' === strtolower( trim( (string) ( is_string( $raw ) ? $raw : '' ) ) ) ? self::TYPE_DEFAULTS['letterSpacing'] : self::len( $raw );
+        $rows[] = [ 'type.letter-spacing', self::lenEq( $os ?? self::TYPE_DEFAULTS['letterSpacing'], $es ), self::fmtLen( $es ), null === $os ? 'absent (Divi 0px)' : self::fmtLen( $os ) ];
+
+        $ec     = 'uppercase' === ( $want['capitalization'] ?? null ) ? 'uppercase' : self::TYPE_DEFAULTS['capitalization'];
+        $oc     = strtolower( trim( (string) self::str( $own['capitalization'] ?? null ) ) );
+        $oc     = '' === $oc ? null : $oc;
+        $rows[] = [ 'type.capitalization', ( $oc ?? self::TYPE_DEFAULTS['capitalization'] ) === $ec, $ec, $oc ?? 'absent (Divi none)' ];
+
+        return $rows;
+    }
+
+    /** A font weight as a number string (`normal` 400, `bold` 700), any other text lower-cased, null when absent. */
+    private static function weight( mixed $v ): ?string
+    {
+        if ( is_int( $v ) ) {
+            return (string) $v;
+        }
+        if ( ! is_string( $v ) || '' === trim( $v ) ) {
+            return null;
+        }
+        $t = strtolower( trim( $v ) );
+
+        return match ( $t ) {
+            'normal' => '400',
+            'bold'   => '700',
+            default  => $t,
+        };
+    }
+
+    /**
+     * The RhythmAudit-style rule on a section (see the class docblock).
+     *
+     * @param array<string,mixed> $a
+     *
+     * @return array{class:string,reason:string,role:string}
+     */
+    private function classifyRhythm( array $a ): array
+    {
+        $no      = static fn ( string $why ): array => [ 'class' => 'unclassified', 'reason' => 'a section with ' . $why . ': no rhythm role', 'role' => '' ];
+        $padding = self::arr( self::at( $a, DesignLanguages::SECTION_SPACE_PATH . '.desktop.value.padding' ) );
+        $top     = self::str( $padding['top'] ?? null );
+        $bottom  = self::str( $padding['bottom'] ?? null );
+        if ( null === $top && null === $bottom ) {
+            return $no( 'no desktop top or bottom padding (Divi\'s own default)' );
+        }
+        if ( $top !== $bottom ) {
+            return $no( 'asymmetric desktop padding (top ' . ( $top ?? 'absent' ) . ', bottom ' . ( $bottom ?? 'absent' ) . ')' );
+        }
+        $px = self::len( $top );
+        if ( ! is_float( $px ) ) {
+            return $no( "desktop padding $top, not a px value" );
+        }
+        if ( $px <= 0 ) {
+            return $no( 'a 0px desktop edge' );
+        }
+        $base = DesignLanguages::sectionSpace( $this->language, 'section' );
+        if ( null === $base || $px / $base['desktop'] < RhythmAudit::BAND[0] || $px / $base['desktop'] > RhythmAudit::BAND[1] ) {
+            return $no( 'desktop padding ' . self::fmtLen( $px ) . ' near no role of the language' );
+        }
+        $best  = null;
+        $error = INF;
+        foreach ( LanguageAdapters::APPLIED['rhythm']['divi/section'] as $role ) {
+            $space = DesignLanguages::sectionSpace( $this->language, $role );
+            if ( null === $space ) {
+                continue;
+            }
+            $e = abs( log( $px / $space['desktop'] ) );
+            if ( $e < $error - 1e-12 ) {
+                $error = $e;
+                $best  = $role;
+            }
+        }
+
+        return null === $best ? $no( 'a language that has no section space' ) : [ 'class' => 'rhythm', 'reason' => '', 'role' => $best ];
+    }
+
+    /**
+     * rhythm.desktop, rhythm.tablet, rhythm.phone: the top and bottom padding at each breakpoint (a breakpoint, or a side,
+     * the page does not write takes the value of the one above) against the role's.
+     *
+     * @param array<string,mixed> $a
+     *
+     * @return list<array{0:string,1:bool,2:string,3:string}>
+     */
+    private function rhythm( array $a, string $role ): array
+    {
+        $patch = LanguageAdapters::patch( 'divi/section', 'rhythm', $role, $this->language );
+        $P     = DesignLanguages::SECTION_SPACE_PATH;
+        $rows  = [];
+        $prev  = [ 'top' => null, 'bottom' => null ];
+        foreach ( self::BREAKPOINTS as $bp ) {
+            $own = self::arr( self::at( $a, "$P.$bp.value.padding" ) );
+            $cur = [];
+            foreach ( [ 'top', 'bottom' ] as $side ) {
+                $cur[ $side ] = self::str( $own[ $side ] ?? null ) ?? $prev[ $side ];
+            }
+            $prev = $cur;
+            $e    = self::len( self::at( $patch, "$P.$bp.value.padding.top" ) );
+            $ot   = self::len( $cur['top'] );
+            $ob   = self::len( $cur['bottom'] );
+            $obs  = self::lenEq( $ot, $ob ) ? self::fmtLen( $ot ) : 'top ' . self::fmtLen( $ot ) . ', bottom ' . self::fmtLen( $ob );
+            $rows[] = [ "rhythm.$bp", self::lenEq( $ot, $e ) && self::lenEq( $ob, $e ), self::fmtLen( $e ), $obs ];
+        }
+
+        return $rows;
     }
 
     // ------------------------------------------------------------------------------------------------------------

@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * The scorer against pages built by the real kit pipeline (dogfood plan 2026-10-22, Task 2): a conformance page (the edit base
- * plus tags, icon chips and dividers, so all seven categories are present) must score full marks in every category under every
+ * plus tags, icon chips and dividers, so all nine categories are present, type and rhythm included) must score full marks in every category under every
  * kit, and a change to ONE attribute of ONE block must flip exactly the check that owns it. A cell that does not score full
  * marks is a finding to report, never something to exempt.
  */
@@ -54,8 +54,10 @@ class DogfoodScorerMutationTest extends TestCase
     {
         // The hero's fill-only column (a background panel) and the pricing [Most popular] badge (a filled pill with a radius,
         // no frame and only a text) are shape and brand decisions of the recipes, not kit roles; both are meant to be unclassified.
+        // The three sections are the recipes' named rhythm exemptions (RhythmAudit::EXEMPTIONS): hero-cta's 8% padding (#0),
+        // and card-grid-3 (#1) and contact-form (#5), which write no padding and keep Divi's own default.
         $report = ( new Scorer( 'glass-edge', 'glass-dark' ) )->score( self::conformance( 'glass-edge', 'glass-dark' ) );
-        $this->assertSame( [ 'divi/column#0', 'divi/group#10' ], array_column( $report['unclassified'], 'block' ) );
+        $this->assertSame( [ 'divi/section#0', 'divi/column#0', 'divi/section#1', 'divi/group#10', 'divi/section#5' ], array_column( $report['unclassified'], 'block' ) );
         $this->assertGreaterThan( 50, $report['ignored'], 'plain wrappers are only counted' );
     }
 
@@ -177,6 +179,10 @@ class DogfoodScorerMutationTest extends TestCase
             'the accordion frame style'         => [ 'item.frame-style', 'item.frame-style', $restyle( self::BORDER ) ],
             'the form field radius'             => [ 'form.field-radius', 'form.field-radius', $radius( 'field.decoration.border.desktop.value.radius' ) ],
             'the form submit style'             => [ 'form.button-edge-style', 'form.button-edge-style', $restyle( 'button.decoration.border.desktop.value' ) ],
+            'a heading or label weight'         => [ 'type.weight', 'type.weight', static fn ( string $p, string $k ): ?string => Mutate::set( $p, $k, ( str_starts_with( $k, 'divi/text#' ) ? 'content.decoration.bodyFont.body.font' : 'title.decoration.font.font' ) . '.desktop.value.weight', '300' ) ],
+            'a heading or label tracking'       => [ 'type.letter-spacing', 'type.letter-spacing', static fn ( string $p, string $k ): ?string => Mutate::set( $p, $k, ( str_starts_with( $k, 'divi/text#' ) ? 'content.decoration.bodyFont.body.font' : 'title.decoration.font.font' ) . '.desktop.value.letterSpacing', '9px' ) ],
+            'a section tablet padding'          => [ 'rhythm.tablet', 'rhythm.tablet', $set( 'module.decoration.spacing.tablet.value.padding.top', '10px' ) ],
+            'a section phone padding'           => [ 'rhythm.phone', 'rhythm.phone', $set( 'module.decoration.spacing.phone.value.padding.bottom', '10px' ) ],
             'a media-radius image radius'       => [ 'image.radius', 'image.radius@radius', static fn ( string $p, string $k ): ?string => Mutate::set( $p, $k, 'image.decoration.border.desktop.value.radius', [ 'topLeft' => '7px', 'topRight' => '7px', 'bottomRight' => '7px', 'bottomLeft' => '7px' ] ) ],
         ];
     }

@@ -36,12 +36,20 @@
                 0,
                 0
             ],
+            "type": [
+                48,
+                31
+            ],
+            "rhythm": [
+                21,
+                21
+            ],
             "overall": [
-                119,
-                114
+                188,
+                166
             ]
         },
-        "unclassified": 0
+        "unclassified": 3
     },
     {
         "name": "heavy-block",
@@ -80,12 +88,20 @@
                 0,
                 0
             ],
+            "type": [
+                51,
+                34
+            ],
+            "rhythm": [
+                21,
+                21
+            ],
             "overall": [
-                104,
-                98
+                176,
+                153
             ]
         },
-        "unclassified": 0
+        "unclassified": 3
     },
     {
         "name": "dotted-pill",
@@ -124,9 +140,17 @@
                 0,
                 0
             ],
+            "type": [
+                30,
+                23
+            ],
+            "rhythm": [
+                21,
+                21
+            ],
             "overall": [
-                81,
-                80
+                132,
+                124
             ]
         },
         "unclassified": 0
@@ -168,9 +192,17 @@
                 0,
                 0
             ],
+            "type": [
+                21,
+                14
+            ],
+            "rhythm": [
+                21,
+                21
+            ],
             "overall": [
-                91,
-                85
+                133,
+                120
             ]
         },
         "unclassified": 0
@@ -212,9 +244,17 @@
                 0,
                 0
             ],
+            "type": [
+                48,
+                41
+            ],
+            "rhythm": [
+                21,
+                21
+            ],
             "overall": [
-                98,
-                93
+                167,
+                155
             ]
         },
         "unclassified": 0
@@ -256,9 +296,17 @@
                 0,
                 0
             ],
+            "type": [
+                69,
+                57
+            ],
+            "rhythm": [
+                21,
+                21
+            ],
             "overall": [
-                101,
-                101
+                191,
+                179
             ]
         },
         "unclassified": 0
@@ -300,13 +348,21 @@
                 6,
                 6
             ],
+            "type": [
+                63,
+                63
+            ],
+            "rhythm": [
+                9,
+                9
+            ],
             "overall": [
-                77,
-                77
+                149,
+                149
             ]
         },
-        "unclassified": 2,
-        "note": "Two blocks are unclassified on purpose: divi/column#0 (the hero column: a background and a heading, no frame and no radius) and divi/group#10 (the pricing [Most popular] badge: a background and a radius, no heading or button); both are shape or brand decisions of the recipes, not kit roles."
+        "unclassified": 5,
+        "note": "Two blocks are unclassified on purpose: divi/column#0 (the hero column: a background and a heading, no frame and no radius) and divi/group#10 (the pricing [Most popular] badge: a background and a radius, no heading or button); both are shape or brand decisions of the recipes, not kit roles. Since the type and rhythm categories (2026-10-24) three sections are unclassified too, the recipes' named rhythm exemptions: divi/section#0 (hero-cta, 8% padding) and divi/section#1 and divi/section#5 (card-grid-3 and contact-form, no padding: Divi's own default)."
     },
     {
         "name": "edit-glass-edge",
@@ -345,12 +401,20 @@
                 6,
                 6
             ],
+            "type": [
+                63,
+                34
+            ],
+            "rhythm": [
+                9,
+                0
+            ],
             "overall": [
-                111,
-                111
+                183,
+                145
             ]
         },
-        "unclassified": 2,
-        "note": "Two blocks are unclassified on purpose: divi/column#0 (the hero column: a background and a heading, no frame and no radius) and divi/group#10 (the pricing [Most popular] badge: a background and a radius, no heading or button); both are shape or brand decisions of the recipes, not kit roles."
+        "unclassified": 6,
+        "note": "Two blocks are unclassified on purpose: divi/column#0 (the hero column: a background and a heading, no frame and no radius) and divi/group#10 (the pricing [Most popular] badge: a background and a radius, no heading or button); both are shape or brand decisions of the recipes, not kit roles. Since the type and rhythm categories (2026-10-24) four sections are unclassified too: divi/section#0 (hero-cta, 8% padding), divi/section#1 and divi/section#6 (card-grid-3 and contact-form, no padding: Divi's own default) and divi/section#3 (a 0px top and bottom, written by the edit assistant)."
     }
 ]
