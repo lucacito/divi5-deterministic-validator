@@ -543,12 +543,12 @@ class WordingGapsEvidenceTest extends TestCase
         ksort( $written );
         $this->assertSame( [ 'button.decoration.boxShadow', 'button.decoration.spacing', 'button.decoration.transform' ], array_keys( $written ), 'the form adapter writes the submit padding, shadow and lift at button.decoration.*' );
 
-        // The two served texts, as they read today: `controls` says the paths are dead and does not say "except on a contact
-        // form submit"; kit-rules says they are live on a contact form. Task 4 adds the missing clause to `controls`.
+        // The two served texts: `controls` says the paths are dead on a `divi/button`; kit-rules says they are live on a contact
+        // form. Task 4 added the missing clause to `controls` (StyleGuide::controlsFormClause()), so the two no longer contradict.
         $controls = StyleGuide::markdown( 'controls' );
         $this->assertStringContainsString( 'changed nothing (rendered: dead); write them on the module.', $controls );
         $this->assertStringContainsString( '`button.decoration.spacing`, `button.decoration.boxShadow`', $controls );
-        $this->assertStringNotContainsString( 'contact form', substr( $controls, (int) strpos( $controls, 'changed nothing (rendered: dead); write them on the module.' ), 300 ), 'TODAY the controls topic does not except the contact-form submit (Task 4 adds it)' );
+        $this->assertStringContainsString( 'contact form', substr( $controls, (int) strpos( $controls, 'changed nothing (rendered: dead); write them on the module.' ), 300 ), 'since Task 4 the controls topic excepts the contact-form submit' );
         $this->assertStringContainsString( 'at `button.decoration.*`, not `module.decoration` (live on a contact form, the opposite of a `divi/button`)', StyleGuide::markdown( 'kit-rules' ) );
     }
 }

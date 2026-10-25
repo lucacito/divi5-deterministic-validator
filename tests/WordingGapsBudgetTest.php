@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Divi5Validator\Tests;
 
+use AiEditorDivi5\WP\DesignLanguages;
 use AiEditorDivi5\WP\StyleGuide;
 use AiEditorDivi5\WP\StyleKits;
 use PHPUnit\Framework\TestCase;
@@ -18,14 +19,14 @@ foreach ( [ 'SectionRecipes', 'ImagePack', 'ImageTokens', 'DesignLanguages', 'St
  *
  * Measured at feat/wording-gaps 1d51dc9 (main's render-fatal sweep merged in). Every number equals the plan's table except
  * `controls`, which the sweep grew from 9,105 B to 9,271 B (its pin is the plan's <= 9,500 bound, so the baseline is recorded
- * here and pinned by CarrierBudgetTest). Green now; Task 3b re-pins the kit topics, Task 4 re-pins the description (258 -> 272,
- * Ruling 2), adds the `kit-patterns` topic with its own bound, and re-pins the ten design-language topics (a generated Kit line
+ * here and pinned by CarrierBudgetTest). Task 3b re-pinned the kit topics; Task 4 re-pinned the description (258 -> 272,
+ * Ruling 2), added the `kit-patterns` topic with its own bound, and re-pinned the ten design-language topics (a generated Kit line
  * each, plus the Ruling 5 rewords for brutalist-flat and luxe). A re-pin edits the numbers below on purpose, with the reason in
  * the commit message; nothing here is a baseline file.
  */
 final class WordingGapsBudgetTest extends TestCase
 {
-    /** Bytes of the ten design-language topics at 1d51dc9 (Task 4 re-pins them: the Kit line, Ruling 4; the Ruling 5 rewords). */
+    /** Bytes of the ten design-language topics at 1d51dc9, before Task 4 (the Kit line, Ruling 4; the Ruling 5 rewords). */
     private const LANGUAGE_TOPIC_SIZES = [
         'editorial'       => 2281,
         'glass-dark'      => 2613,
@@ -38,6 +39,13 @@ final class WordingGapsBudgetTest extends TestCase
         'brutalist-flat'  => 3012,
         'luxe'            => 3219,
     ];
+
+    /**
+     * Task 4, Ruling 5: the bytes the rewords in design-languages.json change. brutalist-flat "a 6px black line" -> "a strong
+     * black line" (+3); luxe "(1px line in the accent colour)" -> "(the kit's accent rule)" (-8) and "(a 1px line in the accent
+     * colour)" -> "(the kit's accent rule)" (-10).
+     */
+    private const RULING_5_DELTA = [ 'brutalist-flat' => 3, 'luxe' => -18 ];
 
     /** Bytes of every other topic the wording-gaps plan does not name (they must not move). */
     private const UNTOUCHED_TOPIC_SIZES = [
@@ -63,14 +71,17 @@ final class WordingGapsBudgetTest extends TestCase
 
     public function testTheTopicDescriptionIsPinned(): void
     {
-        // Task 4 (Ruling 2): 258 -> 272 characters, and the pin in StyleGuideTopicsTest 260 -> 290.
-        $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
+        // Task 4 (Ruling 2): 258 -> 272 characters (", kit-patterns"), and every <= 260 pin raised to <= 290 (the schema bound is 300).
+        $this->assertSame( 272, strlen( StyleGuide::topicParameterDescription() ) );
     }
 
     public function testKitRulesAndControlsStayWithinTheirBounds(): void
     {
+        // Task 4: kit-rules 9,598 -> 9,585 (Step 4 trims (a) and (b) paid for the new band, accordion, tag and pointer wording),
+        // controls 9,271 -> 9,355 (the generated contact-form clause, spec gap 14).
         $this->assertLessThanOrEqual( 9600, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'Ruling 8' );
-        $this->assertLessThanOrEqual( 9500, strlen( StyleGuide::markdown( 'controls' ) ), 'controls: 9,271 B at 1d51dc9' );
+        $this->assertLessThanOrEqual( 9500, strlen( StyleGuide::markdown( 'controls' ) ), 'controls: 9,271 B at 1d51dc9, 9,355 B after Task 4' );
+        $this->assertLessThanOrEqual( 6000, strlen( StyleGuide::markdown( 'kit-patterns' ) ), 'kit-patterns (Ruling 1): 5,049 B at Task 4' );
     }
 
     public function testNoStyleKitTopicExceedsTheStopBound(): void
@@ -86,8 +97,11 @@ final class WordingGapsBudgetTest extends TestCase
 
     public function testTheDesignLanguageTopicsAreAtTheirMeasuredSizes(): void
     {
+        // Task 4: each topic grows by exactly its generated Kit line and one newline, plus the Ruling 5 rewords.
         foreach ( self::LANGUAGE_TOPIC_SIZES as $id => $size ) {
-            $this->assertSame( $size, strlen( StyleGuide::markdown( 'design-language:' . $id ) ), "design-language:$id" );
+            $kitLine = DesignLanguages::kitLine( (array) DesignLanguages::get( $id ) );
+            $this->assertLessThanOrEqual( DesignLanguages::GENERATED_LINE_MAX, strlen( $kitLine ), $id );
+            $this->assertSame( $size + strlen( $kitLine ) + 1 + ( self::RULING_5_DELTA[ $id ] ?? 0 ), strlen( StyleGuide::markdown( 'design-language:' . $id ) ), "design-language:$id" );
         }
     }
 
@@ -100,7 +114,7 @@ final class WordingGapsBudgetTest extends TestCase
 
     public function testThePinsCoverEveryServedTopic(): void
     {
-        $named = [ 'kit-rules', 'controls' ];
+        $named = [ 'kit-rules', 'controls', 'kit-patterns' ];
         foreach ( StyleGuide::topics() as $topic ) {
             if ( in_array( $topic, $named, true ) || str_starts_with( $topic, 'style-kit:' ) ) {
                 continue;

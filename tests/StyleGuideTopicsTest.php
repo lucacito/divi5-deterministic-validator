@@ -296,13 +296,14 @@ class StyleGuideTopicsTest extends TestCase
     }
 
     /**
-     * The generated `topic` description keeps at least 40 characters of headroom under the 300-character bound (forms adapter
-     * T2 reworded its fixed text, 90 to 44 characters), so the next adapters' topic names fit without a new topic.
+     * The generated `topic` description keeps headroom under the 300-character bound (forms adapter T2 reworded its fixed
+     * text, 90 to 44 characters). Wording gaps T4 (plan 2026-10-25-wording-gaps, Ruling 2) added `kit-patterns`: 258 -> 272
+     * characters, so the pin is raised from 260 to 290 (18 characters left for a later topic name).
      */
     public function testTheTopicParameterDescriptionLeavesHeadroom(): void
     {
         $desc = StyleGuide::topicParameterDescription();
-        $this->assertLessThanOrEqual( 260, strlen( $desc ), 'at most 260 characters' );
+        $this->assertLessThanOrEqual( 290, strlen( $desc ), 'at most 290 characters (wording gaps Ruling 2)' );
         $this->assertStringStartsWith( 'Optional', $desc );
         $this->assertStringContainsString( '<id>', $desc, 'the <id> hint stays' );
         $this->assertStringContainsString( 'style-kit:<id>', $desc );
