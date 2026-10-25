@@ -34,6 +34,9 @@ final class LanguageTypeBudgetTest extends TestCase
         'luxe'            => 2756,
     ];
 
+    /** tech-mono's section_padding prose was reworded by the rhythm adapter (plan B, Task 2): "the same padding on every section" -> "every ordinary section has the same padding". */
+    private const TECH_MONO_PROSE_DELTA = 10;
+
     private const BEFORE_TYPOGRAPHY = 7496;
 
     private const TYPOGRAPHY_SENTENCE_MAX = 450;
@@ -53,6 +56,10 @@ final class LanguageTypeBudgetTest extends TestCase
         self::assertSame( 8331, strlen( StyleGuide::markdown( 'controls' ) ) );
     }
 
+    /**
+     * Plan B adds the Section spacing line and the tech-mono reword (rhythm adapter, Task 2); each topic still
+     * grows by exactly the generated lines the data produces.
+     */
     public function testEachLanguageTopicGrowsByExactlyItsTypeLine(): void
     {
         self::assertSame( array_keys( self::BEFORE_LANGUAGE_TOPICS ), DesignLanguages::ids(), 'the budget table lists every language' );
@@ -60,7 +67,10 @@ final class LanguageTypeBudgetTest extends TestCase
             $now      = strlen( StyleGuide::markdown( 'design-language:' . $id ) );
             $typeLine = DesignLanguages::typeLine( (array) DesignLanguages::get( $id ) );
             self::assertLessThanOrEqual( DesignLanguages::GENERATED_LINE_MAX, strlen( $typeLine ), "design-language:$id Type line is over its cap" );
-            self::assertSame( $before + strlen( $typeLine ) + 1, $now, "design-language:$id must grow by exactly its Type line and one newline" );
+            $spaceLine = DesignLanguages::sectionSpaceLine( (array) DesignLanguages::get( $id ) );
+            self::assertLessThanOrEqual( DesignLanguages::GENERATED_LINE_MAX, strlen( $spaceLine ), "design-language:$id Section spacing line is over its cap" );
+            $delta = 'tech-mono' === $id ? self::TECH_MONO_PROSE_DELTA : 0;
+            self::assertSame( $before + strlen( $typeLine ) + 1 + strlen( $spaceLine ) + 1 + $delta, $now, "design-language:$id must grow by exactly its Type line, its Section spacing line and one newline each (plus the tech-mono reword)" );
             self::assertLessThanOrEqual( self::TOPIC_BOUND, $now );
         }
     }

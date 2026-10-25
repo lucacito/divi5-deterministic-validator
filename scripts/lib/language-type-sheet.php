@@ -15,6 +15,7 @@
 declare(strict_types=1);
 
 use AiEditorDivi5\WP\DesignLanguages;
+use AiEditorDivi5\WP\ImageTokens;
 use AiEditorDivi5\WP\KitResolver;
 use AiEditorDivi5\WP\LanguageResolver;
 use AiEditorDivi5\WP\LayoutGate;
@@ -33,6 +34,9 @@ if ( ! is_string( $markup ) || '' === trim( $markup ) ) {
     fwrite( STDERR, "no sheet markup on stdin\n" );
     exit( 2 );
 }
+
+// Built-in image tokens (the rhythm sheet's photo band) resolve to site-local URLs first, as SectionRecipes::recipe serves a recipe (ImageTokens -> language -> kit -> colour/font).
+$markup    = ImageTokens::resolve( $markup, 'https://example.test/assets/images/' );
 
 $languages = isset( $opts['language'] ) ? [ (string) $opts['language'] ] : DesignLanguages::ids();
 $out       = [];

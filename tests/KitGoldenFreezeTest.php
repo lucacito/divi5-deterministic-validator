@@ -8,9 +8,11 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * The goldens of the earlier adapters are frozen: the rules and chips adapter only ADDED two goldens (kit-rule-patches.json,
- * kit-chip-patches.json) and the type adapter only ADDED language-type-patches.json; none of them changes a patch an earlier
+ * kit-chip-patches.json), the type adapter only ADDED language-type-patches.json and the rhythm adapter only ADDED
+ * language-rhythm-patches.json; none of them changes a patch an earlier
  * adapter writes. The sha256 of each file is pinned literally (the four kit goldens at 155ff75, rule and chip at 77abc24, the
- * language type golden when the type adapter's Task 4 generated it, so the rhythm adapter cannot change it), so a change to any
+ * language type golden when the type adapter's Task 4 generated it, the language rhythm golden when the rhythm adapter's Task 4
+ * generated it), so a change to any
  * of them, even a whitespace one, fails here and has to be made on purpose, in the open, by changing the pin with the golden.
  */
 class KitGoldenFreezeTest extends TestCase
@@ -23,11 +25,12 @@ class KitGoldenFreezeTest extends TestCase
         'kit-rule-patches.json'    => 'd087813dcc1562b29fd9fec3883828faa6b9833061ae7458d6785ef7b7f2b0a3',
         'kit-chip-patches.json'    => '12dfba28c57715e651ee2e029e3a9c2e0fb3bbe771f0bbdd38fcce88613ebe2d',
         'language-type-patches.json' => '64bf3702f64351d4c8af21758b2fca684b3321f57745ebda7a95b3169c04a9f4',
+        'language-rhythm-patches.json' => '4dfde6021b53c1e9a62d0f9d83ac992bec8c440c40ee894c386e2ef84e49f173',
     ];
 
     public function testTheEarlierGoldensAreByteIdentical(): void
     {
-        $this->assertCount( 7, self::FROZEN );
+        $this->assertCount( 8, self::FROZEN );
         foreach ( self::FROZEN as $file => $sha ) {
             $path = __DIR__ . '/golden/' . $file;
             $this->assertFileExists( $path );

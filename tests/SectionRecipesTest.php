@@ -884,11 +884,12 @@ class SectionRecipesTest extends TestCase
 
     /**
      * A one-button recipe carrying a kit marker (no shipped recipe is migrated yet), planted through the memo; $before is
-     * markup (a type-marked heading, say) placed in the column before the button.
+     * markup (a type-marked heading, say) placed in the column before the button; $section is the section's attribute JSON
+     * (a rhythm-marked section, say).
      */
-    private function plantMarkedRecipe(string $marker = '"aied":{"kit":"control"}', string $before = ''): void
+    private function plantMarkedRecipe(string $marker = '"aied":{"kit":"control"}', string $before = '', string $section = '{"builderVersion":"5.15.1"}'): void
     {
-        $markup = '<!-- wp:divi/section {"builderVersion":"5.15.1"} --><!-- wp:divi/row {"builderVersion":"5.15.1"} -->'
+        $markup = '<!-- wp:divi/section ' . $section . ' --><!-- wp:divi/row {"builderVersion":"5.15.1"} -->'
             . '<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.15.1"} -->'
             . $before
             . '<!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"Start here"}}},'
@@ -1078,6 +1079,63 @@ class SectionRecipesTest extends TestCase
         }
     }
 
+    // ---- design language rhythm: a marked section ----
+
+    private const RHYTHM_SECTION = '{"module":{"decoration":{"background":{"desktop":{"value":{"color":"{{aied:color:surface}}"}}},"spacing":{"desktop":{"value":{"padding":{"top":"112px","bottom":"112px"}}},"tablet":{"value":{"padding":{"top":"88px","bottom":"88px"}}},"phone":{"value":{"padding":{"top":"64px","bottom":"64px"}}}}}},"builderVersion":"5.15.1","aied":{"rhythm":"%s"}}';
+
+    public function testARhythmMarkedSectionIsServedInTheLanguagesRhythm(): void
+    {
+        foreach (\AiEditorDivi5\WP\DesignLanguages::RHYTHM_ROLES as $role) {
+            $this->plantMarkedRecipe('"aied":{"kit":"control"}', self::TYPE_HEADING, sprintf(self::RHYTHM_SECTION, $role));
+            try {
+                $seen = [];
+                foreach (DesignLanguages::ids() as $id) {
+                    $lang   = (array) DesignLanguages::get($id);
+                    $served = SectionRecipes::recipe('kit-fixture', $id);
+                    $this->assertNotNull($served, "$id $role");
+                    $this->assertStringNotContainsString('"aied"', $served, $id);
+                    $this->assertStringNotContainsString('{{aied:', $served, $id);
+                    $this->assertSame(1, preg_match('/<!-- wp:divi\/section (\{.*?\}) -->/s', $served, $m));
+                    $attrs = json_decode($m[1], true);
+                    $this->assertSame($lang['colors']['surface'], $attrs['module']['decoration']['background']['desktop']['value']['color'], 'the colour token is still resolved');
+                    $space = DesignLanguages::sectionSpace($lang, $role);
+                    $this->assertIsArray($space);
+                    foreach ($space as $bp => $px) {
+                        $this->assertSame(['top' => $px . 'px', 'bottom' => $px . 'px', 'syncVertical' => 'on'], $attrs['module']['decoration']['spacing'][$bp]['value']['padding'], "$id $role $bp: the language's rhythm wins over the literal");
+                    }
+                    $this->assertSame(1, preg_match('/<!-- wp:divi\/heading (\{.*?\}) \/-->/s', $served, $h));
+                    $this->assertSame($lang['type']['display']['weight'], json_decode($h[1], true)['title']['decoration']['font']['font']['desktop']['value']['weight'], 'the type step ran too');
+                    $this->assertNotNull($this->buttonAttrs($served)['button'] ?? null, 'the kit step still ran');
+                    $seen[implode('/', $space)] = true;
+                }
+                $this->assertGreaterThan(4, count($seen), "$role: the languages serve different rhythms (tight clamps four of them to 56/40/28: Spec issue 7)");
+                $this->assertSame(SectionRecipes::recipe('kit-fixture', 'editorial'), SectionRecipes::recipe('kit-fixture'), 'no language = editorial');
+            } finally {
+                SectionRecipes::clearCache();
+            }
+        }
+    }
+
+    public function testAnUnresolvableRhythmMarkerIsNeverServed(): void
+    {
+        $row = '<!-- wp:divi/row {"builderVersion":"5.15.1","aied":{"rhythm":"tight"}} --><!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.15.1"} --><!-- /wp:divi/column --><!-- /wp:divi/row -->';
+        foreach ([
+            ['"aied":{"kit":"control"}', $row, '{"builderVersion":"5.15.1"}'],
+            ['"aied":{"kit":"control"}', '', '{"builderVersion":"5.15.1","aied":{"rhythm":"open","on":"dark"}}'],
+            ['"aied":{"kit":"control"}', '', '{"builderVersion":"5.15.1","aied":{"rhythm":"hero"}}'],
+            ['"aied":{"rhythm":"section"}', '', '{"builderVersion":"5.15.1"}'],
+        ] as [$marker, $before, $section]) {
+            $this->plantMarkedRecipe($marker, $before, $section);
+            try {
+                foreach ([null, 'editorial', 'brutalist-flat'] as $language) {
+                    $this->assertNull(SectionRecipes::recipe('kit-fixture', $language), "never a recipe with a rhythm marker left in it ($marker / $section)");
+                }
+            } finally {
+                SectionRecipes::clearCache();
+            }
+        }
+    }
+
     public function testResolveMarkupIsThePipelineRecipeUses(): void
     {
         foreach (['hero-cta', 'pricing-three-tier', 'portfolio-featured-grid'] as $name) {
@@ -1091,10 +1149,12 @@ class SectionRecipesTest extends TestCase
         }
     }
 
-    public function testTheStyleGuideKitSamplesCarryNoTypeMarker(): void
+    public function testTheStyleGuideKitSamplesCarryNoLanguageMarker(): void
     {
         $source = (string) file_get_contents(__DIR__ . '/../wp-plugin/src/StyleGuide.php');
-        $this->assertDoesNotMatchRegularExpression('/[\'"]aied[\'"]\s*(?:=>|:)\s*(?:\[|\{)\s*[\'"]type[\'"]/', $source, 'the hand-built kit samples hold no type marker (they resolve through KitResolver alone)');
+        foreach (\AiEditorDivi5\WP\LanguageAdapters::KINDS as $kind) {
+            $this->assertDoesNotMatchRegularExpression('/[\'"]aied[\'"]\s*(?:=>|:)\s*(?:\[|\{)\s*[\'"]' . $kind . '[\'"]/', $source, "the hand-built kit samples hold no $kind marker (they resolve through KitResolver alone)");
+        }
         foreach (StyleKits::ids() as $id) {
             $this->assertStringNotContainsString('"aied"', \AiEditorDivi5\WP\StyleGuide::markdown('style-kit:' . $id), $id);
         }

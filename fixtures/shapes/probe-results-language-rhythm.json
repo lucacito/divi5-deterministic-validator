@@ -1,0 +1,4767 @@
+[
+  {
+    "id": "lr-section-control",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 152px -> 280px",
+          "0:div:height: 152px -> 280px",
+          "0:div:padding-block-end: 56px -> 120px",
+          "0:div:padding-block-start: 56px -> 120px",
+          "0:div:padding-bottom: 56px -> 120px",
+          "0:div:padding-top: 56px -> 120px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 152px -> 280px",
+          "0:div:height: 152px -> 280px",
+          "0:div:padding-block-end: 56px -> 120px",
+          "0:div:padding-block-start: 56px -> 120px",
+          "0:div:padding-bottom: 56px -> 120px",
+          "0:div:padding-top: 56px -> 120px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 152px -> 280px",
+          "0:div:height: 152px -> 280px",
+          "0:div:padding-block-end: 56px -> 120px",
+          "0:div:padding-block-start: 56px -> 120px",
+          "0:div:padding-bottom: 56px -> 120px",
+          "0:div:padding-top: 56px -> 120px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-section-default-56",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 0,
+        "sample": [],
+        "changedProps": [],
+        "changedElements": [],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 0,
+        "sample": [],
+        "changedProps": [],
+        "changedElements": [],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 0,
+        "sample": [],
+        "changedProps": [],
+        "changedElements": [],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    },
+    "cssOnly": true
+  },
+  {
+    "id": "lr-section-sync-alone",
+    "effect": false,
+    "widths": {
+      "400": false,
+      "900": false,
+      "1280": false
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "changedProps": [],
+        "changedElements": [],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "changedProps": [],
+        "changedElements": [],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": false,
+        "computedDiffs": 0,
+        "sample": [],
+        "changedProps": [],
+        "changedElements": [],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-editorial-section",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 152px",
+          "0:div:height: 88px -> 152px",
+          "0:div:padding-block-end: 24px -> 56px",
+          "0:div:padding-block-start: 24px -> 56px",
+          "0:div:padding-bottom: 24px -> 56px",
+          "0:div:padding-top: 24px -> 56px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 200px",
+          "0:div:height: 88px -> 200px",
+          "0:div:padding-block-end: 24px -> 80px",
+          "0:div:padding-block-start: 24px -> 80px",
+          "0:div:padding-bottom: 24px -> 80px",
+          "0:div:padding-top: 24px -> 80px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 280px",
+          "0:div:height: 88px -> 280px",
+          "0:div:padding-block-end: 24px -> 120px",
+          "0:div:padding-block-start: 24px -> 120px",
+          "0:div:padding-bottom: 24px -> 120px",
+          "0:div:padding-top: 24px -> 120px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-editorial-open",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 184px",
+          "0:div:height: 88px -> 184px",
+          "0:div:padding-block-end: 24px -> 72px",
+          "0:div:padding-block-start: 24px -> 72px",
+          "0:div:padding-bottom: 24px -> 72px",
+          "0:div:padding-top: 24px -> 72px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 248px",
+          "0:div:height: 88px -> 248px",
+          "0:div:padding-block-end: 24px -> 104px",
+          "0:div:padding-block-start: 24px -> 104px",
+          "0:div:padding-bottom: 24px -> 104px",
+          "0:div:padding-top: 24px -> 104px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 344px",
+          "0:div:height: 88px -> 344px",
+          "0:div:padding-block-end: 24px -> 152px",
+          "0:div:padding-block-start: 24px -> 152px",
+          "0:div:padding-bottom: 24px -> 152px",
+          "0:div:padding-top: 24px -> 152px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-editorial-tight",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 104px",
+          "0:div:height: 88px -> 104px",
+          "0:div:padding-block-end: 24px -> 32px",
+          "0:div:padding-block-start: 24px -> 32px",
+          "0:div:padding-bottom: 24px -> 32px",
+          "0:div:padding-top: 24px -> 32px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 136px",
+          "0:div:height: 88px -> 136px",
+          "0:div:padding-block-end: 24px -> 48px",
+          "0:div:padding-block-start: 24px -> 48px",
+          "0:div:padding-bottom: 24px -> 48px",
+          "0:div:padding-top: 24px -> 48px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 184px",
+          "0:div:height: 88px -> 184px",
+          "0:div:padding-block-end: 24px -> 72px",
+          "0:div:padding-block-start: 24px -> 72px",
+          "0:div:padding-bottom: 24px -> 72px",
+          "0:div:padding-top: 24px -> 72px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-glass-dark-section",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 136px",
+          "0:div:height: 88px -> 136px",
+          "0:div:padding-block-end: 24px -> 48px",
+          "0:div:padding-block-start: 24px -> 48px",
+          "0:div:padding-bottom: 24px -> 48px",
+          "0:div:padding-top: 24px -> 48px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 184px",
+          "0:div:height: 88px -> 184px",
+          "0:div:padding-block-end: 24px -> 72px",
+          "0:div:padding-block-start: 24px -> 72px",
+          "0:div:padding-bottom: 24px -> 72px",
+          "0:div:padding-top: 24px -> 72px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 240px",
+          "0:div:height: 88px -> 240px",
+          "0:div:padding-block-end: 24px -> 100px",
+          "0:div:padding-block-start: 24px -> 100px",
+          "0:div:padding-bottom: 24px -> 100px",
+          "0:div:padding-top: 24px -> 100px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-glass-dark-open",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 168px",
+          "0:div:height: 88px -> 168px",
+          "0:div:padding-block-end: 24px -> 64px",
+          "0:div:padding-block-start: 24px -> 64px",
+          "0:div:padding-bottom: 24px -> 64px",
+          "0:div:padding-top: 24px -> 64px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 216px",
+          "0:div:height: 88px -> 216px",
+          "0:div:padding-block-end: 24px -> 88px",
+          "0:div:padding-block-start: 24px -> 88px",
+          "0:div:padding-bottom: 24px -> 88px",
+          "0:div:padding-top: 24px -> 88px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 296px",
+          "0:div:height: 88px -> 296px",
+          "0:div:padding-block-end: 24px -> 128px",
+          "0:div:padding-block-start: 24px -> 128px",
+          "0:div:padding-bottom: 24px -> 128px",
+          "0:div:padding-top: 24px -> 128px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-glass-dark-tight",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 104px",
+          "0:div:height: 88px -> 104px",
+          "0:div:padding-block-end: 24px -> 32px",
+          "0:div:padding-block-start: 24px -> 32px",
+          "0:div:padding-bottom: 24px -> 32px",
+          "0:div:padding-top: 24px -> 32px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 120px",
+          "0:div:height: 88px -> 120px",
+          "0:div:padding-block-end: 24px -> 40px",
+          "0:div:padding-block-start: 24px -> 40px",
+          "0:div:padding-bottom: 24px -> 40px",
+          "0:div:padding-top: 24px -> 40px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 168px",
+          "0:div:height: 88px -> 168px",
+          "0:div:padding-block-end: 24px -> 64px",
+          "0:div:padding-block-start: 24px -> 64px",
+          "0:div:padding-bottom: 24px -> 64px",
+          "0:div:padding-top: 24px -> 64px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-organic-warm-section",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 128px",
+          "0:div:height: 88px -> 128px",
+          "0:div:padding-block-end: 24px -> 44px",
+          "0:div:padding-block-start: 24px -> 44px",
+          "0:div:padding-bottom: 24px -> 44px",
+          "0:div:padding-top: 24px -> 44px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 168px",
+          "0:div:height: 88px -> 168px",
+          "0:div:padding-block-end: 24px -> 64px",
+          "0:div:padding-block-start: 24px -> 64px",
+          "0:div:padding-bottom: 24px -> 64px",
+          "0:div:padding-top: 24px -> 64px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 232px",
+          "0:div:height: 88px -> 232px",
+          "0:div:padding-block-end: 24px -> 96px",
+          "0:div:padding-block-start: 24px -> 96px",
+          "0:div:padding-bottom: 24px -> 96px",
+          "0:div:padding-top: 24px -> 96px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-organic-warm-open",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 152px",
+          "0:div:height: 88px -> 152px",
+          "0:div:padding-block-end: 24px -> 56px",
+          "0:div:padding-block-start: 24px -> 56px",
+          "0:div:padding-bottom: 24px -> 56px",
+          "0:div:padding-top: 24px -> 56px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 200px",
+          "0:div:height: 88px -> 200px",
+          "0:div:padding-block-end: 24px -> 80px",
+          "0:div:padding-block-start: 24px -> 80px",
+          "0:div:padding-bottom: 24px -> 80px",
+          "0:div:padding-top: 24px -> 80px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 280px",
+          "0:div:height: 88px -> 280px",
+          "0:div:padding-block-end: 24px -> 120px",
+          "0:div:padding-block-start: 24px -> 120px",
+          "0:div:padding-bottom: 24px -> 120px",
+          "0:div:padding-top: 24px -> 120px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-organic-warm-tight",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 96px",
+          "0:div:height: 88px -> 96px",
+          "0:div:padding-block-end: 24px -> 28px",
+          "0:div:padding-block-start: 24px -> 28px",
+          "0:div:padding-bottom: 24px -> 28px",
+          "0:div:padding-top: 24px -> 28px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 120px",
+          "0:div:height: 88px -> 120px",
+          "0:div:padding-block-end: 24px -> 40px",
+          "0:div:padding-block-start: 24px -> 40px",
+          "0:div:padding-bottom: 24px -> 40px",
+          "0:div:padding-top: 24px -> 40px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 152px",
+          "0:div:height: 88px -> 152px",
+          "0:div:padding-block-end: 24px -> 56px",
+          "0:div:padding-block-start: 24px -> 56px",
+          "0:div:padding-bottom: 24px -> 56px",
+          "0:div:padding-top: 24px -> 56px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-tech-mono-section",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 120px",
+          "0:div:height: 88px -> 120px",
+          "0:div:padding-block-end: 24px -> 40px",
+          "0:div:padding-block-start: 24px -> 40px",
+          "0:div:padding-bottom: 24px -> 40px",
+          "0:div:padding-top: 24px -> 40px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 168px",
+          "0:div:height: 88px -> 168px",
+          "0:div:padding-block-end: 24px -> 64px",
+          "0:div:padding-block-start: 24px -> 64px",
+          "0:div:padding-bottom: 24px -> 64px",
+          "0:div:padding-top: 24px -> 64px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 216px",
+          "0:div:height: 88px -> 216px",
+          "0:div:padding-block-end: 24px -> 88px",
+          "0:div:padding-block-start: 24px -> 88px",
+          "0:div:padding-bottom: 24px -> 88px",
+          "0:div:padding-top: 24px -> 88px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-tech-mono-open",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 136px",
+          "0:div:height: 88px -> 136px",
+          "0:div:padding-block-end: 24px -> 48px",
+          "0:div:padding-block-start: 24px -> 48px",
+          "0:div:padding-bottom: 24px -> 48px",
+          "0:div:padding-top: 24px -> 48px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 200px",
+          "0:div:height: 88px -> 200px",
+          "0:div:padding-block-end: 24px -> 80px",
+          "0:div:padding-block-start: 24px -> 80px",
+          "0:div:padding-bottom: 24px -> 80px",
+          "0:div:padding-top: 24px -> 80px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 264px",
+          "0:div:height: 88px -> 264px",
+          "0:div:padding-block-end: 24px -> 112px",
+          "0:div:padding-block-start: 24px -> 112px",
+          "0:div:padding-bottom: 24px -> 112px",
+          "0:div:padding-top: 24px -> 112px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-tech-mono-tight",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 96px",
+          "0:div:height: 88px -> 96px",
+          "0:div:padding-block-end: 24px -> 28px",
+          "0:div:padding-block-start: 24px -> 28px",
+          "0:div:padding-bottom: 24px -> 28px",
+          "0:div:padding-top: 24px -> 28px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 120px",
+          "0:div:height: 88px -> 120px",
+          "0:div:padding-block-end: 24px -> 40px",
+          "0:div:padding-block-start: 24px -> 40px",
+          "0:div:padding-bottom: 24px -> 40px",
+          "0:div:padding-top: 24px -> 40px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 152px",
+          "0:div:height: 88px -> 152px",
+          "0:div:padding-block-end: 24px -> 56px",
+          "0:div:padding-block-start: 24px -> 56px",
+          "0:div:padding-bottom: 24px -> 56px",
+          "0:div:padding-top: 24px -> 56px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-playful-pastel-section",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 120px",
+          "0:div:height: 88px -> 120px",
+          "0:div:padding-block-end: 24px -> 40px",
+          "0:div:padding-block-start: 24px -> 40px",
+          "0:div:padding-bottom: 24px -> 40px",
+          "0:div:padding-top: 24px -> 40px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 160px",
+          "0:div:height: 88px -> 160px",
+          "0:div:padding-block-end: 24px -> 60px",
+          "0:div:padding-block-start: 24px -> 60px",
+          "0:div:padding-bottom: 24px -> 60px",
+          "0:div:padding-top: 24px -> 60px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 216px",
+          "0:div:height: 88px -> 216px",
+          "0:div:padding-block-end: 24px -> 88px",
+          "0:div:padding-block-start: 24px -> 88px",
+          "0:div:padding-bottom: 24px -> 88px",
+          "0:div:padding-top: 24px -> 88px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-playful-pastel-open",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 136px",
+          "0:div:height: 88px -> 136px",
+          "0:div:padding-block-end: 24px -> 48px",
+          "0:div:padding-block-start: 24px -> 48px",
+          "0:div:padding-bottom: 24px -> 48px",
+          "0:div:padding-top: 24px -> 48px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 184px",
+          "0:div:height: 88px -> 184px",
+          "0:div:padding-block-end: 24px -> 72px",
+          "0:div:padding-block-start: 24px -> 72px",
+          "0:div:padding-bottom: 24px -> 72px",
+          "0:div:padding-top: 24px -> 72px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 264px",
+          "0:div:height: 88px -> 264px",
+          "0:div:padding-block-end: 24px -> 112px",
+          "0:div:padding-block-start: 24px -> 112px",
+          "0:div:padding-bottom: 24px -> 112px",
+          "0:div:padding-top: 24px -> 112px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-playful-pastel-tight",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 96px",
+          "0:div:height: 88px -> 96px",
+          "0:div:padding-block-end: 24px -> 28px",
+          "0:div:padding-block-start: 24px -> 28px",
+          "0:div:padding-bottom: 24px -> 28px",
+          "0:div:padding-top: 24px -> 28px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 120px",
+          "0:div:height: 88px -> 120px",
+          "0:div:padding-block-end: 24px -> 40px",
+          "0:div:padding-block-start: 24px -> 40px",
+          "0:div:padding-bottom: 24px -> 40px",
+          "0:div:padding-top: 24px -> 40px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 152px",
+          "0:div:height: 88px -> 152px",
+          "0:div:padding-block-end: 24px -> 56px",
+          "0:div:padding-block-start: 24px -> 56px",
+          "0:div:padding-bottom: 24px -> 56px",
+          "0:div:padding-top: 24px -> 56px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-corporate-trust-section",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 128px",
+          "0:div:height: 88px -> 128px",
+          "0:div:padding-block-end: 24px -> 44px",
+          "0:div:padding-block-start: 24px -> 44px",
+          "0:div:padding-bottom: 24px -> 44px",
+          "0:div:padding-top: 24px -> 44px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 176px",
+          "0:div:height: 88px -> 176px",
+          "0:div:padding-block-end: 24px -> 68px",
+          "0:div:padding-block-start: 24px -> 68px",
+          "0:div:padding-bottom: 24px -> 68px",
+          "0:div:padding-top: 24px -> 68px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 232px",
+          "0:div:height: 88px -> 232px",
+          "0:div:padding-block-end: 24px -> 96px",
+          "0:div:padding-block-start: 24px -> 96px",
+          "0:div:padding-bottom: 24px -> 96px",
+          "0:div:padding-top: 24px -> 96px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-corporate-trust-open",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 152px",
+          "0:div:height: 88px -> 152px",
+          "0:div:padding-block-end: 24px -> 56px",
+          "0:div:padding-block-start: 24px -> 56px",
+          "0:div:padding-bottom: 24px -> 56px",
+          "0:div:padding-top: 24px -> 56px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 216px",
+          "0:div:height: 88px -> 216px",
+          "0:div:padding-block-end: 24px -> 88px",
+          "0:div:padding-block-start: 24px -> 88px",
+          "0:div:padding-bottom: 24px -> 88px",
+          "0:div:padding-top: 24px -> 88px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 280px",
+          "0:div:height: 88px -> 280px",
+          "0:div:padding-block-end: 24px -> 120px",
+          "0:div:padding-block-start: 24px -> 120px",
+          "0:div:padding-bottom: 24px -> 120px",
+          "0:div:padding-top: 24px -> 120px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-corporate-trust-tight",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 96px",
+          "0:div:height: 88px -> 96px",
+          "0:div:padding-block-end: 24px -> 28px",
+          "0:div:padding-block-start: 24px -> 28px",
+          "0:div:padding-bottom: 24px -> 28px",
+          "0:div:padding-top: 24px -> 28px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 120px",
+          "0:div:height: 88px -> 120px",
+          "0:div:padding-block-end: 24px -> 40px",
+          "0:div:padding-block-start: 24px -> 40px",
+          "0:div:padding-bottom: 24px -> 40px",
+          "0:div:padding-top: 24px -> 40px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 152px",
+          "0:div:height: 88px -> 152px",
+          "0:div:padding-block-end: 24px -> 56px",
+          "0:div:padding-block-start: 24px -> 56px",
+          "0:div:padding-bottom: 24px -> 56px",
+          "0:div:padding-top: 24px -> 56px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-soft-saas-section",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 136px",
+          "0:div:height: 88px -> 136px",
+          "0:div:padding-block-end: 24px -> 48px",
+          "0:div:padding-block-start: 24px -> 48px",
+          "0:div:padding-bottom: 24px -> 48px",
+          "0:div:padding-top: 24px -> 48px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 184px",
+          "0:div:height: 88px -> 184px",
+          "0:div:padding-block-end: 24px -> 72px",
+          "0:div:padding-block-start: 24px -> 72px",
+          "0:div:padding-bottom: 24px -> 72px",
+          "0:div:padding-top: 24px -> 72px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 248px",
+          "0:div:height: 88px -> 248px",
+          "0:div:padding-block-end: 24px -> 104px",
+          "0:div:padding-block-start: 24px -> 104px",
+          "0:div:padding-bottom: 24px -> 104px",
+          "0:div:padding-top: 24px -> 104px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-soft-saas-open",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 168px",
+          "0:div:height: 88px -> 168px",
+          "0:div:padding-block-end: 24px -> 64px",
+          "0:div:padding-block-start: 24px -> 64px",
+          "0:div:padding-bottom: 24px -> 64px",
+          "0:div:padding-top: 24px -> 64px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 216px",
+          "0:div:height: 88px -> 216px",
+          "0:div:padding-block-end: 24px -> 88px",
+          "0:div:padding-block-start: 24px -> 88px",
+          "0:div:padding-bottom: 24px -> 88px",
+          "0:div:padding-top: 24px -> 88px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 296px",
+          "0:div:height: 88px -> 296px",
+          "0:div:padding-block-end: 24px -> 128px",
+          "0:div:padding-block-start: 24px -> 128px",
+          "0:div:padding-bottom: 24px -> 128px",
+          "0:div:padding-top: 24px -> 128px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-soft-saas-tight",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 104px",
+          "0:div:height: 88px -> 104px",
+          "0:div:padding-block-end: 24px -> 32px",
+          "0:div:padding-block-start: 24px -> 32px",
+          "0:div:padding-bottom: 24px -> 32px",
+          "0:div:padding-top: 24px -> 32px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 120px",
+          "0:div:height: 88px -> 120px",
+          "0:div:padding-block-end: 24px -> 40px",
+          "0:div:padding-block-start: 24px -> 40px",
+          "0:div:padding-bottom: 24px -> 40px",
+          "0:div:padding-top: 24px -> 40px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 168px",
+          "0:div:height: 88px -> 168px",
+          "0:div:padding-block-end: 24px -> 64px",
+          "0:div:padding-block-start: 24px -> 64px",
+          "0:div:padding-bottom: 24px -> 64px",
+          "0:div:padding-top: 24px -> 64px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-bold-vibrant-section",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 112px",
+          "0:div:height: 88px -> 112px",
+          "0:div:padding-block-end: 24px -> 36px",
+          "0:div:padding-block-start: 24px -> 36px",
+          "0:div:padding-bottom: 24px -> 36px",
+          "0:div:padding-top: 24px -> 36px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 152px",
+          "0:div:height: 88px -> 152px",
+          "0:div:padding-block-end: 24px -> 56px",
+          "0:div:padding-block-start: 24px -> 56px",
+          "0:div:padding-bottom: 24px -> 56px",
+          "0:div:padding-top: 24px -> 56px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 200px",
+          "0:div:height: 88px -> 200px",
+          "0:div:padding-block-end: 24px -> 80px",
+          "0:div:padding-block-start: 24px -> 80px",
+          "0:div:padding-bottom: 24px -> 80px",
+          "0:div:padding-top: 24px -> 80px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-bold-vibrant-open",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 136px",
+          "0:div:height: 88px -> 136px",
+          "0:div:padding-block-end: 24px -> 48px",
+          "0:div:padding-block-start: 24px -> 48px",
+          "0:div:padding-bottom: 24px -> 48px",
+          "0:div:padding-top: 24px -> 48px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 184px",
+          "0:div:height: 88px -> 184px",
+          "0:div:padding-block-end: 24px -> 72px",
+          "0:div:padding-block-start: 24px -> 72px",
+          "0:div:padding-bottom: 24px -> 72px",
+          "0:div:padding-top: 24px -> 72px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 248px",
+          "0:div:height: 88px -> 248px",
+          "0:div:padding-block-end: 24px -> 104px",
+          "0:div:padding-block-start: 24px -> 104px",
+          "0:div:padding-bottom: 24px -> 104px",
+          "0:div:padding-top: 24px -> 104px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-bold-vibrant-tight",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 96px",
+          "0:div:height: 88px -> 96px",
+          "0:div:padding-block-end: 24px -> 28px",
+          "0:div:padding-block-start: 24px -> 28px",
+          "0:div:padding-bottom: 24px -> 28px",
+          "0:div:padding-top: 24px -> 28px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 104px",
+          "0:div:height: 88px -> 104px",
+          "0:div:padding-block-end: 24px -> 32px",
+          "0:div:padding-block-start: 24px -> 32px",
+          "0:div:padding-bottom: 24px -> 32px",
+          "0:div:padding-top: 24px -> 32px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 152px",
+          "0:div:height: 88px -> 152px",
+          "0:div:padding-block-end: 24px -> 56px",
+          "0:div:padding-block-start: 24px -> 56px",
+          "0:div:padding-bottom: 24px -> 56px",
+          "0:div:padding-top: 24px -> 56px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-brutalist-flat-section",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 104px",
+          "0:div:height: 88px -> 104px",
+          "0:div:padding-block-end: 24px -> 32px",
+          "0:div:padding-block-start: 24px -> 32px",
+          "0:div:padding-bottom: 24px -> 32px",
+          "0:div:padding-top: 24px -> 32px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 136px",
+          "0:div:height: 88px -> 136px",
+          "0:div:padding-block-end: 24px -> 48px",
+          "0:div:padding-block-start: 24px -> 48px",
+          "0:div:padding-bottom: 24px -> 48px",
+          "0:div:padding-top: 24px -> 48px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 168px",
+          "0:div:height: 88px -> 168px",
+          "0:div:padding-block-end: 24px -> 64px",
+          "0:div:padding-block-start: 24px -> 64px",
+          "0:div:padding-bottom: 24px -> 64px",
+          "0:div:padding-top: 24px -> 64px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-brutalist-flat-open",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 120px",
+          "0:div:height: 88px -> 120px",
+          "0:div:padding-block-end: 24px -> 40px",
+          "0:div:padding-block-start: 24px -> 40px",
+          "0:div:padding-bottom: 24px -> 40px",
+          "0:div:padding-top: 24px -> 40px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 168px",
+          "0:div:height: 88px -> 168px",
+          "0:div:padding-block-end: 24px -> 64px",
+          "0:div:padding-block-start: 24px -> 64px",
+          "0:div:padding-bottom: 24px -> 64px",
+          "0:div:padding-top: 24px -> 64px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 200px",
+          "0:div:height: 88px -> 200px",
+          "0:div:padding-block-end: 24px -> 80px",
+          "0:div:padding-block-start: 24px -> 80px",
+          "0:div:padding-bottom: 24px -> 80px",
+          "0:div:padding-top: 24px -> 80px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-brutalist-flat-tight",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 96px",
+          "0:div:height: 88px -> 96px",
+          "0:div:padding-block-end: 24px -> 28px",
+          "0:div:padding-block-start: 24px -> 28px",
+          "0:div:padding-bottom: 24px -> 28px",
+          "0:div:padding-top: 24px -> 28px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 104px",
+          "0:div:height: 88px -> 104px",
+          "0:div:padding-block-end: 24px -> 32px",
+          "0:div:padding-block-start: 24px -> 32px",
+          "0:div:padding-bottom: 24px -> 32px",
+          "0:div:padding-top: 24px -> 32px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 152px",
+          "0:div:height: 88px -> 152px",
+          "0:div:padding-block-end: 24px -> 56px",
+          "0:div:padding-block-start: 24px -> 56px",
+          "0:div:padding-bottom: 24px -> 56px",
+          "0:div:padding-top: 24px -> 56px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-luxe-section",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 184px",
+          "0:div:height: 88px -> 184px",
+          "0:div:padding-block-end: 24px -> 72px",
+          "0:div:padding-block-start: 24px -> 72px",
+          "0:div:padding-bottom: 24px -> 72px",
+          "0:div:padding-top: 24px -> 72px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 264px",
+          "0:div:height: 88px -> 264px",
+          "0:div:padding-block-end: 24px -> 112px",
+          "0:div:padding-block-start: 24px -> 112px",
+          "0:div:padding-bottom: 24px -> 112px",
+          "0:div:padding-top: 24px -> 112px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 360px",
+          "0:div:height: 88px -> 360px",
+          "0:div:padding-block-end: 24px -> 160px",
+          "0:div:padding-block-start: 24px -> 160px",
+          "0:div:padding-bottom: 24px -> 160px",
+          "0:div:padding-top: 24px -> 160px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-luxe-open",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 216px",
+          "0:div:height: 88px -> 216px",
+          "0:div:padding-block-end: 24px -> 88px",
+          "0:div:padding-block-start: 24px -> 88px",
+          "0:div:padding-bottom: 24px -> 88px",
+          "0:div:padding-top: 24px -> 88px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 328px",
+          "0:div:height: 88px -> 328px",
+          "0:div:padding-block-end: 24px -> 144px",
+          "0:div:padding-block-start: 24px -> 144px",
+          "0:div:padding-bottom: 24px -> 144px",
+          "0:div:padding-top: 24px -> 144px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 440px",
+          "0:div:height: 88px -> 440px",
+          "0:div:padding-block-end: 24px -> 200px",
+          "0:div:padding-block-start: 24px -> 200px",
+          "0:div:padding-bottom: 24px -> 200px",
+          "0:div:padding-top: 24px -> 200px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-luxe-tight",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 120px",
+          "0:div:height: 88px -> 120px",
+          "0:div:padding-block-end: 24px -> 40px",
+          "0:div:padding-block-start: 24px -> 40px",
+          "0:div:padding-bottom: 24px -> 40px",
+          "0:div:padding-top: 24px -> 40px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 168px",
+          "0:div:height: 88px -> 168px",
+          "0:div:padding-block-end: 24px -> 64px",
+          "0:div:padding-block-start: 24px -> 64px",
+          "0:div:padding-bottom: 24px -> 64px",
+          "0:div:padding-top: 24px -> 64px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 232px",
+          "0:div:height: 88px -> 232px",
+          "0:div:padding-block-end: 24px -> 96px",
+          "0:div:padding-block-start: 24px -> 96px",
+          "0:div:padding-bottom: 24px -> 96px",
+          "0:div:padding-top: 24px -> 96px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-section-image",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 184px",
+          "0:div:height: 88px -> 184px",
+          "0:div:padding-block-end: 24px -> 72px",
+          "0:div:padding-block-start: 24px -> 72px",
+          "0:div:padding-bottom: 24px -> 72px",
+          "0:div:padding-top: 24px -> 72px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 248px",
+          "0:div:height: 88px -> 248px",
+          "0:div:padding-block-end: 24px -> 104px",
+          "0:div:padding-block-start: 24px -> 104px",
+          "0:div:padding-bottom: 24px -> 104px",
+          "0:div:padding-top: 24px -> 104px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 344px",
+          "0:div:height: 88px -> 344px",
+          "0:div:padding-block-end: 24px -> 152px",
+          "0:div:padding-block-start: 24px -> 152px",
+          "0:div:padding-bottom: 24px -> 152px",
+          "0:div:padding-top: 24px -> 152px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-section-first",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 152px",
+          "0:div:height: 88px -> 152px",
+          "0:div:padding-block-end: 24px -> 56px",
+          "0:div:padding-block-start: 24px -> 56px",
+          "0:div:padding-bottom: 24px -> 56px",
+          "0:div:padding-top: 24px -> 56px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 200px",
+          "0:div:height: 88px -> 200px",
+          "0:div:padding-block-end: 24px -> 80px",
+          "0:div:padding-block-start: 24px -> 80px",
+          "0:div:padding-bottom: 24px -> 80px",
+          "0:div:padding-top: 24px -> 80px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 280px",
+          "0:div:height: 88px -> 280px",
+          "0:div:padding-block-end: 24px -> 120px",
+          "0:div:padding-block-start: 24px -> 120px",
+          "0:div:padding-bottom: 24px -> 120px",
+          "0:div:padding-top: 24px -> 120px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_0.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-section-later",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 104px",
+          "0:div:height: 88px -> 104px",
+          "0:div:padding-block-end: 24px -> 32px",
+          "0:div:padding-block-start: 24px -> 32px",
+          "0:div:padding-bottom: 24px -> 32px",
+          "0:div:padding-top: 24px -> 32px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_1.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 136px",
+          "0:div:height: 88px -> 136px",
+          "0:div:padding-block-end: 24px -> 48px",
+          "0:div:padding-block-start: 24px -> 48px",
+          "0:div:padding-bottom: 24px -> 48px",
+          "0:div:padding-top: 24px -> 48px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_1.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 8,
+        "sample": [
+          "0:div:block-size: 88px -> 184px",
+          "0:div:height: 88px -> 184px",
+          "0:div:padding-block-end: 24px -> 72px",
+          "0:div:padding-block-start: 24px -> 72px",
+          "0:div:padding-bottom: 24px -> 72px",
+          "0:div:padding-top: 24px -> 72px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_1.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0
+      }
+    }
+  },
+  {
+    "id": "lr-section-overlap",
+    "effect": true,
+    "widths": {
+      "400": true,
+      "900": true,
+      "1280": true
+    },
+    "phoneOverflow": false,
+    "detail": {
+      "400": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 9,
+        "sample": [
+          "0:div:block-size: 88px -> 152px",
+          "0:div:height: 88px -> 152px",
+          "0:div:padding-block-end: 24px -> 56px",
+          "0:div:padding-block-start: 24px -> 56px",
+          "0:div:padding-bottom: 24px -> 56px",
+          "0:div:padding-top: 24px -> 56px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "rect:height",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_1.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0,
+        "geometry": {
+          "control": {
+            "rect": {
+              "top": 266,
+              "left": 0,
+              "width": 400,
+              "height": 88
+            },
+            "parent": {
+              "top": 146,
+              "left": 0,
+              "width": 400,
+              "height": 208
+            },
+            "prev": {
+              "top": 146,
+              "left": 0,
+              "width": 400,
+              "height": 200
+            },
+            "next": null,
+            "overlap": {
+              "area": 32000,
+              "with": "prev",
+              "top": "measured"
+            },
+            "hitCentre": "measured"
+          },
+          "candidate": {
+            "rect": {
+              "top": 266,
+              "left": 0,
+              "width": 400,
+              "height": 152
+            },
+            "parent": {
+              "top": 146,
+              "left": 0,
+              "width": 400,
+              "height": 272
+            },
+            "prev": {
+              "top": 146,
+              "left": 0,
+              "width": 400,
+              "height": 200
+            },
+            "next": null,
+            "overlap": {
+              "area": 32000,
+              "with": "prev",
+              "top": "measured"
+            },
+            "hitCentre": "measured"
+          }
+        }
+      },
+      "900": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 9,
+        "sample": [
+          "0:div:block-size: 88px -> 200px",
+          "0:div:height: 88px -> 200px",
+          "0:div:padding-block-end: 24px -> 80px",
+          "0:div:padding-block-start: 24px -> 80px",
+          "0:div:padding-bottom: 24px -> 80px",
+          "0:div:padding-top: 24px -> 80px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "rect:height",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_1.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0,
+        "geometry": {
+          "control": {
+            "rect": {
+              "top": 306,
+              "left": 0,
+              "width": 900,
+              "height": 88
+            },
+            "parent": {
+              "top": 186,
+              "left": 0,
+              "width": 900,
+              "height": 208
+            },
+            "prev": {
+              "top": 186,
+              "left": 0,
+              "width": 900,
+              "height": 200
+            },
+            "next": null,
+            "overlap": {
+              "area": 72000,
+              "with": "prev",
+              "top": "measured"
+            },
+            "hitCentre": "measured"
+          },
+          "candidate": {
+            "rect": {
+              "top": 306,
+              "left": 0,
+              "width": 900,
+              "height": 200
+            },
+            "parent": {
+              "top": 186,
+              "left": 0,
+              "width": 900,
+              "height": 320
+            },
+            "prev": {
+              "top": 186,
+              "left": 0,
+              "width": 900,
+              "height": 200
+            },
+            "next": null,
+            "overlap": {
+              "area": 72000,
+              "with": "prev",
+              "top": "measured"
+            },
+            "hitCentre": "measured"
+          }
+        }
+      },
+      "1280": {
+        "stylesheetDiffers": true,
+        "computedDiffs": 9,
+        "sample": [
+          "0:div:block-size: 88px -> 280px",
+          "0:div:height: 88px -> 280px",
+          "0:div:padding-block-end: 24px -> 120px",
+          "0:div:padding-block-start: 24px -> 120px",
+          "0:div:padding-bottom: 24px -> 120px",
+          "0:div:padding-top: 24px -> 120px"
+        ],
+        "changedProps": [
+          "block-size",
+          "height",
+          "padding-block-end",
+          "padding-block-start",
+          "padding-bottom",
+          "padding-top",
+          "perspective-origin",
+          "rect:height",
+          "transform-origin"
+        ],
+        "changedElements": [
+          {
+            "el": "div.et_pb_section_1.et_pb_section.et_section_regular",
+            "props": [
+              "block-size",
+              "height",
+              "padding-block-end",
+              "padding-block-start",
+              "padding-bottom",
+              "padding-top",
+              "perspective-origin",
+              "transform-origin"
+            ]
+          }
+        ],
+        "controlNoise": false,
+        "overflowPx": 0,
+        "geometry": {
+          "control": {
+            "rect": {
+              "top": 252,
+              "left": 0,
+              "width": 1280,
+              "height": 88
+            },
+            "parent": {
+              "top": 132,
+              "left": 0,
+              "width": 1280,
+              "height": 208
+            },
+            "prev": {
+              "top": 132,
+              "left": 0,
+              "width": 1280,
+              "height": 200
+            },
+            "next": null,
+            "overlap": {
+              "area": 102400,
+              "with": "prev",
+              "top": "measured"
+            },
+            "hitCentre": "measured"
+          },
+          "candidate": {
+            "rect": {
+              "top": 252,
+              "left": 0,
+              "width": 1280,
+              "height": 280
+            },
+            "parent": {
+              "top": 132,
+              "left": 0,
+              "width": 1280,
+              "height": 400
+            },
+            "prev": {
+              "top": 132,
+              "left": 0,
+              "width": 1280,
+              "height": 200
+            },
+            "next": null,
+            "overlap": {
+              "area": 102400,
+              "with": "prev",
+              "top": "measured"
+            },
+            "hitCentre": "measured"
+          }
+        }
+      }
+    }
+  }
+]

@@ -20,20 +20,30 @@ require_once __DIR__ . '/DesignLanguages.php';
  * h4 in the eyebrow font) on `divi/heading`, and `eyebrow` (an uppercase label) on `divi/text`. Nothing else is written:
  * no size, line height, colour, family, alignment, style or heading level.
  *
- * Every path and value was rendered on the real Divi 5.15.1 ON its carrier (fixtures/shapes/language-type-vocabulary.md);
- * a decision the probe did not pass makes the carrier answer null (the marker stays and the recipe is refused), except
- * the cascade, whose fallback writes the same value at desktop, tablet and phone. Pure and deterministic: no site access.
+ * Kind `rhythm` (the vertical air between sections): the language's section padding for the role, top and bottom (equal)
+ * plus `syncVertical` `on`, at desktop, tablet and phone of the section's spacing path (DesignLanguages::SECTION_SPACE_PATH).
+ * Roles on `divi/section`: `section` (the language's `section_space`), `open` and `tight` (derived from it by
+ * DesignLanguages::sectionSpace(), Ruling 8). Nothing else is written: no left or right padding, margin, state, background
+ * or divider.
+ *
+ * Every path and value was rendered on the real Divi 5.15.1 ON its carrier (fixtures/shapes/language-type-vocabulary.md,
+ * fixtures/shapes/language-rhythm-vocabulary.md); a decision the probe did not pass makes the carrier answer null (the
+ * marker stays and the recipe is refused), except the type cascade, whose fallback writes the same value at desktop, tablet
+ * and phone, and the section's `syncVertical`, which is then omitted. Pure and deterministic: no site access.
  */
 final class LanguageAdapters
 {
     /** The marker kinds a design language answers (`"aied":{"<kind>":"<role>"}`). */
-    public const KINDS = [ 'type' ];
+    public const KINDS = [ 'type', 'rhythm' ];
 
     /** Kind => block => the roles it takes. StyleGuide::typographyLanguageSentence() and LanguageResolver read it. */
     public const APPLIED = [
         'type' => [
             'divi/heading' => [ 'display', 'title', 'eyebrow' ],
             'divi/text'    => [ 'eyebrow' ],
+        ],
+        'rhythm' => [
+            'divi/section' => [ 'section', 'open', 'tight' ],
         ],
     ];
 
@@ -74,6 +84,27 @@ final class LanguageAdapters
         'text-cascade'     => true,
     ];
 
+    /** Block => the spacing group the rhythm patch writes below (`<path>.<breakpoint>.value.padding`): the language's own constant. */
+    public const RHYTHM_PATHS = [ 'divi/section' => DesignLanguages::SECTION_SPACE_PATH ];
+
+    /**
+     * The probe's verdicts (fixtures/shapes/language-rhythm-vocabulary.md, "Adapter decisions"; a test pins this to that
+     * table): top and bottom padding at the three breakpoints, the `syncVertical` toggle beside them, and the same padding on
+     * a section with a background image, on the first and on a later section of a page, and on a section with a negative top
+     * margin.
+     */
+    public const RHYTHM_PROVEN = [
+        'section-padding' => true,
+        'section-sync'    => true,
+        'section-image'   => true,
+        'section-first'   => true,
+        'section-later'   => true,
+        'section-overlap' => true,
+    ];
+
+    /** The rhythm decisions a patch cannot be written without (section-sync only adds the toggle). */
+    private const RHYTHM_NEEDS = [ 'section-padding', 'section-image', 'section-first', 'section-later', 'section-overlap' ];
+
     /** Block => the carrier name the decisions use. */
     private const CARRIERS = [ 'divi/heading' => 'heading', 'divi/text' => 'text' ];
 
@@ -88,6 +119,9 @@ final class LanguageAdapters
     {
         if ( 'type' === $kind ) {
             return self::typePatch( $block, $role, $language );
+        }
+        if ( 'rhythm' === $kind ) {
+            return self::rhythmPatch( $block, $role, $language );
         }
 
         return null;
@@ -130,6 +164,47 @@ final class LanguageAdapters
             $node[ $bp ] = [ 'value' => $value ];
         }
         foreach ( array_reverse( explode( '.', self::TYPE_PATHS[ $block ] ) ) as $key ) {
+            $node = [ $key => $node ];
+        }
+
+        return $node;
+    }
+
+    /**
+     * The rhythm patch: `[module => [decoration => [spacing => [desktop|tablet|phone => [value => [padding => [top, bottom,
+     * syncVertical]]]]]]]` nested at RHYTHM_PATHS[$block], top = bottom = DesignLanguages::sectionSpace($language, $role) in
+     * px, `syncVertical` `on` only when `section-sync` is proven. Null unless $role belongs on $block, the language's
+     * `section_space` is valid and every decision in RHYTHM_NEEDS is proven in $proven (public only so a test can plant
+     * $proven).
+     *
+     * @param array<string,mixed> $language
+     * @param array<string,bool>  $proven
+     * @return ?array<string,mixed>
+     */
+    public static function rhythmPatch( string $block, string $role, array $language, array $proven = self::RHYTHM_PROVEN ): ?array
+    {
+        if ( ! in_array( $role, self::APPLIED['rhythm'][ $block ] ?? [], true ) ) {
+            return null;
+        }
+        $space = DesignLanguages::sectionSpace( $language, $role );
+        if ( null === $space ) {
+            return null;
+        }
+        foreach ( self::RHYTHM_NEEDS as $decision ) {
+            if ( true !== ( $proven[ $decision ] ?? false ) ) {
+                return null;
+            }
+        }
+        $sync = true === ( $proven['section-sync'] ?? false );
+        $node = [];
+        foreach ( DesignLanguages::SECTION_SPACE_KEYS as $bp ) {
+            $padding = [ 'top' => $space[ $bp ] . 'px', 'bottom' => $space[ $bp ] . 'px' ];
+            if ( $sync ) {
+                $padding['syncVertical'] = 'on';
+            }
+            $node[ $bp ] = [ 'value' => [ 'padding' => $padding ] ];
+        }
+        foreach ( array_reverse( explode( '.', self::RHYTHM_PATHS[ $block ] ) ) as $key ) {
             $node = [ $key => $node ];
         }
 

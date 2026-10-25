@@ -56,6 +56,24 @@ final class DesignLanguages
     /** @var array<string,array{0:int,1:int}> letter spacing bounds in whole pixels, per role */
     public const TYPE_TRACKING_BOUNDS = [ 'display' => [ -3, 0 ], 'title' => [ -1, 1 ], 'eyebrow' => [ 0, 4 ] ];
 
+    /** The breakpoints a language's `section_space` has, in the order the data and the generated line write them. */
+    public const SECTION_SPACE_KEYS = [ 'desktop', 'tablet', 'phone' ];
+
+    /** @var array<string,array{0:int,1:int}> whole-pixel bounds of `section_space` (and of every derived role): desktop and phone; tablet stays between them */
+    public const SECTION_SPACE_BOUNDS = [ 'desktop' => [ 56, 200 ], 'phone' => [ 28, 120 ] ];
+
+    /** The attribute path (under the section's attrs) that carries the top and bottom padding per breakpoint; the one source LanguageAdapters points to. */
+    public const SECTION_SPACE_PATH = 'module.decoration.spacing';
+
+    /** The section rhythm roles: `section` is the language's own section_space, `open` and `tight` are derived (sectionSpace()). */
+    public const RHYTHM_ROLES = [ 'section', 'open', 'tight' ];
+
+    /** @var array<string,array{0:int,1:int}> role => [numerator, denominator] of the factor applied to section_space (no float anywhere) */
+    public const RHYTHM_FACTORS = [ 'section' => [ 1, 1 ], 'open' => [ 5, 4 ], 'tight' => [ 3, 5 ] ];
+
+    /** Where each generated line is printed in a language topic: after the named line (see markdown()). */
+    private const GENERATED_PLACE = [ 'type' => 'fonts', 'section_space' => 'section_padding' ];
+
     /** @var ?list<array<string,mixed>> the decoded languages, read once per request */
     private static ?array $cache = null;
 
@@ -107,8 +125,10 @@ final class DesignLanguages
     /**
      * One language, or null for an unknown id.
      *
-     * Shape: {id, title, summary, colors, fonts, type, radius, section_padding, shadow, motion, kit,
-     * rhythm, favors, avoids, hero, cta}. `type` has the roles display (recipe h1, h2), title (h3) and eyebrow, each
+     * Shape: {id, title, summary, colors, fonts, type, radius, section_padding, section_space, shadow, motion, kit,
+     * rhythm, favors, avoids, hero, cta}. `section_space` is {desktop, tablet, phone}, the whole-pixel top and bottom
+     * padding of an ordinary section, the structured form of the `section_padding` sentence (see sectionSpaceProblems()
+     * and sectionSpace()). `type` has the roles display (recipe h1, h2), title (h3) and eyebrow, each
      * {weight, letterSpacing, capitalization} (see typeProblems()). `kit` is the id of the style kit (StyleKits) the language's
      * recipes are served in unless a caller names another. `colors` always has bg, surface, text, muted,
      * accent, accent_text, border, inverse (hex) and `overlay`, an `rgba(r,g,b,a)` scrim
@@ -182,11 +202,12 @@ final class DesignLanguages
             '',
             '## Fonts',
             sprintf( '- headings: %s; body: %s; eyebrow labels: %s', (string) $f['display'], (string) $f['body'], (string) $f['eyebrow'] ),
-            ...array_values( self::generatedLines( $lang ) ),
+            ...self::generatedAt( $lang, 'fonts' ),
             '',
             '## Shape, space and depth',
             '- Radius: ' . (string) $lang['radius'],
             '- Section padding: ' . (string) $lang['section_padding'],
+            ...self::generatedAt( $lang, 'section_padding' ),
             '- Shadow and borders: ' . (string) $lang['shadow'],
             '- Motion: ' . (string) $lang['motion'],
             '- Style kit: ' . (string) ( $lang['kit'] ?? '' ),
@@ -219,6 +240,7 @@ final class DesignLanguages
      * The class never reads a font list itself: the caller passes the names (null skips the check).
      * `type` is required: typeProblems() lines are part of the result (already prefixed `type.`); with $fontWeights
      * (the `families` map of fixtures/shapes/font-weights.json) each weight must also exist in its role's font.
+     * `section_space` is required too: sectionSpaceProblems() lines are part of the result (prefixed `section_space`).
      *
      * @param array<string,mixed>                $language
      * @param ?list<string>                      $knownFonts
@@ -289,7 +311,7 @@ final class DesignLanguages
             }
         }
 
-        $problems = array_merge( $problems, self::typeProblems( $language, $fontWeights ) );
+        $problems = array_merge( $problems, self::typeProblems( $language, $fontWeights ), self::sectionSpaceProblems( $language ) );
 
         foreach ( [ 'favors', 'avoids' ] as $key ) {
             $list = $language[ $key ] ?? null;
@@ -435,14 +457,132 @@ final class DesignLanguages
     }
 
     /**
-     * Every generated line a language topic carries, by name (the topic prints them in this order).
+     * What is wrong with a language's `section_space` (empty list = fine; every line starts with `section_space`).
+     * It is an object with EXACTLY desktop, tablet and phone; each is an int (a string, a float or a bool is not),
+     * desktop within SECTION_SPACE_BOUNDS['desktop'], phone within SECTION_SPACE_BOUNDS['phone'], and desktop >= tablet >= phone.
+     *
+     * @param array<string,mixed> $language
+     * @return list<string>
+     */
+    public static function sectionSpaceProblems( array $language ): array
+    {
+        $space = $language['section_space'] ?? null;
+        if ( ! is_array( $space ) ) {
+            return [ 'section_space must be an object with the keys ' . implode( ', ', self::SECTION_SPACE_KEYS ) ];
+        }
+        $problems = [];
+        foreach ( array_keys( $space ) as $key ) {
+            if ( ! in_array( $key, self::SECTION_SPACE_KEYS, true ) ) {
+                $problems[] = 'section_space.' . $key . ' is not a breakpoint (' . implode( ', ', self::SECTION_SPACE_KEYS ) . ')';
+            }
+        }
+        $whole = true;
+        foreach ( self::SECTION_SPACE_KEYS as $key ) {
+            $value = $space[ $key ] ?? null;
+            if ( ! is_int( $value ) ) {
+                $problems[] = 'section_space.' . $key . ' must be a whole number of pixels (an integer)';
+                $whole      = false;
+                continue;
+            }
+            if ( isset( self::SECTION_SPACE_BOUNDS[ $key ] ) ) {
+                [ $lo, $hi ] = self::SECTION_SPACE_BOUNDS[ $key ];
+                if ( $value < $lo || $value > $hi ) {
+                    $problems[] = 'section_space.' . $key . ' must be between ' . $lo . ' and ' . $hi;
+                }
+            }
+        }
+        if ( $whole ) {
+            if ( $space['tablet'] > $space['desktop'] ) {
+                $problems[] = 'section_space.tablet must not be above desktop';
+            }
+            if ( $space['phone'] > $space['tablet'] ) {
+                $problems[] = 'section_space.phone must not be above tablet';
+            }
+        }
+        return $problems;
+    }
+
+    /**
+     * The top and bottom padding of one rhythm role, in whole pixels per breakpoint, or null for a role outside
+     * RHYTHM_ROLES or a language whose `section_space` has a problem. `section` is the data itself, never rounded.
+     * `open` and `tight` are derived with integers only: for each breakpoint
+     * `intdiv( v * num + 4 * den, 8 * den ) * 8` with the factor of RHYTHM_FACTORS (the nearest multiple of 8, a half
+     * rounds up), then desktop is clamped into SECTION_SPACE_BOUNDS['desktop'], phone into ['phone'] and tablet into
+     * [phone, desktop] (a clamp gives the bound itself, so 28 and 56 are legal results).
+     *
+     * @param array<string,mixed> $language
+     * @return ?array{desktop:int,tablet:int,phone:int}
+     */
+    public static function sectionSpace( array $language, string $role ): ?array
+    {
+        if ( ! isset( self::RHYTHM_FACTORS[ $role ] ) || [] !== self::sectionSpaceProblems( $language ) ) {
+            return null;
+        }
+        /** @var array{desktop:int,tablet:int,phone:int} $space */
+        $space = $language['section_space'];
+        if ( 'section' === $role ) {
+            return [ 'desktop' => $space['desktop'], 'tablet' => $space['tablet'], 'phone' => $space['phone'] ];
+        }
+        [ $num, $den ] = self::RHYTHM_FACTORS[ $role ];
+        $round         = static fn( int $v ): int => intdiv( $v * $num + 4 * $den, 8 * $den ) * 8;
+        $desktop       = max( self::SECTION_SPACE_BOUNDS['desktop'][0], min( self::SECTION_SPACE_BOUNDS['desktop'][1], $round( $space['desktop'] ) ) );
+        $phone         = max( self::SECTION_SPACE_BOUNDS['phone'][0], min( self::SECTION_SPACE_BOUNDS['phone'][1], $round( $space['phone'] ) ) );
+        $tablet        = max( $phone, min( $desktop, $round( $space['tablet'] ) ) );
+        return [ 'desktop' => $desktop, 'tablet' => $tablet, 'phone' => $phone ];
+    }
+
+    /**
+     * The one line of a design language topic that gives a hand-written page the section padding of each rhythm role,
+     * generated from the data (and from SECTION_SPACE_PATH) so it can never disagree with either. '' when the language
+     * has a `section_space` problem.
+     *
+     * @param array<string,mixed> $language
+     */
+    public static function sectionSpaceLine( array $language ): string
+    {
+        $parts = [];
+        foreach ( [ 'section' => 'sections', 'open' => 'open (a hero or closing band)', 'tight' => 'tight (a logo or stats strip)' ] as $role => $name ) {
+            $space = self::sectionSpace( $language, $role );
+            if ( null === $space ) {
+                return '';
+            }
+            $parts[] = sprintf( '%s %d/%d/%dpx', $name, $space['desktop'], $space['tablet'], $space['phone'] );
+        }
+        return sprintf(
+            '- Section spacing: padding top and bottom at %s.{%s}.value.padding (never left or right); %s.',
+            self::SECTION_SPACE_PATH,
+            implode( ',', self::SECTION_SPACE_KEYS ),
+            implode( ', ', $parts )
+        );
+    }
+
+    /**
+     * Every generated line a language topic carries, by name (markdown() prints each one where GENERATED_PLACE says).
      *
      * @param array<string,mixed> $language
      * @return array<string,string>
      */
     public static function generatedLines( array $language ): array
     {
-        return [ 'type' => self::typeLine( $language ) ];
+        return [ 'type' => self::typeLine( $language ), 'section_space' => self::sectionSpaceLine( $language ) ];
+    }
+
+    /**
+     * The generated lines printed right after the named line of the topic (GENERATED_PLACE), in generatedLines() order;
+     * an empty line (a language without the data) prints nothing.
+     *
+     * @param array<string,mixed> $language
+     * @return list<string>
+     */
+    private static function generatedAt( array $language, string $after ): array
+    {
+        $out = [];
+        foreach ( self::generatedLines( $language ) as $name => $line ) {
+            if ( '' !== $line && ( self::GENERATED_PLACE[ $name ] ?? null ) === $after ) {
+                $out[] = $line;
+            }
+        }
+        return $out;
     }
 
     /** @param mixed $value */

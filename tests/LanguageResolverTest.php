@@ -30,7 +30,8 @@ require_once __DIR__ . '/../wp-plugin/src/SectionRecipes.php';
  * The language step of the recipe pipeline (type adapter plan Task 3): a top-level `"aied":{"type":"<role>"}` on a block the
  * role belongs to is replaced by LanguageAdapters' patch and stripped; everything else is left byte-identical and the type
  * markers left are reported. It runs BEFORE the kit step, and the scanner it shares with KitResolver (BlockAttrs) changed no
- * byte of the kit step's output.
+ * byte of the kit step's output. Since the rhythm adapter (rhythm adapter plan Task 3) it also resolves
+ * `"aied":{"rhythm":"section|open|tight"}` on a `divi/section` with the same code (it is generic over LanguageAdapters::KINDS).
  */
 class LanguageResolverTest extends TestCase
 {
@@ -178,8 +179,8 @@ class LanguageResolverTest extends TestCase
         $this->assertSame( $plain, LanguageResolver::resolve( $plain, $lang ) );
         foreach ( SectionRecipes::names() as $name ) {
             $raw = (string) SectionRecipes::rawMarkup( $name );
-            if ( ! str_contains( $raw, '"aied":{"type"' ) ) {
-                $this->assertSame( $raw, LanguageResolver::resolve( $raw, $lang ), "$name has no type marker: unchanged" );
+            if ( ! str_contains( $raw, '"aied":{"type"' ) && ! str_contains( $raw, '"aied":{"rhythm"' ) ) {
+                $this->assertSame( $raw, LanguageResolver::resolve( $raw, $lang ), "$name has no language marker: unchanged" );
             }
         }
     }
@@ -266,6 +267,142 @@ class LanguageResolverTest extends TestCase
             $this->assertNull( SectionRecipes::resolveMarkup( $bad, $lang, $kit ) );
         }
         $this->assertNull( SectionRecipes::resolveMarkup( self::button( '"aied":{"kit":"card"}' ), $lang, $kit ), 'a kit leftover is still refused after the kit step' );
+    }
+
+    // ---- rhythm: the language's section spacing on a divi/section ----
+
+    private static function rhythm( string $role ): string
+    {
+        return '"aied":{"rhythm":"' . $role . '"}';
+    }
+
+    /** A section with literal padding, a background, a border and a divider, carrying $marker, holding one row. */
+    private static function section( string $marker, string $inner = '' ): string
+    {
+        $padding = '';
+        foreach ( [ 'desktop' => 112, 'tablet' => 88, 'phone' => 64 ] as $bp => $px ) {
+            $padding .= ( '' === $padding ? '' : ',' ) . '"' . $bp . '":{"value":{"padding":{"top":"' . $px . 'px","bottom":"' . $px . 'px"' . ( 'desktop' === $bp ? ',"left":"0px"' : '' ) . '}}}';
+        }
+        return '<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"{{aied:color:surface}}"}}},"spacing":{' . $padding . '},"border":{"desktop":{"value":{"styles":{"top":{"width":"1px","color":"{{aied:color:border}}"}}}}}},'
+            . '"advanced":{"dividers":{"bottom":{"desktop":{"value":{"style":"curve","height":"100px","color":"{{aied:color:bg}}"}}}}}},"builderVersion":"5.15.1"' . ( '' === $marker ? '' : ',' . $marker ) . '} -->'
+            . '<!-- wp:divi/row {"builderVersion":"5.15.1"} --><!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.15.1"} -->'
+            . $inner
+            . '<!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section -->';
+    }
+
+    /** @return array<string,mixed> the attributes of the first divi/section in $markup */
+    private function sectionAttrs( string $markup ): array
+    {
+        $this->assertSame( 1, preg_match( '/<!-- wp:divi\/section (\{.*?\}) -->/s', $markup, $m ), 'one section' );
+        $a = json_decode( $m[1], true );
+        $this->assertIsArray( $a );
+        return $a;
+    }
+
+    public function testEachRhythmRoleResolvesAndIsStripped(): void
+    {
+        $plain = $this->sectionAttrs( self::section( '' ) );
+        foreach ( $this->languages() as $id => $lang ) {
+            foreach ( DesignLanguages::RHYTHM_ROLES as $role ) {
+                $out = LanguageResolver::resolve( self::section( self::rhythm( $role ) ), $lang );
+                $this->assertStringNotContainsString( '"aied"', $out, "$id $role" );
+                $this->assertSame( [], LanguageResolver::leftovers( $out ) );
+                $a = $this->sectionAttrs( $out );
+                $this->assertArrayNotHasKey( 'aied', $a );
+                $this->assertSame( [ 'module', 'builderVersion' ], array_keys( $a ), 'top-level keys keep their place' );
+                $this->assertSame( [ 'background', 'spacing', 'border' ], array_keys( $a['module']['decoration'] ), "$id $role: decoration keys keep their order" );
+                $this->assertSame( $plain['module']['decoration']['background'], $a['module']['decoration']['background'], 'the background is untouched' );
+                $this->assertSame( $plain['module']['decoration']['border'], $a['module']['decoration']['border'], 'the border is untouched' );
+                $this->assertSame( $plain['module']['advanced'], $a['module']['advanced'], 'the divider is untouched' );
+                $space = DesignLanguages::sectionSpace( $lang, $role );
+                $this->assertIsArray( $space );
+                foreach ( $space as $bp => $px ) {
+                    $padding = $a['module']['decoration']['spacing'][ $bp ]['value']['padding'];
+                    $want    = [ 'top' => $px . 'px', 'bottom' => $px . 'px' ] + ( 'desktop' === $bp ? [ 'left' => '0px' ] : [] ) + [ 'syncVertical' => 'on' ];
+                    $this->assertSame( $want, $padding, "$id $role $bp: the language wins over the literal top and bottom; left is not the adapter's" );
+                }
+                $this->assertSame( '5.15.1', $a['builderVersion'] );
+                $this->assertStringEndsWith( '<!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section -->', $out );
+            }
+        }
+    }
+
+    public function testRhythmMarkersTheResolverDoesNotKnowAreLeftAndReported(): void
+    {
+        $lang = $this->languages()['editorial'];
+        $row     = static fn ( string $m ): string => '<!-- wp:divi/row {"builderVersion":"5.15.1",' . $m . '} --><!-- /wp:divi/row -->';
+        $column  = static fn ( string $m ): string => '<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.15.1",' . $m . '} --><!-- /wp:divi/column -->';
+        $rhythm  = [ LanguageResolver::LEFT['rhythm'] ];
+        $both    = [ LanguageResolver::LEFT['type'], LanguageResolver::LEFT['rhythm'] ];
+        $left    = [
+            'section on a row'        => [ $row( self::rhythm( 'section' ) ), $rhythm ],
+            'tight on a column'       => [ $column( self::rhythm( 'tight' ) ), $rhythm ],
+            'open on a heading'       => [ self::heading( 'h2', self::rhythm( 'open' ) ), $rhythm ],
+            'an unknown role'         => [ self::section( self::rhythm( 'hero' ) ), $rhythm ],
+            'an extra key'            => [ self::section( '"aied":{"rhythm":"open","on":"dark"}' ), $rhythm ],
+            'a type key too'          => [ self::section( '"aied":{"rhythm":"open","type":"display"}' ), $both ],
+            'a kit key too'           => [ self::section( '"aied":{"rhythm":"open","kit":"card"}' ), $rhythm ],
+            'a non-string role'       => [ self::section( '"aied":{"rhythm":["open"]}' ), $rhythm ],
+            'a numeric role'          => [ self::section( '"aied":{"rhythm":1}' ), $rhythm ],
+            'a type role on a section' => [ self::section( self::type( 'display' ) ), [ LanguageResolver::LEFT['type'] ] ],
+        ];
+        foreach ( $left as $label => [ $markup, $want ] ) {
+            $this->assertSame( $markup, LanguageResolver::resolve( $markup, $lang ), "$label: byte-identical" );
+            $this->assertSame( $want, LanguageResolver::leftovers( $markup ), $label );
+        }
+        // Order of first appearance across blocks; one entry per kind; nothing the content wrote is echoed.
+        $many = self::section( self::rhythm( 'hero' ), self::heading( 'h2', self::type( 'headline' ) ) ) . $row( self::rhythm( 'open' ) );
+        $this->assertSame( [ LanguageResolver::LEFT['rhythm'], LanguageResolver::LEFT['type'] ], LanguageResolver::leftovers( $many ) );
+        // An invalid section_space leaves every rhythm marker.
+        $bad = $lang;
+        $bad['section_space']['phone'] = 12;
+        $marked = self::section( self::rhythm( 'section' ) );
+        $this->assertSame( $marked, LanguageResolver::resolve( $marked, $bad ) );
+        $this->assertSame( $rhythm, LanguageResolver::leftovers( LanguageResolver::resolve( $marked, $bad ) ) );
+    }
+
+    public function testATypeAndARhythmMarkerResolveInOnePass(): void
+    {
+        foreach ( $this->languages() as $id => $lang ) {
+            $markup = self::section( self::rhythm( 'open' ), self::heading( 'h2', self::type( 'display' ) ) . self::eyebrowText( self::type( 'eyebrow' ) ) );
+            $out    = LanguageResolver::resolve( $markup, $lang );
+            $this->assertStringNotContainsString( '"aied"', $out, $id );
+            $this->assertSame( [], LanguageResolver::leftovers( $out ) );
+            $this->assertSame( DesignLanguages::sectionSpace( $lang, 'open' )['phone'] . 'px', $this->sectionAttrs( $out )['module']['decoration']['spacing']['phone']['value']['padding']['top'] );
+            $this->assertSame( $lang['type']['display']['weight'], $this->attrs( $out, 'divi/heading' )['title']['decoration']['font']['font']['desktop']['value']['weight'] );
+            $this->assertSame( $lang['type']['eyebrow']['weight'], $this->attrs( $out, 'divi/text' )['content']['decoration']['bodyFont']['body']['font']['desktop']['value']['weight'] );
+        }
+    }
+
+    public function testARhythmMarkerNeverReachesTheKitStep(): void
+    {
+        $fixture = '<!-- wp:divi/placeholder -->' . self::section( self::rhythm( 'tight' ), self::heading( 'h3', self::type( 'title' ) ) . self::button( '"aied":{"kit":"control"}' ) ) . '<!-- /wp:divi/placeholder -->';
+        foreach ( $this->languages() as $id => $lang ) {
+            $kit      = (array) StyleKits::get( (string) $lang['kit'] );
+            $seen     = [];
+            $spy      = static function ( string $block, ...$rest ) use ( &$seen ) {
+                $seen[] = $block;
+                return KitAdapters::patch( $block, ...$rest );
+            };
+            $language = LanguageResolver::resolve( $fixture, $lang );
+            $this->assertSame( [], LanguageResolver::leftovers( $language ) );
+            $this->assertStringNotContainsString( '"aied":{"rhythm"', $language, "$id: no rhythm marker is left for the kit step" );
+            $kitted   = KitResolver::resolve( $language, $kit, $spy );
+            $this->assertSame( [ 'divi/button' ], $seen, "$id: the kit step's adapter sees the button only" );
+            $this->assertSame( RecipeTokens::resolve( $kitted, $lang ), SectionRecipes::resolveMarkup( $fixture, $lang, $kit ), "$id: resolveMarkup() is that pipeline" );
+        }
+
+        // A rhythm marker the language step cannot resolve: null BEFORE the kit step (its adapter is never asked).
+        $lang = $this->languages()['editorial'];
+        $kit  = (array) StyleKits::get( (string) $lang['kit'] );
+        foreach ( [
+            self::section( self::rhythm( 'hero' ) ),
+            self::section( '"aied":{"rhythm":"open","kit":"card"}' ),
+            '<!-- wp:divi/row {"builderVersion":"5.15.1","aied":{"rhythm":"tight"}} --><!-- /wp:divi/row -->',
+        ] as $bad ) {
+            $this->assertNotSame( [], LanguageResolver::leftovers( LanguageResolver::resolve( $bad, $lang ) ) );
+            $this->assertNull( SectionRecipes::resolveMarkup( $bad, $lang, $kit ) );
+        }
     }
 
     public function testTheSharedScannerKeepsKitOutputByteIdentical(): void
