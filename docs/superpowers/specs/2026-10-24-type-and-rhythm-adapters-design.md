@@ -290,7 +290,7 @@ Plan `docs/superpowers/plans/2026-10-24-type-adapter.md`. All facts below are me
 
 ### Adapter B, rhythm (built on branch `feat/rhythm-adapter` from main 2b437bc, which holds Adapter A; NOT merged, NOT released; the validator, `wp-plugin/validator/`, the zip and `wp-plugin/readme.txt` are untouched)
 
-Plan `docs/superpowers/plans/2026-10-24-rhythm-adapter.md`. All facts below are measured on 2026-10-24; the live numbers marked `TBD-CONTROLLER` are filled by the controller after its gates.
+Plan `docs/superpowers/plans/2026-10-24-rhythm-adapter.md`. All facts below are measured on 2026-10-24.
 
 **Probe** (`fixtures/shapes/candidates/language-rhythm.json`, vocabulary `fixtures/shapes/language-rhythm-vocabulary.md`, evidence `docs/shape-evidence-5.15.1.md#lr-*`): 37 candidates ON their carrier (`divi/section`), 35 PASS, 1 css-only, 1 DEAD.
 - css-only: `lr-section-default-56`. 56px is Divi's own section default at every width, so the CSS is emitted and the computed style does not change (a default-value control, not a dead path; every language candidate therefore starts from a 24px base, which is no written value).
@@ -312,9 +312,9 @@ Plan `docs/superpowers/plans/2026-10-24-rhythm-adapter.md`. All facts below are 
 
 **Live gates** (Divi 5.15.1, dev site, controller-run, 2026-10-24):
 - `make verify-language-type`: 30 PASS 0 FAIL (10 languages x 3 widths x 5 type slots + 4 rhythm slots).
-- `make verify-shapes`: TBD-CONTROLLER.
-- Narrowed recipe render of the 46 rhythm-marked recipes under luxe, brutalist-flat and editorial: TBD-CONTROLLER.
-- Narrowed kit smoke: TBD-CONTROLLER.
+- `make verify-shapes`: OK, every expectation of `known.json` agrees.
+- Narrowed recipe render of the 46 rhythm-marked recipes under luxe (the most air), brutalist-flat (the least) and editorial: 414 PASS 0 KNOWN-FAIL 0 FAIL (46 recipes x 3 languages x 3 widths, no orphan pages). The other 7 languages were not rendered for these recipes: rhythm only changes vertical padding, and the gate `make verify-language-type` (30 PASS 0 FAIL) measures all 10.
+- Narrowed kit smoke (quiet-solid, raw-frame x editorial, brutalist-flat): 12 PASS 0 FAIL.
 
 **Review.** An independent opus whole-branch review found no material defect. Low points, all handled: the sweep's "multiple of 8 or a clamp" check compared a value with itself for desktop and phone (fixed: the check now uses the clamp bound of each key, and a mutation to plain `intdiv(v * num, den)` rounding in a scratch copy fails the sweep at `open 56/28/28 desktop=70`); the planted half of the prose test only asserted two arrays differ (fixed: the comparison is a helper run on a planted language); the overlap sentence of the vocabulary file was overstated (reworded above). Left as is, an owner decision: the guide line says `open` is "a hero or closing band", while 5 of the 6 migrated heroes are `section`.
 
