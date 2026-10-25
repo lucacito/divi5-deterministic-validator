@@ -607,7 +607,7 @@
                                 "hover": {
                                     "styles": {
                                         "all": {
-                                            "color": "{{aied:color:accent-text}}"
+                                            "color": "{{aied:color:accent}}"
                                         }
                                     }
                                 }
@@ -670,7 +670,7 @@
                                 "hover": {
                                     "styles": {
                                         "all": {
-                                            "color": "{{aied:color:text}}"
+                                            "color": "{{aied:color:surface}}"
                                         }
                                     }
                                 }
@@ -733,7 +733,7 @@
                                 "hover": {
                                     "styles": {
                                         "all": {
-                                            "color": "{{aied:color:accent-text}}"
+                                            "color": "{{aied:color:accent}}"
                                         }
                                     }
                                 }
@@ -3487,7 +3487,7 @@
                                 "hover": {
                                     "styles": {
                                         "all": {
-                                            "color": "{{aied:color:accent-text}}"
+                                            "color": "{{aied:color:accent}}"
                                         }
                                     }
                                 }
@@ -3550,7 +3550,7 @@
                                 "hover": {
                                     "styles": {
                                         "all": {
-                                            "color": "{{aied:color:text}}"
+                                            "color": "{{aied:color:surface}}"
                                         }
                                     }
                                 }
@@ -3613,7 +3613,7 @@
                                 "hover": {
                                     "styles": {
                                         "all": {
-                                            "color": "{{aied:color:accent-text}}"
+                                            "color": "{{aied:color:accent}}"
                                         }
                                     }
                                 }

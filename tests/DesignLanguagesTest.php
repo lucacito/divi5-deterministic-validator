@@ -1250,7 +1250,7 @@ class DesignLanguagesTest extends TestCase
         $this->assertSame(260, DesignLanguages::GENERATED_LINE_MAX);
         foreach (DesignLanguages::ids() as $id) {
             $lines = DesignLanguages::generatedLines((array) DesignLanguages::get($id));
-            $this->assertSame(['type', 'section_space'], array_keys($lines), $id);
+            $this->assertSame(['type', 'section_space', 'kit'], array_keys($lines), $id); // wording gaps T4 (plan 2026-10-25-wording-gaps): the Kit line (Ruling 4)
             foreach ($lines as $name => $line) {
                 $this->assertLessThanOrEqual(DesignLanguages::GENERATED_LINE_MAX, strlen($line), "$id.$name");
             }

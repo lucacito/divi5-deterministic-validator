@@ -22,6 +22,9 @@ require_once __DIR__ . '/../wp-plugin/src/KitAdapters.php';
  * keys "<block>|<role>|<on>"), captured when the contrast proof of the forms adapter (Task 3) settled the role table
  * (the accent-band frame is `text`) and reviewed by eye. Deliberate changes only: regenerate by writing the patches of
  * KitAdapters::patch() for the ten default kits in this file's format, and review the diff.
+ * The wording-gaps hover fix (Ruling 7, 2026-10-25) regenerated this golden ON PURPOSE: the glass-edge and heavy-block
+ * button patches now keep their rest frame colour on hover (`invert` with a visible `same` frame); the changed entries are
+ * listed and proven to be the only moved bytes in KitGoldenFreezeTest::HOVER_FIX_CHANGED.
  */
 class KitFormGoldenTest extends TestCase
 {

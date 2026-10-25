@@ -68,7 +68,8 @@ require_once __DIR__ . '/StyleKits.php';
  *   on(ink); panel: fill `bg`, label `text`; accent band and dark: fill `surface`, label `text`, the core pair readable
  *   in every language); a filled button goes transparent in the surface's ink (light: c, as above; accent band:
  *   `accent-text`; dark: `inverse`; panel: `bg`).
- * - `invert` swaps label and fill of a filled button (a `same` border follows the new fill). A transparent button has
+ * - `invert` swaps label and fill of a filled button (a 0px `same` border follows the new fill; a visible `same` frame
+ *   keeps its rest colour, see hover()). A transparent button has
  *   no fill colour to swap, so `invert` fills it exactly as `fill-swap` does. On a panel `invert` IS `fill-swap` (the
  *   swapped fill would be `text`, the panel's own colour, and the button would vanish).
  * - `lift` keeps the rest colours (as `none`) and moves the module up 4px on hover.
@@ -421,6 +422,16 @@ final class KitAdapters
     /** The bands a rule may sit on (`panel`: inside an inverted, `text`-filled panel) and the bands a chip may sit on. */
     public const RULE_BANDS = [ 'light', 'surface', 'accent', 'dark', 'panel' ];
     public const CHIP_BANDS = [ 'light', 'surface', 'accent', 'dark' ];
+
+    /**
+     * Band => the palette colour role the band is painted in (the `on` of a marker names the band by this fill): `light` is the
+     * page colour `bg` (a dark language's too), `dark` a photo under the `overlay` scrim, `panel` the inside of an inverted,
+     * `text`-filled card. Covers exactly the union of RULE_BANDS and CHIP_BANDS (which hold the button, card, item and form
+     * bands too); the kit-rules band sentence is generated from it (wording-gaps work, 2026-10-25, spec gap 10).
+     *
+     * @var array<string,string>
+     */
+    public const BAND_FILL = [ 'light' => 'bg', 'surface' => 'surface', 'accent' => 'accent', 'dark' => 'overlay', 'panel' => 'text' ];
 
     /** The rule carriers => the prefix of their RULE_PROVEN keys. */
     private const RULE_CARRIERS = [ 'divi/divider' => 'divider', 'divi/group' => 'group-top', 'divi/column' => 'column-top', 'divi/number-counter' => 'counter-top' ];
@@ -1082,7 +1093,12 @@ final class KitAdapters
     }
 
     /**
-     * The hover state of a rest state.
+     * The hover state of a rest state. `invert` with a `same` frame wider than 0px (glass-edge, heavy-block) keeps the REST
+     * frame colour on hover (Ruling 7 of the wording-gaps work, 2026-10-25): a frame that followed the swapped fill took the
+     * label colour, `accent-text`, which is within 1.1:1 of `bg` in six languages, so the button lost its whole box on hover on
+     * the light band (12 cells below 1.1:1, 16 below 1.5:1 with organic-warm 1.19 and bold-vibrant 1.41; glass-edge on
+     * glass-dark 1.00:1). Kept, the hover box is never smaller than the rest box: at least 4.82:1 (bold-vibrant) in those
+     * 16 cells. A 0px `same` frame still follows the fill (it is not drawn).
      *
      * @param array{fill:?string,label:string,border:string,width:string} $rest
      * @return array{fill:?string,label:string,border:string}
@@ -1104,8 +1120,10 @@ final class KitAdapters
             $ink = self::ink( $c, $on );
             return [ 'fill' => null, 'label' => $ink, 'border' => $ink ];
         }
-        // invert: label and fill swap; a `same` border follows the fill.
-        return [ 'fill' => $rest['label'], 'label' => $rest['fill'], 'border' => 'same' === $kitBorderColor ? $rest['label'] : $rest['border'] ];
+        // invert: label and fill swap. A `same` border follows the fill only when it is 0px wide; a visible `same` frame keeps
+        // its rest colour (Ruling 7 of the wording-gaps work: otherwise the frame and the swapped fill melt into the page).
+        $follows = 'same' === $kitBorderColor && '0px' === $rest['width'];
+        return [ 'fill' => $rest['label'], 'label' => $rest['fill'], 'border' => $follows ? $rest['label'] : $rest['border'] ];
     }
 
     private static function colour( ?string $role ): string

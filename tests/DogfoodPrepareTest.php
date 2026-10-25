@@ -16,9 +16,9 @@ use PHPUnit\Framework\TestCase;
 class DogfoodPrepareTest extends TestCase
 {
     /** sha256 of the prototype's edit-glass-edge/page.html (54,860 bytes since the rhythm markers, rhythm adapter Task 5), which is exactly editBase('glass-edge', 'glass-dark'). */
-    private const EDIT_BASE_SHA256 = '71102e5182c371f9ec2537789e20030141ef2845744804f333cb49bb108630dd';
+    private const EDIT_BASE_SHA256 = 'f9e97add8ba219e70744d4a25e7c684919a33bd4d387f86947f7430e3eba944f';
 
-    private const GUIDE_NAMES = [ '01-style-guide.md', '02-kit-rules.md', '03-style-kit.md', '04-design-language.md', '05-controls.md', '06-forms.md' ];
+    private const GUIDE_NAMES = [ '01-style-guide.md', '02-kit-rules.md', '03-style-kit.md', '04-design-language.md', '05-controls.md', '06-forms.md', '07-kit-patterns.md' ];
 
     /** @var list<string> */
     private array $tmp = [];
@@ -53,9 +53,10 @@ class DogfoodPrepareTest extends TestCase
             '04-design-language.md' => 'design-language:tech-mono',
             '05-controls.md'        => 'controls',
             '06-forms.md'           => 'forms',
+            '07-kit-patterns.md'    => 'kit-patterns',
         ];
         foreach ( $topics as $name => $topic ) {
-            $this->assertSame( StyleGuide::markdown( $topic ), $files[ $name ], $name );
+            $this->assertSame( StyleGuide::markdown( $topic, 'tech-mono' ), $files[ $name ], $name );
             $this->assertNotSame( '', $files[ $name ] );
         }
         $this->assertStringContainsString( 'Topics:', $files['01-style-guide.md'] );
@@ -128,6 +129,8 @@ class DogfoodPrepareTest extends TestCase
             $this->assertStringContainsString( 'tech-mono', $task_md );
             $this->assertStringContainsString( '/some/out/' . $target, $task_md );
             $this->assertStringContainsString( 'Use ONLY these files', $task_md );
+            $this->assertStringContainsString( '02..07 are topics it points to', $task_md, $task );
+            $this->assertStringNotContainsString( '02..06', $task_md, $task );
             // The bias guards: without them the assistant may read the repository or the recipes and the run measures nothing.
             $this->assertStringContainsString( 'do not look at the repository', $task_md, $task );
             $this->assertStringContainsString( 'Do not use recipes', $task_md, $task );
@@ -231,7 +234,7 @@ class DogfoodPrepareTest extends TestCase
         $clean = $this->tmpDir();
         Prepare::write( Prepare::files( 'hairline-dashed', 'tech-mono', 'freehand', $clean ), $clean );
         $again = Prepare::write( Prepare::files( 'hairline-dashed', 'tech-mono', 'freehand', $clean ), $clean );
-        $this->assertCount( 8, $again );
+        $this->assertCount( 9, $again );
     }
 
     public function testRePreparingTheSameDirRefreshesOurFilesAndNeverTouchesTheAssistantsPage(): void
@@ -272,6 +275,42 @@ class DogfoodPrepareTest extends TestCase
         Prepare::write( $edit, $edir );
         $this->assertSame( $edit['page.html'], file_get_contents( $edir . '/page.html' ) );
         $this->assertSame( 'the assistant edit', file_get_contents( $edir . '/page-edited.html' ) );
+    }
+
+    public function testAnOutDirOfTheSixFileHarnessIsRefreshedAndGainsTheKitPatternsFile(): void
+    {
+        $dir = $this->tmpDir();
+        $new = Prepare::files( 'hairline-dashed', 'tech-mono', 'freehand', $dir );
+        // An out dir written before 07-kit-patterns.md existed: six guide files, a prepare.json that does not list the 07 file.
+        $old = $new;
+        unset( $old['07-kit-patterns.md'] );
+        $stale = json_decode( $old['prepare.json'], true );
+        unset( $stale['files']['07-kit-patterns.md'] );
+        $stale['guide_bytes'] -= strlen( $new['07-kit-patterns.md'] );
+        $old['prepare.json'] = json_encode( $stale, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) . "\n";
+        $old['05-controls.md'] = 'an older controls topic';
+        Prepare::write( $old, $dir );
+        $this->assertFileDoesNotExist( $dir . '/07-kit-patterns.md' );
+        file_put_contents( $dir . '/page.html', 'the assistant page' );
+
+        Prepare::write( $new, $dir );
+        foreach ( $new as $name => $content ) {
+            $this->assertSame( $content, file_get_contents( $dir . '/' . $name ), $name );
+        }
+        $this->assertSame( 'the assistant page', file_get_contents( $dir . '/page.html' ) );
+
+        // A foreign 07-kit-patterns.md in such an old dir is NOT ours (the old map does not list it): refused, nothing written.
+        $dir2 = $this->tmpDir();
+        Prepare::write( $old, $dir2 );
+        file_put_contents( $dir2 . '/07-kit-patterns.md', 'somebody else' );
+        try {
+            Prepare::write( Prepare::files( 'hairline-dashed', 'tech-mono', 'freehand', $dir2 ), $dir2 );
+            $this->fail( 'expected a RuntimeException' );
+        } catch ( \RuntimeException $e ) {
+            $this->assertStringContainsString( '07-kit-patterns.md', $e->getMessage() );
+        }
+        $this->assertSame( 'somebody else', file_get_contents( $dir2 . '/07-kit-patterns.md' ) );
+        $this->assertSame( 'an older controls topic', file_get_contents( $dir2 . '/05-controls.md' ), 'all or nothing' );
     }
 
     public function testRePreparingAnotherKitOrLanguageIntoTheSameDirIsRefused(): void

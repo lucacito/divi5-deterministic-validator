@@ -24,52 +24,52 @@ final class CarrierBudgetTest extends TestCase
 {
     /** Bytes of each style-kit:<id> topic at f1a370a (largest: neo-brutal, 9,599). */
     private const KIT_TOPIC_SIZES = [
-        'quiet-solid'         => 8232,
-        'glass-edge'          => 8230,
-        'warm-pill'           => 8255,
-        'hairline-mono'       => 8116,
-        'chunky-pill'         => 8124,
-        'steady-solid'        => 8236,
-        'soft-rounded'        => 8136,
-        'heavy-block'         => 8210,
-        'raw-frame'           => 8109,
-        'gilt-hairline'       => 8118,
-        'soft-solid'          => 8191,
-        'outline-2'           => 8145,
-        'warm-pill-soft'      => 9259,
-        'chunky-pill-offset'  => 9307,
-        'hairline-dashed'     => 8124,
-        'underline-link'      => 8779,
-        'neo-brutal'          => 9599,
-        'double-frame'        => 8206,
-        'soft-lift'           => 9215,
-        'ghost-swap'          => 8107,
-        'dotted-pill'         => 8207,
-        'hairline-frame-caps' => 8180,
-        'offset-frame'        => 9320,
-        'soft-hairline-caps'  => 8205,
-        'thick-frame-caps'    => 8189,
-        'thick-rounded-caps'  => 8219,
-        'rimmed-solid'        => 8025,
-        'flat-square'         => 8303,
-        'block-caps'          => 8297,
-        'pill-caps'           => 8345,
-        'outline-pill'        => 8174,
-        'outline-soft'        => 8153,
-        'thick-frame'         => 8128,
-        'raised-square'       => 9425,
-        'offset-block-caps'   => 9590,
-        'text-link'           => 8115,
-        'text-link-caps'      => 8148,
-        'underlined-label'    => 8892,
-        'pressable'           => 9575,
-        'hairline-halo'       => 9294,
+        'quiet-solid'         => 8189,
+        'glass-edge'          => 8146,
+        'warm-pill'           => 8212,
+        'hairline-mono'       => 8073,
+        'chunky-pill'         => 8081,
+        'steady-solid'        => 8200,
+        'soft-rounded'        => 8075,
+        'heavy-block'         => 8183,
+        'raw-frame'           => 8079,
+        'gilt-hairline'       => 8010,
+        'soft-solid'          => 8148,
+        'outline-2'           => 8102,
+        'warm-pill-soft'      => 9176,
+        'chunky-pill-offset'  => 9246,
+        'hairline-dashed'     => 8056,
+        'underline-link'      => 8736,
+        'neo-brutal'          => 9556,
+        'double-frame'        => 8163,
+        'soft-lift'           => 9172,
+        'ghost-swap'          => 8064,
+        'dotted-pill'         => 8164,
+        'hairline-frame-caps' => 8137,
+        'offset-frame'        => 9277,
+        'soft-hairline-caps'  => 8162,
+        'thick-frame-caps'    => 8146,
+        'thick-rounded-caps'  => 8176,
+        'rimmed-solid'        => 7982,
+        'flat-square'         => 8260,
+        'block-caps'          => 8254,
+        'pill-caps'           => 8302,
+        'outline-pill'        => 8131,
+        'outline-soft'        => 8110,
+        'thick-frame'         => 8085,
+        'raised-square'       => 9382,
+        'offset-block-caps'   => 9547,
+        'text-link'           => 8072,
+        'text-link-caps'      => 8105,
+        'underlined-label'    => 8849,
+        'pressable'           => 9532,
+        'hairline-halo'       => 9251,
     ];
 
     public function testTheDefaultGuideAndTheTopicDescriptionDoNotMove(): void
     {
         $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
-        $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ), 'no topic name is added' );
+        $this->assertSame( 272, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
     }
 
     public function testTheKitTopicsDoNotMove(): void
@@ -82,7 +82,7 @@ final class CarrierBudgetTest extends TestCase
             $this->assertSame( $size, $len, "$id: a kit topic does not move" );
             $max = max( $max, $len );
         }
-        $this->assertSame( 9599, $max, 'the largest kit topic (neo-brutal) is unchanged' );
+        $this->assertSame( 9556, $max, 'the largest kit topic (neo-brutal; 9,599 -> 9,556 in the wording-gaps Task 3b: samples in the kit\'s own language)' );
     }
 
     public function testKitRulesStaysWithinItsPin(): void
@@ -131,7 +131,8 @@ final class CarrierBudgetTest extends TestCase
         $this->assertSame( 370, strlen( StyleGuide::appliedSentence( $oldApplied ) ), 'the applied sentence at the base' );
         $this->assertSame( 74, strlen( StyleGuide::notAppliedSentence( $oldApplied ) ), 'the not-applied sentence at the base' );
         $this->assertSame( '', StyleGuide::carrierRules( $oldApplied ), 'the base map has no More carriers paragraph' );
-        $this->assertSame( 8997, strlen( StyleGuide::kitRules( $oldApplied ) ), 'kit-rules at the base, regenerated from the base map' );
+        // wording gaps T4 (plan 2026-10-25-wording-gaps): the base map's kit-rules moved 8,997 -> 8,984 with the new band, accordion, tag and pointer wording (Step 4).
+        $this->assertSame( 8984, strlen( StyleGuide::kitRules( $oldApplied ) ), 'kit-rules at the base, regenerated from the base map' );
 
         $applied    = strlen( StyleGuide::appliedSentence() );
         $notApplied = strlen( StyleGuide::notAppliedSentence() );
@@ -141,8 +142,8 @@ final class CarrierBudgetTest extends TestCase
         $this->assertSame( 553, $carriers );
         $this->assertLessThanOrEqual( 560, $carriers, 'Ruling 8: the More carriers paragraph is at most 560 B with its heading' );
         $kitRules = strlen( StyleGuide::markdown( 'kit-rules' ) );
-        $this->assertSame( 8997 + ( $applied - 370 ) + ( $notApplied - 74 ) + $carriers, $kitRules );
-        $this->assertSame( 9598, $kitRules );
+        $this->assertSame( 8984 + ( $applied - 370 ) + ( $notApplied - 74 ) + $carriers, $kitRules );
+        $this->assertSame( 9585, $kitRules ); // wording gaps T4 (plan 2026-10-25-wording-gaps): 9598 -> 9585 (Ruling 8, within the 9,600 pin).
         $this->assertLessThanOrEqual( 9600, $kitRules, 'Ruling 8: pin 9,000 -> 9,600' );
 
         $this->assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ), 'Ruling 7: the catalog with the noun-only sentence (8,444 at the base)' );
@@ -150,12 +151,14 @@ final class CarrierBudgetTest extends TestCase
 
         $controlsDelta = strlen( StyleGuide::controlsKitSentence() ) - strlen( StyleGuide::controlsKitSentence( $oldApplied ) );
         $this->assertSame( strlen( ' or `rule-accent`' ), $controlsDelta, 'Ruling 10: the divider marker list gains `rule-accent`, nothing else' );
-        $this->assertSame( 8331 + $controlsDelta + strlen( StyleGuide::objectValuesParagraph() ), strlen( StyleGuide::markdown( 'controls' ) ), 'dogfood round 2: the object-values paragraph is the only other growth' );
+        // wording gaps T4 (plan 2026-10-25-wording-gaps): plus the generated contact-form clause (spec gap 14).
+        $this->assertSame( 8331 + $controlsDelta + strlen( StyleGuide::objectValuesParagraph() ) + strlen( StyleGuide::controlsFormClause() ), strlen( StyleGuide::markdown( 'controls' ) ), 'dogfood round 2: the object-values paragraph and the form clause are the only other growth' );
         // render-fatal sweep: 9105 -> 9271 (+166 B = the longer generated object-values paragraph, StyleGuideObjectValuesTest).
-        $this->assertSame( 9271, strlen( StyleGuide::markdown( 'controls' ) ) );
+        // wording gaps T4 (plan 2026-10-25-wording-gaps): 9271 -> 9355 (+84 B = StyleGuide::controlsFormClause(), spec gap 14).
+        $this->assertSame( 9355, strlen( StyleGuide::markdown( 'controls' ) ) );
 
         $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
-        $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
+        $this->assertSame( 272, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
         foreach ( self::KIT_TOPIC_SIZES as $id => $size ) {
             $this->assertSame( $size, strlen( StyleGuide::markdown( 'style-kit:' . $id ) ), "$id: a kit topic does not move" );
         }

@@ -28,12 +28,13 @@ final class Prepare
         '04-design-language.md' => 'design-language:%LANGUAGE%',
         '05-controls.md'        => 'controls',
         '06-forms.md'           => 'forms',
+        '07-kit-patterns.md'    => 'kit-patterns',
     ];
 
     public const TASKS = [ 'freehand', 'edit' ];
 
     /**
-     * filename => content, in write order: the 6 guide files, TASK.md, page.html (edit only), prepare.json.
+     * filename => content, in write order: the 7 guide files, TASK.md, page.html (edit only), prepare.json.
      * Pure; throws \InvalidArgumentException (the message lists the valid ids) on an unknown kit, language or task.
      *
      * @return array<string,string>
@@ -52,7 +53,8 @@ final class Prepare
 
         $files = [];
         foreach ( self::GUIDE_FILES as $name => $topic ) {
-            $files[ $name ] = StyleGuide::markdown( null === $topic ? null : str_replace( [ '%KIT%', '%LANGUAGE%' ], [ $kit, $language ], $topic ) );
+            // The language is read only by the style-kit topic: its sample blocks come in the task's own language.
+            $files[ $name ] = StyleGuide::markdown( null === $topic ? null : str_replace( [ '%KIT%', '%LANGUAGE%' ], [ $kit, $language ], $topic ), $language );
         }
 
         $template = (string) file_get_contents( dirname( __DIR__, 3 ) . '/scripts/dogfood/TASK-' . $task . '.md' );

@@ -1,0 +1,240 @@
+[
+ {
+  "id": "kp-icon-left-maxwidth-48",
+  "block": "icon",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f59e0b"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "10px",
+         "bottom": "10px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     },
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "8px",
+         "topRight": "8px",
+         "bottomRight": "8px",
+         "bottomLeft": "8px"
+        }
+       }
+      }
+     }
+    }
+   },
+   "icon": {
+    "advanced": {
+     "size": {
+      "desktop": {
+       "value": "20px"
+      }
+     },
+     "color": {
+      "desktop": {
+       "value": "#111827"
+      }
+     },
+     "align": {
+      "desktop": {
+       "value": "left"
+      }
+     }
+    },
+    "innerContent": {
+     "desktop": {
+      "value": {
+       "unicode": "&#xf005;",
+       "type": "fa",
+       "weight": "900"
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.sizing.desktop.value.maxWidth": "48px"
+  },
+  "note": "A kit icon chip (fill, radius 8px, padding 10px, 20px glyph) with align left in a plain column; maxWidth 48px. The sample shows the module box width before and after: a box that already hugs its glyph would read DEAD or a tiny change."
+ },
+ {
+  "id": "kp-icon-center-maxwidth-48",
+  "block": "icon",
+  "expect": "PASS",
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f59e0b"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "10px",
+         "bottom": "10px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     },
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "8px",
+         "topRight": "8px",
+         "bottomRight": "8px",
+         "bottomLeft": "8px"
+        }
+       }
+      }
+     }
+    }
+   },
+   "icon": {
+    "advanced": {
+     "size": {
+      "desktop": {
+       "value": "20px"
+      }
+     },
+     "color": {
+      "desktop": {
+       "value": "#111827"
+      }
+     }
+    },
+    "innerContent": {
+     "desktop": {
+      "value": {
+       "unicode": "&#xf005;",
+       "type": "fa",
+       "weight": "900"
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.sizing.desktop.value.maxWidth": "48px"
+  },
+  "note": "A kit icon chip (fill, radius 8px, padding 10px, 20px glyph) with align default (centre) in a plain column; maxWidth 48px. The sample shows the module box width before and after: a box that already hugs its glyph would read DEAD or a tiny change."
+ },
+ {
+  "id": "kp-icon-left-maxwidth-48-in-row",
+  "block": "icon",
+  "expect": "PASS",
+  "parent": "group",
+  "wrapperBase": {
+   "group": {
+    "module": {
+     "decoration": {
+      "layout": {
+       "desktop": {
+        "value": {
+         "display": "flex",
+         "flexDirection": "row",
+         "flexWrap": "wrap",
+         "columnGap": "12px",
+         "rowGap": "8px",
+         "alignItems": "center"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "base": {
+   "module": {
+    "decoration": {
+     "background": {
+      "desktop": {
+       "value": {
+        "color": "#f59e0b"
+       }
+      }
+     },
+     "spacing": {
+      "desktop": {
+       "value": {
+        "padding": {
+         "top": "10px",
+         "bottom": "10px",
+         "left": "10px",
+         "right": "10px"
+        }
+       }
+      }
+     },
+     "border": {
+      "desktop": {
+       "value": {
+        "radius": {
+         "topLeft": "8px",
+         "topRight": "8px",
+         "bottomRight": "8px",
+         "bottomLeft": "8px"
+        }
+       }
+      }
+     }
+    }
+   },
+   "icon": {
+    "advanced": {
+     "size": {
+      "desktop": {
+       "value": "20px"
+      }
+     },
+     "color": {
+      "desktop": {
+       "value": "#111827"
+      }
+     },
+     "align": {
+      "desktop": {
+       "value": "left"
+      }
+     }
+    },
+    "innerContent": {
+     "desktop": {
+      "value": {
+       "unicode": "&#xf005;",
+       "type": "fa",
+       "weight": "900"
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "module.decoration.sizing.desktop.value.maxWidth": "48px"
+  },
+  "note": "The same left-aligned chip inside a flex-row wrap group (as a row of chips would be): maxWidth 48px; the sample shows the box width with and without the cap."
+ }
+]

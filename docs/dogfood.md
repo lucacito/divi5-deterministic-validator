@@ -5,13 +5,13 @@ Dev-only routine for the JHMG AI Editor for Divi 5 repo. Spec: `docs/superpowers
 
 ## What it is
 
-A fresh assistant is given ONLY the guide the plugin serves (the default style guide plus five topics) and a brief, and builds or edits a
+A fresh assistant is given ONLY the guide the plugin serves (the default style guide plus six topics) and a brief, and builds or edits a
 Divi 5 page. Three scripts make that repeatable and its result measurable, a pinned corpus documents what real assistants got right and
 wrong:
 
 | Script | What it does | Needs |
 |---|---|---|
-| `scripts/dogfood-prepare.php` (`tests/Support/Dogfood/Prepare.php`) | writes the six guide files and `TASK.md` (and, for an edit, a base `page.html`) | PHP only |
+| `scripts/dogfood-prepare.php` (`tests/Support/Dogfood/Prepare.php`) | writes the seven guide files and `TASK.md` (and, for an edit, a base `page.html`) | PHP only |
 | `scripts/dogfood-score.php` (`Scorer.php`, `Page.php`, `Expected.php`) | statically scores a page against what the real kit adapters write for the kit and the language adapters write for the language | PHP only |
 | `scripts/dogfood-render.cjs` (+ `scripts/lib/dogfood-render.cjs`) | validates the page through the real `LayoutGate`, renders it at 1280 and 400 px on the dev site, deletes it | Docker dev site, Playwright |
 
@@ -36,7 +36,7 @@ Order: prepare, assistant, score, render. One kit under one language per run.
    (e.g. `make dogfood-prepare KIT=double-frame LANGUAGE=corporate-trust`). Valid ids are listed in the error when one is unknown
    (`StyleKits::ids()`, `DesignLanguages::ids()`). It writes to `dist/dogfood/<kit>-<language>` (the edit task to
    `dist/dogfood/<kit>-<language>-edit`): `01-style-guide.md` (the default guide), `02-kit-rules.md`, `03-style-kit.md`,
-   `04-design-language.md`, `05-controls.md`, `06-forms.md`, `TASK.md`, `prepare.json`, and for `TASK=edit` also `page.html` (six recipes
+   `04-design-language.md`, `05-controls.md`, `06-forms.md`, `07-kit-patterns.md` (the `kit-patterns` topic: the recurring patterns by hand), `TASK.md`, `prepare.json`, and for `TASK=edit` also `page.html` (six recipes
    under the kit: hero-cta, card-grid-3, pricing-three-tier, faq-accordion, team-grid, contact-form). The output is byte-identical on
    repeat. Re-running it into the same out directory is the normal way to refresh after a guide change: the files of the
    earlier run (recognised by the `prepare.json` it wrote: the guide files, `TASK.md`, and `page.html` only if that run was an edit
@@ -45,6 +45,8 @@ Order: prepare, assistant, score, render. One kit under one language per run.
    whose `page.html` is the assistant's page) is refused with exit 2 and nothing is written; move it away or pass another `OUT`.
    A directory whose `prepare.json` names ANOTHER kit or language is refused too (exit 2, nothing written): a refresh would leave a page
    of one design under the guide of another. Use another `OUT`. The task (freehand or edit) may differ.
+   An out directory written before `07-kit-patterns.md` existed (six guide files; its `prepare.json` does not list it) is refreshed
+   the same way and gains the file; a foreign `07-kit-patterns.md` there is not in the old map, so it is refused like any foreign file.
    The assistant's own `page.html` (freehand) or `page-edited.html` (edit) is not a target and is never touched.
 2. **Assistant.** Start a FRESH assistant that has none of this conversation's context. In Claude Code: the `Agent` tool (a
    general-purpose agent) with exactly this prompt, `<out>` being the absolute path of the directory step 1 wrote:
@@ -53,7 +55,7 @@ Order: prepare, assistant, score, render. One kit under one language per run.
    Read <out>/TASK.md and do exactly what it says. Use only the files in that directory; do not read any other file, search the web or look at a repository.
    ```
 
-   Or paste `TASK.md` into any assistant together with the six guide files. `TASK.md` itself says: use only these files, do not look at the
+   Or paste `TASK.md` into any assistant together with the seven guide files. `TASK.md` itself says: use only these files, do not look at the
    repository, do not use recipes, save the page as `<out>/page.html` (edit: `<out>/page-edited.html`), and reply with the path and one
    paragraph listing what was unclear, missing or contradictory. A subagent started in this repository could in principle read other
    files; the prompt and the brief are the only guard, so keep the prompt exactly as above and do not add hints.
@@ -189,9 +191,9 @@ reason in the commit message. A fresh run is never added to the corpus (it would
 ## Costs
 
 One run is one assistant session; the scripts cost nothing. Sizes come from `prepare.json` (it records each file's bytes without
-`TASK.md`, plus `guide_bytes`, the sum of the six guide files). For `double-frame` under `corporate-trust`, freehand: `guide_bytes` is
-63,564 (about 16,000 tokens read, taking bytes / 4 as an estimate). An edit run reads the same guide plus the base `page.html`
-(54,566 bytes here, about 14,000 tokens) and writes the whole page back. A written page is 32 to 61 KB in the corpus (roughly 8,000 to
+`TASK.md`, plus `guide_bytes`, the sum of the seven guide files). For `double-frame` under `corporate-trust`, freehand: `guide_bytes` is
+70,922 (about 17,700 tokens read, taking bytes / 4 as an estimate). An edit run reads the same guide plus the base `page.html`
+(55,284 bytes here, about 13,800 tokens) and writes the whole page back. A written page is 32 to 61 KB in the corpus (roughly 8,000 to
 15,000 output tokens). These are estimates, not measurements of a tokenizer; the rendering step uses no model.
 
 ## Corpus

@@ -37,6 +37,9 @@ final class LanguageTypeBudgetTest extends TestCase
     /** tech-mono's section_padding prose was reworded by the rhythm adapter (plan B, Task 2): "the same padding on every section" -> "every ordinary section has the same padding". */
     private const TECH_MONO_PROSE_DELTA = 10;
 
+    /** wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 5: brutalist-flat "a 6px black line" -> "a strong black line" (+3 B), luxe's two "1px line in the accent colour" phrases -> "(the kit's accent rule)" (-8 and -10 B). */
+    private const RULING_5_DELTA = [ 'brutalist-flat' => 3, 'luxe' => -18 ];
+
     private const BEFORE_TYPOGRAPHY = 7496;
 
     private const TYPOGRAPHY_SENTENCE_MAX = 450;
@@ -46,16 +49,17 @@ final class LanguageTypeBudgetTest extends TestCase
     public function testTheDefaultGuideAndTheTopicDescriptionDoNotMove(): void
     {
         self::assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide has no headroom to spare' );
-        self::assertSame( 258, strlen( StyleGuide::topicParameterDescription() ), 'no new topic name is added' );
+        self::assertSame( 272, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
     }
 
     public function testTheKitTopicsDoNotMove(): void
     {
         // carriers adapter: kit-rules 8997 -> 9598 (Ruling 8), style-kits 8444 -> 8178 (Ruling 7), controls 8331 -> 8348 (Ruling 10), then 9105 (object-values paragraph, round 2), then 9271 (render-fatal sweep: 9105 + 166 B, the generated slide/pricing-table keys and the plain-string sentence).
-        self::assertSame( 9598, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
+        self::assertSame( 9585, strlen( StyleGuide::markdown( 'kit-rules' ) ) ); // wording gaps T4 (plan 2026-10-25-wording-gaps): 9598 -> 9585 (Ruling 8, within the 9,600 pin).
         self::assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ) );
         // render-fatal sweep: 9105 -> 9271 (+166 B = the longer generated object-values paragraph, StyleGuideObjectValuesTest).
-        self::assertSame( 9271, strlen( StyleGuide::markdown( 'controls' ) ) );
+        // wording gaps T4 (plan 2026-10-25-wording-gaps): 9271 -> 9355 (+84 B = StyleGuide::controlsFormClause(), spec gap 14).
+        self::assertSame( 9355, strlen( StyleGuide::markdown( 'controls' ) ) );
     }
 
     /**
@@ -72,6 +76,10 @@ final class LanguageTypeBudgetTest extends TestCase
             $spaceLine = DesignLanguages::sectionSpaceLine( (array) DesignLanguages::get( $id ) );
             self::assertLessThanOrEqual( DesignLanguages::GENERATED_LINE_MAX, strlen( $spaceLine ), "design-language:$id Section spacing line is over its cap" );
             $delta = 'tech-mono' === $id ? self::TECH_MONO_PROSE_DELTA : 0;
+            // wording gaps T4 (plan 2026-10-25-wording-gaps): each topic also gains its generated Kit line (Ruling 4) and one newline, and brutalist-flat and luxe the Ruling 5 rewords (+3, -18 B).
+            $kitLine = DesignLanguages::kitLine( (array) DesignLanguages::get( $id ) );
+            self::assertLessThanOrEqual( DesignLanguages::GENERATED_LINE_MAX, strlen( $kitLine ), "design-language:$id Kit line is over its cap" );
+            $delta  += strlen( $kitLine ) + 1 + ( self::RULING_5_DELTA[ $id ] ?? 0 );
             self::assertSame( $before + strlen( $typeLine ) + 1 + strlen( $spaceLine ) + 1 + $delta, $now, "design-language:$id must grow by exactly its Type line, its Section spacing line and one newline each (plus the tech-mono reword)" );
             self::assertLessThanOrEqual( self::TOPIC_BOUND, $now );
         }

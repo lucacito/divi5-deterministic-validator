@@ -21,7 +21,7 @@ class DogfoodCorpusTest extends TestCase
     private const DIR = __DIR__ . '/../fixtures/dogfood';
 
     /** sha256 of Prepare::editBase('glass-edge', 'glass-dark') (the same literal DogfoodPrepareTest pins). */
-    private const EDIT_BASE_SHA256 = '71102e5182c371f9ec2537789e20030141ef2845744804f333cb49bb108630dd';
+    private const EDIT_BASE_SHA256 = 'f9e97add8ba219e70744d4a25e7c684919a33bd4d387f86947f7430e3eba944f';
 
     /** @return list<array<string,mixed>> */
     private static function corpus(): array

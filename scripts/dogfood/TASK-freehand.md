@@ -1,7 +1,7 @@
 # Task
 
 You are an AI assistant that edits Divi 5 pages through a WordPress plugin. You have been given the plugin's own guide
-(the files in this directory: 01-style-guide.md is the main guide; 02..06 are topics it points to). Use ONLY these files.
+(the files in this directory: 01-style-guide.md is the main guide; 02..07 are topics it points to). Use ONLY these files.
 Do not read any other file on this machine, do not search the web, do not look at the repository.
 
 The owner of "Northwind Coffee Roasters" (a small-batch coffee roaster) wants ONE landing page in the design language
