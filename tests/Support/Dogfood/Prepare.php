@@ -52,7 +52,8 @@ final class Prepare
 
         $files = [];
         foreach ( self::GUIDE_FILES as $name => $topic ) {
-            $files[ $name ] = StyleGuide::markdown( null === $topic ? null : str_replace( [ '%KIT%', '%LANGUAGE%' ], [ $kit, $language ], $topic ) );
+            // The language is read only by the style-kit topic: its sample blocks come in the task's own language.
+            $files[ $name ] = StyleGuide::markdown( null === $topic ? null : str_replace( [ '%KIT%', '%LANGUAGE%' ], [ $kit, $language ], $topic ), $language );
         }
 
         $template = (string) file_get_contents( dirname( __DIR__, 3 ) . '/scripts/dogfood/TASK-' . $task . '.md' );

@@ -261,7 +261,8 @@ class StyleGuideTopicsTest extends TestCase
         $spec   = OpenApiSpec::spec( 'https://acme.example/wp-json/ai-editor-divi5/v1', '9.9.9' );
         $get    = $spec['paths']['/style-guide']['get'];
         $params = $get['parameters'];
-        $this->assertCount( 1, $params );
+        $this->assertCount( 2, $params, 'topic, and design_language (wording gaps Ruling 6: read only for style-kit:<id>)' );
+        $this->assertSame( 'design_language', $params[1]['name'] );
         $this->assertSame( 'topic', $params[0]['name'] );
         $this->assertSame( 'query', $params[0]['in'] );
         $this->assertFalse( $params[0]['required'] );
