@@ -2193,6 +2193,342 @@ t('the PNG decoder reads every filter type', () => {
   assert.deepStrictEqual(st.mean, { r: 10, g: 20, b: 30 });
 });
 
+// ---- carriers (carriers adapter): the sheet, expectations from the resolved markup, comparison, quote disc, contrast on the painted band, count, overflow, empty run ----
+const XROWS = Object.assign({}, RROWS, { neo: offlineRow('neo-brutal', 'editorial'), soft: offlineRow('warm-pill-soft', 'editorial'), lift: offlineRow('soft-lift', 'editorial') });
+const xslot = (key) => K.CARRIER_SLOTS.find((s) => s.key === key);
+const xhit = (row, key) => K.carrierAttrs(row.markup).find((x) => x.slot.key === key);
+const xexp = (row, key) => { const h = xhit(row, key); return K.expectCarrierFromAttrs(h.attrs, h.slot); };
+const CAR_KEYS = ['testimonial-card-bg', 'testimonial-panel-surface', 'blurb-chip-surface', 'blurb-chip-accent', 'counter-rule-strong-accent', 'counter-rule-bg', 'accent-rule-bg', 'accent-rule-surface'];
+const sh = (s) => (s ? `${cssOf(s.color)} ${s.x || 0}px ${s.y || 0}px ${s.blur || 0}px 0px` : 'none');
+/** What measureCarriers returns for a testimonial that agrees with its expectation at rest (the quote disc hangs above the module, overflow visible). */
+function mtesti(exp, o = {}) {
+  const side = (cap, s) => ({ [`border${cap}Width`]: s.width + 'px', [`border${cap}Style`]: s.style, [`border${cap}Color`]: cssOf(s.color) });
+  const el = Object.assign({}, side('Top', exp.rest.top), side('Right', exp.rest.right), side('Bottom', exp.rest.bottom), side('Left', exp.rest.left),
+    Object.assign({}, ...CORNER_KEYS.map((k, i) => ({ [k]: exp.rest.radius[i] + 'px' }))),
+    { backgroundColor: cssOf(exp.rest.fill), paddingTop: exp.rest.padding[0] + 'px', paddingRight: exp.rest.padding[1] + 'px', paddingBottom: exp.rest.padding[2] + 'px', paddingLeft: exp.rest.padding[3] + 'px', boxShadow: sh(exp.shadow.rest), transform: 'none', overflowX: 'visible', overflowY: 'visible', color: 'rgb(28, 26, 23)' });
+  return Object.assign({ key: 'k', found: true, count: 1, carrier: 'testimonial', el, quote: { content: '"“"', position: 'absolute', top: '-20px', marginTop: '0px', height: '40px' }, heading: { color: 'rgb(28, 26, 23)' }, paragraph: { color: 'rgb(28, 26, 23)' }, rect: R(40, 100, 340, 300), parentRect: R(20, 80, 380, 400) }, o);
+}
+/** The same testimonial under the real pointer: the lift of the markup and its hover shadow. */
+const mhover = (exp, m, o = {}) => Object.assign({}, m, { el: Object.assign({}, m.el, { transform: exp.lift !== null ? `matrix(1, 0, 0, 1, 0, ${exp.lift})` : 'none', boxShadow: sh(exp.shadow.hover) }, o) });
+/** What measureCarriers returns for a blurb whose icon agrees (corners, fill and glyph colour all on `.et-pb-icon`). */
+function mblurb(exp, o = {}) {
+  const radius = Object.assign({}, ...CORNER_KEYS.map((k, i) => ({ [k]: exp.radius[i] + 'px' })));
+  return Object.assign({ key: 'k', found: true, count: 1, carrier: 'blurb', el: Object.assign({}, radius, { backgroundColor: rgbOf(exp.fill), color: rgbOf(exp.glyph) }), rect: R(40, 100, 104, 164), parentRect: R(20, 80, 380, 400) }, o);
+}
+/** What measureCarriers returns for a counter or an accent divider that agrees: the rule shape of mrule(). */
+const mline = (exp, o = {}) => mrule(exp, o);
+const mcar = (row, key, o) => { const slot = xslot(key); const exp = xexp(row, key); return slot.carrier === 'testimonial' ? mtesti(exp, o) : slot.carrier === 'blurb' ? mblurb(exp, o) : mline(exp, o); };
+const compareC = (row, key, o, hoverO) => {
+  const slot = xslot(key); const exp = xexp(row, key); const m = mcar(row, key, o);
+  return K.compareCarrier(exp, slot, m, slot.carrier === 'testimonial' ? mhover(exp, m, hoverO) : null);
+};
+const BAND = { bg: { r: 250, g: 247, b: 242 }, surface: { r: 255, g: 255, b: 255 }, accent: { r: 154, g: 59, b: 31 } };
+const samplesOf = (key, exp) => {
+  const slot = xslot(key);
+  if (slot.carrier === 'testimonial') return { fill: K.colour(exp.rest.fill) };
+  if (slot.carrier === 'blurb') return { fill: K.colour(exp.fill), band: BAND[slot.band] };
+  return { band: BAND[slot.band] };
+};
+
+t('the sheet carries 8 carrier slots appended after every other slot kind (unique texts, the markers of the plan), each found again by its author, title or heading', () => {
+  assert.deepStrictEqual(K.CARRIER_SLOTS.map((s) => s.key), CAR_KEYS);
+  assert.deepStrictEqual(K.CARRIER_SLOTS.map((s) => [s.carrier, s.role, s.band, s.on]), [['testimonial', 'card', 'bg', 'light'], ['testimonial', 'panel', 'surface', 'surface'], ['blurb', 'chip', 'surface', 'surface'], ['blurb', 'chip', 'accent', 'accent'],
+    ['counter', 'rule-strong', 'accent', 'accent'], ['counter', 'rule', 'bg', 'light'], ['divider', 'rule-accent', 'bg', 'light'], ['divider', 'rule-accent', 'surface', 'surface']]);
+  assert.strictEqual(new Set(K.CARRIER_SLOTS.map((s) => s.text)).size, K.CARRIER_SLOTS.length, 'unique texts');
+  assert.strictEqual(new Set(K.CARRIER_SLOTS.map((s) => s.key)).size, K.CARRIER_SLOTS.length, 'unique keys');
+  const m = K.sheetMarkup();
+  const found = K.carrierAttrs(m);
+  assert.strictEqual(found.length, 8);
+  found.forEach((f) => assert.ok(f.attrs, f.slot.key + ' is in the sheet'));
+  // Before the resolver a marker names the role (and the band, omitted for light) and the block carries no look of its own.
+  assert.deepStrictEqual(found.map((f) => f.attrs.aied), K.CARRIER_SLOTS.map((s) => (s.on === 'light' ? { kit: s.role } : { kit: s.role, on: s.on })));
+  const dump = (key) => JSON.stringify(found.find((f) => f.slot.key === key).attrs);
+  for (const key of ['testimonial-card-bg', 'testimonial-panel-surface']) {
+    assert.strictEqual(/"border"|"background"|"boxShadow"|"transform"/.test(dump(key)), false, key + ' the kit supplies the fill, frame, radius, shadow and lift');
+    assert.ok(dump(key).includes('"overflow"') && dump(key).includes('"visible"'), key + ' the recipe keeps overflow visible (the hanging quote)');
+  }
+  assert.strictEqual(/"padding"/.test(dump('testimonial-card-bg')), false, 'a card takes the kit padding');
+  assert.ok(/"padding"/.test(dump('testimonial-panel-surface')), 'a panel keeps its recipe padding');
+  for (const key of ['blurb-chip-surface', 'blurb-chip-accent']) {
+    assert.strictEqual(/"border"|"background"|"advanced":\{"color"/.test(dump(key)), false, key + ' the kit supplies the icon radius, fill and glyph colour');
+    assert.ok(dump(key).includes('"iconFontSize":"32px"') && dump(key).includes('"padding"'), key + ' the recipe keeps the glyph size and padding');
+  }
+  assert.strictEqual(m.split('\\u0026#xe00e;').length - 1, 2, 'both blurb glyph codes are stored as \\u0026 like the library\'s');
+  assert.strictEqual(m.includes('&#xe00e;'), false);
+  for (const key of ['counter-rule-strong-accent', 'counter-rule-bg']) assert.strictEqual(/"border"/.test(dump(key)), false, key + ' the kit supplies the top edge');
+  for (const key of ['accent-rule-bg', 'accent-rule-surface']) {
+    assert.strictEqual(dump(key).includes('"divider"') || dump(key).includes('"line"'), false, key + ' the kit supplies the line');
+    assert.deepStrictEqual(found.find((f) => f.slot.key === key).attrs.modulePreset, [K.ACCENT_DIVIDER_PRESET], key + ' sits over the library\'s site preset');
+  }
+  assert.deepStrictEqual(K.carrierAttrs('<!-- wp:divi/text {} /-->').map((x) => x.attrs).filter(Boolean), [], 'a carrier that is not in the markup is reported as absent');
+  const gone = K.carrierAttrs(m.replace(/Blurb chip on accent/g, 'Renamed'));
+  assert.strictEqual(gone.find((x) => x.slot.key === 'blurb-chip-accent').attrs, null);
+  assert.ok(gone.find((x) => x.slot.key === 'blurb-chip-surface').attrs);
+});
+
+t('carrier expectations are read from the RESOLVED markup: a testimonial like a card, the blurb icon chip, the counter top edge like a group, the accent line (0px kits are expectations)', () => {
+  assert.deepStrictEqual(xexp(XROWS.quiet, 'blurb-chip-surface'), { kind: 'icon', radius: [4, 4, 4, 4], fill: '#9a3b1f', glyph: '#ffffff' });
+  assert.deepStrictEqual(xexp(XROWS.quiet, 'blurb-chip-accent'), { kind: 'icon', radius: [4, 4, 4, 4], fill: '#ffffff', glyph: '#1c1a17' }, 'on the accent band the chip is surface with a text glyph');
+  assert.deepStrictEqual(xexp(XROWS.raw, 'blurb-chip-surface').radius, [0, 0, 0, 0], 'a 0px chip kit is four zeros');
+  assert.deepStrictEqual(xexp(XROWS.dotted, 'blurb-chip-surface').radius, [999, 999, 999, 999]);
+  assert.deepStrictEqual(xexp(XROWS.quiet, 'counter-rule-strong-accent'), { carrier: 'group', top: { width: 2, style: 'solid', color: '#ffffff' }, others: { right: 0, bottom: 0, left: 0 } });
+  assert.deepStrictEqual(xexp(XROWS.quiet, 'counter-rule-bg').top, { width: 1, style: 'solid', color: '#e3dccf' });
+  assert.deepStrictEqual(xexp(XROWS.raw, 'counter-rule-bg').top, { width: 2, style: 'solid', color: '#e3dccf' }, 'raw-frame 4px: a quiet rule is 2px');
+  assert.deepStrictEqual(xexp(XROWS.raw, 'counter-rule-strong-accent').top.width, 4);
+  assert.deepStrictEqual(xexp(XROWS.dashed, 'counter-rule-strong-accent').top.style, 'dashed');
+  assert.deepStrictEqual(xexp(XROWS.quiet, 'accent-rule-bg'), { carrier: 'divider', top: { width: 2, style: 'solid', color: '#9a3b1f' }, others: null });
+  assert.deepStrictEqual(xexp(XROWS.raw, 'accent-rule-surface').top, { width: 4, style: 'solid', color: '#9a3b1f' });
+  assert.strictEqual(xexp(XROWS.dbl, 'accent-rule-bg').top.style, 'double');
+  assert.ok(xexp(XROWS.dbl, 'accent-rule-bg').top.width >= 3, 'a double is at least 3px');
+  const neo = xexp(XROWS.neo, 'testimonial-card-bg');
+  assert.strictEqual(neo.lift, -4); assert.deepStrictEqual(neo.rest.radius, [0, 0, 0, 0]); assert.strictEqual(neo.rest.top.width, 3);
+  assert.strictEqual(xexp(XROWS.neo, 'testimonial-panel-surface').lift, null, 'a panel has no lift');
+  assert.strictEqual(xexp(XROWS.quiet, 'testimonial-panel-surface').rest.padding.join(), '24,24,24,24', 'a panel keeps the sheet\'s literal padding');
+  for (const row of Object.values(XROWS)) for (const key of CAR_KEYS) assert.deepStrictEqual(K.missingCarrierExpectations(xexp(row, key), xslot(key)), [], key);
+  // Holes: an absent block, an empty block, an unresolved radius token, three corners, a missing glyph, a missing top width.
+  for (const s of K.CARRIER_SLOTS) {
+    assert.deepStrictEqual(K.missingCarrierExpectations(null, s), ['block'], s.key + ' absent');
+    assert.ok(K.missingCarrierExpectations(K.expectCarrierFromAttrs({}, s), s).length > 0, s.key + ' an empty block has holes');
+  }
+  assert.deepStrictEqual(K.missingCarrierExpectations(K.expectBlurbChipFromAttrs({}), xslot('blurb-chip-surface')), ['radius', 'fill', 'glyph']);
+  assert.deepStrictEqual(K.missingCarrierExpectations(K.expectBlurbChipFromAttrs({ imageIcon: { decoration: { border: { desktop: { value: { radius: '{{aied:kit:radius-control}}' } } } } } }), xslot('blurb-chip-surface')), ['radius', 'fill', 'glyph']);
+  assert.deepStrictEqual(K.missingCarrierExpectations(K.expectCarrierFromAttrs({ imageIcon: { decoration: { border: { desktop: { value: { radius: { topLeft: '4px', topRight: '4px', bottomRight: '4px' } } } } } } }, xslot('blurb-chip-surface')), xslot('blurb-chip-surface')).includes('radius'), true, 'three corners');
+});
+
+t('carriers that agree with the markup pass (rest, and a testimonial on a real hover): every slot under seven kits', () => {
+  for (const [name, row] of Object.entries(XROWS)) for (const key of CAR_KEYS) assert.deepStrictEqual(compareC(row, key), [], `${name} ${key}`);
+});
+
+t('testimonial: fill, frame, radius, padding, shadow and hover each fail with their own code; a panel must not move at all', () => {
+  const row = XROWS.neo; const exp = xexp(row, 'testimonial-card-bg'); const slot = xslot('testimonial-card-bg');
+  const rest = mtesti(exp);
+  const judge = (restEl, hoverEl) => { const r = Object.assign({}, rest, { el: Object.assign({}, rest.el, restEl) }); return K.compareCarrier(exp, slot, r, mhover(exp, r, hoverEl)); };
+  assert.deepStrictEqual(judge({}, {}), []);
+  assert.deepStrictEqual(fcodes(judge({ backgroundColor: 'rgb(0, 0, 0)' })), ['testimonial-fill']);
+  assert.deepStrictEqual(fcodes(judge({ borderLeftWidth: '1px' })), ['testimonial-frame']);
+  assert.deepStrictEqual(fcodes(judge({ borderTopStyle: 'dashed' })), ['testimonial-frame']);
+  assert.deepStrictEqual(fcodes(judge({ borderBottomColor: 'rgb(220, 38, 38)' })), ['testimonial-frame']);
+  assert.deepStrictEqual(fcodes(judge({ borderTopLeftRadius: '12px' })), ['testimonial-radius']);
+  assert.deepStrictEqual(fcodes(judge({ paddingTop: '30px' })), ['testimonial-padding']);
+  assert.deepStrictEqual(fcodes(judge({ boxShadow: 'none' }, { boxShadow: 'none' })), ['testimonial-shadow', 'testimonial-hover'], 'no shadow where a hard one is expected (the hover shadow is the same one)');
+  assert.deepStrictEqual(fcodes(judge({}, { transform: 'none' })), ['testimonial-hover'], 'the lift is missing');
+  assert.deepStrictEqual(fcodes(judge({}, { transform: 'matrix(1.05, 0, 0, 1.05, 0, -4)' })), ['testimonial-hover'], 'a lift that also scales');
+  assert.deepStrictEqual(fcodes(K.compareCarrier(exp, slot, rest, null)), ['testimonial-hover'], 'the hover state is required');
+  assert.match(K.compareCarrier(exp, slot, rest, null)[0][1], /not measured/);
+  // A panel is static: any change on hover fails.
+  const pexp = xexp(row, 'testimonial-panel-surface'); const pslot = xslot('testimonial-panel-surface'); const prest = mtesti(pexp);
+  assert.deepStrictEqual(K.compareCarrier(pexp, pslot, prest, mhover(pexp, prest)), []);
+  assert.deepStrictEqual(fcodes(K.compareCarrier(pexp, pslot, prest, mhover(pexp, prest, { transform: 'matrix(1, 0, 0, 1, 0, -4)' }))), ['testimonial-hover']);
+  assert.deepStrictEqual(fcodes(K.compareCarrier(pexp, pslot, prest, mhover(pexp, prest, { backgroundColor: 'rgb(0, 0, 0)' }))), ['testimonial-hover']);
+  // Only the hover shadow: soft-lift has a hover shadow and no rest one.
+  const lexp = xexp(XROWS.lift, 'testimonial-card-bg'); const lrest = mtesti(lexp);
+  assert.deepStrictEqual(K.compareCarrier(lexp, slot, lrest, mhover(lexp, lrest)), []);
+  assert.deepStrictEqual(fcodes(K.compareCarrier(lexp, slot, lrest, mhover(lexp, lrest, { boxShadow: 'none' }))), ['testimonial-hover'], 'the hover shadow is missing');
+  // A null expectation fails, never skips.
+  assert.deepStrictEqual(fcodes(K.compareCarrier(null, slot, rest, mhover(exp, rest))), ['testimonial-expectation']);
+  const hole = JSON.parse(JSON.stringify(exp)); hole.rest.padding = null;
+  assert.deepStrictEqual(fcodes(K.compareCarrier(hole, slot, rest, mhover(exp, rest))), ['testimonial-expectation']);
+  assert.deepStrictEqual(fcodes(K.compareCarrier(exp, slot, { found: false, count: 0 }, null)), ['testimonial'], 'an unmeasured testimonial fails');
+});
+
+t('testimonial quote disc: rendered, hanging above the module and not cut by overflow; a clipped, missing or unplaceable disc fails with testimonial-quote', () => {
+  const exp = xexp(XROWS.quiet, 'testimonial-card-bg');
+  const m = mtesti(exp);
+  const ok = K.testimonialQuoteProblems(m);
+  assert.deepStrictEqual(ok.problems, []);
+  assert.deepStrictEqual(ok.info, { hangs: true, top: -20 });
+  assert.strictEqual(K.testimonialQuoteProblems(mtesti(exp, { quote: Object.assign({}, m.quote, { top: '0px', marginTop: '-12px' }) })).info.hangs, true, 'a negative margin hangs it too');
+  assert.strictEqual(K.testimonialQuoteProblems(mtesti(exp, { quote: Object.assign({}, m.quote, { top: '8px' }) })).info.hangs, false, 'a disc inside the box cannot be cut, and says so');
+  const clipped = K.testimonialQuoteProblems(Object.assign({}, m, { el: Object.assign({}, m.el, { overflowX: 'hidden', overflowY: 'hidden' }) }));
+  assert.deepStrictEqual(fcodes(clipped.problems), ['testimonial-quote']);
+  assert.match(clipped.problems[0][1], /overflow is hidden\/hidden.*would be cut/);
+  assert.deepStrictEqual(fcodes(K.testimonialQuoteProblems(Object.assign({}, m, { el: Object.assign({}, m.el, { overflowY: 'clip' }) })).problems), ['testimonial-quote'], 'one axis is enough');
+  for (const content of ['none', 'normal', '']) assert.deepStrictEqual(fcodes(K.testimonialQuoteProblems(Object.assign({}, m, { quote: Object.assign({}, m.quote, { content }) })).problems), ['testimonial-quote'], 'content ' + JSON.stringify(content));
+  assert.deepStrictEqual(fcodes(K.testimonialQuoteProblems(Object.assign({}, m, { quote: null })).problems), ['testimonial-quote'], 'no pseudo measured');
+  assert.deepStrictEqual(fcodes(K.testimonialQuoteProblems(Object.assign({}, m, { quote: Object.assign({}, m.quote, { top: 'auto' }) })).problems), ['testimonial-quote'], 'an absolutely positioned disc with no placeable top');
+  assert.deepStrictEqual(fcodes(K.testimonialQuoteProblems(null).problems), ['testimonial-quote']);
+  // It is part of compareCarrier: a clipped quote on an otherwise agreeing testimonial is the only finding.
+  const slot = xslot('testimonial-card-bg');
+  assert.deepStrictEqual(fcodes(K.compareCarrier(exp, slot, Object.assign({}, m, { el: Object.assign({}, m.el, { overflowX: 'hidden', overflowY: 'hidden' }) }), mhover(exp, m))), ['testimonial-quote']);
+});
+
+t('blurb icon chip: the four corners, the fill and the glyph colour each fail with their own code; a 0px kit is four zeros', () => {
+  const exp = xexp(XROWS.quiet, 'blurb-chip-surface'); const slot = xslot('blurb-chip-surface');
+  const mb = (el) => { const m = mblurb(exp); return Object.assign({}, m, { el: Object.assign({}, m.el, el) }); };
+  assert.deepStrictEqual(K.compareCarrier(exp, slot, mb({}), null), []);
+  assert.deepStrictEqual(fcodes(K.compareCarrier(exp, slot, mb({ borderTopLeftRadius: '12px' }), null)), ['blurb-chip-radius']);
+  assert.deepStrictEqual(fcodes(K.compareCarrier(exp, slot, mb({ borderBottomRightRadius: '0px' }), null)), ['blurb-chip-radius']);
+  assert.deepStrictEqual(fcodes(K.compareCarrier(exp, slot, mb({ backgroundColor: 'rgba(0, 0, 0, 0)' }), null)), ['blurb-chip-fill'], 'the fill sits on another element (a wrapper) instead of the icon');
+  assert.deepStrictEqual(fcodes(K.compareCarrier(exp, slot, mb({ color: 'rgb(51, 51, 51)' }), null)), ['blurb-chip-glyph'], 'Divi\'s default glyph colour');
+  const raw = xexp(XROWS.raw, 'blurb-chip-surface');
+  assert.deepStrictEqual(K.compareCarrier(raw, slot, mblurb(raw), null), []);
+  assert.deepStrictEqual(fcodes(K.compareCarrier(raw, slot, Object.assign({}, mblurb(raw), { el: Object.assign({}, mblurb(raw).el, { borderTopLeftRadius: '4px' }) }), null)), ['blurb-chip-radius'], 'a stray radius on a 0px kit');
+  assert.deepStrictEqual(fcodes(K.compareCarrier(null, slot, mblurb(exp), null)), ['blurb-chip-expectation']);
+  assert.deepStrictEqual(fcodes(K.compareCarrier(exp, slot, { found: false, count: 1 }, null)), ['blurb-chip'], 'a blurb whose icon was not found');
+});
+
+t('counter rule: style, width and colour (alpha included) of the top edge, and the other three sides at 0px, each with their own code', () => {
+  for (const [row, key] of [[XROWS.quiet, 'counter-rule-bg'], [XROWS.dashed, 'counter-rule-strong-accent'], [XROWS.raw, 'counter-rule-strong-accent']]) {
+    const e = xexp(row, key); const slot = xslot(key); const col = mline(e).line.borderTopColor;
+    assert.deepStrictEqual(K.compareCarrier(e, slot, mline(e), null), [], key);
+    const swap = e.top.style === 'dashed' ? 'dotted' : 'dashed';
+    assert.deepStrictEqual(fcodes(K.compareCarrier(e, slot, mline(e, { line: lineOf(e.top.width, swap, col) }), null)), ['counter-rule-style'], key + ' style');
+    assert.deepStrictEqual(fcodes(K.compareCarrier(e, slot, mline(e, { line: lineOf(e.top.width + 1, e.top.style, col) }), null)), ['counter-rule-width'], key + ' width');
+    assert.deepStrictEqual(fcodes(K.compareCarrier(e, slot, mline(e, { line: lineOf(e.top.width, e.top.style, 'rgb(220, 38, 38)') }), null)), ['counter-rule-colour'], key + ' colour');
+    assert.deepStrictEqual(fcodes(K.compareCarrier(e, slot, mline(e, { el: Object.assign({}, mline(e).el, { borderBottomWidth: '2px' }) }), null)), ['counter-rule-width'], key + ' a stray side');
+  }
+  const e = xexp(XROWS.quiet, 'counter-rule-bg'); const slot = xslot('counter-rule-bg');
+  assert.deepStrictEqual(fcodes(K.compareCarrier(null, slot, mline(e), null)), ['counter-rule-expectation']);
+  assert.deepStrictEqual(fcodes(K.compareCarrier(e, slot, { found: false, count: 0 }, null)), ['counter-rule']);
+  const hole = JSON.parse(JSON.stringify(e)); hole.top.width = null;
+  assert.deepStrictEqual(fcodes(K.compareCarrier(hole, slot, mline(e), null)), ['counter-rule-expectation']);
+});
+
+t('accent rule: style, width and colour of the divider line each fail with their own code; the contrast is judged against the exported floor on the PAINTED band', () => {
+  for (const [row, key] of [[XROWS.quiet, 'accent-rule-bg'], [XROWS.dashed, 'accent-rule-surface'], [XROWS.dotted, 'accent-rule-bg'], [XROWS.raw, 'accent-rule-surface']]) {
+    const e = xexp(row, key); const slot = xslot(key); const col = mline(e).line.borderTopColor;
+    assert.deepStrictEqual(K.compareCarrier(e, slot, mline(e), null), [], key);
+    const swap = e.top.style === 'dashed' ? 'dotted' : 'dashed';
+    assert.deepStrictEqual(fcodes(K.compareCarrier(e, slot, mline(e, { line: lineOf(e.top.width, swap, col) }), null)), ['accent-rule-style'], key + ' style');
+    assert.deepStrictEqual(fcodes(K.compareCarrier(e, slot, mline(e, { line: lineOf(4, e.top.style, col) }), null)).includes('accent-rule-width') || e.top.width === 4, true, key + ' width (the preset\'s own 4px must not stand in for the kit)');
+    assert.deepStrictEqual(fcodes(K.compareCarrier(e, slot, mline(e, { line: lineOf(e.top.width + 1, e.top.style, col) }), null)), ['accent-rule-width'], key + ' width +1');
+    assert.deepStrictEqual(fcodes(K.compareCarrier(e, slot, mline(e, { line: lineOf(e.top.width, e.top.style, 'rgb(51, 51, 51)') }), null)), ['accent-rule-colour'], key + ' colour');
+  }
+  const e = xexp(XROWS.quiet, 'accent-rule-bg'); const m = mline(e);
+  const c = (band, floor) => K.accentRuleContrastProblems(m, band, floor);
+  assert.deepStrictEqual(c(BAND.bg, 2.3).problems, []);
+  assert.ok(c(BAND.bg, 2.3).info.line > 5 && c(BAND.bg, 2.3).info.need === 2.3);
+  const weak = mline(e, { line: lineOf(2, 'solid', 'rgb(214, 160, 140)') });
+  assert.deepStrictEqual(fcodes(K.accentRuleContrastProblems(weak, BAND.bg, 2.3).problems), ['accent-rule-contrast']);
+  assert.match(K.accentRuleContrastProblems(weak, BAND.bg, 2.3).problems[0][1], /needs 2\.3/);
+  assert.deepStrictEqual(K.accentRuleContrastProblems(weak, BAND.bg, 1.2).problems, [], 'the floor is a parameter, not a constant in the checker');
+  for (const bad of [null, undefined, 0, -1, NaN, '2.3']) assert.deepStrictEqual(fcodes(c(BAND.bg, bad).problems), ['accent-rule-contrast'], 'floor ' + String(bad));
+  assert.deepStrictEqual(fcodes(c(null, 2.3).problems), ['accent-rule-contrast'], 'no band sample');
+  assert.deepStrictEqual(fcodes(K.accentRuleContrastProblems(mline(e, { line: lineOf(0, 'none', 'rgb(154, 59, 31)') }), BAND.bg, 2.3).problems), ['accent-rule-contrast'], 'no line is drawn');
+  assert.deepStrictEqual(fcodes(K.accentRuleContrastProblems(mline(e, { line: lineOf(2, 'solid', 'banana') }), BAND.bg, 2.3).problems), ['accent-rule-contrast'], 'unreadable colour');
+});
+
+t('the accent floor comes from the PHP export and is validated; it is never a number typed in the gate', () => {
+  assert.deepStrictEqual(K.accentFloorFromRow({ accentRuleFloor: 2.3 }), { floor: 2.3, problems: [] });
+  for (const bad of [undefined, null, 'x', 0, 1, -2.3, NaN, Infinity, 22]) assert.strictEqual(K.accentFloorFromRow({ accentRuleFloor: bad }).floor, null, String(bad));
+  assert.strictEqual(K.accentFloorFromRow(null).floor, null);
+  assert.strictEqual(K.accentFloorFromRow({}).problems.length, 1);
+  const rows = JSON.parse(spawnSync('php', [path.join(__dirname, 'lib', 'kit-sheet-offline.php'), '--kit', 'quiet-solid', '--language', 'editorial', '--no-markup'], { input: K.sheetMarkup(), encoding: 'utf8' }).stdout);
+  assert.deepStrictEqual(K.accentFloorFromRow(rows[0]), { floor: 2.3, problems: [] }, 'RuleChipAudit::ACCENT_RULE_FLOOR through the offline sheet');
+  // The number is not typed in any of the gate\'s files.
+  for (const f of ['verify-kits.cjs', path.join('lib', 'kit-checks.cjs'), path.join('lib', 'kit-carrier-run.cjs')]) assert.strictEqual(/\b2\.3\b/.test(fs.readFileSync(path.join(__dirname, f), 'utf8')), false, f + ' types the accent floor');
+});
+
+t('painted checks: a testimonial\'s painted fill and text, a blurb\'s painted fill and glyph, a counter\'s and the accent mark\'s line over the painted band', () => {
+  // Agreeing carriers pass everywhere.
+  for (const [name, row] of Object.entries(XROWS)) for (const key of CAR_KEYS) {
+    const slot = xslot(key); const exp = xexp(row, key);
+    assert.deepStrictEqual(K.carrierPaintProblems(exp, slot, mcar(row, key), samplesOf(key, exp), { hairline: '#e3dccf', accentFloor: 2.3 }).problems, [], `${name} ${key}`);
+  }
+  const opts = { hairline: '#e3dccf', accentFloor: 2.3 };
+  // testimonial: something painted over the fill; unreadable text; a meaningful frame too faint; no sample.
+  const texp = xexp(XROWS.neo, 'testimonial-card-bg'); const tslot = xslot('testimonial-card-bg'); const tm = mtesti(texp);
+  assert.deepStrictEqual(fcodes(K.carrierPaintProblems(texp, tslot, tm, { fill: { r: 30, g: 30, b: 30 } }, opts).problems), ['testimonial-fill', 'testimonial-contrast'], 'a dark layer over a white card: fill differs, text unreadable on it');
+  assert.deepStrictEqual(fcodes(K.carrierPaintProblems(texp, tslot, Object.assign({}, tm, { paragraph: { color: 'rgb(200, 200, 200)' } }), { fill: K.colour(texp.rest.fill) }, opts).problems), ['testimonial-contrast']);
+  assert.deepStrictEqual(fcodes(K.carrierPaintProblems(texp, tslot, tm, null, opts).problems), ['testimonial-fill']);
+  // blurb: fill painted over, glyph = fill colour, fill = band colour.
+  const bexp = xexp(XROWS.quiet, 'blurb-chip-surface'); const bslot = xslot('blurb-chip-surface'); const bm = mblurb(bexp);
+  assert.deepStrictEqual(fcodes(K.carrierPaintProblems(bexp, bslot, bm, { fill: { r: 20, g: 20, b: 20 }, band: BAND.surface }, opts).problems).includes('blurb-chip-fill'), true, 'something is painted over the icon');
+  assert.deepStrictEqual(fcodes(K.carrierPaintProblems(bexp, bslot, Object.assign({}, bm, { el: Object.assign({}, bm.el, { color: rgbOf(bexp.fill) }) }), { fill: K.colour(bexp.fill), band: BAND.surface }, opts).problems), ['blurb-chip-contrast'], 'a glyph in the colour of its fill');
+  assert.deepStrictEqual(fcodes(K.carrierPaintProblems(bexp, bslot, bm, { fill: K.colour(bexp.fill), band: K.colour(bexp.fill) }, opts).problems), ['blurb-chip-contrast'], 'a chip the colour of its band cannot be seen');
+  assert.deepStrictEqual(fcodes(K.carrierPaintProblems(bexp, bslot, bm, { fill: K.colour(bexp.fill), band: null }, opts).problems), ['blurb-chip-contrast'], 'no band sample');
+  assert.deepStrictEqual(fcodes(K.carrierPaintProblems(bexp, bslot, bm, { fill: null, band: BAND.surface }, opts).problems), ['blurb-chip-fill', 'blurb-chip-contrast'], 'no fill sample');
+  // counter: strong 3.0, quiet 1.1; a line the colour of its band.
+  const cexp2 = xexp(XROWS.quiet, 'counter-rule-strong-accent'); const cslot = xslot('counter-rule-strong-accent');
+  assert.deepStrictEqual(fcodes(K.carrierPaintProblems(cexp2, cslot, mline(cexp2), { band: { r: 255, g: 250, b: 250 } }, opts).problems), ['counter-rule-contrast'], 'a white strong line on a near-white band');
+  assert.deepStrictEqual(fcodes(K.carrierPaintProblems(cexp2, cslot, mline(cexp2), { band: null }, opts).problems), ['counter-rule-contrast']);
+  const qexp = xexp(XROWS.quiet, 'counter-rule-bg'); const qslot = xslot('counter-rule-bg');
+  assert.deepStrictEqual(fcodes(K.carrierPaintProblems(qexp, qslot, mline(qexp), { band: { r: 227, g: 220, b: 207 } }, opts).problems), ['counter-rule-contrast'], 'a quiet line the colour of its band');
+  // accent: below the floor, no floor.
+  const aexp = xexp(XROWS.quiet, 'accent-rule-bg'); const aslot = xslot('accent-rule-bg');
+  assert.deepStrictEqual(fcodes(K.carrierPaintProblems(aexp, aslot, mline(aexp), { band: { r: 190, g: 90, b: 60 } }, opts).problems), ['accent-rule-contrast']);
+  assert.deepStrictEqual(fcodes(K.carrierPaintProblems(aexp, aslot, mline(aexp), { band: BAND.bg }, {}).problems), ['accent-rule-contrast'], 'no floor passed');
+  // An expectation with a hole is left to compareCarrier (one finding, not two).
+  assert.deepStrictEqual(K.carrierPaintProblems(null, aslot, mline(aexp), { band: BAND.bg }, opts), { problems: [], info: {} });
+});
+
+t('carrier overflow: beyond the container (1px) or the window, or a page wider than the window', () => {
+  const page = { innerWidth: 1280, scrollWidth: 1280 };
+  assert.deepStrictEqual(K.carrierOverflowProblems({ rect: R(40, 0, 340, 10), parentRect: R(20, 0, 380, 10) }, 'rest', page), []);
+  assert.deepStrictEqual(fcodes(K.carrierOverflowProblems({ rect: R(40, 0, 400, 10), parentRect: R(20, 0, 380, 10) }, 'rest', page)), ['overflow']);
+  assert.match(K.carrierOverflowProblems({ rect: R(40, 0, 400, 10), parentRect: R(20, 0, 380, 10) }, 'hover', page)[0][1], /^hover: carrier /);
+  assert.deepStrictEqual(fcodes(K.carrierOverflowProblems({ rect: R(40, 0, 340, 10), parentRect: R(20, 0, 380, 10) }, 'rest', { innerWidth: 400, scrollWidth: 500 })), ['overflow']);
+});
+
+t('carrier count (code carrier): a missing slot, a slot on the page twice, an element not found; an empty slot list is an error; a run that checked none fails', () => {
+  const all = K.CARRIER_SLOTS.map((s) => ({ key: s.key, found: true, count: 1 }));
+  assert.deepStrictEqual(K.carrierCountProblems(all), []);
+  for (const key of CAR_KEYS) {
+    const gone = K.carrierCountProblems(all.map((m) => (m.key === key ? { key, found: false, count: 0 } : m)));
+    assert.deepStrictEqual(fcodes(gone), ['carrier'], key);
+    assert.match(gone[0][1], new RegExp(`^7 of 8 carriers rendered as the sheet says: ${key} is not in the page`), key);
+    assert.match(K.carrierCountProblems(all.map((m) => (m.key === key ? { key, found: true, count: 2 } : m)))[0][1], new RegExp(`${key} is on the page 2 times, expected 1`));
+  }
+  assert.match(K.carrierCountProblems(all.map((m) => (m.key === 'blurb-chip-accent' ? { key: m.key, found: false, count: 1 } : m)))[0][1], /blurb-chip-accent is not in the page \(its element was not found\)/, 'a blurb whose icon is missing');
+  assert.throws(() => K.carrierCountProblems([], []), /no carrier slots/);
+  assert.match(K.carrierCountProblems([], K.CARRIER_SLOTS)[0][1], /^0 of 8 carriers rendered/);
+  assert.match(K.carrierCountProblems([...all, { key: 'x', found: true, count: 1 }])[0][1], /9 carriers measured for 8 slots/);
+  assert.deepStrictEqual(K.emptyCarrierRunProblems({ carriersChecked: 0 }), ['no carrier was checked: the carrier selection was empty']);
+  assert.deepStrictEqual(K.emptyCarrierRunProblems({}), ['no carrier was checked: the carrier selection was empty'], 'a caller that forgets the carrier count fails, never skips');
+  assert.deepStrictEqual(K.emptyCarrierRunProblems({ carriersChecked: 16 }), []);
+  // emptyRunProblems gains carriersChecked: counted when the caller passes it, the older three checks unchanged.
+  assert.deepStrictEqual(K.emptyRunProblems({ checked: 12, cardsChecked: 144, itemsChecked: 120, carriersChecked: 96 }), []);
+  assert.deepStrictEqual(K.emptyRunProblems({ checked: 12, cardsChecked: 144, itemsChecked: 120, carriersChecked: 0 }), ['no carrier was checked: the carrier selection was empty']);
+  assert.deepStrictEqual(K.emptyRunProblems({ checked: 12, cardsChecked: 144, itemsChecked: 120 }), [], 'the older call shape is unchanged');
+  // The gate itself must always pass the count (a source check: dropping it would make the empty-run check skip).
+  const gate = fs.readFileSync(path.join(__dirname, 'verify-kits.cjs'), 'utf8');
+  assert.match(gate, /K\.emptyRunProblems\(\{[^}]*carriersChecked[^}]*\}\)/, 'verify-kits.cjs passes carriersChecked to emptyRunProblems');
+  assert.match(gate, /K\.emptyCarrierRunProblems\(\{ carriersChecked \}\)/);
+  assert.match(gate, /FAIL carrier: /);
+});
+
+t('every kit x every language (offline): the 8 carriers are in the resolved markup with complete expectations and the colours the role tables say', () => {
+  const php = spawnSync('php', [path.join(__dirname, 'lib', 'kit-sheet-offline.php')], { input: K.sheetMarkup(), encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 });
+  assert.strictEqual(php.status, 0, 'php failed: ' + (php.error ? php.error.message : php.stderr));
+  const rows = JSON.parse(php.stdout);
+  const langs = Object.fromEntries(JSON.parse(fs.readFileSync(path.join(ROOT, 'wp-plugin', 'data', 'design-languages.json'), 'utf8')).map((l) => [l.id, l.colors]));
+  const kitData = Object.fromEntries(JSON.parse(fs.readFileSync(path.join(ROOT, 'wp-plugin', 'data', 'style-kits.json'), 'utf8')).map((k) => [k.id, k]));
+  let checked = 0;
+  for (const row of rows) {
+    const cell = row.kit + '/' + row.language; const pal = langs[row.language];
+    assert.strictEqual(row.accentRuleFloor, 2.3, cell + ' exports the accent floor');
+    for (const { slot, attrs } of K.carrierAttrs(row.markup)) {
+      const where = `${cell} ${slot.key}`;
+      assert.ok(attrs, where + ' not in the resolved markup');
+      assert.strictEqual(JSON.stringify(attrs).includes('"aied"'), false, where + ' a marker is left');
+      checked++;
+      const exp = K.expectCarrierFromAttrs(attrs, slot);
+      assert.deepStrictEqual(K.missingCarrierExpectations(exp, slot), [], where);
+      if (slot.carrier === 'blurb') {
+        assert.deepStrictEqual(exp.radius, [0, 1, 2, 3].map(() => parseFloat(kitData[row.kit].radius.control)), `${where} radius is the kit's control radius`);
+        if (slot.on === 'accent') assert.ok(K.sameColour(exp.fill, pal.surface) && K.sameColour(exp.glyph, pal.text), `${where} fill ${exp.fill} / glyph ${exp.glyph}`);
+        else assert.ok(K.sameColour(exp.fill, pal.accent) && K.sameColour(exp.glyph, pal.accent_text), `${where} fill ${exp.fill} / glyph ${exp.glyph}`);
+      } else if (slot.carrier === 'divider') {
+        assert.ok(K.sameColour(exp.top.color, pal.accent), `${where} the accent mark is the accent colour, ${exp.top.color}`);
+        assert.ok(exp.top.width >= 2, where + ' at least the strong rule width');
+        if (exp.top.style === 'double') assert.ok(exp.top.width >= 3, where + ' a double is at least 3px');
+        const ratio = require('./lib/recipe-checks.cjs').ratioOf(K.colour(exp.top.color), K.colour(slot.band === 'bg' ? pal.bg : pal.surface));
+        assert.ok(ratio >= row.accentRuleFloor, `${where} accent on its band is ${ratio.toFixed(3)}:1, below the floor ${row.accentRuleFloor}`);
+      } else if (slot.carrier === 'counter') {
+        assert.deepStrictEqual(exp.others, { right: 0, bottom: 0, left: 0 }, where + ' only the top edge');
+        if (slot.role === 'rule-strong') assert.ok(K.sameColour(exp.top.color, pal.accent_text), `${where} strong colour ${exp.top.color}`);
+        else assert.ok(K.sameColour(exp.top.color, pal.border), `${where} quiet colour ${exp.top.color}`);
+        if (exp.top.style === 'double') assert.ok(exp.top.width >= 3, where + ' a double is at least 3px');
+      } else {
+        assert.ok(K.sameColour(exp.rest.fill, slot.on === 'surface' ? pal.bg : pal.surface), `${where} fill ${exp.rest.fill}`);
+        assert.deepStrictEqual(exp.hoverKeys.filter((k) => k === 'border.hover' || k === 'background.hover').length > 0 && slot.role === 'panel', false, where + ' a panel has no hover frame or fill');
+        if (slot.role === 'panel') assert.deepStrictEqual(exp.hoverKeys, [], where + ' a panel is static');
+      }
+    }
+  }
+  assert.strictEqual(checked, rows.length * K.CARRIER_SLOTS.length, 'every carrier of every cell was checked');
+});
+
 // ---- the one bounded hover retry (a timing miss must not fail a cell; a persistent defect must) ----
 const HP = (d) => ['panel-button', d];
 const BG = 'hover: background-color rgba(0, 0, 0, 0), expected #faf7f2';
@@ -2278,4 +2614,4 @@ t('hover retry: the second wait is twice the first, capped at 2000 ms, never sho
   assert.strictEqual(K.HOVER_RETRY_CAP_MS, 2000);
 });
 
-console.log(`OK verify-kits pure parts: ${n} tests (run titles, selection, sheet, the one bounded hover retry, expectations from resolved markup, rest and hover comparison, shadows, lift, contrast, overflow, PNG; cards: sheet, expectations, comparison, panel static on hover, clip, contrast, overflow, column row, counts, empty run; grounds, panel buttons, the featured card; items: sheet, expectations per state, comparison, count, click, contrast; forms: sheet, expectations from the resolved markup, field/submit/captcha/container comparison, painted fill, contrast, clip, overflow, count; images: the media-radius token sheet, four corners from the resolved markup, radius on the wrapper or the img, clip, overflow, count, empty run; rules and chips: the sheet, expectations from the resolved markup, style/width/colour/radius/frame/fill comparison, contrast on the painted band, count, overflow, empty run; offline sheet through PHP for every kit x language)`);
+console.log(`OK verify-kits pure parts: ${n} tests (run titles, selection, sheet, the one bounded hover retry, expectations from resolved markup, rest and hover comparison, shadows, lift, contrast, overflow, PNG; cards: sheet, expectations, comparison, panel static on hover, clip, contrast, overflow, column row, counts, empty run; grounds, panel buttons, the featured card; items: sheet, expectations per state, comparison, count, click, contrast; forms: sheet, expectations from the resolved markup, field/submit/captcha/container comparison, painted fill, contrast, clip, overflow, count; images: the media-radius token sheet, four corners from the resolved markup, radius on the wrapper or the img, clip, overflow, count, empty run; rules and chips: the sheet, expectations from the resolved markup, style/width/colour/radius/frame/fill comparison, contrast on the painted band, count, overflow, empty run; carriers: the 8 slots, expectations from the resolved markup, testimonial fill/frame/radius/padding/shadow/hover/quote, blurb chip radius/fill/glyph, counter and accent rule style/width/colour, contrast against the exported accent floor, count, overflow, empty run; offline sheet through PHP for every kit x language)`);

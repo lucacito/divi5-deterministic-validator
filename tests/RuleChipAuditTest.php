@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Divi5Validator\Tests;
 
 use AiEditorDivi5\WP\DesignLanguages;
+use Divi5Validator\Tests\Support\CarrierAudit;
 use Divi5Validator\Tests\Support\RuleChipAudit;
 use PHPUnit\Framework\TestCase;
 
@@ -14,7 +15,9 @@ use PHPUnit\Framework\TestCase;
  * are the same before and after the migration, and the quiet-rule floor measured on what the library shipped (Ruling 5).
  *
  * Ruling 8: the two accent dividers (blog-feed and icon-values, a site preset with an accent line) are brand marks, listed
- * in SHAPE_EXEMPTIONS, so the library has 57 rules to migrate; the floor measurement still covers the 59 it shipped.
+ * in SHAPE_EXEMPTIONS, so the library has 57 rules to migrate; the floor measurement still covers the 59 it shipped. Since the
+ * carriers adapter (plan 2026-10-24, Task 5) they and the four counters carry carrier markers (CarrierMigrationTest's) and are
+ * no longer exemptions.
  */
 class RuleChipAuditTest extends TestCase
 {
@@ -193,6 +196,34 @@ class RuleChipAuditTest extends TestCase
         $this->assertCount( 8, $rows );
     }
 
+    public function testTheAccentFloorIsTheShippedMinimumRoundedDown(): void
+    {
+        $min = INF;
+        foreach ( DesignLanguages::ids() as $id ) {
+            $lang = DesignLanguages::get( $id );
+            $this->assertIsArray( $lang );
+            $min = min( $min, RuleChipAudit::ratio( 'accent', 'light', $lang ) );
+        }
+        $this->assertEqualsWithDelta( 2.304, $min, 0.0005, 'the weakest accent line on a light band over the 10 languages' );
+        $this->assertSame( floor( $min * 10 ) / 10, RuleChipAudit::ACCENT_RULE_FLOOR, 'the floor is the minimum rounded DOWN to one decimal' );
+        // Pinned literally: lowering the constant is a conscious act that has to change this line (and Ruling 1).
+        $this->assertSame( 2.3, RuleChipAudit::ACCENT_RULE_FLOOR );
+        // The measured table has the same cell (playful-pastel), so the floor traces to fixtures/shapes/rule-floor.md.
+        $by = [];
+        foreach ( self::floorRows() as $r ) {
+            $by[ $r['colour'] . '|' . $r['band'] ] = $r;
+        }
+        $this->assertArrayHasKey( 'accent|light', $by );
+        $this->assertEqualsWithDelta( $min, $by['accent|light']['ratio'], 0.0005 );
+        $this->assertSame( 'playful-pastel', $by['accent|light']['language'] );
+        // The two shipped accent rules are the two accent dividers, both on a light band.
+        $dividers = array_values( array_filter( CarrierAudit::blocks( self::library() ), static fn ( array $b ): bool => 'rule-accent' === $b['role'] ) );
+        $this->assertCount( 2, $dividers );
+        foreach ( $dividers as $d ) {
+            $this->assertSame( 'light', $d['on'], CarrierAudit::key( $d ) );
+        }
+    }
+
     public function testTheFloorTableIsWhatTheLibraryShippedAndStaysWhileTheRulesAreUnmigrated(): void
     {
         $library = self::library();
@@ -234,11 +265,16 @@ class RuleChipAuditTest extends TestCase
         $want = self::RULES;
         ksort( $want );
         $this->assertSame( $want, $map, 'the exact keys, roles and bands of the library' );
-        // With the exempt accent dividers: the 59 the library shipped.
+        // Carriers adapter (plan 2026-10-24, Task 5, Ruling 11): the two accent dividers were listed here with the exempt
+        // blocks (59, as `rule-strong` on light); they now carry a `rule-accent` marker, which is CarrierMigrationTest's, so
+        // the exempt-inclusive list is the same 57 and holds neither divider (the floor table still covers the 59 the library
+        // shipped: fixtures/shapes/rule-floor.md was measured on the revision before the migration).
         $all = self::ruleMap( self::library(), true );
-        $this->assertCount( 59, $all );
-        $this->assertSame( [ 'rule-strong', 'light' ], $all['blog-feed|divi/divider|0'] );
-        $this->assertSame( [ 'rule-strong', 'light' ], $all['icon-values|divi/divider|0'] );
+        $this->assertCount( 57, $all );
+        ksort( $all );
+        $this->assertSame( $want, $all );
+        $this->assertArrayNotHasKey( 'blog-feed|divi/divider|0', $all );
+        $this->assertArrayNotHasKey( 'icon-values|divi/divider|0', $all );
     }
 
     public function testTheAuditFindsTheFourteenChipsOfTheLibrary(): void
@@ -256,7 +292,9 @@ class RuleChipAuditTest extends TestCase
 
     public function testTheExemptionsAreFoundAndNamed(): void
     {
-        $this->assertCount( 15, RuleChipAudit::SHAPE_EXEMPTIONS );
+        // Carriers adapter (plan 2026-10-24, Task 5, Ruling 11): 15 -> 9 (the four counters and the two accent dividers are
+        // kit-driven now; CarrierMigrationTest pins them).
+        $this->assertCount( 9, RuleChipAudit::SHAPE_EXEMPTIONS );
         $library = self::library();
         $seen    = RuleChipAudit::exemptionsSeen( $library );
         $rules   = self::ruleMap( $library );
@@ -271,14 +309,21 @@ class RuleChipAuditTest extends TestCase
             // out) or paints a ground of its own (a badge, a dot, a circle).
             $this->assertContains( $seen[ $key ]['looks'], [ 'rule', 'filled' ], "$key is neither a rule shape nor a filled shape any more: remove the exemption" );
         }
+        // Carriers adapter (plan 2026-10-24, Task 5): the accent dividers and the counters left the exemptions; each now
+        // carries its carrier marker (rule-accent / rule-strong), and this audit neither lists nor exempts them.
+        $carriers = [];
+        foreach ( CarrierAudit::blocks( $library ) as $b ) {
+            $carriers[ CarrierAudit::key( $b ) ] = [ $b['role'], $b['marked'] ];
+        }
         foreach ( [ 'blog-feed|divi/divider|0', 'icon-values|divi/divider|0' ] as $key ) {
-            $this->assertSame( 'rule', $seen[ $key ]['looks'] );
-            $this->assertArrayHasKey( $key, $all, 'the floor still measures the accent divider' );
-            $this->assertStringContainsString( 'Ruling 8', RuleChipAudit::SHAPE_EXEMPTIONS[ $key ] );
-            $this->assertSame( 'accent mark on a site preset: a brand decision, not a separator; Ruling 8', RuleChipAudit::SHAPE_EXEMPTIONS[ $key ] );
+            $this->assertArrayNotHasKey( $key, RuleChipAudit::SHAPE_EXEMPTIONS );
+            $this->assertArrayNotHasKey( $key, $all );
+            $this->assertSame( [ 'rule-accent', true ], $carriers[ $key ] ?? null, $key );
         }
         for ( $i = 0; $i < 4; $i++ ) {
-            $this->assertSame( 'rule', $seen[ "stats-counter-band|divi/number-counter|$i" ]['looks'], 'a top rule on a counter' );
+            $key = "stats-counter-band|divi/number-counter|$i";
+            $this->assertArrayNotHasKey( $key, RuleChipAudit::SHAPE_EXEMPTIONS );
+            $this->assertSame( [ 'rule-strong', true ], $carriers[ $key ] ?? null, $key );
         }
         foreach ( [ 5, 9, 13, 17 ] as $i ) {
             $this->assertSame( 'filled', $seen[ "steps-horizontal|divi/group|$i" ]['looks'] );

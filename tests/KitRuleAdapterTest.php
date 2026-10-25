@@ -538,7 +538,8 @@ class KitRuleAdapterTest extends TestCase
 
     public function testAppliedNamesTheRuleCarriers(): void
     {
-        $this->assertSame( [ 'rule', 'rule-strong' ], KitAdapters::APPLIED['divi/divider'] ?? null );
+        // carriers adapter: [ 'rule', 'rule-strong' ] -> + 'rule-accent' (the accent mark, KitCarrierAdapterTest).
+        $this->assertSame( [ 'rule', 'rule-strong', 'rule-accent' ], KitAdapters::APPLIED['divi/divider'] ?? null );
         $this->assertSame( [ 'card', 'panel', 'rule', 'rule-strong', 'chip' ], KitAdapters::APPLIED['divi/group'] ?? null );
         $this->assertSame( [ 'card', 'panel', 'rule', 'rule-strong' ], KitAdapters::APPLIED['divi/column'] ?? null );
         foreach ( [ 'divi/row', 'divi/section', 'divi/text', 'divi/image' ] as $block ) {

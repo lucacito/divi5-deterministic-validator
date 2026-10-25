@@ -1,6 +1,7 @@
 <?php
 /**
- * Dev-only: score a Divi 5 page that an assistant wrote against the real style-kit adapters (dogfood plan 2026-10-22).
+ * Dev-only: score a Divi 5 page that an assistant wrote against the real style-kit adapters and, for headline type and section
+ * rhythm, the real design-language adapters (dogfood plan 2026-10-22).
  * Pure PHP, no site, no network, no model call.
  *
  *   php scripts/dogfood-score.php <page.html> <kit> [--language <id>] [--json] [--min <pct>]

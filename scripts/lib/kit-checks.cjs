@@ -24,6 +24,12 @@
  *    the accent band), expectations read from the resolved block tree, the comparison
  *    with the line as Divi draws it (a divider's `::before`, a group or column's own `border-top-*`), the chip's radius, frame, fill and glyph, the
  *    contrast of the line (or the frame, or the glyph) against the PAINTED band (or fill), overflow and the count.
+ *  - and for the CARRIERS (carriers adapter: a testimonial card and panel, a blurb icon chip, a number-counter rule and the `rule-accent` divider): CARRIER_SLOTS (8 slots,
+ *    appended after every other slot so no earlier key or order moves), each found by a UNIQUE author, title or heading text, expectations read from the resolved block tree
+ *    (a testimonial's `module.decoration` like a card, a blurb's `imageIcon.*`, a counter's top edge like a group, the divider's line), the comparison with the computed
+ *    style (a testimonial at rest and on a real hover, the quote disc `::before` hanging above the module and not clipped, a blurb's `.et-pb-icon` corners, fill and glyph,
+ *    a counter's `border-top-*` with the other sides at 0, the accent line on `.et_pb_divider::before`), contrast on the PAINTED band (the accent line at least the floor
+ *    the PHP exports), overflow and the count.
  */
 const zlib = require('zlib');
 const { parseColor, over, ratioOf } = require('./recipe-checks.cjs');
@@ -241,6 +247,73 @@ function chipMarkup(slot) {
   return blockOf('group', { module: { decoration: { layout: { desktop: { value: RULE_COLUMN } } } }, builderVersion: '5.8.0' }, [headingMarkup(slot.heading, slot.ink), icon].join('\n'));
 }
 
+/**
+ * The carriers of the sheet (carriers adapter, Task 6). Every slot is found again by the UNIQUE text it carries, never by its marker (the resolver strips it):
+ * `testimonial` = a marked `divi/testimonial` found by its author, `blurb` = a marked `divi/blurb` found by its title, `counter` = a marked
+ * `divi/number-counter` found by its title, `divider` = a marked `divi/divider` (role `rule-accent`) inside an UNMARKED wrapper group that holds the heading. `on` is
+ * the band the marker names (`light` is omitted from it); `ink` the colour role of the texts printed on the band. Appended after every earlier slot kind, so no earlier
+ * key or order moves. A testimonial is hovered with the real pointer (a card lifts, a panel stays still); `padding` is the panel's literal padding in px (a panel keeps
+ * its recipe padding: no kit key).
+ */
+const CARRIER_SLOTS = [
+  { key: 'testimonial-card-bg', carrier: 'testimonial', role: 'card', band: 'bg', on: 'light', ink: 'text', text: 'Card testimonial on bg', padding: null },
+  { key: 'testimonial-panel-surface', carrier: 'testimonial', role: 'panel', band: 'surface', on: 'surface', ink: 'text', text: 'Panel testimonial on surface', padding: 24 },
+  { key: 'blurb-chip-surface', carrier: 'blurb', role: 'chip', band: 'surface', on: 'surface', ink: 'text', text: 'Blurb chip on surface', padding: null },
+  { key: 'blurb-chip-accent', carrier: 'blurb', role: 'chip', band: 'accent', on: 'accent', ink: 'accent-text', text: 'Blurb chip on accent', padding: null },
+  { key: 'counter-rule-strong-accent', carrier: 'counter', role: 'rule-strong', band: 'accent', on: 'accent', ink: 'accent-text', text: 'Strong counter rule on accent', padding: null },
+  { key: 'counter-rule-bg', carrier: 'counter', role: 'rule', band: 'bg', on: 'light', ink: 'text', text: 'Quiet counter rule on bg', padding: null },
+  { key: 'accent-rule-bg', carrier: 'divider', role: 'rule-accent', band: 'bg', on: 'light', ink: 'text', text: 'Accent rule on bg', padding: null },
+  { key: 'accent-rule-surface', carrier: 'divider', role: 'rule-accent', band: 'surface', on: 'surface', ink: 'text', text: 'Accent rule on surface', padding: null },
+];
+/** The site preset the library's two accent dividers carry (kx-divider-accent-*: the kit's weight and style win over it). */
+const ACCENT_DIVIDER_PRESET = '1ep0co506u';
+/** The error-code family of each carrier. */
+const CARRIER_FAMILY = { testimonial: 'testimonial', blurb: 'blurb-chip', counter: 'counter-rule', divider: 'accent-rule' };
+
+/** One carrier slot as markup: the recipe's own keys only (structure and ink); the kit supplies the look. */
+function carrierMarkup(slot) {
+  const marker = markerOf(slot.role, slot.on);
+  const px4 = (n) => ({ top: `${n}px`, right: `${n}px`, bottom: `${n}px`, left: `${n}px` });
+  const ink = (role, extra) => ({ font: { font: { desktop: { value: Object.assign({ color: `{{aied:color:${role}}}` }, extra || {}) } } } });
+  const bodyInk = slot.ink === 'text' ? 'muted' : slot.ink;
+  if (slot.carrier === 'testimonial') {
+    const decoration = { overflow: { desktop: { value: { x: 'visible', y: 'visible' } } }, layout: { desktop: { value: { display: 'block' } } } };
+    if (slot.padding !== null) decoration.spacing = { desktop: { value: { padding: px4(slot.padding) } } };
+    return blockOf('testimonial', {
+      author: { innerContent: { desktop: { value: slot.text } }, decoration: ink(slot.ink) },
+      jobTitle: { innerContent: { desktop: { value: 'Placeholder role' } }, decoration: ink('muted') },
+      company: { innerContent: { desktop: { value: { text: 'Placeholder company' } } }, decoration: ink('muted') },
+      portrait: { innerContent: { desktop: { value: { url: '{{aied:image:avatar-1}}', alt: 'Placeholder avatar: replace with your own' } } } },
+      builderVersion: '5.8.0', module: { decoration },
+      content: { innerContent: { desktop: { value: '<p>Placeholder quote: one short sentence that the surrounding colours must keep readable.</p>' } }, decoration: { bodyFont: { body: { font: { desktop: { value: { color: `{{aied:color:${slot.ink}}}`, family: '{{aied:font:body}}' } } } } } } },
+      aied: marker,
+    }, null);
+  }
+  if (slot.carrier === 'blurb') {
+    // The recipe keeps the glyph size and the 16px padding; the kit writes the radius, fill and glyph colour (imageIcon.*). The glyph code is stored as &#xe00e; like the library's.
+    return blockOf('blurb', {
+      title: { innerContent: { desktop: { value: { text: slot.text } } }, decoration: ink(slot.ink, { family: '{{aied:font:display}}' }) },
+      imageIcon: { innerContent: { desktop: { value: { useIcon: 'on', icon: { unicode: '&#xe00e;', type: 'divi', weight: '400' } } } }, decoration: { sizing: { desktop: { value: { iconFontSize: '32px', alignment: 'left' } } }, spacing: { desktop: { value: { padding: px4(16) } } } } },
+      builderVersion: '5.8.0',
+      content: { innerContent: { desktop: { value: '<p>Placeholder copy under a blurb: one short sentence that the surrounding colours must keep readable.</p>' } }, decoration: { bodyFont: { body: { font: { desktop: { value: { color: `{{aied:color:${bodyInk}}}`, family: '{{aied:font:body}}' } } } } } } },
+      module: { decoration: { layout: { desktop: { value: { display: 'block' } } } } },
+      aied: marker,
+    }, null).replace(/&/g, '\\u0026');
+  }
+  if (slot.carrier === 'counter') {
+    // The recipe keeps its padding and width; the kit writes the top edge (module.decoration.border).
+    return blockOf('number-counter', {
+      module: { advanced: { text: { text: { desktop: { value: { orientation: 'left' } } } } }, decoration: { spacing: { desktop: { value: { padding: { top: '20px' } } } }, sizing: { desktop: { value: { width: '100%' } } } } },
+      title: { innerContent: { desktop: { value: slot.text } }, decoration: ink(slot.ink, { headingLevel: 'h3', family: '{{aied:font:body}}', size: '16px', lineHeight: '1.4em' }) },
+      number: { innerContent: { desktop: { value: '100' } }, advanced: { enablePercentSign: { desktop: { value: 'off' } } }, decoration: ink(slot.ink, { family: '{{aied:font:display}}', weight: '700', size: '64px' }) },
+      builderVersion: '5.8.0', aied: marker,
+    }, null);
+  }
+  // divider: the accent mark inside an unmarked wrapper that holds the heading; the library's two carry the site preset and align to the start.
+  const divider = blockOf('divider', { module: { decoration: { sizing: { desktop: { value: { alignSelf: 'flex-start' } } } } }, builderVersion: '5.8.0', modulePreset: [ACCENT_DIVIDER_PRESET], aied: marker }, null);
+  return blockOf('group', { module: { decoration: { layout: { desktop: { value: RULE_COLUMN } } } }, builderVersion: '5.8.0' }, [headingMarkup(slot.text, slot.ink), divider].join('\n'));
+}
+
 /** The kit buttons a button slot holds, in order: [{ role, text }]. */
 const PANEL_BUTTONS = [{ role: 'control', text: 'Primary action' }, { role: 'control-secondary', text: 'Secondary action' }];
 /** One button block of the sheet: the marker names the surface (`on`, omitted for light). */
@@ -267,12 +340,12 @@ function cardMarkup(slot) {
   return blockOf('group', { module: { decoration }, builderVersion: '5.8.0', aied: marker }, body);
 }
 
-/** The tokenised sheet markup: 8 page-level buttons (SURFACES x ROLES), 20 cards (CARD_SLOTS), inside the two button panels 4 more buttons, 10 item blocks (ITEM_SLOTS: 4 accordions, 6 toggles), 2 forms (FORM_SLOTS: one on the bg band, one on the surface band) 1 image carrying the media-radius token (MEDIA_SLOTS), 16 rule blocks (RULE_SLOTS) and 5 chips (CHIP_SLOTS). */
+/** The tokenised sheet markup: 8 page-level buttons (SURFACES x ROLES), 20 cards (CARD_SLOTS), inside the two button panels 4 more buttons, 10 item blocks (ITEM_SLOTS: 4 accordions, 6 toggles), 2 forms (FORM_SLOTS: one on the bg band, one on the surface band) 1 image carrying the media-radius token (MEDIA_SLOTS), 16 rule blocks (RULE_SLOTS), 5 chips (CHIP_SLOTS) and 8 carriers (CARRIER_SLOTS). */
 function sheetMarkup() {
   const v = V;
   const sections = SURFACES.map((s) => {
     const buttons = ROLES.map((r) => buttonBlock(r.role, r.text, s.on)).join('\n');
-    const cards = [...CARD_SLOTS.filter((c) => c.band === s.key && !c.row).map(cardMarkup), ...ITEM_SLOTS.filter((c) => c.band === s.key).map(itemMarkup), ...FORM_SLOTS.filter((c) => c.band === s.key).map(formMarkup), ...MEDIA_SLOTS.filter((c) => c.band === s.key).map(mediaMarkup), ...RULE_SLOTS.filter((c) => c.band === s.key && c.carrier !== 'column').map(ruleMarkup), ...CHIP_SLOTS.filter((c) => c.band === s.key).map(chipMarkup)].join('\n');
+    const cards = [...CARD_SLOTS.filter((c) => c.band === s.key && !c.row).map(cardMarkup), ...ITEM_SLOTS.filter((c) => c.band === s.key).map(itemMarkup), ...FORM_SLOTS.filter((c) => c.band === s.key).map(formMarkup), ...MEDIA_SLOTS.filter((c) => c.band === s.key).map(mediaMarkup), ...RULE_SLOTS.filter((c) => c.band === s.key && c.carrier !== 'column').map(ruleMarkup), ...CHIP_SLOTS.filter((c) => c.band === s.key).map(chipMarkup), ...CARRIER_SLOTS.filter((c) => c.band === s.key).map(carrierMarkup)].join('\n');
     const columnRules = RULE_SLOTS.filter((c) => c.band === s.key && c.carrier === 'column').map(ruleMarkup).join('\n');
     return `<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":${s.bg}}},"spacing":{"desktop":{"value":{"padding":{"top":"64px","bottom":"64px"}}}}}},${v}} -->
 <!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}}}},${v}} -->
@@ -1208,12 +1281,14 @@ function itemOverflowProblems(it, state, page) {
   return cardOverflowProblems(it, state, page).map(([c, d]) => [c, d.replace(/^([^:]+: )card /, '$1item ')]);
 }
 
-/** What a finished run must have checked: at least one cell/width, at least one card and at least one item block (an empty selection fails the run, and so does a caller that forgot to count). */
-function emptyRunProblems({ checked, cardsChecked, itemsChecked }) {
+/** What a finished run must have checked: at least one cell/width, at least one card and at least one item block (an empty selection fails the run, and so does a caller that forgot to count) and, when the caller passes `carriersChecked`, at least one carrier. */
+function emptyRunProblems({ checked, cardsChecked, itemsChecked, ...rest }) {
   const out = [];
   if (!checked) out.push('no cell/width was checked: nothing was measured');
   if (!cardsChecked) out.push('no card was checked: the card selection was empty');
   if (!itemsChecked) out.push('no item was checked: the item selection was empty');
+  // The carriers (carriers adapter): a caller that passes the count and has it at 0 fails; scripts/verify-kits.cjs always passes it (a pure test reads its source).
+  if ('carriersChecked' in rest && !rest.carriersChecked) out.push('no carrier was checked: the carrier selection was empty');
   return out;
 }
 
@@ -1914,6 +1989,197 @@ function emptyChipRunProblems({ chipsChecked }) {
   return chipsChecked ? [] : ['no chip was checked: the chip selection was empty'];
 }
 
+// ---- carriers (testimonial card/panel, blurb icon chip, number-counter rule, rule-accent divider) -------------------------
+/**
+ * The block that carries the look of each CARRIER_SLOTS slot in the RESOLVED markup (the marker is gone, so a slot is found by the unique text it carries):
+ * [{ slot, attrs }] in slot order; attrs is null when the slot is not in the markup.
+ */
+function carrierAttrs(markup, slots = CARRIER_SLOTS) {
+  const tree = blockTree(markup);
+  const all = [];
+  const walk = (nodes) => { for (const n of nodes) { all.push(n); walk(n.children); } };
+  walk(tree);
+  return slots.map((slot) => {
+    if (slot.carrier === 'divider') {
+      const wrap = nodeByHeading(tree, 'divi/group', slot.text);
+      const divider = wrap ? descendants(wrap).find((x) => x.name === 'divi/divider') : null;
+      return { slot, attrs: divider ? divider.attrs : null };
+    }
+    const hit = all.find((n) => {
+      if (slot.carrier === 'testimonial') return n.name === 'divi/testimonial' && dig(n.attrs, 'author', 'innerContent', 'desktop', 'value') === slot.text;
+      if (slot.carrier === 'blurb') return n.name === 'divi/blurb' && dig(n.attrs, 'title', 'innerContent', 'desktop', 'value', 'text') === slot.text;
+      return n.name === 'divi/number-counter' && dig(n.attrs, 'title', 'innerContent', 'desktop', 'value') === slot.text;
+    });
+    return { slot, attrs: hit ? hit.attrs : null };
+  });
+}
+
+/**
+ * What the kit says about a blurb's icon chip, read ONLY from the resolved `imageIcon.*` attributes: { kind: 'icon', radius: [4], fill, glyph } (the same shape as an
+ * icon chip, so missingChipExpectations applies). A 0px kit gives four zeros, which ARE expectations; an absent corner is null (a hole).
+ */
+function expectBlurbChipFromAttrs(attrs) {
+  const r = dig(attrs, 'imageIcon', 'decoration', 'border', 'desktop', 'value', 'radius');
+  const rr = r && typeof r === 'object' ? r : {};
+  return {
+    kind: 'icon',
+    radius: CORNERS.map((k) => (rr[k] !== undefined ? parseFloat(rr[k]) : null)),
+    fill: dig(attrs, 'imageIcon', 'decoration', 'background', 'desktop', 'value', 'color') || null,
+    glyph: dig(attrs, 'imageIcon', 'advanced', 'color', 'desktop', 'value') || null,
+  };
+}
+
+/** The expectation of one carrier slot from its resolved attributes, or null when the block is absent (a null expectation is a failure, see missingCarrierExpectations). */
+function expectCarrierFromAttrs(attrs, slot) {
+  if (!attrs) return null;
+  if (slot.carrier === 'testimonial') return expectCardFromAttrs(attrs);
+  if (slot.carrier === 'blurb') return expectBlurbChipFromAttrs(attrs);
+  return expectRuleFromAttrs(attrs, slot.carrier === 'divider' ? 'divider' : 'group');
+}
+
+/** The expectation fields that are missing although the adapter ALWAYS writes them (the card, chip or rule lists of those units; a testimonial's padding is the card's, so a panel's literal one must be in the sheet too). An absent block is `['block']`. A non-empty list is a `gate` failure. */
+function missingCarrierExpectations(exp, slot) {
+  if (!exp) return ['block'];
+  if (slot.carrier === 'testimonial') return missingCardExpectations(exp, slot.role);
+  if (slot.carrier === 'blurb') return missingChipExpectations(exp);
+  return missingRuleExpectations(exp);
+}
+
+/** Renames the codes of a unit's problem list ([code, detail]) by a table; a code not in the table stays. */
+const renameCodes = (list, table) => list.map(([c, d]) => [table[c] || c, d]);
+const CARD_TO_TESTIMONIAL = { 'card-border': 'testimonial-frame', 'card-radius': 'testimonial-radius', 'card-fill': 'testimonial-fill', 'card-padding': 'testimonial-padding', 'card-shadow': 'testimonial-shadow', 'card-hover': 'testimonial-hover', 'card-expectation': 'testimonial-expectation', 'card-contrast': 'testimonial-contrast' };
+const CHIP_TO_BLURB = { 'chip-radius': 'blurb-chip-radius', 'chip-fill': 'blurb-chip-fill', 'chip-contrast': 'blurb-chip-contrast', 'chip-expectation': 'blurb-chip-expectation', 'chip': 'blurb-chip' };
+const ruleCodesTo = (prefix) => ({ 'rule-style': `${prefix}-style`, 'rule-width': `${prefix}-width`, 'rule-colour': `${prefix}-colour`, 'rule-contrast': `${prefix}-contrast`, 'rule-expectation': `${prefix}-expectation` });
+
+/**
+ * The quote disc of a testimonial (code testimonial-quote). The recipe keeps `overflow: visible` on the module so Divi's hanging disc (the `::before` box above the
+ * module top) is not cut; a kit radius would make Divi print overflow:hidden unless the recipe overrides it. Fails when the disc is not rendered (content none),
+ * when the module's computed overflow is not visible on both axes (the disc would be cut), or when the disc cannot be placed (an absolutely positioned
+ * pseudo with an unreadable top). m = { el: { overflowX, overflowY }, quote: { content, position, top, marginTop, height }|null }. Returns { problems, info: { hangs, top } }.
+ */
+function testimonialQuoteProblems(m) {
+  if (!m || !m.el) return { problems: [['testimonial-quote', 'the testimonial was not measured']], info: {} };
+  const out = [];
+  const q = m.quote;
+  const info = { hangs: null, top: null };
+  if (!q || !q.content || q.content === 'none' || q.content === 'normal') out.push(['testimonial-quote', `rest: the quote disc (::before) is not rendered (content ${q && q.content ? q.content : 'unmeasured'})`]);
+  else if (q.position === 'absolute') {
+    const top = px(q.top) + (px(q.marginTop) || 0);
+    if (!Number.isFinite(top)) out.push(['testimonial-quote', `rest: the quote disc cannot be placed (top ${q.top})`]);
+    else { info.top = top; info.hangs = top < 0; }
+  }
+  if (m.el.overflowX !== 'visible' || m.el.overflowY !== 'visible') {
+    out.push(['testimonial-quote', `rest: overflow is ${m.el.overflowX}/${m.el.overflowY}, not visible/visible: the hanging quote disc would be cut (the recipe keeps overflow visible)`]);
+  }
+  return { problems: out, info };
+}
+
+/**
+ * Every disagreement ([code, detail]) of one measured carrier with its expectation at rest (a testimonial also with its hover measurement). m = the carrier of
+ * measureCarriers(...).carriers (m.el, m.line, m.quote), hover = the same slot measured under the real pointer, or null. An expectation with a hole is one `<family>-expectation`
+ * finding, never a skipped check; a carrier that was not measured fails too.
+ *  - testimonial: compareCard's frame, radius, fill, padding, shadow, hover (a panel must not change at all), plus the quote disc;
+ *  - blurb: the four corners (blurb-chip-radius), the fill (blurb-chip-fill) and the glyph colour (blurb-chip-glyph) on `.et-pb-icon`;
+ *  - counter / divider: compareRule (style, width, colour; a counter's other three sides at 0) under the counter-rule- / accent-rule- codes.
+ */
+function compareCarrier(exp, slot, m, hover = null) {
+  const family = CARRIER_FAMILY[slot.carrier];
+  const miss = missingCarrierExpectations(exp, slot);
+  if (miss.length) return [[`${family}-expectation`, 'expectation missing (the adapter wrote no complete look): ' + miss.join(', ')]];
+  if (!m || !m.found || !m.el) return [[family, 'the carrier was not measured']];
+  if (slot.carrier === 'testimonial') {
+    const cmp = compareCard(exp, slot.role, { rest: { el: m.el }, hover: hover && hover.found && hover.el ? { el: hover.el } : null });
+    return [...renameCodes(cmp.problems, CARD_TO_TESTIMONIAL), ...testimonialQuoteProblems(m).problems];
+  }
+  if (slot.carrier === 'blurb') {
+    const out = [];
+    CORNER_PROPS.forEach((k, i) => { if (!near(px(m.el[k]), exp.radius[i])) out.push(['blurb-chip-radius', `rest: ${k} ${m.el[k]}, expected ${exp.radius[i]}px`]); });
+    if (!sameColour(m.el.backgroundColor, exp.fill)) out.push(['blurb-chip-fill', `rest: fill ${m.el.backgroundColor}, expected ${exp.fill}`]);
+    if (!sameColour(m.el.color, exp.glyph)) out.push(['blurb-chip-glyph', `rest: glyph colour ${m.el.color}, expected ${exp.glyph}`]);
+    return out;
+  }
+  const prefix = slot.carrier === 'counter' ? 'counter-rule' : 'accent-rule';
+  return renameCodes(compareRule(exp, m), ruleCodesTo(prefix));
+}
+
+/**
+ * The accent mark's contrast against the PAINTED band behind it (a screenshot mean with the line hidden): the line as painted over the band at least `floor`
+ * (RuleChipAudit::ACCENT_RULE_FLOOR, which the PHP exports: never typed here). Code accent-rule-contrast. A missing band sample, an unreadable colour, a line that is not
+ * drawn or a floor that is not a positive number fails; nothing is skipped.
+ */
+function accentRuleContrastProblems(m, band, floor) {
+  if (!(typeof floor === 'number' && Number.isFinite(floor) && floor > 0)) return { problems: [['accent-rule-contrast', `no accent floor to judge against (${floor})`]], info: {} };
+  const r = ruleContrastProblems(m, band, 'rule-accent');
+  if (r.problems.length) return { problems: r.problems.map(([, d]) => ['accent-rule-contrast', d]), info: {} };
+  const c = colour(m.line.borderTopColor);
+  const base = { r: band.r, g: band.g, b: band.b, a: 1 };
+  const painted = over(c, base);
+  const exact = ratioOf(painted, base);
+  const ratio = round2(exact);
+  return { problems: exact < floor ? [['accent-rule-contrast', `accent line ${hex(painted)} on the band ${hex(base)} is ${ratio}:1, needs ${floor}`]] : [], info: { line: ratio, need: floor } };
+}
+
+/** The floor the offline sheet exports (`accentRuleFloor`), validated: a finite number above 1 (a ratio) and at most 21. Returns { floor, problems }. */
+function accentFloorFromRow(row) {
+  const v = row ? row.accentRuleFloor : undefined;
+  if (!(typeof v === 'number' && Number.isFinite(v) && v > 1 && v <= 21)) return { floor: null, problems: [`the offline sheet exports no usable accentRuleFloor (${JSON.stringify(v)})`] };
+  return { floor: v, problems: [] };
+}
+
+/**
+ * What the painted samples say about one carrier (children hidden, shadow off for the card sample): { problems, info }.
+ *  - testimonial: samples.fill = the painted fill of the card; the computed fill must be the painted one (testimonial-fill) and the author and the quote need 4.5, a meaningful frame 3.0 (testimonial-contrast; `hairline` = the language's decorative `border`);
+ *  - blurb: samples = { fill, band }: the icon's computed fill must be the painted one (blurb-chip-fill), the glyph on the painted fill 3.0 and the fill not the band's colour (blurb-chip-contrast);
+ *  - counter: samples.band; the line over it, a strong rule 3.0 and a quiet one 1.1 (counter-rule-contrast);
+ *  - divider: samples.band; the line over it at least opts.accentFloor (accent-rule-contrast).
+ */
+function carrierPaintProblems(exp, slot, m, samples, opts = {}) {
+  if (missingCarrierExpectations(exp, slot).length || !m || !m.found) return { problems: [], info: {} };
+  if (slot.carrier === 'testimonial') {
+    if (!samples || !samples.fill) return { problems: [['testimonial-fill', 'the painted fill of the testimonial was not sampled']], info: {} };
+    const painted = paintedFillProblems(m.el, samples.fill);
+    const c = cardContrastProblems(m, samples.fill, opts.hairline || null);
+    return { problems: renameCodes([...painted, ...c.problems], CARD_TO_TESTIMONIAL), info: c.info };
+  }
+  if (slot.carrier === 'blurb') {
+    const wrapped = { el: m.el, glyph: { color: m.el.color } };
+    const painted = chipPaintedFillProblems(wrapped, samples ? samples.fill : null);
+    const c = chipContrastProblems(exp, wrapped, samples || {}, null);
+    return { problems: renameCodes([...painted, ...c.problems], CHIP_TO_BLURB), info: c.info };
+  }
+  const band = samples ? samples.band : null;
+  if (slot.carrier === 'counter') {
+    const r = ruleContrastProblems(m, band, slot.role);
+    return { problems: renameCodes(r.problems, ruleCodesTo('counter-rule')), info: r.info };
+  }
+  return accentRuleContrastProblems(m, band, opts.accentFloor);
+}
+
+/** Overflow of one measured carrier: beyond its container (1px) or the window, or the page wider than the window. */
+function carrierOverflowProblems(m, state, page) {
+  return ruleOverflowProblems(m, state, page, 'carrier');
+}
+
+/** Problems of the carrier count (code carrier): every sheet slot on the page exactly once with its element found (a blurb: its icon). An empty slot list is an error. */
+function carrierCountProblems(measured, slots = CARRIER_SLOTS) {
+  if (!slots.length) throw new Error('no carrier slots: nothing would be checked');
+  const bad = [];
+  slots.forEach((slot, i) => {
+    const m = measured[i];
+    if (!m || !m.found) { bad.push(`${slot.key} is not in the page${m && m.count ? ' (its element was not found)' : ''}`); return; }
+    if (m.count !== 1) bad.push(`${slot.key} is on the page ${m.count} times, expected 1`);
+  });
+  if (measured.length > slots.length) bad.push(`${measured.length} carriers measured for ${slots.length} slots`);
+  if (!bad.length) return [];
+  const found = slots.filter((s, i) => measured[i] && measured[i].found).length;
+  return [['carrier', `${found} of ${slots.length} carriers rendered as the sheet says: ${bad.slice(0, 6).join('; ')}${bad.length > 6 ? ` and ${bad.length - 6} more` : ''}`]];
+}
+
+/** What a finished run must have checked as to carriers: at least one (an empty selection fails the run with the code carrier). */
+function emptyCarrierRunProblems({ carriersChecked }) {
+  return carriersChecked ? [] : ['no carrier was checked: the carrier selection was empty'];
+}
+
 // ---- PNG (screenshots) ---------------------------------------------------------------------------------------------
 /** Decodes an 8-bit, non-interlaced RGB or RGBA PNG (what Chromium writes) to { width, height, data: RGBA bytes }. */
 function decodePng(buf) {
@@ -2223,6 +2489,67 @@ function measureChips(slots) {
   };
 }
 
+/**
+ * Runs IN THE PAGE (self-contained). For each slot ({ key, carrier, text }) the rendered carrier, tagged `data-aied-carrier="<key>"` so the script can hover and hide it:
+ *  - testimonial: the `.et_pb_testimonial` whose `.et_pb_testimonial_author` has the slot's exact text; `el` = the module's computed box, `quote` = its `::before` (the hanging
+ *    disc: content, position, top, marginTop, height), `heading` the author colour, `paragraph` the quote text colour;
+ *  - blurb: the `.et_pb_blurb` whose `.et_pb_module_header` has the exact text; the measured element is its `.et_pb_main_blurb_image .et-pb-icon` (corners, fill and glyph colour all
+ *    live there), `found` is false (with `count` 1) when the icon is missing;
+ *  - counter: the `.et_pb_number_counter` that holds a title with the exact text; `el` = its four sides, `line` = its own `border-top-*`;
+ *  - divider: the `.et_pb_divider` under the wrapper group of the `.et_pb_heading` with the exact text; `line` = its `::before` `border-top-*`.
+ * A slot that is not in the page is { key, found: false, count }.
+ */
+function measureCarriers(slots) {
+  const root = document.querySelector('.et-l--post');
+  const F = ['borderTopWidth', 'borderTopStyle', 'borderTopColor', 'borderRightWidth', 'borderRightStyle', 'borderRightColor', 'borderBottomWidth', 'borderBottomStyle', 'borderBottomColor', 'borderLeftWidth', 'borderLeftStyle', 'borderLeftColor', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius', 'backgroundColor', 'color', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'boxShadow', 'transform', 'overflowX', 'overflowY', 'transitionDuration', 'transitionDelay'];
+  const pick = (node) => { const cs = getComputedStyle(node); const o = {}; for (const k of F) o[k] = cs[k]; return o; };
+  const top = (cs) => ({ borderTopWidth: cs.borderTopWidth, borderTopStyle: cs.borderTopStyle, borderTopColor: cs.borderTopColor });
+  const box = (n) => { const r = n.getBoundingClientRect(); return { left: r.left + window.scrollX, right: r.right + window.scrollX, top: r.top + window.scrollY, bottom: r.bottom + window.scrollY, width: r.width, height: r.height }; };
+  const textIs = (n, t) => (n.textContent || '').trim() === t;
+  const all = (sel) => (root ? [...root.querySelectorAll(sel)] : []);
+  return {
+    hasRoot: !!root,
+    scrollWidth: document.documentElement.scrollWidth,
+    innerWidth: window.innerWidth,
+    carriers: slots.map((s) => {
+      let hits = []; let mod = null; let target = null; let container = null;
+      let extra = {};
+      if (s.carrier === 'testimonial') {
+        hits = all('.et_pb_testimonial_author').filter((n) => textIs(n, s.text));
+        mod = hits[0] ? hits[0].closest('.et_pb_testimonial') : null;
+        target = mod;
+        if (mod) {
+          const q = getComputedStyle(mod, '::before');
+          const d = mod.querySelector('.et_pb_testimonial_description p') || mod.querySelector('.et_pb_testimonial_description');
+          extra = {
+            quote: { content: q.content, position: q.position, top: q.top, marginTop: q.marginTop, height: q.height },
+            heading: { color: getComputedStyle(hits[0]).color },
+            paragraph: d ? { color: getComputedStyle(d).color } : null,
+          };
+        }
+      } else if (s.carrier === 'blurb') {
+        hits = all('.et_pb_blurb .et_pb_module_header').filter((n) => textIs(n, s.text));
+        mod = hits[0] ? hits[0].closest('.et_pb_blurb') : null;
+        target = mod ? mod.querySelector('.et_pb_main_blurb_image .et-pb-icon') : null;
+      } else if (s.carrier === 'counter') {
+        hits = all('.et_pb_number_counter').filter((n) => [...n.querySelectorAll('.title, h1, h2, h3, h4, h5, h6')].some((t) => textIs(t, s.text)));
+        mod = hits[0] || null;
+        target = mod;
+      } else {
+        hits = all('.et_pb_heading').filter((n) => textIs(n, s.text));
+        mod = hits[0] ? hits[0].closest('.et_pb_group') : null;
+        target = mod ? mod.querySelector('.et_pb_divider') : null;
+      }
+      if (!target) return { key: s.key, found: false, count: hits.length };
+      target.setAttribute('data-aied-carrier', s.key);
+      container = s.carrier === 'blurb' ? mod : (target.parentElement || target);
+      const cs = getComputedStyle(target);
+      const line = s.carrier === 'divider' ? top(getComputedStyle(target, '::before')) : top(cs);
+      return Object.assign({ key: s.key, found: true, count: hits.length, carrier: s.carrier, el: pick(target), line, rect: box(target), parentRect: box(container) }, extra);
+    }),
+  };
+}
+
 // ---- the one bounded hover retry -------------------------------------------------------------------------------------
 /** The longest second wait of the hover retry (ms). */
 const HOVER_RETRY_CAP_MS = 2000;
@@ -2297,4 +2624,6 @@ module.exports = {
   RULE_SLOTS, CHIP_SLOTS, RULE_STRONG_MIN, RULE_QUIET_MIN, ruleMarkup, chipMarkup, ruleAttrs, expectRuleFromAttrs, missingRuleExpectations, compareRule, ruleContrastProblems, ruleOverflowProblems,
   ruleCountProblems, emptyRuleRunProblems, measureRules, chipAttrs, expectChipFromAttrs, missingChipExpectations, compareChip, chipPaintedFillProblems, chipContrastProblems,
   chipOverflowProblems, chipCountProblems, emptyChipRunProblems, measureChips,
+  CARRIER_SLOTS, CARRIER_FAMILY, ACCENT_DIVIDER_PRESET, carrierMarkup, carrierAttrs, expectBlurbChipFromAttrs, expectCarrierFromAttrs, missingCarrierExpectations, testimonialQuoteProblems,
+  compareCarrier, accentRuleContrastProblems, accentFloorFromRow, carrierPaintProblems, carrierOverflowProblems, carrierCountProblems, emptyCarrierRunProblems, measureCarriers,
 };

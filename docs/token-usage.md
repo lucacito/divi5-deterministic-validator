@@ -21,16 +21,16 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | A preview (dry run) of a one-line text change | verdict plus a capped diff, on the median page | 394 | 99 |
 | The style guide (default) | get_style_guide with no topic, read once before building a layout | 28,975 | 7,244 |
 | The style guide, topic design-languages | get_style_guide with topic "design-languages", only when asked for | 2,592 | 648 |
-| The style guide, topic design-language:editorial | get_style_guide with topic "design-language:editorial", only when asked for | 2,265 | 567 |
-| The style guide, topic design-language:glass-dark | get_style_guide with topic "design-language:glass-dark", only when asked for | 2,597 | 650 |
-| The style guide, topic design-language:organic-warm | get_style_guide with topic "design-language:organic-warm", only when asked for | 2,591 | 648 |
-| The style guide, topic design-language:tech-mono | get_style_guide with topic "design-language:tech-mono", only when asked for | 2,728 | 682 |
-| The style guide, topic design-language:playful-pastel | get_style_guide with topic "design-language:playful-pastel", only when asked for | 2,904 | 726 |
-| The style guide, topic design-language:corporate-trust | get_style_guide with topic "design-language:corporate-trust", only when asked for | 3,025 | 757 |
-| The style guide, topic design-language:soft-saas | get_style_guide with topic "design-language:soft-saas", only when asked for | 3,704 | 926 |
-| The style guide, topic design-language:bold-vibrant | get_style_guide with topic "design-language:bold-vibrant", only when asked for | 3,464 | 866 |
-| The style guide, topic design-language:brutalist-flat | get_style_guide with topic "design-language:brutalist-flat", only when asked for | 3,011 | 753 |
-| The style guide, topic design-language:luxe | get_style_guide with topic "design-language:luxe", only when asked for | 3,203 | 801 |
+| The style guide, topic design-language:editorial | get_style_guide with topic "design-language:editorial", only when asked for | 2,251 | 563 |
+| The style guide, topic design-language:glass-dark | get_style_guide with topic "design-language:glass-dark", only when asked for | 2,583 | 646 |
+| The style guide, topic design-language:organic-warm | get_style_guide with topic "design-language:organic-warm", only when asked for | 2,577 | 645 |
+| The style guide, topic design-language:tech-mono | get_style_guide with topic "design-language:tech-mono", only when asked for | 2,714 | 679 |
+| The style guide, topic design-language:playful-pastel | get_style_guide with topic "design-language:playful-pastel", only when asked for | 2,890 | 723 |
+| The style guide, topic design-language:corporate-trust | get_style_guide with topic "design-language:corporate-trust", only when asked for | 3,011 | 753 |
+| The style guide, topic design-language:soft-saas | get_style_guide with topic "design-language:soft-saas", only when asked for | 3,690 | 923 |
+| The style guide, topic design-language:bold-vibrant | get_style_guide with topic "design-language:bold-vibrant", only when asked for | 3,450 | 863 |
+| The style guide, topic design-language:brutalist-flat | get_style_guide with topic "design-language:brutalist-flat", only when asked for | 2,997 | 750 |
+| The style guide, topic design-language:luxe | get_style_guide with topic "design-language:luxe", only when asked for | 3,189 | 798 |
 | The style guide, topic backgrounds | get_style_guide with topic "backgrounds", only when asked for | 8,894 | 2,224 |
 | The style guide, topic dividers | get_style_guide with topic "dividers", only when asked for | 8,869 | 2,218 |
 | The style guide, topic motion | get_style_guide with topic "motion", only when asked for | 9,800 | 2,450 |
@@ -39,12 +39,12 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | The style guide, topic layout-sizing | get_style_guide with topic "layout-sizing", only when asked for | 9,972 | 2,493 |
 | The style guide, topic typography | get_style_guide with topic "typography", only when asked for | 7,943 | 1,986 |
 | The style guide, topic imagery | get_style_guide with topic "imagery", only when asked for | 6,506 | 1,627 |
-| The style guide, topic controls | get_style_guide with topic "controls", only when asked for | 8,331 | 2,083 |
+| The style guide, topic controls | get_style_guide with topic "controls", only when asked for | 8,348 | 2,087 |
 | The style guide, topic toggles | get_style_guide with topic "toggles", only when asked for | 5,834 | 1,459 |
 | The style guide, topic forms | get_style_guide with topic "forms", only when asked for | 6,474 | 1,619 |
 | The style guide, topic composition | get_style_guide with topic "composition", only when asked for | 8,706 | 2,177 |
-| The style guide, topic style-kits | get_style_guide with topic "style-kits", only when asked for | 8,444 | 2,111 |
-| The style guide, topic kit-rules | get_style_guide with topic "kit-rules", only when asked for | 8,997 | 2,250 |
+| The style guide, topic style-kits | get_style_guide with topic "style-kits", only when asked for | 8,178 | 2,045 |
+| The style guide, topic kit-rules | get_style_guide with topic "kit-rules", only when asked for | 9,598 | 2,400 |
 | The style guide, topic style-kit:quiet-solid | get_style_guide with topic "style-kit:quiet-solid", only when asked for | 8,232 | 2,058 |
 | The style guide, topic style-kit:glass-edge | get_style_guide with topic "style-kit:glass-edge", only when asked for | 8,230 | 2,058 |
 | The style guide, topic style-kit:warm-pill | get_style_guide with topic "style-kit:warm-pill", only when asked for | 8,255 | 2,064 |

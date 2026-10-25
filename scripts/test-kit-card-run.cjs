@@ -21,6 +21,11 @@
  * underline-link under editorial); each rule and chip code has its own departure (a dashed line where the kit says solid, a 1px line where it says 2px, a wrong
  * colour, a stray side, a faint quiet line, a strong line at 2.5:1, a rounded chip on a 0px kit, a missing tag frame, a filled tag, an icon fill equal to the
  * band, a glyph equal to its fill, a fill painted over, a slot that is not on the page, a rule or chip wider than the phone).
+ * The carrier page carries the class names Divi renders for the carriers (`et_pb_testimonial` with its hanging `::before` quote disc, `et_pb_blurb` > `et_pb_main_blurb_image` > `span.et-pb-icon`,
+ * `et_pb_number_counter` with a `.title` and its own `border-top`, `et_pb_divider` whose line is the `::before`) and a stylesheet generated from the carrier expectations (soft-lift
+ * and underline-link under editorial); each carrier code has its departure (a wrong fill, frame, radius, padding or shadow on the testimonial, a card that does not lift, a panel that does, a
+ * clipped or missing quote disc, pale text, a radius on the wrong element, a glyph in Divi's default colour, a glyph equal to its fill, a chip the colour of its band, a dashed counter line,
+ * a stray side, a faint line, an accent line below the exported floor, a slot missing or twice, a carrier wider than the phone).
  * Needs php (the offline sheet) and Playwright (../layoutlab).
  * It cannot prove what Divi itself prints: that is `node scripts/verify-kits.cjs`. */
 const assert = require('assert');
@@ -33,6 +38,7 @@ const { checkItems } = require('./lib/kit-item-run.cjs');
 const { checkForms } = require('./lib/kit-form-run.cjs');
 const { checkMedia } = require('./lib/kit-media-run.cjs');
 const { checkRules, checkChips } = require('./lib/kit-rule-run.cjs');
+const { checkCarriers } = require('./lib/kit-carrier-run.cjs');
 const PW = process.env.PLAYWRIGHT_PATH || path.resolve(__dirname, '..', '..', 'layoutlab', 'node_modules', 'playwright');
 const { chromium } = require(PW);
 
@@ -292,6 +298,53 @@ function chipPageHtml({ exps = chipExpects, extraCss = '', drop = [], dup = [], 
   return `<style>body{margin:0;background:#faf7f2}.et_pb_row{width:90%;margin:0 auto}${css}${extraCss}</style><div class="et-l--post">${bodies.join('')}</div>${extra}`;
 }
 
+/** Development switch: AIED_CARRIERS_ONLY=1 runs only the carrier half (seconds, not minutes). The full run (no variable) is the one that counts. */
+const CARRIERS_ONLY = process.env.AIED_CARRIERS_ONLY === '1';
+const carrierSheet = K.carrierAttrs(row.markup);
+const carrierExpects = carrierSheet.map((c) => K.expectCarrierFromAttrs(c.attrs, c.slot));
+const squareCarrierExpects = K.carrierAttrs(offline('underline-link').markup).map((c) => K.expectCarrierFromAttrs(c.attrs, c.slot));
+const NX = K.CARRIER_SLOTS.length;
+const ACCENT_FLOOR = row.accentRuleFloor;
+
+/**
+ * The carrier page: every CARRIER_SLOT as Divi 5.15.1 nests it, on the bg, surface and accent bands, generated from the expectations. A testimonial is `.et_pb_testimonial` (`overflow: visible`, the
+ * hanging quote disc as its `::before`) holding `.et_pb_testimonial_description` and `.et_pb_testimonial_author`; a blurb is `.et_pb_blurb` > `.et_pb_blurb_content` > `.et_pb_main_blurb_image` >
+ * `span.et-pb-icon` (the glyph is its `::before`) beside `h4.et_pb_module_header`; a counter is `.et_pb_number_counter` with a `.title` and its own `border-top`; an accent mark is `.et_pb_divider`
+ * (its line the `::before`) under a wrapper group with its heading. `drop` leaves a slot out, `dup` renders its text twice, `noIcon` renders a blurb without its icon, `extra` is HTML added.
+ */
+function carrierPageHtml({ exps = carrierExpects, extraCss = '', drop = [], dup = [], noIcon = [], extra = '' } = {}) {
+  let css = '';
+  const ink = '#1c1a17';
+  const piece = (slot, e) => {
+    const k = slot.key;
+    const twice = (html) => html + (dup.includes(k) ? html : '');
+    if (slot.carrier === 'testimonial') {
+      css += cssFor({ key: k, role: slot.role }, e) + `[data-k="${k}"]{overflow:visible;position:relative;display:block;margin:40px 0 24px}`
+        + `[data-k="${k}"]::before{content:"\\201C";position:absolute;top:-20px;left:50%;width:40px;height:40px;margin-left:-20px;border-radius:100%;background:#f5f5f5;text-align:center}`;
+      const one = `<div class="et_pb_module et_pb_testimonial" data-k="${k}"><div class="et_pb_testimonial_description"><div class="et_pb_testimonial_description_inner"><p style="margin:0;color:${ink}">Placeholder quote: one short sentence.</p></div></div><p class="et_pb_testimonial_meta" style="margin:0"><span class="et_pb_testimonial_author" style="color:${ink}">${slot.text}</span></p></div>`;
+      return twice(one);
+    }
+    if (slot.carrier === 'blurb') {
+      const radius = e.radius.map((v) => v + 'px').join(' ');
+      css += `[data-x="${k}"]{box-sizing:border-box;display:inline-block;padding:16px;width:64px;height:64px;text-align:center;background:${e.fill};border-radius:${radius};color:${e.glyph};font-size:32px;line-height:32px}[data-x="${k}"]::before{content:"\\2605"}`;
+      const one = `<div class="et_pb_module et_pb_blurb"><div class="et_pb_blurb_content"><div class="et_pb_main_blurb_image">${noIcon.includes(k) ? '' : `<span class="et-pb-icon" data-x="${k}"></span>`}</div><div class="et_pb_blurb_container"><h4 class="et_pb_module_header" style="margin:8px 0 0;color:${ink}"><span>${slot.text}</span></h4></div></div></div>`;
+      return twice(one);
+    }
+    const line = `${e.top.width}px ${e.top.style} ${e.top.color}`;
+    if (slot.carrier === 'counter') {
+      css += `[data-x="${k}"]{box-sizing:border-box;display:block;padding-top:20px;border-top:${line}}`;
+      return twice(`<div class="et_pb_module et_pb_number_counter" data-x="${k}"><div class="percent"><p style="margin:0">100</p></div><h3 class="title" style="margin:0">${slot.text}</h3></div>`);
+    }
+    css += `[data-x="${k}"]{display:block;height:6px;position:relative}[data-x="${k}"]::before{content:"";display:block;position:absolute;left:0;right:0;top:0;border-top:${line}}`;
+    const heading = `<div class="et_pb_module et_pb_heading"><div class="et_pb_heading_container"><h3 style="margin:0;color:${ink}">${slot.text}</h3></div></div>`;
+    return `<div class="et_pb_module et_pb_group" style="display:block;padding:12px 0">${twice(heading)}<div class="et_pb_module et_pb_divider" data-x="${k}"></div></div>`;
+  };
+  const live = K.CARRIER_SLOTS.filter((s) => !drop.includes(s.key));
+  const BANDS = { bg: EDITORIAL.bg, surface: EDITORIAL.surface, accent: EDITORIAL.accent };
+  const bodies = Object.keys(BANDS).map((b) => `<div class="et_pb_section" style="background:${BANDS[b]};padding:24px 0"><div class="et_pb_row"><div class="et_pb_column" style="display:block">${live.filter((s) => s.band === b).map((s) => piece(s, exps[K.CARRIER_SLOTS.indexOf(s)])).join('')}</div></div></div>`); // rendered first: building the pieces fills `css`
+  return `<style>body{margin:0;background:#faf7f2}.et_pb_row{width:90%;margin:0 auto}${css}${extraCss}</style><div class="et-l--post">${bodies.join('')}</div>${extra}`;
+}
+
 (async () => {
   const browser = await chromium.launch();
   const run = async (html, width = 1280, before = null) => {
@@ -304,6 +357,156 @@ function chipPageHtml({ exps = chipExpects, extraCss = '', drop = [], dup = [], 
   };
   const codes = (r) => r.problems.map((x) => x[0]);
   try {
+
+    // ---- the carriers: a testimonial (rest, a real hover, the quote disc), a blurb's icon chip, a counter's top edge and the accent mark over the painted band ----
+    const runCarriers = async (html, { width = 1280, exps = carrierExpects, floor = ACCENT_FLOOR, before = null } = {}) => {
+      const p = await browser.newPage({ viewport: { width, height: 900 } });
+      await p.setContent(html);
+      if (before) await before(p);
+      const r = await checkCarriers(p, { width, expects: exps, hairline: HAIRLINE, accentFloor: floor });
+      await p.close();
+      return r;
+    };
+    const xc = (r) => [...new Set(r.problems.map((x) => x[0]))];
+    const withX = (key, fn) => { const c = clone(carrierExpects); fn(c[K.CARRIER_SLOTS.findIndex((s) => s.key === key)]); return c; };
+    const xokay = await runCarriers(carrierPageHtml());
+    assert.deepStrictEqual(xokay.problems, [], JSON.stringify(xokay.problems));
+    assert.strictEqual(xokay.carriersChecked, NX);
+    assert.strictEqual(xokay.observations.length, NX);
+    assert.ok(xokay.observations.filter((o) => o.carrier === 'testimonial' || o.carrier === 'blurb').every((o) => o.fill), 'the painted fill was sampled: ' + JSON.stringify(xokay.observations.slice(0, 3)));
+    assert.ok(xokay.observations.filter((o) => o.carrier === 'counter' || o.carrier === 'divider').every((o) => o.band && o.contrast.line > 1), 'the painted band was sampled for every rule');
+    assert.strictEqual(xokay.observations.find((o) => o.key === 'testimonial-card-bg').hoverTransform, 'matrix(1, 0, 0, 1, 0, -4)', 'the testimonial was hovered with the real pointer');
+    assert.strictEqual(xokay.observations.find((o) => o.key === 'testimonial-card-bg').quote.hangs, true);
+    assert.deepStrictEqual(xokay.observations.find((o) => o.key === 'accent-rule-bg').got, { borderTopWidth: '2px', borderTopStyle: 'solid', borderTopColor: 'rgb(154, 59, 31)' });
+    for (const w of [900, 400]) { const r = await runCarriers(carrierPageHtml(), { width: w }); assert.deepStrictEqual(r.problems, [], w + ': ' + JSON.stringify(r.problems)); }
+    const T = '[data-k="testimonial-card-bg"]'; const TP = '[data-k="testimonial-panel-surface"]';
+    // testimonial-fill / frame / radius / padding / shadow
+    const tFill = await runCarriers(carrierPageHtml({ extraCss: `${T}{background:#f0f0f0}` }));
+    assert.deepStrictEqual(xc(tFill), ['testimonial-fill']);
+    assert.match(tFill.problems[0][1], /^testimonial-card-bg rest: background-color rgb\(240, 240, 240\), expected #ffffff/);
+    const tFrame = await runCarriers(carrierPageHtml({ extraCss: `${T}{border-left-width:2px}` }));
+    assert.deepStrictEqual(xc(tFrame), ['testimonial-frame']);
+    assert.deepStrictEqual(xc(await runCarriers(carrierPageHtml({ extraCss: `${T}{border-top-style:dashed}` }))), ['testimonial-frame']);
+    assert.deepStrictEqual(xc(await runCarriers(carrierPageHtml({ extraCss: `${T}{border-bottom-color:#dc2626}` }))), ['testimonial-frame']);
+    assert.deepStrictEqual(xc(await runCarriers(carrierPageHtml({ extraCss: `${T}{border-top-left-radius:2px}` }))), ['testimonial-radius']);
+    assert.deepStrictEqual(xc(await runCarriers(carrierPageHtml({ extraCss: `${T}{padding-top:10px}` }))), ['testimonial-padding']);
+    assert.deepStrictEqual(xc(await runCarriers(carrierPageHtml({ extraCss: `${T}{box-shadow:0 2px 6px rgba(0,0,0,.3)}` }))).includes('testimonial-shadow'), true, 'a rest shadow where the kit has none');
+    // testimonial-hover: a card that does not lift, a panel that lifts, a card whose hover shadow is gone.
+    const tNoLift = await runCarriers(carrierPageHtml({ extraCss: `${T}:hover{transform:none}` }));
+    assert.deepStrictEqual(xc(tNoLift), ['testimonial-hover']);
+    assert.match(tNoLift.problems[0][1], /^testimonial-card-bg hover: translateY 0px, expected -4px/);
+    const tPanelLift = await runCarriers(carrierPageHtml({ extraCss: `${TP}:hover{transform:translateY(-4px)}` }));
+    assert.deepStrictEqual(xc(tPanelLift), ['testimonial-hover']);
+    assert.match(tPanelLift.problems[0][1], /^testimonial-panel-surface hover: the panel moved/);
+    assert.deepStrictEqual(xc(await runCarriers(carrierPageHtml({ extraCss: `${T}:hover{box-shadow:none}` }))), ['testimonial-hover'], 'the hover shadow is missing');
+    // testimonial-quote: overflow hidden cuts the hanging disc, a missing disc.
+    const tClip = await runCarriers(carrierPageHtml({ extraCss: `${T}{overflow:hidden}` }));
+    assert.deepStrictEqual(xc(tClip), ['testimonial-quote']);
+    assert.match(tClip.problems[0][1], /^testimonial-card-bg rest: overflow is hidden\/hidden/);
+    assert.deepStrictEqual(xc(await runCarriers(carrierPageHtml({ extraCss: `${TP}{overflow-y:clip}` }))), ['testimonial-quote'], 'one axis is enough');
+    const tNoDisc = await runCarriers(carrierPageHtml({ extraCss: `${T}::before{content:none}` }));
+    assert.deepStrictEqual(xc(tNoDisc), ['testimonial-quote']);
+    assert.match(tNoDisc.problems[0][1], /the quote disc \(::before\) is not rendered/);
+    // testimonial-contrast: pale quote text on the painted card; a faint meaningful frame.
+    const tPale = await runCarriers(carrierPageHtml({ extraCss: `${T} .et_pb_testimonial_description p{color:#cccccc !important}` }));
+    assert.deepStrictEqual(xc(tPale), ['testimonial-contrast']);
+    const tFaint = withX('testimonial-card-bg', (x) => { for (const sd of ['top', 'right', 'bottom', 'left']) x.rest[sd].color = '#f2f2f2'; });
+    assert.deepStrictEqual(xc(await runCarriers(carrierPageHtml({ exps: tFaint }), { exps: tFaint })), ['testimonial-contrast'], 'a frame that is not the hairline and is faint on the painted fill');
+    // The painted fill is judged too: an opaque background-image over the card (the computed colour stays) is a testimonial-fill.
+    const tOver = await runCarriers(carrierPageHtml({ extraCss: `${T}{background-image:linear-gradient(#1a3d7c,#1a3d7c)}` }));
+    assert.deepStrictEqual(xc(tOver).includes('testimonial-fill'), true, JSON.stringify(tOver.problems.slice(0, 3)));
+    assert.match(tOver.problems.find((x) => x[0] === 'testimonial-fill')[1], /painted fill/);
+
+    // blurb-chip-radius / fill / glyph / contrast
+    const BL = '[data-x="blurb-chip-surface"]';
+    const wantR = carrierExpects[K.CARRIER_SLOTS.findIndex((x) => x.key === 'blurb-chip-surface')].radius[0];
+    const bRad = await runCarriers(carrierPageHtml({ extraCss: `${BL}{border-radius:${wantR + 3}px}` }));
+    assert.deepStrictEqual(xc(bRad), ['blurb-chip-radius']);
+    assert.match(bRad.problems[0][1], new RegExp(`^blurb-chip-surface rest: borderTopLeftRadius ${wantR + 3}px, expected ${wantR}px`));
+    const bWrap = await runCarriers(carrierPageHtml({ extraCss: `${BL}{background:none}.et_pb_blurb:has(${BL}) .et_pb_main_blurb_image{background:#9a3b1f;display:inline-block}` }));
+    assert.strictEqual(bWrap.problems[0][0], 'blurb-chip-fill', 'the fill sits on a wrapper instead of the icon: ' + JSON.stringify(bWrap.problems));
+    assert.match(bWrap.problems[0][1], /^blurb-chip-surface rest: fill rgba\(0, 0, 0, 0\), expected #9a3b1f/);
+    assert.deepStrictEqual(xc(bWrap), ['blurb-chip-fill', 'blurb-chip-contrast'], 'the wrapper behind the icon is painted in the fill colour, so the chip also cannot be seen');
+    const bGlyph = await runCarriers(carrierPageHtml({ extraCss: `${BL}{color:#fffaf0}` }));
+    assert.deepStrictEqual(xc(bGlyph), ['blurb-chip-glyph']);
+    assert.match(bGlyph.problems[0][1], /^blurb-chip-surface rest: glyph colour rgb\(255, 250, 240\), expected #ffffff/);
+    const bPainted = await runCarriers(carrierPageHtml({ extraCss: `${BL}{background-image:linear-gradient(#1a3d7c,#1a3d7c)}` }));
+    assert.deepStrictEqual(xc(bPainted).includes('blurb-chip-fill'), true, 'something painted over the icon: ' + JSON.stringify(bPainted.problems.slice(0, 3)));
+    const bGlyphIsFill = withX('blurb-chip-accent', (x) => { x.glyph = x.fill; });
+    const bContrast = await runCarriers(carrierPageHtml({ exps: bGlyphIsFill }), { exps: bGlyphIsFill });
+    assert.deepStrictEqual(xc(bContrast), ['blurb-chip-contrast']);
+    assert.match(bContrast.problems[0][1], /^blurb-chip-accent glyph #ffffff on the chip fill #ffffff is 1:1, needs 3/);
+    const bInvisible = withX('blurb-chip-surface', (x) => { x.fill = EDITORIAL.surface; x.glyph = '#1c1a17'; });
+    const bBand = await runCarriers(carrierPageHtml({ exps: bInvisible }), { exps: bInvisible });
+    assert.deepStrictEqual(xc(bBand), ['blurb-chip-contrast'], 'a chip the colour of its band: ' + JSON.stringify(bBand.problems));
+    assert.match(bBand.problems[0][1], /cannot be seen/);
+    // the 0px kit is checked as four zeros: a stray radius fails
+    const bSq = await runCarriers(carrierPageHtml({ exps: squareCarrierExpects }), { exps: squareCarrierExpects });
+    assert.deepStrictEqual(bSq.problems, [], JSON.stringify(bSq.problems));
+    assert.deepStrictEqual(squareCarrierExpects.filter((e, i) => K.CARRIER_SLOTS[i].carrier === 'blurb').map((e) => e.radius.join()), ['0,0,0,0', '0,0,0,0']);
+    assert.deepStrictEqual(xc(await runCarriers(carrierPageHtml({ exps: squareCarrierExpects, extraCss: `${BL}{border-radius:4px}` }), { exps: squareCarrierExpects })), ['blurb-chip-radius'], 'a stray radius on a 0px kit');
+
+    // counter-rule-style / width / colour / contrast
+    const CR = '[data-x="counter-rule-strong-accent"]'; const CQ = '[data-x="counter-rule-bg"]';
+    const cStyle = await runCarriers(carrierPageHtml({ extraCss: `${CR}{border-top-style:dashed}` }));
+    assert.deepStrictEqual(xc(cStyle), ['counter-rule-style']);
+    assert.match(cStyle.problems[0][1], /^counter-rule-strong-accent rest: top line is dashed, expected solid/);
+    const cWidth = await runCarriers(carrierPageHtml({ extraCss: `${CR}{border-top-width:1px}` }));
+    assert.deepStrictEqual(xc(cWidth), ['counter-rule-width']);
+    assert.match(cWidth.problems[0][1], /^counter-rule-strong-accent rest: top line is 1px, expected 2px/);
+    assert.deepStrictEqual(xc(await runCarriers(carrierPageHtml({ extraCss: `${CQ}{border-top-color:#dc2626}` }))), ['counter-rule-colour']);
+    const cSide = await runCarriers(carrierPageHtml({ extraCss: `${CQ}{border-bottom:2px solid #1c1a17}` }));
+    assert.deepStrictEqual(xc(cSide), ['counter-rule-width']);
+    assert.match(cSide.problems[0][1], /^counter-rule-bg rest: bottom side is 2px, expected 0px/);
+    const cFaint = withX('counter-rule-bg', (x) => { x.top.color = '#f6f3ee'; });
+    const cc = await runCarriers(carrierPageHtml({ exps: cFaint }), { exps: cFaint });
+    assert.deepStrictEqual(xc(cc), ['counter-rule-contrast']);
+    assert.match(cc.problems[0][1], /^counter-rule-bg quiet|^counter-rule-bg rule line #f6f3ee on the band #faf7f2 is 1\.0[0-9]*:1, needs 1\.1/);
+    const cWeak = withX('counter-rule-strong-accent', (x) => { x.top.color = '#a04a2c'; });
+    assert.deepStrictEqual(xc(await runCarriers(carrierPageHtml({ exps: cWeak }), { exps: cWeak })), ['counter-rule-contrast'], 'a strong line close to the accent band');
+
+    // accent-rule-style / width / colour / contrast (against the exported floor)
+    const AB = '[data-x="accent-rule-bg"]'; const AS = '[data-x="accent-rule-surface"]';
+    const aStyle = await runCarriers(carrierPageHtml({ extraCss: `${AB}::before{border-top-style:dashed}` }));
+    assert.deepStrictEqual(xc(aStyle), ['accent-rule-style']);
+    assert.match(aStyle.problems[0][1], /^accent-rule-bg rest: top line is dashed, expected solid/);
+    const aWidth = await runCarriers(carrierPageHtml({ extraCss: `${AS}::before{border-top-width:4px}` }));
+    assert.deepStrictEqual(xc(aWidth), ['accent-rule-width']);
+    assert.match(aWidth.problems[0][1], /^accent-rule-surface rest: top line is 4px, expected 2px/);
+    const aCol = await runCarriers(carrierPageHtml({ extraCss: `${AB}::before{border-top-color:#333333}` }));
+    assert.deepStrictEqual(xc(aCol), ['accent-rule-colour']);
+    const aPale = withX('accent-rule-bg', (x) => { x.top.color = '#e8c9bd'; });
+    const ac = await runCarriers(carrierPageHtml({ exps: aPale }), { exps: aPale });
+    assert.deepStrictEqual(xc(ac), ['accent-rule-contrast']);
+    assert.match(ac.problems[0][1], /^accent-rule-bg accent line #e8c9bd on the band #faf7f2 is 1\.[0-9]+:1, needs 2\.3/);
+    // the floor is the number the PHP exports: with no floor the accent marks cannot pass; a lower floor lets the pale line pass.
+    assert.deepStrictEqual(xc(await runCarriers(carrierPageHtml(), { floor: null })), ['accent-rule-contrast'], 'no floor to judge against');
+    assert.deepStrictEqual((await runCarriers(carrierPageHtml({ exps: aPale }), { exps: aPale, floor: 1.2 })).problems, [], 'the floor is a parameter');
+
+    // carrier (count): a slot missing, a slot on the page twice, a blurb without its icon: nothing else is then checked, nothing counts as checked
+    for (const key of ['testimonial-panel-surface', 'blurb-chip-accent', 'counter-rule-bg', 'accent-rule-surface']) {
+      const gone = await runCarriers(carrierPageHtml({ drop: [key] }));
+      assert.deepStrictEqual(xc(gone), ['carrier'], key);
+      assert.match(gone.problems[0][1], new RegExp(`^7 of 8 carriers rendered as the sheet says: ${key} is not in the page`));
+      assert.strictEqual(gone.carriersChecked, 0);
+      const twice = await runCarriers(carrierPageHtml({ dup: [key] }));
+      assert.deepStrictEqual(xc(twice), ['carrier'], key + ' twice');
+      assert.match(twice.problems[0][1], new RegExp(`${key} is on the page 2 times, expected 1`));
+    }
+    const noIcon = await runCarriers(carrierPageHtml({ noIcon: ['blurb-chip-surface'] }));
+    assert.deepStrictEqual(xc(noIcon), ['carrier']);
+    assert.match(noIcon.problems[0][1], /blurb-chip-surface is not in the page \(its element was not found\)/);
+    assert.deepStrictEqual(K.emptyCarrierRunProblems({ carriersChecked: (await runCarriers(carrierPageHtml({ drop: K.CARRIER_SLOTS.map((s) => s.key) }))).carriersChecked }), ['no carrier was checked: the carrier selection was empty']);
+    // overflow: a testimonial wider than the phone; a fixed bar over the page does not disturb the painted samples and is put back
+    const xOver = await runCarriers(carrierPageHtml({ extraCss: `${T}{width:700px}` }), { width: 400 });
+    assert.deepStrictEqual(xc(xOver), ['overflow'], JSON.stringify(xOver.problems.slice(0, 3)));
+    const xBar = await runCarriers(carrierPageHtml({ extraCss: '#bar{position:fixed;top:0;left:0;right:0;height:900px;background:#cc0000;z-index:9;opacity:.999;pointer-events:none}' }), { before: (page) => page.evaluate(() => { const b = document.createElement('div'); b.id = 'bar'; document.body.appendChild(b); }) });
+    assert.deepStrictEqual(xBar.problems, [], 'a fixed element over the page is hidden for the samples: ' + JSON.stringify(xBar.problems.slice(0, 3)));
+    // A hover that cannot happen is a finding, not a pass: the card is covered by a transparent layer that takes the pointer.
+    const xCover = await runCarriers(carrierPageHtml({ extraCss: `${T}{pointer-events:none}` }));
+    assert.ok(xc(xCover).includes('testimonial-hover'), 'a card that never receives the pointer: ' + JSON.stringify(xCover.problems.slice(0, 3)));
+
+    if (CARRIERS_ONLY) { console.log('OK kit-carrier-run in a real Chromium on synthetic pages (AIED_CARRIERS_ONLY): a matching page passes at 1280, 900 and 400, a 0px kit is checked, every carrier code has its departure'); return; }
 
     // ---- the rules and the chips: the line as Divi draws it, the painted band, the corners, the frame, the fill and the glyph ----
     const runRules = async (html, { width = 1280, exps = ruleExpects, before = null } = {}) => {
@@ -1060,7 +1263,7 @@ function chipPageHtml({ exps = chipExpects, extraCss = '', drop = [], dup = [], 
       await pg.close();
     }
 
-    console.log('OK kit-card-run, kit-item-run, kit-form-run, kit-media-run and kit-rule-run in a real Chromium on synthetic pages: a matching page passes at 1280 and 400 (items: a real click opens a closed item and closes the open one; forms: a real hover on the submit; images: the img and its wrapper read, a square kit checked), every departure is caught (and a fixed bar over a card, an item or a field is not mistaken for one) with its code');
+    console.log('OK kit-card-run, kit-item-run, kit-form-run, kit-media-run, kit-rule-run and kit-carrier-run in a real Chromium on synthetic pages: a matching page passes at 1280 and 400 (items: a real click opens a closed item and closes the open one; forms: a real hover on the submit; images: the img and its wrapper read, a square kit checked), every departure is caught (and a fixed bar over a card, an item or a field is not mistaken for one) with its code');
   } finally {
     await browser.close();
   }

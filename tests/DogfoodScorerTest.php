@@ -6,6 +6,7 @@ namespace Divi5Validator\Tests;
 
 use AiEditorDivi5\WP\DesignLanguages;
 use AiEditorDivi5\WP\KitAdapters;
+use AiEditorDivi5\WP\LanguageAdapters;
 use AiEditorDivi5\WP\KitResolver;
 use AiEditorDivi5\WP\RecipeTokens;
 use AiEditorDivi5\WP\StyleKits;
@@ -66,7 +67,10 @@ class DogfoodScorerTest extends TestCase
         return [ 'module' => [ 'decoration' => [ 'background' => [ 'desktop' => [ 'value' => [ 'color' => $colour ] ] ] ] ] ];
     }
 
-    /** A page: one section painting $colour (the language's `bg` by default: the light band) around $inner. */
+    /**
+     * A page: one section painting $colour (the language's `bg` by default: the light band) around $inner. The section writes
+     * no padding, so it is listed as unclassified for rhythm (`divi/section#0`) and never counted.
+     */
     private static function page( string $inner, ?string $colour = null, string $lang = self::LANG ): string
     {
         $colour ??= (string) self::language( $lang )['colors']['bg'];
@@ -174,7 +178,8 @@ class DogfoodScorerTest extends TestCase
                                 $got      = $expected->attrs( $block, $role, $band, $ground );
                                 if ( null === $got ) {
                                     $this->assertStringContainsString( '"aied"', $resolved, "$kitId $block $role $ground on $band is refused" );
-                                    $this->assertContains( $band, [ 'accent', 'dark', 'panel' ], 'a ground sits on a light or surface band only' );
+                                    // carriers adapter: a testimonial takes the card roles but never a ground (KitAdapters::GROUND_BLOCKS): refused on every band.
+                                    $this->assertContains( $band, in_array( $block, KitAdapters::GROUND_BLOCKS, true ) ? [ 'accent', 'dark', 'panel' ] : Expected::BANDS, 'a ground sits on a light or surface band only, on a group or column only' );
                                     continue;
                                 }
                                 $this->assertSame( 1, preg_match( '/^<!-- wp:[a-z0-9\/-]+ (\{.*\}) \/-->$/s', $resolved, $m ) );
@@ -277,12 +282,36 @@ class DogfoodScorerTest extends TestCase
         $wrapM = static fn ( string $r ): string => self::page( self::leaf( 'divi/image', [ 'image' => [ 'decoration' => [ 'border' => [ 'desktop' => [ 'value' => [ 'radius' => self::corners( $r ) ] ] ] ] ] ] ) );
         $add( 'image.radius', 'glass-edge', 'glass-dark', $wrapM( $media ), $wrapM( '7px' ) );
 
+        // type (a display h2 in the display font, values from the language adapter's own patch)
+        $lang  = self::language( 'glass-dark' );
+        $T     = LanguageAdapters::TYPE_PATHS['divi/heading'] . '.desktop.value';
+        $h2    = self::with( self::with( self::arr( LanguageAdapters::patch( 'divi/heading', 'type', 'display', $lang ) ), $T . '.headingLevel', 'h2' ), $T . '.family', $lang['fonts']['display'] );
+        $wrapH = static fn ( array $a ): string => self::page( self::leaf( 'divi/heading', $a ) );
+        $add( 'type.weight', 'glass-edge', 'glass-dark', $wrapH( $h2 ), $wrapH( self::with( $h2, $T . '.weight', '300' ) ) );
+        $add( 'type.letter-spacing', 'glass-edge', 'glass-dark', $wrapH( $h2 ), $wrapH( self::with( $h2, $T . '.letterSpacing', '3px' ) ) );
+        $add( 'type.capitalization', 'glass-edge', 'glass-dark', $wrapH( $h2 ), $wrapH( self::with( $h2, $T . '.capitalization', 'uppercase' ) ) );
+
+        // rhythm (a section at the language's `section` padding; 104px is still nearest to `section`)
+        $P     = 'module.decoration.spacing';
+        $sec   = self::arr( LanguageAdapters::patch( 'divi/section', 'rhythm', 'section', $lang ) );
+        $wrapS = static fn ( array $a ): string => self::rhythmPage( $a, $text );
+        $add( 'rhythm.desktop', 'glass-edge', 'glass-dark', $wrapS( $sec ), $wrapS( self::with( self::with( $sec, $P . '.desktop.value.padding.top', '104px' ), $P . '.desktop.value.padding.bottom', '104px' ) ) );
+        $add( 'rhythm.tablet', 'glass-edge', 'glass-dark', $wrapS( $sec ), $wrapS( self::with( $sec, $P . '.tablet.value.padding.top', '10px' ) ) );
+        $add( 'rhythm.phone', 'glass-edge', 'glass-dark', $wrapS( $sec ), $wrapS( self::with( self::with( $sec, $P . '.phone.value.padding.top', '20px' ), $P . '.phone.value.padding.bottom', '20px' ) ) );
+
         return $rows;
+    }
+
+    /** A page of one section (painting the language's `bg`) whose attributes are $attrs, around $inner. */
+    private static function rhythmPage( array $attrs, string $inner, string $lang = self::LANG ): string
+    {
+        return '<!-- wp:divi/placeholder -->' . self::block( 'divi/section', array_replace_recursive( self::bg( (string) self::language( $lang )['colors']['bg'] ), $attrs ), $inner ) . '<!-- /wp:divi/placeholder -->';
     }
 
     public function testThePlantedProviderCoversEveryCheck(): void
     {
-        $this->assertCount( 33, Scorer::CHECKS );
+        $this->assertCount( 39, Scorer::CHECKS );
+        $this->assertCount( 9, Scorer::CATEGORIES );
         $this->assertSame( Scorer::CHECKS, array_keys( self::plantedChecks() ) );
         $this->assertSame( Scorer::CHECKS, array_unique( Scorer::CHECKS ), 'no name twice' );
         foreach ( Scorer::CHECKS as $check ) {
@@ -608,7 +637,7 @@ class DogfoodScorerTest extends TestCase
             switch ( $what ) {
                 case 'rule':
                     $this->assertSame( $value, $r['categories']['rule']['checked'], 'rule checks' );
-                    $this->assertSame( [], $r['unclassified'] );
+                    $this->assertSame( [ 'divi/section#0' ], array_column( $r['unclassified'], 'block' ), 'only the padding-less section' );
                     break;
                 case 'chip':
                 case 'framed':
@@ -619,15 +648,15 @@ class DogfoodScorerTest extends TestCase
                     }
                     break;
                 case 'unclassified':
-                    $this->assertSame( [ $value ], array_column( $r['unclassified'], 'block' ) );
+                    $this->assertSame( [ 'divi/section#0', $value ], array_column( $r['unclassified'], 'block' ) );
                     $this->assertSame( 0, $r['overall']['checked'], 'nothing is checked' );
                     break;
                 case 'reason':
-                    $this->assertStringContainsString( $value, $r['unclassified'][0]['reason'] );
+                    $this->assertStringContainsString( $value, $r['unclassified'][1]['reason'] );
                     break;
                 case 'ignored':
                     $this->assertSame( $value, $r['ignored'] );
-                    $this->assertSame( [], $r['unclassified'] );
+                    $this->assertSame( [ 'divi/section#0' ], array_column( $r['unclassified'], 'block' ) );
                     $this->assertSame( 0, $r['overall']['checked'] );
                     break;
             }
@@ -642,16 +671,16 @@ class DogfoodScorerTest extends TestCase
         $divider = self::leaf( 'divi/divider', self::with( $g->attrs( 'divi/divider', 'rule', 'light' ), 'divider.advanced.line.desktop.value.color', '#123456' ) );
         $base    = self::report( self::page( $button . $divider ) );
         $this->assertNotSame( [], $base['failures'], 'the base page has a failure to keep' );
-        $this->assertSame( [], $base['unclassified'] );
+        $this->assertSame( [ 'divi/section#0' ], array_column( $base['unclassified'], 'block' ), 'the padding-less section' );
 
         $odd    = self::block( 'divi/column', self::fillOf( [] ), self::leaf( 'divi/heading', [] ) );
         $after  = self::report( self::page( $button . $odd . $divider ) );
         $this->assertSame( $base['categories'], $after['categories'] );
         $this->assertSame( $base['overall'], $after['overall'] );
         $this->assertSame( $base['failures'], $after['failures'] );
-        $this->assertCount( 1, $after['unclassified'] );
-        $this->assertSame( 'divi/column#0', $after['unclassified'][0]['block'] );
-        $this->assertNotSame( '', $after['unclassified'][0]['reason'] );
+        $this->assertCount( 2, $after['unclassified'] );
+        $this->assertSame( 'divi/column#0', $after['unclassified'][1]['block'] );
+        $this->assertNotSame( '', $after['unclassified'][1]['reason'] );
     }
 
     public function testPageKeysSkipTheRootAndNumberBlocksByName(): void
@@ -774,6 +803,161 @@ class DogfoodScorerTest extends TestCase
     }
 
     // ---------------------------------------------------------------------------------------------------------
+    // Type and rhythm (the design language decides them)
+    // ---------------------------------------------------------------------------------------------------------
+
+    /** @param array<string,mixed> $value the heading's desktop font value */
+    private static function heading( array $value ): string
+    {
+        return self::leaf( 'divi/heading', [ 'title' => [ 'decoration' => [ 'font' => [ 'font' => [ 'desktop' => [ 'value' => $value ] ] ] ] ] ] );
+    }
+
+    /** @param array<string,mixed> $value the text's desktop body font value */
+    private static function label( array $value ): string
+    {
+        return self::leaf( 'divi/text', [ 'content' => [ 'decoration' => [ 'bodyFont' => [ 'body' => [ 'font' => [ 'desktop' => [ 'value' => $value ] ] ] ] ] ] ] );
+    }
+
+    /** The expected desktop type value of a role, from the language adapter. @return array<string,string> */
+    private static function typeValue( string $block, string $role, string $lang ): array
+    {
+        $v = self::at( self::arr( LanguageAdapters::patch( $block, 'type', $role, self::language( $lang ) ) ), LanguageAdapters::TYPE_PATHS[ $block ] . '.desktop.value' );
+        self::assertIsArray( $v );
+
+        return $v;
+    }
+
+    public function testTypeIsClassifiedByLevelAndFont(): void
+    {
+        // editorial: display Playfair Display, eyebrow Source Sans 3 (also the body font)
+        $lang   = 'editorial';
+        $fonts  = self::language( $lang )['fonts'];
+        $scorer = new Scorer( 'quiet-solid', $lang );
+        $role   = static function ( string $block ) use ( $scorer, $lang ): array {
+            $out = [];
+            foreach ( $scorer->details( self::page( $block, null, $lang ) ) as $row ) {
+                if ( str_starts_with( $row['check'], 'type.' ) ) {
+                    $out[ $row['role'] ] = true;
+                }
+            }
+            return array_keys( $out );
+        };
+        $this->assertSame( [ 'display' ], $role( self::heading( [ 'headingLevel' => 'h1', 'family' => $fonts['display'] ] ) ) );
+        $this->assertSame( [ 'display' ], $role( self::heading( [ 'headingLevel' => 'h2', 'family' => "'playfair display', serif" ] ) ), 'the first family of a stack, quotes and case ignored' );
+        $this->assertSame( [ 'display' ], $role( self::heading( [ 'headingLevel' => 'h2', 'family' => '{{aied:font:display}}' ] ) ), 'a font token' );
+        $this->assertSame( [ 'title' ], $role( self::heading( [ 'headingLevel' => 'h3', 'family' => $fonts['display'] ] ) ) );
+        $this->assertSame( [ 'eyebrow' ], $role( self::heading( [ 'headingLevel' => 'h4', 'family' => $fonts['eyebrow'] ] ) ) );
+        $this->assertSame( [ 'eyebrow' ], $role( self::label( [ 'capitalization' => 'uppercase', 'family' => $fonts['eyebrow'] ] ) ) );
+
+        $look = static function ( string $block ) use ( $scorer, $lang ): array {
+            $r = $scorer->score( self::page( $block, null, $lang ) );
+            return [ array_column( $r['unclassified'], 'block' ), $r['categories']['type']['checked'], $r['ignored'] ];
+        };
+        foreach ( [
+            'an h4 in the display font'             => self::heading( [ 'headingLevel' => 'h4', 'family' => $fonts['display'] ] ),
+            'an h2 in the body font'                => self::heading( [ 'headingLevel' => 'h2', 'family' => $fonts['body'] ] ),
+            'an h5'                                 => self::heading( [ 'headingLevel' => 'h5', 'family' => $fonts['display'] ] ),
+            'a level with no family'                => self::heading( [ 'headingLevel' => 'h2' ] ),
+            'an uppercase text in the display font' => self::label( [ 'capitalization' => 'uppercase', 'family' => $fonts['display'] ] ),
+        ] as $label => $block ) {
+            [ $blocks, $checked ] = $look( $block );
+            $this->assertCount( 2, $blocks, $label );
+            $this->assertMatchesRegularExpression( '#^divi/(heading|text)\#0$#', $blocks[1], $label );
+            $this->assertSame( 0, $checked, "$label: nothing is checked" );
+        }
+        [ $blocks, $checked, $ignored ] = $look( self::heading( [ 'size' => '40px' ] ) );
+        $this->assertSame( [ 'divi/section#0' ], $blocks, 'a heading with neither a level nor a family is not listed' );
+        $this->assertSame( [ 0, 1 ], [ $checked, $ignored ], 'it is only counted as ignored' );
+        [ $blocks, $checked ] = $look( self::label( [ 'family' => $fonts['eyebrow'], 'letterSpacing' => '2px' ] ) );
+        $this->assertSame( [ [ 'divi/section#0' ], 0 ], [ $blocks, $checked ], 'a text that is not uppercase is body copy, not looked at' );
+    }
+
+    public function testTypeExpectsTheLanguagesValuesAndReadsAbsentOnesAsDivisDefault(): void
+    {
+        $lang  = self::LANG; // glass-dark: display 700/-1px/none, title 600/0px/none, eyebrow 500/2px/uppercase
+        $inter = self::language( $lang )['fonts']['display'];
+        $fails = static fn ( string $block ): array => array_column( self::report( self::page( $block ) )['failures'], 'check' );
+
+        // a full patch passes, for each role and carrier
+        foreach ( [ [ 'divi/heading', 'display', 'h1' ], [ 'divi/heading', 'title', 'h3' ], [ 'divi/heading', 'eyebrow', 'h4' ], [ 'divi/text', 'eyebrow', null ] ] as [ $block, $role, $level ] ) {
+            $v = self::typeValue( $block, $role, $lang ) + [ 'family' => $inter ];
+            $this->assertSame( [], $fails( null === $level ? self::label( $v ) : self::heading( $v + [ 'headingLevel' => $level ] ) ), "$block $role" );
+        }
+        // a title with no weight, spacing or capitalisation written: Divi's 500 is not the role's 600; 0px and none ARE the defaults
+        $bare = self::heading( [ 'headingLevel' => 'h3', 'family' => $inter ] );
+        $this->assertSame( [ 'type.weight' ], $fails( $bare ) );
+        $row = self::row( ( new Scorer( self::KIT, $lang ) )->details( self::page( $bare ) ), 'type.weight' );
+        $this->assertSame( [ '600', 'absent (Divi 500)' ], [ $row['expected'], $row['observed'] ] );
+        // an eyebrow label with only its capitals: Divi's 500 IS the role's weight, the 2px tracking is missing
+        $this->assertSame( [ 'type.letter-spacing' ], $fails( self::label( [ 'capitalization' => 'uppercase', 'family' => $inter ] ) ) );
+        // a `none` role: no key or `none` passes, any transform fails
+        $title = self::typeValue( 'divi/heading', 'title', $lang ) + [ 'family' => $inter, 'headingLevel' => 'h3' ];
+        $this->assertArrayNotHasKey( 'capitalization', $title, 'a none role writes no capitalisation key' );
+        $this->assertSame( [], $fails( self::heading( $title + [ 'capitalization' => 'none' ] ) ) );
+        $this->assertSame( [ 'type.capitalization' ], $fails( self::heading( $title + [ 'capitalization' => 'capitalize' ] ) ) );
+        // an uppercase role fails without its capitals
+        $eyebrow = self::typeValue( 'divi/heading', 'eyebrow', $lang ) + [ 'family' => $inter, 'headingLevel' => 'h4' ];
+        unset( $eyebrow['capitalization'] );
+        $this->assertSame( [ 'type.capitalization' ], $fails( self::heading( $eyebrow ) ) );
+        // weights by name, spacing in another unit, `normal` spacing
+        $display = self::typeValue( 'divi/heading', 'display', $lang ) + [ 'family' => $inter, 'headingLevel' => 'h1' ];
+        $this->assertSame( [], $fails( self::heading( [ 'weight' => 'bold' ] + $display ) ), 'bold is 700' );
+        $this->assertSame( [ 'type.letter-spacing' ], $fails( self::heading( [ 'letterSpacing' => '-0.02em' ] + $display ) ) );
+        $this->assertSame( [], $fails( self::heading( [ 'letterSpacing' => 'normal' ] + $title ) ), 'normal is no extra spacing: the title role 0px' );
+    }
+
+    public function testRhythmMatchesTheNearestRoleAndCascadesMissingBreakpoints(): void
+    {
+        $lang   = self::language( self::LANG ); // glass-dark: section 100/72/48
+        $text   = self::leaf( 'divi/text', [] );
+        $scorer = new Scorer( self::KIT, self::LANG );
+        $space  = static fn ( array $px ): array => [ 'module' => [ 'decoration' => [ 'spacing' => array_map( static fn ( $v ): array => [ 'value' => [ 'padding' => is_array( $v ) ? $v : [ 'top' => $v, 'bottom' => $v ] ] ], $px ) ] ] ];
+
+        // every role's own patch passes and is judged as that role
+        foreach ( LanguageAdapters::APPLIED['rhythm']['divi/section'] as $role ) {
+            $page = self::rhythmPage( self::arr( LanguageAdapters::patch( 'divi/section', 'rhythm', $role, $lang ) ), $text );
+            $rows = $scorer->details( $page );
+            $this->assertSame( [ 'rhythm.desktop', 'rhythm.tablet', 'rhythm.phone' ], array_column( $rows, 'check' ), $role );
+            $this->assertSame( [ $role ], array_values( array_unique( array_column( $rows, 'role' ) ) ) );
+            $this->assertNotContains( false, array_column( $rows, 'pass' ), $role );
+            $this->assertSame( [], $scorer->score( $page )['unclassified'] );
+        }
+        // a desktop value between roles goes to the nearest in ratio
+        $open   = DesignLanguages::sectionSpace( $lang, 'open' );
+        $tight  = DesignLanguages::sectionSpace( $lang, 'tight' );
+        $roleOf = static fn ( string $px ): string => $scorer->details( self::rhythmPage( $space( [ 'desktop' => $px ] ), $text ) )[0]['role'];
+        $this->assertSame( 'open', $roleOf( ( $open['desktop'] - 4 ) . 'px' ) );
+        $this->assertSame( 'tight', $roleOf( ( $tight['desktop'] + 4 ) . 'px' ) );
+        $this->assertSame( 'section', $roleOf( '104px' ) );
+
+        // a breakpoint not written takes the one above: desktop only = desktop at every width
+        $rows = $scorer->details( self::rhythmPage( $space( [ 'desktop' => '100px' ] ), $text ) );
+        $this->assertSame( [ true, false, false ], array_column( $rows, 'pass' ) );
+        $this->assertSame( [ '100px', '100px', '100px' ], array_column( $rows, 'observed' ) );
+        $rows = $scorer->details( self::rhythmPage( $space( [ 'desktop' => '100px', 'tablet' => '72px' ] ), $text ) );
+        $this->assertSame( [ '100px', '72px', '72px' ], array_column( $rows, 'observed' ), 'phone takes the tablet value' );
+        $rows = $scorer->details( self::rhythmPage( $space( [ 'desktop' => '100px', 'tablet' => [ 'top' => '72px', 'bottom' => '60px' ], 'phone' => '48px' ] ), $text ) );
+        $this->assertSame( [ true, false, true ], array_column( $rows, 'pass' ) );
+        $this->assertSame( 'top 72px, bottom 60px', $rows[1]['observed'] );
+
+        // unclassified, never counted
+        foreach ( [
+            'no padding'   => [ [], 'no desktop top or bottom padding' ],
+            'asymmetric'   => [ $space( [ 'desktop' => [ 'top' => '120px', 'bottom' => '96px' ] ] ), 'asymmetric' ],
+            'a percentage' => [ $space( [ 'desktop' => '8%' ] ), 'not a px value' ],
+            'a vw value'   => [ $space( [ 'desktop' => '8vw' ] ), 'not a px value' ],
+            '0px'          => [ $space( [ 'desktop' => '0px' ] ), '0px desktop edge' ],
+            'out of band'  => [ $space( [ 'desktop' => '20px', 'tablet' => '20px', 'phone' => '20px' ] ), 'near no role' ],
+            'top only'     => [ $space( [ 'desktop' => [ 'top' => '100px' ] ] ), 'asymmetric' ],
+        ] as $label => [ $attrs, $reason ] ) {
+            $r = $scorer->score( self::rhythmPage( $attrs, $text ) );
+            $this->assertSame( [ 'divi/section#0' ], array_column( $r['unclassified'], 'block' ), $label );
+            $this->assertStringContainsString( $reason, $r['unclassified'][0]['reason'], $label );
+            $this->assertSame( 0, $r['overall']['checked'], "$label: nothing is checked" );
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------------------
     // The report
     // ---------------------------------------------------------------------------------------------------------
 
@@ -788,7 +972,7 @@ class DogfoodScorerTest extends TestCase
         $this->assertSame( self::KIT, $r['kit'] );
         $this->assertSame( self::LANG, $r['language'] );
         $this->assertSame( Scorer::CATEGORIES, array_keys( $r['categories'] ) );
-        foreach ( [ 'rule', 'chip', 'framed', 'item', 'form', 'image' ] as $cat ) {
+        foreach ( [ 'rule', 'chip', 'framed', 'item', 'form', 'image', 'type', 'rhythm' ] as $cat ) {
             $this->assertSame( [ 'checked' => 0, 'passed' => 0, 'score' => 'n/a' ], $r['categories'][ $cat ], $cat );
         }
         $this->assertSame( [ 'checked', 'passed', 'score' ], array_keys( $r['categories']['button'] ) );

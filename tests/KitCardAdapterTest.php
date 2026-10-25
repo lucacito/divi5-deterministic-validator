@@ -1139,8 +1139,13 @@ class KitCardAdapterTest extends TestCase
                 'divi/contact-form' => [ 'form' ],
                 // Rules and chips adapter T3 (plan 2026-10-21): the map grows on purpose, by the rule roles on group and column,
                 // `chip` on group, and two new carriers (the divider and the icon).
-                'divi/divider' => [ 'rule', 'rule-strong' ],
+                // carriers adapter: [ 'rule', 'rule-strong' ] -> [ 'rule', 'rule-strong', 'rule-accent' ] on the divider (the new accent mark).
+                'divi/divider' => [ 'rule', 'rule-strong', 'rule-accent' ],
                 'divi/icon'    => [ 'chip' ],
+                // carriers adapter: the map grows by three carriers on purpose (plan 2026-10-24, Task 3).
+                'divi/testimonial'    => [ 'card', 'panel' ],
+                'divi/blurb'          => [ 'chip' ],
+                'divi/number-counter' => [ 'rule', 'rule-strong' ],
             ],
             KitAdapters::APPLIED
         );
