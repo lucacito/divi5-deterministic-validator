@@ -55,6 +55,15 @@ final class RuleChipAudit
     /** The weakest quiet rule any kit may draw: the library's measured minimum (1.184) rounded down. Never lowered. */
     public const QUIET_RULE_FLOOR = 1.1;
 
+    /**
+     * The weakest `rule-accent` (an accent line on a `light` or `surface` band) any kit may draw. Carriers adapter,
+     * Ruling 1: the accent-vs-band minimum is the `accent | light | 2.304 | playful-pastel` row of
+     * fixtures/shapes/rule-floor.md (the two accent dividers the library shipped), rounded DOWN to one decimal. No band is
+     * 3:1 in all ten languages (light 2.304, surface 2.448, accent 1.000, dark 1.401, panel 1.103), so the accent rule is a
+     * decorative brand mark judged at this measured floor. Written once, never lowered.
+     */
+    public const ACCENT_RULE_FLOOR = 2.3;
+
     /** The script's photo model: the language overlay over mid grey (KitAdaptersTest::PHOTO_GREY). */
     public const PHOTO_GREY = '#808080';
 

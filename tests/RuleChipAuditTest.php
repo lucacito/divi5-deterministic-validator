@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Divi5Validator\Tests;
 
 use AiEditorDivi5\WP\DesignLanguages;
+use Divi5Validator\Tests\Support\CarrierAudit;
 use Divi5Validator\Tests\Support\RuleChipAudit;
 use PHPUnit\Framework\TestCase;
 
@@ -191,6 +192,34 @@ class RuleChipAuditTest extends TestCase
             $this->assertSame( $language, $by[ $cell ]['language'], $cell );
         }
         $this->assertCount( 8, $rows );
+    }
+
+    public function testTheAccentFloorIsTheShippedMinimumRoundedDown(): void
+    {
+        $min = INF;
+        foreach ( DesignLanguages::ids() as $id ) {
+            $lang = DesignLanguages::get( $id );
+            $this->assertIsArray( $lang );
+            $min = min( $min, RuleChipAudit::ratio( 'accent', 'light', $lang ) );
+        }
+        $this->assertEqualsWithDelta( 2.304, $min, 0.0005, 'the weakest accent line on a light band over the 10 languages' );
+        $this->assertSame( floor( $min * 10 ) / 10, RuleChipAudit::ACCENT_RULE_FLOOR, 'the floor is the minimum rounded DOWN to one decimal' );
+        // Pinned literally: lowering the constant is a conscious act that has to change this line (and Ruling 1).
+        $this->assertSame( 2.3, RuleChipAudit::ACCENT_RULE_FLOOR );
+        // The measured table has the same cell (playful-pastel), so the floor traces to fixtures/shapes/rule-floor.md.
+        $by = [];
+        foreach ( self::floorRows() as $r ) {
+            $by[ $r['colour'] . '|' . $r['band'] ] = $r;
+        }
+        $this->assertArrayHasKey( 'accent|light', $by );
+        $this->assertEqualsWithDelta( $min, $by['accent|light']['ratio'], 0.0005 );
+        $this->assertSame( 'playful-pastel', $by['accent|light']['language'] );
+        // The two shipped accent rules are the two accent dividers, both on a light band.
+        $dividers = array_values( array_filter( CarrierAudit::blocks( self::library() ), static fn ( array $b ): bool => 'rule-accent' === $b['role'] ) );
+        $this->assertCount( 2, $dividers );
+        foreach ( $dividers as $d ) {
+            $this->assertSame( 'light', $d['on'], CarrierAudit::key( $d ) );
+        }
     }
 
     public function testTheFloorTableIsWhatTheLibraryShippedAndStaysWhileTheRulesAreUnmigrated(): void
