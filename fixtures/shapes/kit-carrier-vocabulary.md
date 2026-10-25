@@ -4,7 +4,7 @@ What a style kit may write on four more carriers, decided by the effect probe (`
 fixtures/shapes/candidates/kit-carrier.json`, results `fixtures/shapes/probe-results-kit-carrier.json`, evidence
 `docs/shape-evidence-5.15.1.md#kx-*`, registry `fixtures/shapes/verified-shapes.json`). Every decision was measured ON its
 carrier (`divi/testimonial`, `divi/blurb`, `divi/number-counter`, `divi/divider` over the site preset `1ep0co506u`) at 1280, 900
-and 400 px on the Docker dev site (Divi 5.15.1), 2026-10-24: **48 candidates, 45 PASS, 1 css-only, 1 DEAD (default), no phone
+and 400 px on the Docker dev site (Divi 5.15.1), 2026-10-24: **48 candidates, 45 PASS, 1 css-only, 2 DEAD (both default-value checks), no phone
 overflow, no control noise.** (First run: 3 expectations disagreed, amended below.)
 
 - `kx-blurb-icon-dead-radius-0px` is `PASS(css-only)`: radius 0px is the `.et-pb-icon` default (default-value check, NOT a dead path).
