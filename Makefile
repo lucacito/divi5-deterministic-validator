@@ -353,7 +353,7 @@ dogfood-prepare:
 	@php scripts/dogfood-prepare.php $(call shq,$(KIT)) $(call shq,$(LANGUAGE)) $(if $(TASK),--task $(call shq,$(TASK))) $(if $(OUT),--out $(call shq,$(OUT)))
 
 # ---------------------------------------------------------------
-# dogfood-score — dev-only dogfood routine, step 3: statically scores a page an assistant wrote against what the real kit adapters write for that kit (7 categories, 33 checks; colours by role-set membership in the language; blocks it cannot place are listed as UNCLASSIFIED, never counted). Pure PHP, no site. PAGE=<file> KIT=<id> [LANGUAGE=<id>] [ARGS="--json --min 90"]; exit 0 after measuring, 1 only below --min, 2 on a usage error or a page that does not parse. Not part of `make test`.
+# dogfood-score — dev-only dogfood routine, step 3: statically scores a page an assistant wrote against what the real kit adapters write for that kit and the language adapters for that language (9 categories, 39 checks, type and rhythm included; colours by role-set membership in the language; blocks it cannot place are listed as UNCLASSIFIED, never counted). Pure PHP, no site. PAGE=<file> KIT=<id> [LANGUAGE=<id>] [ARGS="--json --min 90"]; exit 0 after measuring, 1 only below --min, 2 on a usage error or a page that does not parse. Not part of `make test`.
 # ---------------------------------------------------------------
 dogfood-score:
 	@php scripts/dogfood-score.php $(call shq,$(PAGE)) $(call shq,$(KIT)) $(if $(LANGUAGE),--language $(call shq,$(LANGUAGE))) $(ARGS)

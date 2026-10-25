@@ -12,7 +12,7 @@ wrong:
 | Script | What it does | Needs |
 |---|---|---|
 | `scripts/dogfood-prepare.php` (`tests/Support/Dogfood/Prepare.php`) | writes the six guide files and `TASK.md` (and, for an edit, a base `page.html`) | PHP only |
-| `scripts/dogfood-score.php` (`Scorer.php`, `Page.php`, `Expected.php`) | statically scores a page against what the real kit adapters write for the kit | PHP only |
+| `scripts/dogfood-score.php` (`Scorer.php`, `Page.php`, `Expected.php`) | statically scores a page against what the real kit adapters write for the kit and the language adapters write for the language | PHP only |
 | `scripts/dogfood-render.cjs` (+ `scripts/lib/dogfood-render.cjs`) | validates the page through the real `LayoutGate`, renders it at 1280 and 400 px on the dev site, deletes it | Docker dev site, Playwright |
 
 The corpus is `fixtures/dogfood/`: the final pages of the guide rounds before the planned 4.14.0 release (six freehand pages, the edit base and the edited page)
@@ -20,7 +20,7 @@ and `corpus.json` with the score of each, pinned by `DogfoodCorpusTest`.
 
 No script calls a model, a network service or a key. The assistant step is run by a person, or by Claude Code's `Agent` tool, outside the
 scripts. The harness reads the plugin only through its public classes (`StyleGuide`, `StyleKits`, `DesignLanguages`, `SectionRecipes`,
-`KitAdapters`, `KitResolver`, `RecipeTokens`).
+`KitAdapters`, `KitResolver`, `RecipeTokens`, `LanguageAdapters`).
 
 ## When
 
@@ -85,15 +85,32 @@ The shape of the output (the numbers here are made up for illustration):
 dogfood score <page> kit=<kit> language=<language>
 button 15/15 100.0%
 rule 4/6 66.7%
-... (chip, framed, item, form, image)
+... (chip, framed, item, form, image, type, rhythm)
 overall 70/80 87.5%
 FAIL rule.width divi/divider#3 (rule on light): expected 1px, observed 2px
+FAIL type.weight divi/heading#2 (title on light): expected 600, observed absent (Divi 500)
 UNCLASSIFIED divi/group#9: carries a fill and a heading: no rule, tag, card or panel fits
+UNCLASSIFIED divi/section#0: a section with desktop padding 8%, not a px value: no rhythm role
 ```
 
-- **Seven categories**: `button`, `rule`, `chip`, `framed` (cards and panels, with a frame or a radius), `item` (accordion and toggle items),
-  `form`, `image`; 33 named checks in all (`Scorer::CHECKS`, each with a planted pass and fail in `DogfoodScorerTest`). A category with
-  nothing to check is `n/a`, which is not a failure.
+- **Nine categories**: `button`, `rule`, `chip`, `framed` (cards and panels, with a frame or a radius), `item` (accordion and toggle items),
+  `form`, `image` (the kit decides these), and `type` (headline weight, letter spacing and capitals) and `rhythm` (section top and bottom
+  padding at desktop, tablet and phone), which the design LANGUAGE decides; 39 named checks in all (`Scorer::CHECKS`, each with a planted
+  pass and fail in `DogfoodScorerTest`). A category with nothing to check is `n/a`, which is not a failure.
+- **Type.** A `divi/heading` is placed by the `TypeAudit` rule: h1 or h2 in the display font is `display`, h3 in the display font is
+  `title`, h4 in the eyebrow font is `eyebrow`; a `divi/text` whose desktop body font is `uppercase` in the eyebrow font is an `eyebrow`
+  label. The font is a `{{aied:font:<role>}}` token or a literal family whose first name is the first name of the language's font for
+  that role (a family the language uses for several roles counts for each). Weight, letter spacing and capitalisation are compared with
+  `LanguageAdapters::patch(..., 'type', <role>, <language>)`. A value the page does not write is Divi's default (weight 500, spacing 0px,
+  no capitals, measured in `fixtures/shapes/language-type-vocabulary.md`) and passes only where the role's value is that default; a role
+  whose capitalisation is `none` passes with no key or `none`, never with a transform. A heading with neither a level nor a family is
+  only counted (`ignored`); any other heading or uppercase text the rule cannot place (an h4 in the display font, an h2 in the body font,
+  an h5) is `UNCLASSIFIED`.
+- **Rhythm.** A `divi/section` whose desktop padding is top = bottom, both `Npx` with N > 0, is matched to the nearest of the language's
+  `section`, `open` and `tight` desktop values (`DesignLanguages::sectionSpace()`, nearest in ratio, a tie to the first); then desktop,
+  tablet and phone are compared with that role's patch. A breakpoint (or one side of it) the page does not write takes the value of the
+  one above, as Divi cascades it. No desktop padding, an asymmetric, percent, `vw` or 0px one, or one whose ratio to the language's
+  `section` value is outside `RhythmAudit::BAND` (0.45 to 1.6) is `UNCLASSIFIED`.
 - **Expected values are the adapters' own output.** The scorer builds a one-block marker, resolves it with `KitResolver` and
   `RecipeTokens` as a recipe is served, and reads the attributes it wrote. No value is typed by hand.
 - **Best role.** A block that more than one role could produce (button `control` or `control-secondary`, rule `rule` or `rule-strong`,
@@ -120,7 +137,8 @@ UNCLASSIFIED divi/group#9: carries a fill and a heading: no rule, tag, card or p
 
 ### Blind spots (known, deliberate)
 
-- **A 100% page is not "fully kit-conformant".** The 33 checks cover frames, radii, fills and rule/tag/icon colours, but the adapters write
+- **A 100% page is not "fully kit-conformant".** The 39 checks cover frames, radii, fills, rule/tag/icon colours, headline weight,
+  tracking and capitals and section padding, but the adapters write
   more than that and the scorer never looks at it: a button's label colour, shadows, padding and hover states (button, card, form), the
   accordion and toggle title, body and icon colours, a form's field ink, placeholder and captcha colours, and card padding. A page can
   score 100% with unreadable or off-kit text and still be wrong there; the screenshots are the check for those.
@@ -142,6 +160,15 @@ UNCLASSIFIED divi/group#9: carries a fill and a heading: no rule, tag, card or p
 - **Images** are checked loosely: the kit's media radius OR 0px passes (the shipped recipes keep flush images square under every kit),
   and shaped images (circles, arches, 999px) are unclassified. A page that leaves every image square passes.
 - A rule on top of a framed block is judged on width and style only (no adapter defines its colour band).
+- **A hand-written heading's role is guessed** from its level and font only. An h2 meant as a small subtitle in the display font is
+  judged as a `display` headline; an h4 eyebrow set in the display font, or a headline in the body font, is unclassified, not failed. When
+  the language uses one family for several roles (glass-dark's Inter) the font cannot tell them apart and the level decides.
+- An **eyebrow label is found by its capitals**: a `divi/text` that is not `uppercase` is body copy. Under a language whose eyebrow has
+  no capitals (playful-pastel) a hand-written label is therefore not found and not checked; one written in capitals there is found and
+  fails `type.capitalization`. Size, line height, colour and family are never judged.
+- **Sections with literal padding that matches no role** (asymmetric, a percentage, 0px, no padding, or far from every role) are listed
+  as unclassified, so a page that leaves every section at Divi's default scores `n/a` for rhythm, not 0. A section near a role but off
+  by a few pixels is judged against that role and fails.
 - The edit base's images point at `https://example.com/...` (the test bootstrap's `plugins_url` shim): on the dev site they do not load.
   That is not a console error of the page. It is kept so the base stays byte-identical to the corpus.
 
@@ -173,8 +200,8 @@ One run is one assistant session; the scripts cost nothing. Sizes come from `pre
 
 - `hairline-dashed` (tech-mono), `heavy-block` (bold-vibrant), `dotted-pill` (playful-pastel), `underlined-label` (glass-dark),
   `soft-rounded` (organic-warm), `gilt-hairline` (luxe): freehand pages from the guide rounds before the planned 4.14.0 release, final version only.
-- `edit-glass-edge/page.html`: the edit base, exactly `Prepare::editBase('glass-edge', 'glass-dark')` (kit-built, so it scores 100% in
-  every category it has).
+- `edit-glass-edge/page.html`: the edit base, exactly `Prepare::editBase('glass-edge', 'glass-dark')` (kit- and language-built, so it
+  scores 100% in every category it has; its three sections without a px rhythm are the recipes' named exemptions and are unclassified).
 - `edit-glass-edge/page-edited.html`: the page the edit assistant produced.
 
 Each entry records the kit, language, task, the page and, per category and overall, `[checked, passed]` plus the `unclassified` count.
