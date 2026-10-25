@@ -39,7 +39,7 @@
   {
     "id": "glass-dark",
     "title": "Glass dark",
-    "summary": "Dark and modern: a deep navy gradient behind everything, translucent cards with a light border, bright blue accents and crisp sans type. Feels like a product or software page.",
+    "summary": "Dark and modern: a deep navy gradient behind everything, layered cards with a light border, bright blue accents and crisp sans type. Feels like a product or software page.",
     "colors": {
       "bg": "#0b1020",
       "surface": "#151c33",
@@ -65,14 +65,14 @@
     "radius": "20px on cards, 12px on buttons and images. Keep every corner of one card the same.",
     "section_padding": "100px top and bottom on desktop, 72px on tablet, 48px on phone.",
     "section_space": {"desktop": 100, "tablet": 72, "phone": 48},
-    "shadow": "No drop shadows; depth comes from layers. Cards use a semi-transparent background (rgba of the text colour at about 6%) with a 1px border at about 12% white. Real frosted-glass blur is not available in Divi's settings, so do not promise it.",
+    "shadow": "No drop shadows; depth comes from layers. Cards use the surface colour, a shade lighter than the page, with a hairline border. Real frosted-glass blur is not available in Divi's settings, so do not promise it.",
     "motion": "lively",
     "kit": "glass-edge",
-    "rhythm": "Every section sits on the same deep background; vary the gradient direction or depth from section to section (a lighter navy glow behind the hero, a deeper tone further down). Use a grid of translucent cards for the features and for any proof the owner supplied (logos, quotes or figures; never invented), and keep the closing call to action on a gradient from the accent colour toward the background.",
+    "rhythm": "Every section sits on the same deep background; vary the gradient direction or depth from section to section (a lighter navy glow behind the hero, a deeper tone further down). Use a grid of cards for the features and for any proof the owner supplied (logos, quotes or figures; never invented), and keep the closing call to action on a gradient from the accent colour toward the background.",
     "favors": ["grid", "bento", "centered", "carousel", "overlap"],
     "avoids": ["zigzag", "list"],
     "hero": "Centered: a short eyebrow, a bold headline in the text colour, one muted sentence, two buttons (solid accent plus a bordered ghost button), and a product image or card below with a soft glow behind it.",
-    "cta": "A centered translucent card on a gradient background with one headline, one sentence and one accent-coloured button."
+    "cta": "A centered card on a gradient background with one headline, one sentence and one accent-coloured button."
   },
   {
     "id": "organic-warm",
@@ -327,11 +327,11 @@
     "shadow": "No shadows at all: leave the box shadow unset. Structure is drawn with a 4px solid border in the text colour on every card, panel, image and button. The orange accent is for backgrounds only, with black text on it: never use it as a text or link colour, because it is far too weak on the paper background.",
     "motion": "none",
     "kit": "raw-frame",
-    "rhythm": "Flat blocks of raw colour, no gradients: paper background, white, paper, then one orange block, then an acid block (#d4ff3a) with black text, then paper again. Lay features out as a grid of three equal cells, each with its own 4px black border. Open every section with a strong black line (the divider module). Use the mono face in capital letters for labels and index numbers such as 01, 02, 03. No entrance animation and no scroll effects: on hover a button swaps to a black background with the inverse text colour.",
+    "rhythm": "Flat blocks of raw colour, no gradients: paper background, white, paper, then one orange block, then an acid block (#d4ff3a) with black text, then paper again. Lay features out as a grid of three equal cells, each with its own 4px black border. Open every section with a strong black line (the divider module). Use the mono face in capital letters for labels and index numbers such as 01, 02, 03. No entrance animation and no scroll effects; the kit decides how a button looks on hover.",
     "favors": ["grid", "bento", "zigzag", "band", "list"],
     "avoids": ["centered", "carousel", "overlap"],
     "hero": "Left-aligned and loud: a headline in the grotesk face at weight 900, in capital letters, as big as the width allows, inside a panel with a 4px black border on the paper background; under it a grid of three bordered cells, each with a mono index label and one line of copy, and one orange button with black text and a 4px black border. If a photo is used it is square, with a 4px black border and a saturate filter of 0%.",
-    "cta": "One orange panel with a 4px black border: a headline in capital letters, one line of copy and a single black button with white text and a 4px black border."
+    "cta": "One orange panel with a 4px black border: a headline in capital letters, one line of copy and a single button."
   },
   {
     "id": "luxe",

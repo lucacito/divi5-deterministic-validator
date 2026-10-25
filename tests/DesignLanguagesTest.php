@@ -14,6 +14,8 @@ require_once __DIR__ . '/../wp-plugin/src/ImagePack.php';
 require_once __DIR__ . '/../wp-plugin/src/ImageTokens.php';
 require_once __DIR__ . '/../wp-plugin/src/SectionRecipes.php';
 require_once __DIR__ . '/../wp-plugin/src/DesignLanguages.php';
+require_once __DIR__ . '/../wp-plugin/src/StyleKits.php';
+require_once __DIR__ . '/../wp-plugin/src/KitAdapters.php';
 
 /**
  * Design languages are art-direction data the AI is told to pick before choosing
@@ -105,24 +107,31 @@ class DesignLanguagesTest extends TestCase
         $this->assertGreaterThanOrEqual(1, $glassCount);
     }
 
-    public function testGlassLanguageMarkdownPresentsTranslucentCardColour(): void
+    /**
+     * Wording gaps T7: the card adapter fills every card with `surface` (the kit wins) and no recipe uses the `surface-glass`
+     * token, so the glass language's brief no longer calls its translucent tint the card colour: it prints the same
+     * `surface (cards)` line as every language, and its prose names no translucent card.
+     */
+    public function testGlassLanguageMarkdownNamesSurfaceAsTheCardColour(): void
     {
         $lang = DesignLanguages::get('glass-dark');
         $glass = $lang['colors']['surface_glass'];
         $md = DesignLanguages::markdown('glass-dark');
-        $this->assertStringContainsString($glass, $md);
-        $this->assertStringNotContainsString('surface (cards)', $md);
-        $this->assertStringContainsString('opaque equivalent', $md);
-        $this->assertStringContainsString('fallback', $md);
-        // The opaque surface is never the line that names the card colour.
-        foreach (explode("\n", $md) as $line) {
-            if (str_contains($line, 'card colour')) {
-                $this->assertStringContainsString($glass, $line);
-                $this->assertStringNotContainsString($lang['colors']['surface'], $line);
+        $this->assertStringNotContainsString($glass, $md);
+        $this->assertStringContainsString('- background `#0b1020`, surface (cards) `#151c33`, border `#2a3558`', $md);
+        $this->assertStringNotContainsString('card colour', $md);
+        $this->assertStringNotContainsString('do not use it for cards', $md);
+        $this->assertStringNotContainsStringIgnoringCase('translucent', $md);
+        $this->assertStringNotContainsString('semi-transparent', $md);
+        $this->assertStringContainsString('surface (cards) `#ffffff`', DesignLanguages::markdown('editorial'));
+        // The claim follows the adapter and the library: a card is filled with surface, and no recipe uses the glass tint.
+        foreach (\AiEditorDivi5\WP\StyleKits::ids() as $id) {
+            $kit = (array) \AiEditorDivi5\WP\StyleKits::get($id);
+            foreach (['divi/group', 'divi/column'] as $block) {
+                $this->assertSame('{{aied:color:surface}}', \AiEditorDivi5\WP\KitAdapters::patch($block, 'card', 'light', $kit)['module']['decoration']['background']['desktop']['value']['color'], "$id $block");
             }
         }
-        // A language without surface_glass is printed as before.
-        $this->assertStringContainsString('surface (cards) `#ffffff`', DesignLanguages::markdown('editorial'));
+        $this->assertStringNotContainsString('surface-glass', (string) file_get_contents(__DIR__ . '/../wp-plugin/data/section-recipes.json'));
     }
 
     public function testThereAreTenLanguagesAndTheMoodsFollow(): void

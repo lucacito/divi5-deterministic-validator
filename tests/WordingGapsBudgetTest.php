@@ -47,9 +47,17 @@ final class WordingGapsBudgetTest extends TestCase
      */
     private const RULING_5_DELTA = [ 'brutalist-flat' => 3, 'luxe' => -18 ];
 
+    /** wording gaps T7 (third blind round, card fill): glass-dark no longer calls its translucent tint the card colour (the card adapter fills
+     * cards with `surface`): the three colour lines become the standard `surface (cards)` line (-187 B), and the prose rewords
+     * "translucent cards" -> "layered cards" (-4), the shadow's semi-transparent background -> the surface colour (-17), and the
+     * rhythm's and cta's "translucent " dropped (-12, -12): -232 B. The design-languages index carries the summary (-4 B: 2592 -> 2588). */
+    // wording fixes (review): glass-dark's card border reworded "1px border at about 12% white" -> "hairline border" (-14 B): -232 -> -246.
+    // brutalist-flat (review fix): the rhythm no longer describes a hover colour (-31 B) and the cta says "a single button" (-45 B): -76.
+    private const TASK_7_DELTA = [ 'glass-dark' => -246, 'brutalist-flat' => -76 ];
+
     /** Bytes of every other topic the wording-gaps plan does not name (they must not move). */
     private const UNTOUCHED_TOPIC_SIZES = [
-        'design-languages' => 2592,
+        'design-languages' => 2588, // wording gaps T7: 2592 -> 2588 (glass-dark summary "translucent" -> "layered")
         'backgrounds'      => 8894,
         'dividers'         => 8869,
         'motion'           => 9800,
@@ -81,7 +89,7 @@ final class WordingGapsBudgetTest extends TestCase
         // controls 9,271 -> 9,355 (the generated contact-form clause, spec gap 14).
         $this->assertLessThanOrEqual( 9600, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'Ruling 8' );
         $this->assertLessThanOrEqual( 9500, strlen( StyleGuide::markdown( 'controls' ) ), 'controls: 9,271 B at 1d51dc9, 9,355 B after Task 4' );
-        $this->assertLessThanOrEqual( 6000, strlen( StyleGuide::markdown( 'kit-patterns' ) ), 'kit-patterns (Ruling 1): 5,049 B at Task 4' );
+        $this->assertLessThanOrEqual( 6000, strlen( StyleGuide::markdown( 'kit-patterns' ) ), 'kit-patterns (Ruling 1): 5,049 B at Task 4, 5,427 B at Task 7' );
     }
 
     public function testNoStyleKitTopicExceedsTheStopBound(): void
@@ -101,7 +109,7 @@ final class WordingGapsBudgetTest extends TestCase
         foreach ( self::LANGUAGE_TOPIC_SIZES as $id => $size ) {
             $kitLine = DesignLanguages::kitLine( (array) DesignLanguages::get( $id ) );
             $this->assertLessThanOrEqual( DesignLanguages::GENERATED_LINE_MAX, strlen( $kitLine ), $id );
-            $this->assertSame( $size + strlen( $kitLine ) + 1 + ( self::RULING_5_DELTA[ $id ] ?? 0 ), strlen( StyleGuide::markdown( 'design-language:' . $id ) ), "design-language:$id" );
+            $this->assertSame( $size + strlen( $kitLine ) + 1 + ( self::RULING_5_DELTA[ $id ] ?? 0 ) + ( self::TASK_7_DELTA[ $id ] ?? 0 ), strlen( StyleGuide::markdown( 'design-language:' . $id ) ), "design-language:$id" );
         }
     }
 

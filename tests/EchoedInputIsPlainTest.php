@@ -127,6 +127,34 @@ class EchoedInputIsPlainTest extends TestCase
         $this->assertLessThan( 100, strlen( (string) $r->get_data()['error'] ) );
     }
 
+    /** The `design_language` refusal of `get_style_guide` (wording gaps Task 3b) echoes through DesignLanguages::markdown() only. */
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'hostile' )]
+    public function testMcpStyleGuideUnknownDesignLanguageEchoIsPlain( string $hostile ): void
+    {
+        $req  = new \WP_REST_Request( [ 'jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call', 'params' => [ 'name' => 'get_style_guide', 'arguments' => [ 'topic' => 'style-kit:quiet-solid', 'design_language' => $hostile ] ] ] );
+        $data = (array) ( new McpHandler() )->handle( $req )->get_data();
+        $text = (string) $data['result']['content'][0]['text'];
+        $this->assertPlainAndBounded( $text, $hostile );
+        $this->assertLessThan( 600, strlen( $text ) );
+        $this->assertSame( [], $this->headingLines( $text ) );
+        $this->assertSame( DesignLanguages::markdown( $hostile ), $text );
+        foreach ( DesignLanguages::ids() as $id ) {
+            $this->assertStringContainsString( $id, $text );
+        }
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider( 'hostile' )]
+    public function testRestStyleGuideUnknownDesignLanguageEchoIsPlain( string $hostile ): void
+    {
+        $r    = ( new RestController() )->style_guide( new \WP_REST_Request( [], [ 'topic' => 'style-kit:quiet-solid', 'design_language' => $hostile ] ) );
+        $text = (string) $r->get_data()['guide'];
+        $this->assertSame( 200, $r->get_status() );
+        $this->assertPlainAndBounded( $text, $hostile );
+        $this->assertLessThan( 600, strlen( $text ) );
+        $this->assertSame( [], $this->headingLines( $text ) );
+        $this->assertSame( DesignLanguages::markdown( $hostile ), $text );
+    }
+
     public function testNormalUnknownMessagesAreUnchanged(): void
     {
         $this->assertStringContainsString( 'There is no topic "nope". Valid topics:', StyleGuide::markdown( 'nope' ) );
