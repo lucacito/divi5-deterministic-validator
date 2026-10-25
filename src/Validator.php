@@ -15,7 +15,8 @@ namespace Divi5Validator;
  *   2. Block parsing    — valid Gutenberg block HTML, balanced tags, valid attrs JSON
  *   3. Schema           — known block types, builderVersion present
  *   4. Hierarchy        — nesting follows section→row→column→module rules
- *   5. Render-critical  — content-key innerContent shapes for leaf modules
+ *   5. Render-critical  — content-key innerContent shapes for leaf modules (hand-written
+ *                         rules plus the live-proven render fatals of VerifiedContentTypes)
  */
 final class Validator
 {
@@ -45,6 +46,7 @@ final class Validator
     // Pass 5 — render-critical attributes
     public const E_RENDER_CRITICAL_MISSING = 'RENDER_CRITICAL_MISSING';
     public const E_SCALAR_WHERE_OBJECT     = 'SCALAR_WHERE_OBJECT';
+    public const E_OBJECT_WHERE_SCALAR     = 'OBJECT_WHERE_SCALAR';
     public const E_ORPHANED_REFERENCE      = 'ORPHANED_REFERENCE';
 
     // Pass 6 — SEO / accessibility
@@ -337,15 +339,15 @@ final class Validator
     /** @param Violation[] $violations */
     private function passRenderCritical(Block $root, array &$violations): void
     {
-        $root->walk(function (Block $block, string $path) use (&$violations): void {
-            $allRules = $this->schema->contentKeyRules();
-            $type     = $block->name();
+        $allRules = $this->schema->contentKeyRules();
+        $fatal    = $this->schema->renderFatalKeys();
 
-            if (!isset($allRules[$type])) {
-                return;
-            }
+        $root->walk(function (Block $block, string $path) use (&$violations, $allRules, $fatal): void {
+            $type = $block->name();
+            // Paths the hand-written table already reported, so the live-proven table never reports them twice.
+            $reported = [];
 
-            foreach ($allRules[$type] as [$contentKey, $required, $mustBeObject]) {
+            foreach ($allRules[$type] ?? [] as [$contentKey, $required, $mustBeObject]) {
                 $innerContent = $block->attr("$contentKey.innerContent");
 
                 if ($innerContent === null) {
@@ -377,6 +379,35 @@ final class Validator
                         self::E_SCALAR_WHERE_OBJECT,
                         "Block '$type': '$contentKey.innerContent.desktop.value' must be an object, got "
                             . gettype($value) . '. This causes a PHP fatal on render.',
+                        "$path.$contentKey.innerContent.desktop.value"
+                    );
+                    $reported[$contentKey] = true;
+                }
+            }
+
+            if (!$this->schema->isKnownType($type)) {
+                return;
+            }
+
+            // Live-proven render fatals (Divi answered HTTP 500 for the whole page): src/VerifiedContentTypes.php.
+            foreach ($fatal['object'][$type] ?? [] as $contentKey) {
+                $value = $block->attr("$contentKey.innerContent.desktop.value");
+                if ($value !== null && !is_array($value) && !isset($reported[$contentKey])) {
+                    $violations[] = new Violation(
+                        self::E_SCALAR_WHERE_OBJECT,
+                        "Block '$type': '$contentKey.innerContent.desktop.value' must be an object, got "
+                            . gettype($value) . '. This causes a PHP fatal on render (Divi answers HTTP 500 for the whole page).',
+                        "$path.$contentKey.innerContent.desktop.value"
+                    );
+                }
+            }
+            foreach ($fatal['scalar'][$type] ?? [] as $contentKey) {
+                $value = $block->attr("$contentKey.innerContent.desktop.value");
+                if (is_array($value)) {
+                    $violations[] = new Violation(
+                        self::E_OBJECT_WHERE_SCALAR,
+                        "Block '$type': '$contentKey.innerContent.desktop.value' must be a plain string or HTML, got an "
+                            . 'object/array; this causes a PHP fatal on render (Divi answers HTTP 500 for the whole page).',
                         "$path.$contentKey.innerContent.desktop.value"
                     );
                 }

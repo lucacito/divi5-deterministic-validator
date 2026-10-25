@@ -90,6 +90,11 @@ class ValidatorSchemaTest extends TestCase
             'scalar-where-object-testimonial-company' => [$dir . '/scalar-where-object-testimonial-company.json', Validator::E_SCALAR_WHERE_OBJECT],
             'scalar-where-object-testimonial-portrait' => [$dir . '/scalar-where-object-testimonial-portrait.json', Validator::E_SCALAR_WHERE_OBJECT],
             'scalar-where-object-contact-form-button' => [$dir . '/scalar-where-object-contact-form-button.json', Validator::E_SCALAR_WHERE_OBJECT],
+            // Live-proven render fatals (src/VerifiedContentTypes.php, render-fatal sweep on Divi 5.15.1)
+            'scalar-where-object-fullwidth-header-button' => [$dir . '/scalar-where-object-fullwidth-header-button.json', Validator::E_SCALAR_WHERE_OBJECT],
+            'object-where-scalar-heading-title'          => [$dir . '/object-where-scalar-heading-title.json',          Validator::E_OBJECT_WHERE_SCALAR],
+            'object-where-scalar-testimonial-author'     => [$dir . '/object-where-scalar-testimonial-author.json',     Validator::E_OBJECT_WHERE_SCALAR],
+            'array-where-scalar-accordion-item-content'  => [$dir . '/array-where-scalar-accordion-item-content.json',  Validator::E_OBJECT_WHERE_SCALAR],
         ];
     }
 }

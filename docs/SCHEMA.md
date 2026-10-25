@@ -188,6 +188,27 @@ the object shapes are the ones of the shipped recipes (real exports). They are i
 (violation `SCALAR_WHERE_OBJECT`), with invalid fixtures `fixtures/invalid/scalar-where-object-{testimonial-company,testimonial-portrait,contact-form-button}.json`.
 The same string on `divi/icon` `icon` and on `divi/social-media-follow-network` `socialNetwork` rendered without a fatal and is not a violation.
 
+**Render-fatal guards from the full sweep (2026-10-25, Divi 5.15.1):** every innerContent key of every module was rendered with a
+wrong-typed value (`docs/render-fatal-sweep.md`; evidence `fixtures/shapes/render-fatals.json`: 133 keys in 62 modules, 92 fatals).
+`php scripts/promote-render-fatals.php` turns the evidence into the GENERATED `src/VerifiedContentTypes.php` (never hand-edited; it
+mirrors the file into `wp-plugin/validator/`; `tests/VerifiedContentTypesTest.php` checks it is fresh and replays every fatal entry):
+
+- `OBJECT_KEYS` (21 keys in 15 modules): the `scalar-where-object` result was `fatal`. A non-null value that is not an object is
+  `SCALAR_WHERE_OBJECT` (reported once: a path the hand-written table already reports is not reported again).
+- `SCALAR_KEYS` (59 keys in 32 modules): the `object-where-scalar` or the `array-value` (`[]`) result was `fatal`. An object or an
+  array is the new violation `OBJECT_WHERE_SCALAR` ("must be a plain string or HTML, got an object/array; this causes a PHP fatal
+  on render").
+- Only live-proven fatals are guarded, never a key on Divi's definitions alone, so no layout Divi renders is refused (every valid
+  fixture and every recipe in every language still passes). Not guarded: keys that rendered without a throw (a warning is not a
+  fatal), `null`, the 7 unclassified keys, modules with no real baseline (gravity-forms, imagely-gallery, payment-button, sidebar,
+  woocommerce-cart-totals), tablet/phone/hover values, inner sub keys and `decoration`/`advanced` attributes (not swept).
+  `contentKeyRules()` stays: it also holds the `required` flags and guards that the sweep cannot see because they fail silently
+  rather than throwing (button, blurb `title`/`imageIcon`, breadcrumbs, icon-list-item `icon`, video, team-member `image`).
+- Invalid fixtures: `fixtures/invalid/scalar-where-object-fullwidth-header-button.json`, `object-where-scalar-heading-title.json`,
+  `object-where-scalar-testimonial-author.json`, `array-where-scalar-accordion-item-content.json`.
+- After a new Divi version: re-run the sweep (`docs/render-fatal-sweep.md`), then the generator; `VerifiedContentTypes::CALIBRATED_ON`
+  says which Divi and date the tables come from.
+
 ---
 
 ## 6. Responsive attribute pattern
@@ -214,6 +235,7 @@ Fields whose absence or wrong type cause Divi to fail to render:
 | `content.innerContent.desktop.value` | `divi/text` | string | Module not rendered |
 | `image.innerContent.desktop.value` | `divi/image` | object | Deep-merge PHP fatal |
 | `button.innerContent.desktop.value` | `divi/button` | object | Deep-merge PHP fatal |
+| `<key>.innerContent.desktop.value` | `VerifiedContentTypes::OBJECT_KEYS` / `SCALAR_KEYS` | object / string | PHP fatal, HTTP 500 (live-proven) |
 
 ---
 
