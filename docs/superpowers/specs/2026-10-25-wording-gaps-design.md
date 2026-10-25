@@ -1,6 +1,6 @@
 # Wording gaps: what six blind assistants could not find in the served guide
 
-Status: DRAFT for the controller (spec + plan writer, 2026-10-25). Branch `feat/wording-gaps` from local main 895610e, worktree
+Status: built (see Outcome; spec + plan written 2026-10-25). Branch `feat/wording-gaps` from local main 895610e, worktree
 `/Users/Lucas/Documents/JHMG-Local/wt-wording`. No release, version bump, zip rebuild or readme edit; the validator (`src/`,
 `wp-plugin/validator/`) is NOT touched. Plan: `docs/superpowers/plans/2026-10-25-wording-gaps.md`.
 
@@ -145,4 +145,115 @@ schema from memory; no weakened test; no baseline file; the default guide stays 
 
 ## Outcome
 
-(empty: filled by plan Task 8 from measured facts only)
+Status at the time of writing: built on `feat/wording-gaps` (merged to local main faf8a4e) plus the fix wave `feat/wording-fix`
+(head 652e2a6: third blind round fixes, review fixes). NO release, version bump, zip rebuild or readme edit; the validator
+(`src/`, `wp-plugin/validator/`) and the tracked zip are untouched. Numbers below are measured (`StyleGuide::markdown()`,
+`scripts/measure-tokens.php`, the pinned tests); the one live result still open is marked `TBD-CONTROLLER`.
+
+### Per gap: the text that answers it
+
+| # | Answer |
+|---|---|
+| 1a | Generated topic `kit-patterns`, section "Tags" (`StyleGuide::kitPatterns()`): the flex-row wrap group (`flexDirection` row, `flexWrap` wrap, `columnGap` 12px, `rowGap` 8px, `alignItems` center; P1: one line wide, wrapping on a phone, rendered), the tag group padding 4px/10px holding ONE `divi/text` label in the eyebrow style, the frame at the kit's width and style ("at least 1px; a double at least 3px", `chipPatch()` numbers, reworded in the review fix), corners the control radius (a square kit gives square tags even where a language says pill). `kit-rules` Rules and chips carries the same width clause. Recipe `portfolio-featured-grid`. |
+| 1b | `kit-patterns`, "Icon chips": the module box hugs glyph plus padding, so set no width (P1: align left and the default centre both hug; a row of icon chips in the flex-row group hugs each box); a `maxWidth` is NOT taught; set a glyph size or Divi's large default makes a big chip. Recipes `icon-values`, `features-carousel-strip`. |
+| 2 | `kit-patterns`, "Plan columns and the featured plan": the row's column gap separates plans (a kit rule has no side edge), a `card` on each `divi/column`, a quiet `rule` top edge on each plan's features group. Recipe `pricing-three-tier`. |
+| 3 | Same section: the featured plan is a `card` on an `accent` ground (fill accent, frame accent, text accent-text), its features group a quiet rule on accent, its button the primary on accent; a button inside an inverted panel takes `panel`. Colours generated from the adapters. |
+| 4 | `kit-rules` accordion sentence: the parent's frame, radius and shadow are drawn around EACH item, not the accordion as a whole, and the `divi/accordion-item` blocks carry none (`kit-item-vocabulary.md`). |
+| 5 | Two parts. (a) A generated "Kit:" line in every design-language topic (`DesignLanguages::GENERATED_PLACE` gained `kit`; at most 260 B) says the kit decides borders, corners, shadow and hover of the kit-driven modules, the kit wins where the prose differs, and a line that opens a section is the kit's strong rule at its width (`ruleWidth()`). (b) Prose no kit can follow is reworded in `design-languages.json` (Ruling 5): the brutalist-flat opener (a "6px black line" is now a "strong black line") and luxe's two "1px line in the accent colour", then, from the review rewords, the hover-colour and button wording and glass-dark's card border; the glass-dark card-fill claim ("semi-transparent") was removed because no recipe uses `surface-glass` and the kit card fill is the opaque `surface`. |
+| 6 | `kit-patterns`, "Quiet and strong rules, dividers": a quiet rule is a decorative separator, 1.18:1 to 1.58:1 on light and surface; where the hairline is the text colour (bold-vibrant, brutalist-flat) quiet and strong differ only by width (numbers generated from `RULE_COLOUR`, `ruleWidth()` and the palettes). |
+| 7 | Code fix plus text. `KitAdapters::hover()`: a `same` frame of non-zero width on an `invert` kit keeps its rest colour on hover (glass-edge, heavy-block). Text: `kit-patterns`, "Hover colours" (rest to hover per kind, on light, accent and panel, and the form submit) and "Limits" (generated: the 0px invert kits and the tech-mono accent cells). Audit and goldens below. |
+| 8 | `kit-patterns`: "A divider needs no `show` key and no spacing: the kit's dividers carry neither and render"; P2: its module box is 23px high at line weights 1/2/4px, so the weight does not change the layout. No number for Divi's default spacing is taught beyond that measured box. |
+| 9 | `kit-patterns`, "Glyph codes in block JSON": `&#xf00c;` and `\u0026#xf00c;` are the same value; either validates and renders. |
+| 10 | `kit-rules` `bandSentence()` now names the palette role of each band from the new `KitAdapters::BAND_FILL` (light bg, surface surface, accent accent, dark overlay, panel text); Ruling 3: it lives in `kit-rules` where `on` is defined. |
+| 11a | `kit-patterns`, "Testimonial text": the four text-colour paths (author and quote in text, job title and company in muted). |
+| 11b | Default guide: the gradient line now shows a list with number positions (the builder export form); no contradiction with `backgrounds`. |
+| 12 | Default guide: "Mobile: rows and flex groups" replaces the unmeasured "collapse multi-column rows" line: a row stacks by its `flexWrap` wrap plus each column's `flexType` 24_24, a flex group by its own `layout.phone.value.flexDirection` "column". Default guide still exactly 28,975 B. |
+| 13 | `StyleGuide::styleKitTopic()` resolves its samples in the language asked for; one `StyleGuide::BUILDER_VERSION` ('5.8.0') in every generated snippet (the old 5.0.0-public-beta.1 and 5.0.2 had been copied from recipe attributes); `get_style_guide` takes an optional strict-string `design_language` (see "API" below). |
+| 14 | `controls` (Button): one generated clause (`controlsFormClause()`, only while `FORM_PROVEN` `button-padding` and `button-shadow` are true): this is a `divi/button`; a contact form's submit is the opposite (topic=kit-rules). |
+
+### P1 and P2 (live, controller, Divi 5.15.1)
+
+- P1 (`fixtures/shapes/kit-patterns-vocabulary.md`, probe `kp-*`, rendered page): an icon chip's module box hugs its glyph plus
+  padding (a `maxWidth` is not needed and is not taught); a flex-row wrap group holds rows of tags and of icon chips (one line wide,
+  wrapping narrow).
+- P2 (`kit-patterns-divider.json`, results `probe-results-kit-patterns-divider.json`): a divider's box is 23px high at line weights
+  1px, 2px and 4px.
+
+### The hover audit (gap 7)
+
+Pure audit over `KitAdapters::patch()`: 40 kits x 10 languages x {light, accent, panel} x 2 roles = 2,400 button cells. Cells whose
+box vanishes on hover (box >= 1.5:1 at rest, < 1.1:1 on hover): **60 -> 48**. The 12 fixed are glass-edge and heavy-block on light.
+The 48 left are all 0px `invert` kits with no frame (flat-square, block-caps, pill-caps): 18 on the light band in the six languages
+whose `accent-text` is within 1.1:1 of `bg` and 30 on a panel (kit-limits Ruling 2, by design); they are stated as limits in
+`kit-patterns`. 920 framed cells in the proof scope (framed kits x 10 languages x {light, panel} x 2 roles) have zero failures,
+no baseline file. The 4 tech-mono accent cells (text and accent within 1.5:1) are untouched and stated. Goldens:
+`kit-adapter-patches.json` and `kit-form-patches.json` were re-frozen deliberately (14 changed patches, hover frame colour only);
+the other seven frozen hashes (`KitGoldenFreezeTest`) are unchanged.
+
+### API
+
+`get_style_guide` takes an optional strict-string `design_language` (MCP schema, REST query argument, OpenAPI query parameter, as
+`get_section_recipes` does; a non-string is 400 / -32602; an unknown id is refused with the valid ids on ANY topic, not only
+`style-kit:<id>`). It is used for the `style-kit:<id>` samples; the default is the kit's owner language, else editorial. No new tool,
+route or OpenAPI operation (the importer budget is untouched). The echo of the refusal is covered by `EchoedInputIsPlainTest` (MCP
+and REST). The `topic` description went 258 -> 272 characters (", kit-patterns"), its pin 260 -> 290 (schema bound 300, 28 characters
+left for the next topic name).
+
+### Sizes (bytes)
+
+| Text | Before (895610e) | After | Bound |
+|---|---:|---:|---|
+| Default guide | 28,975 | 28,975 | exactly 28,975 |
+| `kit-rules` | 9,598 | 9,589 | pin 9,600 (real 10,000) |
+| `controls` | 9,105 (9,271 with the module sweep) | 9,355 | <= 9,500 |
+| `kit-patterns` (new, served after `kit-rules`) | - | 5,431 | pin 6,000 |
+| `forms`, `style-kits` catalog | 6,474 / 8,178 | 6,474 / 8,178 | unchanged |
+| largest `style-kit:<id>` | 9,599 | 9,556 (neo-brutal) | 10,000 |
+| `topic` description (characters) | 258 | 272 | pin 290 |
+
+The largest kit topic shrank because the samples now follow the kit's own language (smallest kit topic 7,982 B). The design-language
+topics grew by the Kit line and the rewords (glass-dark +4, brutalist-flat +176, luxe +235, editorial +251; each at most 260 B above
+its earlier size): editorial 2,281 -> 2,532, glass-dark 2,613 -> 2,617, organic-warm 2,607 -> 2,861, tech-mono 2,744 -> 2,999,
+playful-pastel 2,890 -> 3,148, corporate-trust 3,041 -> 3,293, soft-saas 3,720 -> 3,972, bold-vibrant 3,480 -> 3,731,
+brutalist-flat 3,012 -> 3,188, luxe 3,219 -> 3,454. `docs/token-usage.md` was regenerated.
+
+### Dogfood harness
+
+`Prepare::GUIDE_FILES` gained `07-kit-patterns.md`; `03-style-kit.md` is served with the run's language; TASK.md says "02..07"
+(`docs/dogfood.md` already describes it).
+
+### Blind dogfood
+
+| Round | Pair | Score | Render |
+|---|---|---|---|
+| 2 (before) | neo-brutal x brutalist-flat / warm-pill-soft x organic-warm / glass-edge x glass-dark | 95.3% / 100% / 99.5% | two clean, one HTTP 500 (since fixed in the validator) |
+| 3 (after) | raw-frame x brutalist-flat | 251/251 | clean |
+| 3 (after) | glass-edge x glass-dark with the carriers brief | 209/209 | clean |
+
+### Live ledger
+
+- Full `make verify-kits` on the fix-wave head: `TBD-CONTROLLER`.
+- P1 and P2 probes: recorded above. Plugin Check, `make verify-shapes` and the narrowed recipe render were not re-run by this docs task.
+- Suites: free 6365, Pro 2169.
+
+### Deviations and decisions
+
+- Band roles live in `kit-rules` (Ruling 3), not in `kit-patterns`.
+- The "kit wins" line is generated into every design-language topic (Ruling 4), not into the default guide (no bytes there).
+- Ruling 6 was taken in full (the `design_language` parameter), not the fallback.
+- Ruling 8 held: `kit-rules` fit its 9,600 pin (9,589), the pin was not raised.
+- Review rewords beyond the plan: glass-dark's card-fill claim removed, the tag width wording ("a double at least 3px"), the
+  hover-colour and button wording in languages.
+
+### Known limits and gaps still open
+
+- The 0px `invert` kits (flat-square, block-caps, pill-caps) keep no box on hover (48 cells, stated in `kit-patterns`); 4 tech-mono
+  accent-band cells are faint.
+- Not fixed: the accordion's gap between items, a preference between a nested row and a flex group for hero buttons, which `on` a card on
+  a surface band takes, blurb chip sizing against the icon module, and accent-band hover values, which each kit topic describes only in prose.
+- The recipes' old `builderVersion` values in untouched exports stay as they are.
+
+### Owner decisions left
+
+Merge and release; whether the 0px `invert` kits should get a hover rule; the gaps listed above.
+
