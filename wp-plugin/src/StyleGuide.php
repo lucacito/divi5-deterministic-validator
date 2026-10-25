@@ -25,7 +25,8 @@ final class StyleGuide
     /**
      * The topics served on request: `design-languages`, `design-language:<id>` for every design language, then the
      * vocabulary-family topics (each teaches only shapes proven on the real Divi; see docs/shape-evidence-5.15.1.md),
-     * then `style-kits`, `kit-rules` (what each module takes from a kit) and `style-kit:<id>` for every style kit.
+     * then `style-kits`, `kit-rules` (what each module takes from a kit), `kit-patterns` (the recurring patterns written by
+     * hand) and `style-kit:<id>` for every style kit.
      *
      * @return list<string>
      */
@@ -49,6 +50,7 @@ final class StyleGuide
         $topics[] = 'composition';
         $topics[] = 'style-kits';
         $topics[] = 'kit-rules';
+        $topics[] = 'kit-patterns';
         foreach ( StyleKits::ids() as $id ) {
             $topics[] = 'style-kit:' . $id;
         }
@@ -172,6 +174,9 @@ final class StyleGuide
         }
         if ( 'kit-rules' === $topic ) {
             return self::kitRules();
+        }
+        if ( 'kit-patterns' === $topic ) {
+            return self::kitPatterns();
         }
         if ( str_starts_with( $topic, 'design-language:' ) && in_array( $topic, self::topics(), true ) ) {
             return DesignLanguages::markdown( substr( $topic, strlen( 'design-language:' ) ) );
@@ -534,6 +539,230 @@ final class StyleGuide
         return [] === $parts ? '' : "\n## More carriers\n\n" . implode( ' ', $parts ) . "\n";
     }
 
+    /**
+     * The layout claims of the kit-patterns topic => whether probe P1 proved them on Divi 5.15.1 (the "Adapter decisions"
+     * table of fixtures/shapes/kit-patterns-vocabulary.md; a test pins this constant to that table): the icon module's box
+     * hugs its glyph plus padding with a left align and with Divi's default centre (a 48px max-width cap changed no computed
+     * width), and a flex-row wrap group (PATTERN_ROW_LAYOUT) holds a row of icon chips or of tags on one line at 1280 px,
+     * wrapping at 400 px with no overflow (one rendered page). A claim is said only while true; its fallback is "copy the
+     * recipe's shape".
+     *
+     * @var array<string,bool>
+     */
+    public const PATTERN_PROVEN = [
+        'icon-hugs-left'   => true,
+        'icon-hugs-center' => true,
+        'row-of-icons'     => true,
+        'row-of-tags'      => true,
+    ];
+
+    /** The flex-row wrap group of the rendered P1 page (fixtures/shapes/kit-patterns-rows-page.html, pinned by a test). */
+    public const PATTERN_ROW_LAYOUT = [ 'display' => 'flex', 'flexDirection' => 'row', 'flexWrap' => 'wrap', 'columnGap' => '12px', 'rowGap' => '8px', 'alignItems' => 'center' ];
+
+    /** A tag's padding as portfolio-featured-grid writes it (pinned by a test to the recipe). */
+    public const PATTERN_TAG_PADDING = [ 'top' => '4px', 'bottom' => '4px', 'left' => '10px', 'right' => '10px' ];
+
+    /**
+     * The testimonial's text colours as the `testimonial` recipe writes them: path => colour role (pinned by
+     * WordingGapsEvidenceTest::testTheTestimonialRecipeInks and a kit-patterns test; every path is a registered leaf).
+     */
+    public const TESTIMONIAL_INK = [
+        'author.decoration.font.font.desktop.value.color'           => 'text',
+        'jobTitle.decoration.font.font.desktop.value.color'         => 'muted',
+        'company.decoration.font.font.desktop.value.color'          => 'muted',
+        'content.decoration.bodyFont.body.font.desktop.value.color' => 'text',
+    ];
+
+    /**
+     * Topic `kit-patterns` (wording gaps, spec Design 1): how to write by hand the patterns the recipes repeat, which fresh
+     * assistants given only the guide could not find (tags and icon chips in a row, plan columns and the featured plan, quiet and strong rules,
+     * hover colours, testimonial text, glyph codes). Every colour role and width is read from the adapters (KitAdapters::patch(),
+     * chipPatch(), ruleWidth(), formPatch()) and the language data, every layout claim follows PATTERN_PROVEN, every recipe
+     * named shows its pattern (a test reads it). It never names the marker. At most 6,000 bytes (pinned).
+     *
+     * @param array<string,bool>|null $proven defaults to PATTERN_PROVEN (a parameter only so a test can prove the claims follow the probe)
+     */
+    public static function kitPatterns( ?array $proven = null ): string
+    {
+        $proven ??= self::PATTERN_PROVEN;
+        $is       = static fn ( string $claim ): bool => true === ( $proven[ $claim ] ?? false );
+        $roleOf   = static fn ( string $value ): string => 1 === preg_match( '/^\{\{aied:color:([a-z-]+)(?::([0-9]+))?\}\}$/', $value, $m ) ? $m[1] . ( isset( $m[2] ) ? ' at ' . $m[2] . '%' : '' ) : ( KitAdapters::TRANSPARENT === $value ? 'transparent' : '?' );
+        $kit      = (array) StyleKits::get( (string) ( StyleKits::ids()[0] ?? '' ) );
+        $row      = '`module.decoration.layout.desktop.value` = `' . (string) json_encode( self::PATTERN_ROW_LAYOUT ) . '`';
+        $widths   = self::tagWidths();
+        $out      = [];
+
+        $out[] = "# Kit patterns: the recurring patterns by hand\n\n"
+            . 'How to write by hand what the recipes repeat; what each module takes from a kit: topic=kit-rules. get_section_recipes with `name` and `style_kit` serves each recipe named here resolved under any kit.';
+
+        // Tags (gap 1a).
+        $tags = $is( 'row-of-tags' )
+            ? 'A row of tags is one `divi/group` with ' . $row . ': one line on a wide screen, wrapping on a phone (rendered). '
+            : 'A row of several tags is not proven: copy the recipe\'s shape (one tag per card). ';
+        $out[] = "## Tags\n\n" . $tags
+            . 'Each tag is a `divi/group` padded at `module.decoration.spacing.desktop.value.padding` = `' . (string) json_encode( self::PATTERN_TAG_PADDING ) . '` holding ONE `divi/text` label in the language\'s eyebrow style, in the muted colour (the band\'s ink on a dark band); it hugs its label, no width. '
+            . 'Its frame takes the kit\'s border width and style (' . $widths['zero'] . ' for a 0px kit' . ( null === $widths['double'] ? '' : ', ' . $widths['double'] . ' for a double under ' . $widths['double'] ) . '), its corners the control radius: a square kit gives square tags even where a language says pill (the kit wins). Recipe: `portfolio-featured-grid`.';
+
+        // Icon chips (gap 1b).
+        if ( $is( 'icon-hugs-left' ) ) {
+            $icon = 'An icon chip is a `divi/icon` with `icon.advanced.align.desktop.value` "left"' . ( $is( 'icon-hugs-center' ) ? ' (or Divi\'s default centre)' : '' )
+                . ', its padding at `module.decoration.spacing.desktop.value.padding` and its glyph size at `icon.advanced.size.desktop.value`: the module box hugs its glyph plus padding, so set no width. Without a glyph size Divi\'s large default glyph makes a big chip. ';
+        } else {
+            $icon = 'An icon chip\'s box is not measured: copy the recipe\'s shape. ';
+        }
+        $icon .= $is( 'row-of-icons' ) ? 'For a row of icon chips use the same flex-row group as for tags. ' : 'A row of several icon chips is not proven: copy the recipe\'s shape. ';
+        $out[] = "## Icon chips\n\n" . $icon . 'Corners, fill and glyph colour: topic=kit-rules. Recipes: `icon-values`, `features-carousel-strip`.';
+
+        // Plan columns and the featured plan (gaps 2, 3).
+        $card     = (array) KitAdapters::patch( 'divi/column', 'card', 'light', $kit );
+        $cardFill = $roleOf( (string) ( $card['module']['decoration']['background']['desktop']['value']['color'] ?? '' ) );
+        $ground   = (array) KitAdapters::patch( 'divi/column', 'card', 'light', $kit, 'accent' );
+        $gFill    = $roleOf( (string) ( $ground['module']['decoration']['background']['desktop']['value']['color'] ?? '' ) );
+        $gFrame   = $roleOf( (string) ( $ground['module']['decoration']['border']['desktop']['value']['styles']['all']['color'] ?? '' ) );
+        $band     = static fn ( string $fill ): string => (string) ( array_search( $fill, KitAdapters::BAND_FILL, true ) ?: '?' );
+        $quiet    = static fn ( string $on ): string => $roleOf( (string) ( KitAdapters::patch( 'divi/group', 'rule', $on, $kit )['module']['decoration']['border']['desktop']['value']['styles']['top']['color'] ?? '' ) );
+        $solid    = null;
+        foreach ( StyleKits::ids() as $id ) {
+            if ( 'solid' === ( StyleKits::get( $id )['fill'] ?? '' ) ) {
+                $solid = (array) StyleKits::get( $id );
+                break;
+            }
+        }
+        $filled = static function ( string $on ) use ( $solid, $roleOf ): string {
+            $d = (array) ( null === $solid ? [] : ( KitAdapters::patch( 'divi/button', 'control', $on, $solid )['button']['decoration'] ?? [] ) );
+            return $roleOf( (string) ( $d['background']['desktop']['value']['color'] ?? '' ) ) . ' fill and ' . $roleOf( (string) ( $d['font']['font']['desktop']['value']['color'] ?? '' ) ) . ' label';
+        };
+        $out[] = "## Plan columns and the featured plan\n\n"
+            . 'Plans sit side by side as the `divi/column`s of one row, each a `card` (the kit\'s frame, radius and padding); the row\'s column gap separates them, since a kit rule has no side edge. '
+            . 'Inside a plan a quiet `rule` top edge on the features group separates the price from the list; its `on` is the card\'s fill, `' . $band( $cardFill ) . '` on a plain card (' . $quiet( $band( $cardFill ) ) . ' colour). '
+            . 'The featured plan is a `card` on an `accent` ground: fill ' . $gFill . ', frame ' . $gFrame . ', text ' . ( self::GROUND_INK[ $gFill ] ?? '?' ) . '; its features group takes the quiet rule on ' . $band( $gFill ) . ' (' . $quiet( $band( $gFill ) ) . ') and its button the primary on ' . $band( $gFill ) . ' (a filled kit\'s button there has ' . $filled( $band( $gFill ) ) . '). '
+            . 'A button inside an inverted panel takes `panel`: a filled kit\'s has ' . $filled( 'panel' ) . '. Recipe: `pricing-three-tier` (its middle plan is the featured one).';
+
+        // Quiet and strong rules, dividers (gaps 6, 8).
+        $faint = [];
+        $same  = [];
+        foreach ( DesignLanguages::ids() as $id ) {
+            $c = (array) ( DesignLanguages::get( $id )['colors'] ?? [] );
+            if ( ( $c['border'] ?? null ) === ( $c['text'] ?? null ) ) {
+                $border = (array) ( StyleKits::get( (string) ( DesignLanguages::get( $id )['kit'] ?? '' ) )['border'] ?? [] );
+                $same[] = sprintf( '%s (%s: quiet %s, strong %s)', $id, (string) DesignLanguages::get( $id )['kit'], KitAdapters::ruleWidth( 'rule', $border ), KitAdapters::ruleWidth( 'rule-strong', $border ) );
+                continue;
+            }
+            $faint[] = DesignLanguages::contrast( (string) $c['border'], (string) $c['bg'] );
+            $faint[] = DesignLanguages::contrast( (string) $c['border'], (string) $c['surface'] );
+        }
+        $out[] = "## Quiet and strong rules, dividers\n\n"
+            . ( [] === $faint ? '' : sprintf( 'A quiet `rule` is a decorative separator, not a boundary: its hairline is only %.2f:1 to %.2f:1 on light and surface. ', min( $faint ), max( $faint ) ) )
+            . ( [] === $same ? '' : 'Where the hairline is the text colour (' . implode( ', ', $same ) . ') quiet and strong differ only by width. ' )
+            . 'A line that opens a section or a list is a `rule-strong` divider; quiet `rule` dividers separate the rows under it. A divider needs no `show` key and no spacing: the kit\'s dividers carry neither and render. '
+            . 'Recipes: `list-icon-dividers` (dividers), `team-grid` (strong top edges on groups).';
+
+        // Hover colours (gap 7), read from patch() for the first kit of each hover kind.
+        $kinds = [];
+        foreach ( StyleKits::ids() as $id ) {
+            $kinds[ (string) ( StyleKits::get( $id )['hover'] ?? '' ) ] ??= $id;
+        }
+        $keep  = [];
+        $lines = [];
+        foreach ( $kinds as $kind => $id ) {
+            $k       = (array) StyleKits::get( $id );
+            $parts   = [];
+            $changes = false;
+            foreach ( [ 'light', 'accent', 'panel' ] as $on ) {
+                $d     = (array) ( KitAdapters::patch( 'divi/button', 'control', $on, $k )['button']['decoration'] ?? [] );
+                $rest  = (string) ( $d['border']['desktop']['value']['styles']['bottom']['color'] ?? $d['border']['desktop']['value']['styles']['all']['color'] ?? '' );
+                $pairs = [
+                    'fill'  => [ (string) ( $d['background']['desktop']['value']['color'] ?? '' ), (string) ( $d['background']['desktop']['hover']['color'] ?? '' ) ],
+                    'label' => [ (string) ( $d['font']['font']['desktop']['value']['color'] ?? '' ), (string) ( $d['font']['font']['desktop']['hover']['color'] ?? '' ) ],
+                    'frame' => [ $rest, (string) ( $d['border']['desktop']['hover']['styles']['all']['color'] ?? $rest ) ],
+                ];
+                $words = [];
+                foreach ( $pairs as $what => [ $a, $b ] ) {
+                    $changes = $changes || $a !== $b;
+                    $words[] = $what . ' ' . $roleOf( $a ) . ' to ' . $roleOf( $b );
+                }
+                $parts[] = 'on ' . $on . ' ' . implode( ', ', $words );
+            }
+            if ( $changes ) {
+                $lines[] = 'Hover ' . $kind . ' (e.g. ' . $id . '): ' . implode( '; ', $parts ) . '.';
+            } else {
+                $keep[ $kind ] = $id;
+            }
+        }
+        $hover = 'The primary button\'s colours, rest to hover, read from the kit adapter. ' . implode( ' ', $lines );
+        if ( [] !== $keep ) {
+            $hover .= ' Hover ' . self::joinAnd( array_keys( $keep ) ) . ( count( $keep ) > 1 ? ' keep' : ' keeps' ) . ' every colour (e.g. ' . implode( ', ', $keep ) . ')' . ( isset( $keep['lift'] ) ? '; lift moves the button up' : '' ) . '.';
+        }
+        // The submit is the primary for its band (formPatch() relocates button()'s colours): said only while that holds for every kit and band.
+        $submit = true;
+        foreach ( StyleKits::ids() as $id ) {
+            $k = (array) StyleKits::get( $id );
+            foreach ( [ 'light', 'surface', 'accent', 'dark' ] as $on ) {
+                $f = (array) ( KitAdapters::formPatch( $on, $k )['button']['decoration'] ?? [] );
+                $b = (array) ( KitAdapters::patch( 'divi/button', 'control', 'surface' === $on ? 'light' : $on, $k )['button']['decoration'] ?? [] );
+                $submit = $submit && ( $f['background'] ?? null ) === ( $b['background'] ?? null ) && ( $f['font']['font']['desktop'] ?? null ) === ( $b['font']['font']['desktop'] ?? null );
+            }
+        }
+        if ( $submit ) {
+            $hover .= ' A contact-form submit takes the kit\'s primary colours for its band (a surface band counts as light), rest and hover.';
+        }
+        $out[] = "## Hover colours\n\n" . $hover;
+
+        // Testimonial text (gap 11a).
+        $ink = [];
+        foreach ( self::TESTIMONIAL_INK as $path => $role ) {
+            $ink[ $role ][] = '`' . $path . '`';
+        }
+        $out[] = "## Testimonial text\n\n"
+            . 'On a `divi/testimonial`: ' . implode( '; ', array_map( static fn ( string $role, array $paths ): string => implode( ', ', $paths ) . ' in ' . $role, array_keys( $ink ), $ink ) )
+            . ' (the author and the quote, then the job title and the company); the card itself: topic=kit-rules. Recipe: `testimonial`.';
+
+        // Glyph codes (gap 9).
+        $out[] = "## Glyph codes in block JSON\n\n"
+            . '`"unicode":"&#xf00c;"` and `"unicode":"\\u0026#xf00c;"` are the same value: `\\u0026` is the JSON escape of the ampersand, which Divi\'s builder writes. Either validates and renders.';
+
+        // Limits: what P1 did not prove, the hover cells no role table reaches, the divider spacing.
+        $limits = [];
+        foreach ( [ 'row-of-tags' => 'rows of tags', 'row-of-icons' => 'rows of icon chips', 'icon-hugs-left' => 'the icon chip box', 'icon-hugs-center' => 'a centred icon chip' ] as $claim => $what ) {
+            if ( ! $is( $claim ) ) {
+                $limits[] = '- Not proven: ' . $what . '; copy the recipe\'s shape.';
+            }
+        }
+        $zero   = [];
+        $framed = [];
+        foreach ( StyleKits::ids() as $id ) {
+            $k = (array) StyleKits::get( $id );
+            if ( 'invert' === ( $k['hover'] ?? '' ) ) {
+                if ( '0px' === ( $k['border']['width'] ?? '' ) ) {
+                    $zero[] = $id;
+                } elseif ( 'same' !== ( $k['border']['color'] ?? '' ) ) {
+                    $framed[] = $id;
+                }
+            }
+        }
+        $melt = [];
+        $dull = [];
+        foreach ( DesignLanguages::ids() as $id ) {
+            $c = (array) ( DesignLanguages::get( $id )['colors'] ?? [] );
+            if ( DesignLanguages::contrast( (string) $c['accent_text'], (string) $c['bg'] ) < 1.1 ) {
+                $melt[] = $id;
+            }
+            if ( DesignLanguages::contrast( (string) $c['text'], (string) $c['accent'] ) < 1.5 ) {
+                $dull[] = $id;
+            }
+        }
+        if ( [] !== $zero ) {
+            $limits[] = '- The 0px invert kits (' . implode( ', ', $zero ) . ') have no frame to keep: on light, where accent-text is within 1.1:1 of bg (' . implode( ', ', $melt ) . '), only the label shows on hover; on a panel a filled button turns transparent in the panel\'s ink.';
+        }
+        if ( [] !== $framed && [] !== $dull ) {
+            $limits[] = '- On an accent band, in ' . implode( ', ', $dull ) . ' the hover of a kit with a text or accent frame (' . implode( ', ', $framed ) . ') is faint: text and accent are within 1.5:1.';
+        }
+        $limits[] = '- Divi\'s default space around a divider line is not measured.';
+        $out[]    = "## Limits\n\n" . implode( "\n", $limits );
+
+        return implode( "\n\n", $out ) . "\n";
+    }
+
     /** Dotted path => value of every leaf of $node. @param array<mixed> $node @return array<string,mixed> */
     private static function leafPaths( array $node, string $prefix = '' ): array
     {
@@ -713,6 +942,25 @@ final class StyleGuide
     }
 
     /**
+     * The tag frame widths the adapter writes, read from KitAdapters::chipPatch() itself (never typed): `zero` for a kit whose
+     * border is 0px (the 1px floor of the card frame), `double` for a 1px double (CSS paints a double under 3px as solid, so
+     * the adapter raises it), null while a double tag is not proven (it is then drawn solid at the kit width).
+     *
+     * @param array<string,bool> $chipProven
+     * @return array{zero:string,double:?string}
+     */
+    private static function tagWidths( array $chipProven = KitAdapters::CHIP_PROVEN ): array
+    {
+        $kit   = (array) StyleKits::get( (string) ( StyleKits::ids()[0] ?? '' ) );
+        $width = static function ( string $w, string $style ) use ( $kit, $chipProven ): string {
+            $planted = array_merge( $kit, [ 'border' => array_merge( (array) ( $kit['border'] ?? [] ), [ 'width' => $w, 'style' => $style ] ) ] );
+            return (string) ( KitAdapters::chipPatch( 'divi/group', 'light', $planted, $chipProven )['module']['decoration']['border']['desktop']['value']['styles']['all']['width'] ?? '' );
+        };
+
+        return [ 'zero' => $width( '0px', 'solid' ), 'double' => true === ( $chipProven['tag-double'] ?? false ) ? $width( '1px', 'double' ) : null ];
+    }
+
+    /**
      * The Contact forms paragraph of `kit-rules`: what the `form` marker writes, with every conditional decision worded from
      * $proven (the probe's verdicts, KitAdapters::FORM_PROVEN): a proven one is said, an unproven one is never claimed and its
      * fallback is stated.
@@ -768,10 +1016,25 @@ final class StyleGuide
      */
     public static function appliedNounsSentence( ?array $applied = null ): string
     {
-        $nouns  = array_map( static fn ( array $p ): string => $p[0], self::appliedParts( $applied ?? KitAdapters::APPLIED ) );
-        $joined = count( $nouns ) > 1 ? implode( ', ', array_slice( $nouns, 0, -1 ) ) . ' and ' . end( $nouns ) : (string) ( $nouns[0] ?? 'nothing' );
+        return 'Kit-driven today: ' . self::joinAnd( self::appliedNouns( $applied ) ) . ' (blocks and marker roles: topic=kit-rules).';
+    }
 
-        return 'Kit-driven today: ' . $joined . ' (blocks and marker roles: topic=kit-rules).';
+    /**
+     * The nouns of appliedNounsSentence(), in its order ("buttons", "cards", ... "chips"): the one list the design-language
+     * Kit line (DesignLanguages::kitLine()) names too.
+     *
+     * @param array<string,list<string>>|null $applied defaults to KitAdapters::APPLIED
+     * @return list<string>
+     */
+    public static function appliedNouns( ?array $applied = null ): array
+    {
+        return array_map( static fn ( array $p ): string => $p[0], self::appliedParts( $applied ?? KitAdapters::APPLIED ) );
+    }
+
+    /** "a, b and c" ("a" alone, "nothing" for none). @param list<string> $words */
+    public static function joinAnd( array $words ): string
+    {
+        return count( $words ) > 1 ? implode( ', ', array_slice( $words, 0, -1 ) ) . ' and ' . end( $words ) : (string) ( $words[0] ?? 'nothing' );
     }
 
     /**

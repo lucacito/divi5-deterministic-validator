@@ -423,6 +423,16 @@ final class KitAdapters
     public const RULE_BANDS = [ 'light', 'surface', 'accent', 'dark', 'panel' ];
     public const CHIP_BANDS = [ 'light', 'surface', 'accent', 'dark' ];
 
+    /**
+     * Band => the palette colour role the band is painted in (the `on` of a marker names the band by this fill): `light` is the
+     * page colour `bg` (a dark language's too), `dark` a photo under the `overlay` scrim, `panel` the inside of an inverted,
+     * `text`-filled card. Covers exactly the union of RULE_BANDS and CHIP_BANDS (which hold the button, card, item and form
+     * bands too); the kit-rules band sentence is generated from it (wording-gaps work, 2026-10-25, spec gap 10).
+     *
+     * @var array<string,string>
+     */
+    public const BAND_FILL = [ 'light' => 'bg', 'surface' => 'surface', 'accent' => 'accent', 'dark' => 'overlay', 'panel' => 'text' ];
+
     /** The rule carriers => the prefix of their RULE_PROVEN keys. */
     private const RULE_CARRIERS = [ 'divi/divider' => 'divider', 'divi/group' => 'group-top', 'divi/column' => 'column-top', 'divi/number-counter' => 'counter-top' ];
 

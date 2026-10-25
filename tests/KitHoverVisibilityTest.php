@@ -36,10 +36,10 @@ class KitHoverVisibilityTest extends TestCase
     private const ROLES = [ 'control', 'control-secondary' ];
 
     /**
-     * Band => the palette role the band is painted in. A local literal until Task 4 adds the public KitAdapters::BAND_FILL
-     * (TODO(Task 4): read KitAdapters::BAND_FILL instead; the two must agree for these three bands).
+     * Band => the palette role the band is painted in: the three audited bands of KitAdapters::BAND_FILL (added by wording-gaps
+     * Task 4; until then a local literal with the same three values).
      */
-    private const BAND_FILL = [ 'light' => 'bg', 'accent' => 'accent', 'panel' => 'text' ];
+    private const BAND_FILL = [ 'light' => KitAdapters::BAND_FILL['light'], 'accent' => KitAdapters::BAND_FILL['accent'], 'panel' => KitAdapters::BAND_FILL['panel'] ];
 
     /** A button that has a box at rest (at least this contrast against its band)... */
     private const HAS_BOX = 1.5;
