@@ -1,0 +1,5 @@
+{
+    "source": "divi5-invalid-fixture",
+    "_comment": "divi/accordion-item content innerContent.desktop.value as an empty array instead of a string - Divi 5.15.1 throws AccordionItemModule::is_content_empty() TypeError on render, HTTP 500 for the whole page (render-fatal sweep 2026-10-25, fixtures/shapes/render-fatals.json)",
+    "post_content": "<!-- wp:divi/placeholder --><!-- wp:divi/section {\"builderVersion\":\"5.15.1\"} --><!-- wp:divi/row {\"builderVersion\":\"5.15.1\"} --><!-- wp:divi/column {\"builderVersion\":\"5.15.1\"} --><!-- wp:divi/accordion {\"builderVersion\":\"5.15.1\"} --><!-- wp:divi/accordion-item {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Do you deliver?\"}}},\"content\":{\"innerContent\":{\"desktop\":{\"value\":[]}}},\"builderVersion\":\"5.15.1\"} /--><!-- /wp:divi/accordion --><!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section --><!-- /wp:divi/placeholder -->"
+}

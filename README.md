@@ -150,7 +150,8 @@ The canonical "layout file" is a JSON envelope:
 | `UNEXPECTED_CHILD_TYPE` | Block placed in wrong parent |
 | `WRONG_NESTING` | Nesting violates section→row→column→module hierarchy |
 | `RENDER_CRITICAL_MISSING` | Content key (`title`, `content`, etc.) missing |
-| `SCALAR_WHERE_OBJECT` | `image` or `button` value is scalar — causes PHP fatal on render |
+| `SCALAR_WHERE_OBJECT` | A string where Divi needs an object (`image`, `button`, and the live-proven keys of `src/VerifiedContentTypes.php`) — causes PHP fatal on render |
+| `OBJECT_WHERE_SCALAR` | An object or empty array where Divi needs a plain string or HTML (`title`, `content`, ... per `src/VerifiedContentTypes.php`) — causes PHP fatal on render |
 
 ## The verdict
 

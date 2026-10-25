@@ -2202,51 +2202,92 @@ MD;
     }
 
     /**
-     * The shapes of the object-valued content keys the validator knows (SchemaRules::contentKeyRules(), `mustBeObject`) for
-     * which a plain string is a render fatal: each one is worth a one-line example so a hand-written page gets it right.
-     * The examples are the shapes of the shipped recipes (a test compares them with the real testimonial and contact form).
+     * The shapes of the object-valued content keys the validator knows (SchemaRules::contentKeyRules(), `mustBeObject`, and
+     * the live-proven render fatals of SchemaRules::renderFatalKeys()) for which a plain string breaks the module: each one
+     * is worth a one-line example so a hand-written page gets it right. The examples are the shapes of the shipped recipes
+     * (a test compares them with the real testimonial and contact form).
      */
-    /** Modules the validator guards but the guides never teach (video is not taught: StyleGuideTypographyTopicTest), so the paragraph does not name them. */
-    public const OBJECT_VALUES_NOT_TAUGHT = [ 'divi/video' ];
+    /**
+     * Modules the validator guards but the guides never teach, so the paragraph does not name them: video is not taught
+     * (StyleGuideTypographyTopicTest); the others are guarded only by the render-fatal sweep (2026-10-25) and appear in no
+     * shipped recipe and no guide topic, so listing them would only spend the controls topic's bytes. The rule is exact
+     * (StyleGuideObjectValuesTest): a module the hand-written table guards is never dropped.
+     */
+    public const OBJECT_VALUES_NOT_TAUGHT = [
+        'divi/video',
+        'divi/fullwidth-header',
+        'divi/fullwidth-image',
+        'divi/fullwidth-menu',
+        'divi/fullwidth-post-slider',
+        'divi/link',
+        'divi/menu',
+        'divi/post-slider',
+        'divi/signup',
+    ];
 
     public const OBJECT_SHAPES = [
         'divi/testimonial'  => [ 'company' => '{"text": "Company"}', 'portrait' => '{"url": "...", "alt": "..."}' ],
         'divi/contact-form' => [ 'button' => '{"text": "Send"}' ],
     ];
 
+    /** The modules whose plain-string keys (SchemaRules::renderFatalKeys()['scalar']) the paragraph names as examples. */
+    public const SCALAR_VALUE_EXAMPLES = [ 'divi/heading', 'divi/text', 'divi/testimonial' ];
+
     /**
-     * "## Values that must be objects": generated from the validator's own table, so it can never disagree with what the
+     * "## Values that must be objects": generated from the validator's own tables, so it can never disagree with what the
      * plugin refuses. A string where Divi needs an object makes Divi answer HTTP 500 for the whole page (rendered on Divi
-     * 5.15.1), which the save gate reports as SCALAR_WHERE_OBJECT. Names every module and key, and gives the shape where one
-     * is known (OBJECT_SHAPES). '' when the table has no object-valued key.
+     * 5.15.1), which the save gate reports as SCALAR_WHERE_OBJECT; an object or an empty array where Divi needs a string
+     * does the same (OBJECT_WHERE_SCALAR). Names every taught module and key, and gives the shape where one is known
+     * (OBJECT_SHAPES). '' when the tables have no object-valued key.
      *
-     * @param array<string,list<array{0:string,1:bool,2:bool}>>|null $rules defaults to SchemaRules::contentKeyRules()
+     * @param array<string,list<array{0:string,1:bool,2:bool}>>|null $rules  defaults to SchemaRules::contentKeyRules()
+     * @param array<string,list<string>>|null                         $object defaults to SchemaRules::renderFatalKeys()['object']
+     * @param array<string,list<string>>|null                         $scalar defaults to SchemaRules::renderFatalKeys()['scalar']
      */
-    public static function objectValuesParagraph( ?array $rules = null ): string
+    public static function objectValuesParagraph( ?array $rules = null, ?array $object = null, ?array $scalar = null ): string
     {
-        $rules ??= ( new \Divi5Validator\SchemaRules() )->contentKeyRules();
+        $schema   = new \Divi5Validator\SchemaRules();
+        $rules  ??= $schema->contentKeyRules();
+        $object ??= $schema->renderFatalKeys()['object'];
+        $scalar ??= $schema->renderFatalKeys()['scalar'];
+        $keys = [];
+        foreach ( $rules as $module => $list ) {
+            foreach ( $list as [ $key, , $mustBeObject ] ) {
+                if ( true === $mustBeObject ) {
+                    $keys[ $module ][ $key ] = true;
+                }
+            }
+        }
+        foreach ( $object as $module => $list ) {
+            foreach ( $list as $key ) {
+                $keys[ $module ][ $key ] = true;
+            }
+        }
         $items = [];
-        foreach ( $rules as $module => $keys ) {
+        foreach ( $keys as $module => $set ) {
             if ( in_array( $module, self::OBJECT_VALUES_NOT_TAUGHT, true ) ) {
                 continue;
             }
             $names = [];
-            foreach ( $keys as [ $key, , $mustBeObject ] ) {
-                if ( true === $mustBeObject ) {
-                    $shape   = self::OBJECT_SHAPES[ $module ][ $key ] ?? null;
-                    $names[] = '`' . $key . '`' . ( null === $shape ? '' : ' ' . $shape );
-                }
+            foreach ( array_keys( $set ) as $key ) {
+                $shape   = self::OBJECT_SHAPES[ $module ][ $key ] ?? null;
+                $names[] = '`' . $key . '`' . ( null === $shape ? '' : ' ' . $shape );
             }
-            if ( [] !== $names ) {
-                $items[] = '`' . $module . '` ' . implode( ', ', $names );
-            }
+            $items[] = '`' . $module . '` ' . implode( ', ', $names );
         }
         if ( [] === $items ) {
             return '';
         }
+        $examples = [];
+        foreach ( self::SCALAR_VALUE_EXAMPLES as $module ) {
+            if ( isset( $scalar[ $module ] ) ) {
+                $examples[] = '`' . $module . '` ' . implode( ', ', array_map( static fn ( string $k ): string => '`' . $k . '`', $scalar[ $module ] ) );
+            }
+        }
 
         return "\n\n## Values that must be objects\n\nOn these keys `innerContent.desktop.value` is an object, never a plain string: a string makes Divi answer HTTP 500 for the whole page and the save is refused (SCALAR_WHERE_OBJECT): "
-            . implode( '; ', $items ) . '. A testimonial\'s `author` and `jobTitle` are plain strings and its `content` is HTML.';
+            . implode( '; ', $items ) . '.'
+            . ( [] === $examples ? '' : ' Text keys are the opposite, a plain string or HTML: an object or an empty array there fails the page too (OBJECT_WHERE_SCALAR), e.g. ' . implode( '; ', $examples ) . '.' );
     }
 
     private static function controlsTopicText(): string

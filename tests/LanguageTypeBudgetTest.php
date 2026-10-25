@@ -51,10 +51,11 @@ final class LanguageTypeBudgetTest extends TestCase
 
     public function testTheKitTopicsDoNotMove(): void
     {
-        // carriers adapter: kit-rules 8997 -> 9598 (Ruling 8), style-kits 8444 -> 8178 (Ruling 7), controls 8331 -> 8348 (Ruling 10), then 9105 (object-values paragraph, round 2).
+        // carriers adapter: kit-rules 8997 -> 9598 (Ruling 8), style-kits 8444 -> 8178 (Ruling 7), controls 8331 -> 8348 (Ruling 10), then 9105 (object-values paragraph, round 2), then 9271 (render-fatal sweep: 9105 + 166 B, the generated slide/pricing-table keys and the plain-string sentence).
         self::assertSame( 9598, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
         self::assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ) );
-        self::assertSame( 9105, strlen( StyleGuide::markdown( 'controls' ) ) );
+        // render-fatal sweep: 9105 -> 9271 (+166 B = the longer generated object-values paragraph, StyleGuideObjectValuesTest).
+        self::assertSame( 9271, strlen( StyleGuide::markdown( 'controls' ) ) );
     }
 
     /**

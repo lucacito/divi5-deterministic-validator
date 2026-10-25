@@ -47,7 +47,8 @@ final class LanguageRhythmBudgetTest extends TestCase
         // carriers adapter: kit-rules 8997 -> 9598 (Ruling 8), style-kits 8444 -> 8178 (Ruling 7), controls 8331 -> 8348 (Ruling 10).
         self::assertSame( 9598, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
         self::assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ) );
-        self::assertSame( 9105, strlen( StyleGuide::markdown( 'controls' ) ) );
+        // render-fatal sweep: 9105 -> 9271 (+166 B = the longer generated object-values paragraph, StyleGuideObjectValuesTest).
+        self::assertSame( 9271, strlen( StyleGuide::markdown( 'controls' ) ) );
         self::assertSame( 2592, strlen( StyleGuide::markdown( 'design-languages' ) ) );
         self::assertSame( 9972, strlen( StyleGuide::markdown( 'layout-sizing' ) ) );
     }
