@@ -16,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 class DogfoodPrepareTest extends TestCase
 {
     /** sha256 of the prototype's edit-glass-edge/page.html (54,860 bytes since the rhythm markers, rhythm adapter Task 5), which is exactly editBase('glass-edge', 'glass-dark'). */
-    private const EDIT_BASE_SHA256 = '71102e5182c371f9ec2537789e20030141ef2845744804f333cb49bb108630dd';
+    private const EDIT_BASE_SHA256 = 'f9e97add8ba219e70744d4a25e7c684919a33bd4d387f86947f7430e3eba944f';
 
     private const GUIDE_NAMES = [ '01-style-guide.md', '02-kit-rules.md', '03-style-kit.md', '04-design-language.md', '05-controls.md', '06-forms.md' ];
 

@@ -24,6 +24,9 @@ require_once __DIR__ . '/../wp-plugin/src/KitAdapters.php';
  * languages' default kits, reviewed by eye: to the entries of the defaults already here, plus three entries
  * (warm-pill-soft, hairline-dashed, chunky-pill-offset) that hold only those two patches. Every earlier patch stayed
  * byte-identical.
+ * The wording-gaps hover fix (Ruling 7, 2026-10-25) regenerated this golden ON PURPOSE: the glass-edge and heavy-block
+ * button patches now keep their rest frame colour on hover (`invert` with a visible `same` frame); the changed entries are
+ * listed and proven to be the only moved bytes in KitGoldenFreezeTest::HOVER_FIX_CHANGED.
  */
 class KitAdapterGoldenTest extends TestCase
 {

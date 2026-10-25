@@ -66,9 +66,13 @@ class KitCarrierAdapterTest extends TestCase
     /**
      * sha256 of the JSON of KitAdapters::patch() over every OLD (block, role) of APPLIED x the five bands x no ground and both
      * grounds x the 40 kits, taken at the Task 3 base (feat/carriers-adapter 260e0b0) before any adapter edit: a new carrier
-     * must not change one old patch.
+     * must not change one old patch. Re-pinned ON PURPOSE by the wording-gaps hover fix (Ruling 7, 2026-10-25: `invert` with a
+     * `same` frame wider than 0px keeps the rest frame colour on hover): BEFORE_THE_HOVER_FIX_SHA256 is the Task 3 base digest,
+     * and the test proves that putting the old hover frame (the hover fill) back into the glass-edge and heavy-block button and
+     * form patches off the panel gives it again, so nothing else moved.
      */
-    private const OLD_PATCHES_SHA256 = 'e3bcb7653445fb2786182f7ced335521deb3b92e6b3f92c41a322680d14a39af';
+    private const OLD_PATCHES_SHA256 = '981210d7651a65adcf84c18ef22069c55428702500e63afe805e722935a533ca';
+    private const BEFORE_THE_HOVER_FIX_SHA256 = 'e3bcb7653445fb2786182f7ced335521deb3b92e6b3f92c41a322680d14a39af';
 
     /** The APPLIED map before the carriers adapter (the enumeration of OLD_PATCHES_SHA256). */
     private const OLD_APPLIED = [
@@ -616,6 +620,19 @@ class KitCarrierAdapterTest extends TestCase
         }
         $this->assertCount( 11400, $rows );
         $this->assertSame( self::OLD_PATCHES_SHA256, hash( 'sha256', (string) json_encode( $rows ) ), 'every old (block, role, band, ground, kit) patch is byte-identical to the Task 3 base' );
+        $restored = $rows;
+        $moved    = 0;
+        foreach ( $restored as &$row ) {
+            if ( in_array( $row[4], [ 'glass-edge', 'heavy-block' ], true ) && in_array( $row[0], [ 'divi/button', 'divi/contact-form' ], true ) && 'panel' !== $row[2] && null !== $row[5] ) {
+                $d =& $row[5]['button']['decoration'];
+                $d['border']['desktop']['hover']['styles']['all']['color'] = $d['background']['desktop']['hover']['color'];
+                unset( $d );
+                ++$moved;
+            }
+        }
+        unset( $row );
+        $this->assertSame( 20, $moved, 'glass-edge and heavy-block: both button roles on light/accent/dark (the secondary is unchanged: its hover frame already is its hover fill), the form on four bands' );
+        $this->assertSame( self::BEFORE_THE_HOVER_FIX_SHA256, hash( 'sha256', (string) json_encode( $restored ) ), 'only the Ruling 7 hover frames moved since the Task 3 base' );
         foreach ( self::OLD_APPLIED as $block => $roles ) {
             $this->assertSame( $roles, array_slice( KitAdapters::APPLIED[ $block ], 0, count( $roles ) ), "$block keeps its old roles, in order (new ones are appended)" );
         }
