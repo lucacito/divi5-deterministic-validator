@@ -81,7 +81,7 @@ final class WordingGapsBudgetTest extends TestCase
             $this->assertLessThanOrEqual( 9950, $len, "$id: STOP above 9,950 B (Ruling 12)" );
             $max = max( $max, $len );
         }
-        $this->assertSame( 9599, $max, 'the largest kit topic is neo-brutal (Task 3b re-pins it)' );
+        $this->assertSame( 9556, $max, 'the largest kit topic is neo-brutal (Task 3b: 9,599 -> 9,556 with its own default language)' );
     }
 
     public function testTheDesignLanguageTopicsAreAtTheirMeasuredSizes(): void
