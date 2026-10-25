@@ -20,8 +20,11 @@ All 30 `lr-<language>-<role>` candidates (10 languages x section, open, tight; t
 of each language) changed the computed `padding-top` and `padding-bottom` from 24px to exactly the desktop value at 1280, the
 tablet value at 900 and the phone value at 400, with the bottom equal to the top (the toggle never moved a side). A section with
 a background image kept its image (`background-image` is not among the changed properties at any width). The first and a later
-section of a page both took the padding. A section that overlaps the one above (`margin.top` -80px) kept the same overlap area
-(102400 px² before and after), so the 0px-edge and overlap recipes are unaffected by the padding of their neighbours.
+section of a page both took the padding. A section that overlaps the one above (`margin.top` -80px) and was itself given the padding (lr-section-overlap) kept the
+same overlap area (102400 px² before and after). That probe padded the overlapping section itself; it does not show what
+happens to a neighbour's overlap when the section next to it is re-padded. No library recipe puts a negative margin on a
+section (checked over `wp-plugin/data/section-recipes.json`: the 71 sections carry none; the negative margins are on rows,
+groups and images inside a section), so the adapter never meets this case in the shipped recipes.
 
 ## Decisions
 

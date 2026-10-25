@@ -1277,22 +1277,36 @@ class DesignLanguagesTest extends TestCase
         return array_map(static fn(string $id): array => (array) DesignLanguages::get($id), DesignLanguages::ids());
     }
 
+    /**
+     * The prose-vs-data comparison: null when `section_space` is the one sentence in `section_padding`, else what differs.
+     *
+     * @param array<string,mixed> $lang
+     */
+    private static function sectionSpaceProseMismatch(array $lang): ?string
+    {
+        $id = (string) $lang['id'];
+        if (1 !== preg_match_all('/(\d+)px top and bottom on desktop, (\d+)px on tablet, (\d+)px on phone/', (string) $lang['section_padding'], $m)) {
+            return "$id: the prose does not state the padding exactly once";
+        }
+        $prose = [ (int) $m[1][0], (int) $m[2][0], (int) $m[3][0] ];
+        $data  = [ $lang['section_space']['desktop'] ?? null, $lang['section_space']['tablet'] ?? null, $lang['section_space']['phone'] ?? null ];
+        return $prose === $data ? null : "$id: section_space " . json_encode($data) . ' is not the sentence ' . json_encode($prose);
+    }
+
     public function testEverySectionSpaceIsItsProseSentence(): void
     {
         foreach ($this->allLanguages() as $lang) {
-            $id = $lang['id'];
-            $this->assertSame(1, preg_match_all('/(\d+)px top and bottom on desktop, (\d+)px on tablet, (\d+)px on phone/', $lang['section_padding'], $m), "$id: the prose states the padding once");
-            $this->assertSame(
-                [ (int) $m[1][0], (int) $m[2][0], (int) $m[3][0] ],
-                [ $lang['section_space']['desktop'], $lang['section_space']['tablet'], $lang['section_space']['phone'] ],
-                "$id: section_space is the sentence"
-            );
+            $this->assertNull(self::sectionSpaceProseMismatch($lang), "$lang[id]: section_space is the sentence");
         }
-        // Planted: a mismatch is found by the same comparison.
+        // Planted: the same helper reports a mismatch, and a prose without the sentence.
         $lang                           = $this->okLanguage();
-        $lang['section_space']['phone'] = 52;
-        preg_match('/(\d+)px top and bottom on desktop, (\d+)px on tablet, (\d+)px on phone/', $lang['section_padding'], $p);
-        $this->assertNotSame([ (int) $p[1], (int) $p[2], (int) $p[3] ], array_values($lang['section_space']));
+        $this->assertNull(self::sectionSpaceProseMismatch($lang), 'the base fixture agrees with its own prose');
+        $planted                        = $lang;
+        $planted['section_space']['phone'] = $lang['section_space']['phone'] + 4;
+        $this->assertNotNull(self::sectionSpaceProseMismatch($planted), 'a planted data mismatch is reported');
+        $noSentence                     = $lang;
+        $noSentence['section_padding']  = 'Roomy sections.';
+        $this->assertNotNull(self::sectionSpaceProseMismatch($noSentence), 'a prose without the sentence is reported');
     }
 
     public function testTheSectionSpaceBoundsHold(): void
@@ -1387,7 +1401,7 @@ class DesignLanguagesTest extends TestCase
 
     public function testTheDerivedRolesHoldForEveryTripleInsideTheBounds(): void
     {
-        $clamps = [ 28, 56, 120, 200 ];
+        $bounds = [ 'desktop' => [ 56, 200 ], 'phone' => [ 28, 120 ] ];
         $count  = 0;
         for ($desktop = 56; $desktop <= 200; $desktop += 4) {
             for ($phone = 28; $phone <= min(120, $desktop); $phone += 4) {
@@ -1400,8 +1414,10 @@ class DesignLanguagesTest extends TestCase
                         $this->assertIsArray($got);
                         foreach ($got as $key => $value) {
                             $this->assertIsInt($value);
-                            $ok = 0 === $value % 8 || in_array($value, $clamps, true) || $value === $got['desktop'] || $value === $got['phone'];
-                            $this->assertTrue($ok, "$role $desktop/$tablet/$phone $key=$value");
+                            // A whole multiple of 8, or the clamp bound of that key (desktop 56/200, phone 28/120),
+                            // or, for tablet only, the phone or desktop result it was clamped to.
+                            $ok = 0 === $value % 8 || in_array($value, $bounds[$key] ?? [], true) || ('tablet' === $key && ($value === $got['phone'] || $value === $got['desktop']));
+                            $this->assertTrue($ok, "$role $desktop/$tablet/$phone $key=$value is not a multiple of 8 or a clamp");
                         }
                         $this->assertGreaterThanOrEqual(56, $got['desktop']);
                         $this->assertLessThanOrEqual(200, $got['desktop']);
