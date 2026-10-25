@@ -541,7 +541,7 @@ final class DesignLanguages
     public static function sectionSpaceLine( array $language ): string
     {
         $parts = [];
-        foreach ( [ 'section' => 'sections', 'open' => 'open (a hero or closing band)', 'tight' => 'tight (a logo or stats strip)' ] as $role => $name ) {
+        foreach ( [ 'section' => 'sections', 'open' => 'open (a roomier band)', 'tight' => 'tight (a compact strip)' ] as $role => $name ) {
             $space = self::sectionSpace( $language, $role );
             if ( null === $space ) {
                 return '';
