@@ -3,7 +3,8 @@
 Which content values make Divi 5 throw while it renders a page? On the front end such a throw is an
 HTTP 500 for the WHOLE page. Evidence: `fixtures/shapes/render-fatals.json`. Scripts:
 `scripts/sweep-module-keys.php` (the key shapes) and `scripts/sweep-render-fatals.php` (the live sweep).
-Nothing in `src/`, `wp-plugin/` or `tests/` was changed.
+The sweep itself changed nothing in `src/`, `wp-plugin/` or `tests/`; its fatals are now guards: `php scripts/promote-render-fatals.php`
+generates `src/VerifiedContentTypes.php` (21 object keys, 59 scalar keys; `docs/SCHEMA.md`, "Render-fatal guards from the full sweep").
 
 ## Method
 

@@ -1,0 +1,5 @@
+{
+    "source": "divi5-invalid-fixture",
+    "_comment": "divi/fullwidth-header buttonOne innerContent.desktop.value as a string instead of an object - Divi 5.15.1 throws ArrayUtility::get_value() TypeError on render, HTTP 500 for the whole page (render-fatal sweep 2026-10-25, fixtures/shapes/render-fatals.json)",
+    "post_content": "<!-- wp:divi/placeholder --><!-- wp:divi/section {\"builderVersion\":\"5.15.1\"} --><!-- wp:divi/row {\"builderVersion\":\"5.15.1\"} --><!-- wp:divi/column {\"builderVersion\":\"5.15.1\"} --><!-- wp:divi/fullwidth-header {\"title\":{\"innerContent\":{\"desktop\":{\"value\":\"Fresh bread daily\"}}},\"buttonOne\":{\"innerContent\":{\"desktop\":{\"value\":\"Order now\"}}},\"builderVersion\":\"5.15.1\"} /--><!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section --><!-- /wp:divi/placeholder -->"
+}

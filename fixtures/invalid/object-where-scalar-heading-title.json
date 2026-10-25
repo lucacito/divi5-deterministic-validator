@@ -1,0 +1,5 @@
+{
+    "source": "divi5-invalid-fixture",
+    "_comment": "divi/heading title innerContent.desktop.value as an object instead of a plain string - Divi 5.15.1 throws UnexpectedValueException on render, HTTP 500 for the whole page (render-fatal sweep 2026-10-25, fixtures/shapes/render-fatals.json)",
+    "post_content": "<!-- wp:divi/placeholder --><!-- wp:divi/section {\"builderVersion\":\"5.15.1\"} --><!-- wp:divi/row {\"builderVersion\":\"5.15.1\"} --><!-- wp:divi/column {\"builderVersion\":\"5.15.1\"} --><!-- wp:divi/heading {\"title\":{\"innerContent\":{\"desktop\":{\"value\":{\"text\":\"Fresh bread daily\"}}}},\"builderVersion\":\"5.15.1\"} /--><!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section --><!-- /wp:divi/placeholder -->"
+}

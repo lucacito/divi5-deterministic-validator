@@ -245,6 +245,19 @@ class SchemaRules
         ];
     }
 
+    /**
+     * Live-proven render fatals (src/VerifiedContentTypes.php, generated from fixtures/shapes/render-fatals.json by
+     * scripts/promote-render-fatals.php): module => content keys whose innerContent.desktop.value must be an object
+     * (`object`: a string threw) or a plain string or HTML (`scalar`: an object or an empty array threw). Checked in
+     * addition to contentKeyRules(), which also holds the `required` flags and the guards against silent misrenders.
+     *
+     * @return array{object: array<string, list<string>>, scalar: array<string, list<string>>}
+     */
+    public function renderFatalKeys(): array
+    {
+        return ['object' => VerifiedContentTypes::OBJECT_KEYS, 'scalar' => VerifiedContentTypes::SCALAR_KEYS];
+    }
+
     public function isKnownType(string $type): bool
     {
         return $this->isStructural($type)
