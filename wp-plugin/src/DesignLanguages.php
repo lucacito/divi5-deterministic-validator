@@ -41,6 +41,21 @@ final class DesignLanguages
     private const FONT_KEYS  = [ 'display', 'body', 'eyebrow' ];
     private const TEXT_KEYS  = [ 'title', 'summary', 'radius', 'section_padding', 'shadow', 'rhythm', 'hero', 'cta' ];
 
+    /** The longest generated line (see generatedLines()) a language topic may gain: one line, so the topic stays inside its bound. */
+    public const GENERATED_LINE_MAX = 260;
+
+    /** The type roles a language decides (type adapter): recipe h1/h2, h3, and eyebrow labels. */
+    public const TYPE_KEYS = [ 'display', 'title', 'eyebrow' ];
+
+    /** The three decisions per role, in the order the data and the generated line write them. */
+    public const TYPE_ROLE_KEYS = [ 'weight', 'letterSpacing', 'capitalization' ];
+
+    /** @var list<string> the font weights a language may ask for (each must also exist in the role's font: typeProblems()) */
+    public const TYPE_WEIGHTS = [ '100', '200', '300', '400', '500', '600', '700', '800', '900' ];
+
+    /** @var array<string,array{0:int,1:int}> letter spacing bounds in whole pixels, per role */
+    public const TYPE_TRACKING_BOUNDS = [ 'display' => [ -3, 0 ], 'title' => [ -1, 1 ], 'eyebrow' => [ 0, 4 ] ];
+
     /** @var ?list<array<string,mixed>> the decoded languages, read once per request */
     private static ?array $cache = null;
 
@@ -92,8 +107,9 @@ final class DesignLanguages
     /**
      * One language, or null for an unknown id.
      *
-     * Shape: {id, title, summary, colors, fonts, radius, section_padding, shadow, motion, kit,
-     * rhythm, favors, avoids, hero, cta}. `kit` is the id of the style kit (StyleKits) the language's
+     * Shape: {id, title, summary, colors, fonts, type, radius, section_padding, shadow, motion, kit,
+     * rhythm, favors, avoids, hero, cta}. `type` has the roles display (recipe h1, h2), title (h3) and eyebrow, each
+     * {weight, letterSpacing, capitalization} (see typeProblems()). `kit` is the id of the style kit (StyleKits) the language's
      * recipes are served in unless a caller names another. `colors` always has bg, surface, text, muted,
      * accent, accent_text, border, inverse (hex) and `overlay`, an `rgba(r,g,b,a)` scrim
      * (0.35 <= a <= 0.8). `inverse` is the text colour for dark bands and photos; `overlay`
@@ -166,6 +182,7 @@ final class DesignLanguages
             '',
             '## Fonts',
             sprintf( '- headings: %s; body: %s; eyebrow labels: %s', (string) $f['display'], (string) $f['body'], (string) $f['eyebrow'] ),
+            ...array_values( self::generatedLines( $lang ) ),
             '',
             '## Shape, space and depth',
             '- Radius: ' . (string) $lang['radius'],
@@ -200,12 +217,15 @@ final class DesignLanguages
      * SectionRecipes::LAYOUTS values and do not overlap; no text contains `<`, `>`, a backtick or
      * `{{`. Uniqueness of ids is a property of the whole set, so it is checked over ids(), not here.
      * The class never reads a font list itself: the caller passes the names (null skips the check).
+     * `type` is required: typeProblems() lines are part of the result (already prefixed `type.`); with $fontWeights
+     * (the `families` map of fixtures/shapes/font-weights.json) each weight must also exist in its role's font.
      *
-     * @param array<string,mixed> $language
-     * @param ?list<string>       $knownFonts
+     * @param array<string,mixed>                $language
+     * @param ?list<string>                      $knownFonts
+     * @param ?array<string,array<string,mixed>> $fontWeights
      * @return list<string>
      */
-    public static function valid( array $language, ?array $knownFonts = null ): array
+    public static function valid( array $language, ?array $knownFonts = null, ?array $fontWeights = null ): array
     {
         $problems = [];
 
@@ -269,6 +289,8 @@ final class DesignLanguages
             }
         }
 
+        $problems = array_merge( $problems, self::typeProblems( $language, $fontWeights ) );
+
         foreach ( [ 'favors', 'avoids' ] as $key ) {
             $list = $language[ $key ] ?? null;
             if ( ! is_array( $list ) || [] === $list ) {
@@ -292,6 +314,141 @@ final class DesignLanguages
         }
 
         return $problems;
+    }
+
+    /**
+     * What is wrong with a language's `type` (empty list = fine; every line starts with the dotted path, `type...`).
+     * `type` is an object with EXACTLY display, title and eyebrow; each is an object with EXACTLY weight (a string
+     * of TYPE_WEIGHTS), letterSpacing (whole pixels, `0px` or `-1px`, never `-0px`, inside TYPE_TRACKING_BOUNDS for
+     * the role) and capitalization (`none` or `uppercase`). With $fontWeights (the `families` map of
+     * fixtures/shapes/font-weights.json: Divi's own font file) the weight must also exist in the role's font:
+     * display and title use fonts.display, eyebrow uses fonts.eyebrow, each the FIRST family of its stack. A variable
+     * family (an `axes.wght` range) takes any weight inside the range; a static one needs the weight among its
+     * variants (`regular` is 400, an italic-only variant does not count). A family missing from the map is a problem.
+     *
+     * @param array<string,mixed>                $language
+     * @param ?array<string,array<string,mixed>> $fontWeights
+     * @return list<string>
+     */
+    public static function typeProblems( array $language, ?array $fontWeights = null ): array
+    {
+        $type = $language['type'] ?? null;
+        if ( ! is_array( $type ) ) {
+            return [ 'type must be an object with the roles ' . implode( ', ', self::TYPE_KEYS ) ];
+        }
+        $problems = [];
+        foreach ( array_keys( $type ) as $role ) {
+            if ( ! in_array( $role, self::TYPE_KEYS, true ) ) {
+                $problems[] = 'type.' . $role . ' is not a type role (' . implode( ', ', self::TYPE_KEYS ) . ')';
+            }
+        }
+        $fonts = is_array( $language['fonts'] ?? null ) ? $language['fonts'] : [];
+        foreach ( self::TYPE_KEYS as $role ) {
+            $spec = $type[ $role ] ?? null;
+            if ( ! is_array( $spec ) ) {
+                $problems[] = 'type.' . $role . ' must be an object with ' . implode( ', ', self::TYPE_ROLE_KEYS );
+                continue;
+            }
+            foreach ( array_keys( $spec ) as $key ) {
+                if ( ! in_array( $key, self::TYPE_ROLE_KEYS, true ) ) {
+                    $problems[] = 'type.' . $role . '.' . $key . ' is not a type decision (' . implode( ', ', self::TYPE_ROLE_KEYS ) . ')';
+                }
+            }
+            $weight = $spec['weight'] ?? null;
+            if ( ! is_string( $weight ) || ! in_array( $weight, self::TYPE_WEIGHTS, true ) ) {
+                $problems[] = 'type.' . $role . '.weight must be one of ' . implode( ', ', self::TYPE_WEIGHTS ) . ' as a string';
+            } elseif ( null !== $fontWeights ) {
+                $stack  = is_string( $fonts['eyebrow' === $role ? 'eyebrow' : 'display'] ?? null ) ? $fonts['eyebrow' === $role ? 'eyebrow' : 'display'] : '';
+                $family = trim( explode( ',', $stack )[0] );
+                $reason = self::weightMissing( $fontWeights[ $family ] ?? null, (int) $weight );
+                if ( null !== $reason ) {
+                    $problems[] = 'type.' . $role . '.weight ' . $weight . ' is not available in "' . $family . '": ' . $reason;
+                }
+            }
+            $tracking = $spec['letterSpacing'] ?? null;
+            if ( ! is_string( $tracking ) || 1 !== preg_match( '/^(0|-?[1-9][0-9]?)px\z/', $tracking ) ) {
+                $problems[] = 'type.' . $role . '.letterSpacing must be whole pixels such as 0px or -1px';
+            } else {
+                [ $lo, $hi ] = self::TYPE_TRACKING_BOUNDS[ $role ];
+                if ( (int) $tracking < $lo || (int) $tracking > $hi ) {
+                    $problems[] = 'type.' . $role . '.letterSpacing must be between ' . $lo . 'px and ' . $hi . 'px';
+                }
+            }
+            $caps = $spec['capitalization'] ?? null;
+            if ( ! is_string( $caps ) || ! in_array( $caps, [ 'none', 'uppercase' ], true ) ) {
+                $problems[] = 'type.' . $role . '.capitalization must be none or uppercase';
+            } elseif ( 'eyebrow' === $role && 'uppercase' === $caps && is_string( $tracking ) && (int) $tracking < 0 ) {
+                $problems[] = 'type.eyebrow.letterSpacing must not be negative on capital letters';
+            }
+        }
+        return $problems;
+    }
+
+    /**
+     * Why a font cannot render a weight, or null when it can.
+     *
+     * @param mixed $entry the family's entry in font-weights.json (`variants`, optional `axes.wght`)
+     */
+    private static function weightMissing( $entry, int $weight ): ?string
+    {
+        if ( ! is_array( $entry ) ) {
+            return 'the family is not in the font facts';
+        }
+        $range = $entry['axes']['wght'] ?? null;
+        if ( is_array( $range ) && 2 === count( $range ) ) {
+            return $weight >= (int) $range[0] && $weight <= (int) $range[1] ? null : 'its weight range is ' . (int) $range[0] . ' to ' . (int) $range[1];
+        }
+        $variants = array_map( 'strval', (array) ( $entry['variants'] ?? [] ) );
+        $name     = 400 === $weight ? 'regular' : (string) $weight;
+        return in_array( $name, $variants, true ) ? null : 'its weights are ' . implode( ', ', $variants );
+    }
+
+    /**
+     * The one line of a design language topic that states the language's headline type, generated from the data so it
+     * can never disagree with it. Capital letters are named only for a role that asks for them. '' when the language
+     * has no readable `type`.
+     *
+     * @param array<string,mixed> $language
+     */
+    public static function typeLine( array $language ): string
+    {
+        $type = $language['type'] ?? null;
+        if ( ! is_array( $type ) ) {
+            return '';
+        }
+        $names = [ 'display' => 'headlines (h1, h2)', 'title' => 'titles (h3)', 'eyebrow' => 'eyebrow labels' ];
+        $parts = [];
+        foreach ( $names as $role => $name ) {
+            $spec = $type[ $role ] ?? null;
+            if ( ! is_array( $spec ) ) {
+                return '';
+            }
+            $parts[] = sprintf(
+                '%s weight %s, letter spacing %s%s',
+                $name,
+                self::plainValue( $spec['weight'] ?? '' ),
+                self::plainValue( $spec['letterSpacing'] ?? '' ),
+                'uppercase' === ( $spec['capitalization'] ?? '' ) ? ', capital letters' : ''
+            );
+        }
+        return '- Type: ' . implode( '; ', $parts ) . ' (where to write them: topic=typography).';
+    }
+
+    /**
+     * Every generated line a language topic carries, by name (the topic prints them in this order).
+     *
+     * @param array<string,mixed> $language
+     * @return array<string,string>
+     */
+    public static function generatedLines( array $language ): array
+    {
+        return [ 'type' => self::typeLine( $language ) ];
+    }
+
+    /** @param mixed $value */
+    private static function plainValue( $value ): string
+    {
+        return is_string( $value ) ? $value : '';
     }
 
     /**

@@ -1,0 +1,891 @@
+{
+    "editorial": {
+        "type": {
+            "display": {
+                "weight": "600",
+                "letterSpacing": "-1px",
+                "capitalization": "none"
+            },
+            "title": {
+                "weight": "600",
+                "letterSpacing": "0px",
+                "capitalization": "none"
+            },
+            "eyebrow": {
+                "weight": "600",
+                "letterSpacing": "2px",
+                "capitalization": "uppercase"
+            }
+        },
+        "patches": {
+            "divi/heading|display": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "600",
+                                        "letterSpacing": "-1px"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/heading|title": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "600",
+                                        "letterSpacing": "0px"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/heading|eyebrow": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "600",
+                                        "letterSpacing": "2px",
+                                        "capitalization": "uppercase"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/text|eyebrow": {
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "weight": "600",
+                                            "letterSpacing": "2px",
+                                            "capitalization": "uppercase"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "glass-dark": {
+        "type": {
+            "display": {
+                "weight": "700",
+                "letterSpacing": "-1px",
+                "capitalization": "none"
+            },
+            "title": {
+                "weight": "600",
+                "letterSpacing": "0px",
+                "capitalization": "none"
+            },
+            "eyebrow": {
+                "weight": "500",
+                "letterSpacing": "2px",
+                "capitalization": "uppercase"
+            }
+        },
+        "patches": {
+            "divi/heading|display": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "700",
+                                        "letterSpacing": "-1px"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/heading|title": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "600",
+                                        "letterSpacing": "0px"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/heading|eyebrow": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "500",
+                                        "letterSpacing": "2px",
+                                        "capitalization": "uppercase"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/text|eyebrow": {
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "weight": "500",
+                                            "letterSpacing": "2px",
+                                            "capitalization": "uppercase"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "organic-warm": {
+        "type": {
+            "display": {
+                "weight": "600",
+                "letterSpacing": "-1px",
+                "capitalization": "none"
+            },
+            "title": {
+                "weight": "600",
+                "letterSpacing": "0px",
+                "capitalization": "none"
+            },
+            "eyebrow": {
+                "weight": "600",
+                "letterSpacing": "1px",
+                "capitalization": "uppercase"
+            }
+        },
+        "patches": {
+            "divi/heading|display": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "600",
+                                        "letterSpacing": "-1px"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/heading|title": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "600",
+                                        "letterSpacing": "0px"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/heading|eyebrow": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "600",
+                                        "letterSpacing": "1px",
+                                        "capitalization": "uppercase"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/text|eyebrow": {
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "weight": "600",
+                                            "letterSpacing": "1px",
+                                            "capitalization": "uppercase"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "tech-mono": {
+        "type": {
+            "display": {
+                "weight": "600",
+                "letterSpacing": "-1px",
+                "capitalization": "none"
+            },
+            "title": {
+                "weight": "500",
+                "letterSpacing": "0px",
+                "capitalization": "none"
+            },
+            "eyebrow": {
+                "weight": "500",
+                "letterSpacing": "2px",
+                "capitalization": "uppercase"
+            }
+        },
+        "patches": {
+            "divi/heading|display": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "600",
+                                        "letterSpacing": "-1px"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/heading|title": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "500",
+                                        "letterSpacing": "0px"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/heading|eyebrow": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "500",
+                                        "letterSpacing": "2px",
+                                        "capitalization": "uppercase"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/text|eyebrow": {
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "weight": "500",
+                                            "letterSpacing": "2px",
+                                            "capitalization": "uppercase"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "playful-pastel": {
+        "type": {
+            "display": {
+                "weight": "700",
+                "letterSpacing": "0px",
+                "capitalization": "none"
+            },
+            "title": {
+                "weight": "600",
+                "letterSpacing": "0px",
+                "capitalization": "none"
+            },
+            "eyebrow": {
+                "weight": "600",
+                "letterSpacing": "1px",
+                "capitalization": "none"
+            }
+        },
+        "patches": {
+            "divi/heading|display": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "700",
+                                        "letterSpacing": "0px"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/heading|title": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "600",
+                                        "letterSpacing": "0px"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/heading|eyebrow": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "600",
+                                        "letterSpacing": "1px"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/text|eyebrow": {
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "weight": "600",
+                                            "letterSpacing": "1px"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "corporate-trust": {
+        "type": {
+            "display": {
+                "weight": "600",
+                "letterSpacing": "0px",
+                "capitalization": "none"
+            },
+            "title": {
+                "weight": "600",
+                "letterSpacing": "0px",
+                "capitalization": "none"
+            },
+            "eyebrow": {
+                "weight": "600",
+                "letterSpacing": "1px",
+                "capitalization": "uppercase"
+            }
+        },
+        "patches": {
+            "divi/heading|display": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "600",
+                                        "letterSpacing": "0px"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/heading|title": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "600",
+                                        "letterSpacing": "0px"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/heading|eyebrow": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "600",
+                                        "letterSpacing": "1px",
+                                        "capitalization": "uppercase"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/text|eyebrow": {
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "weight": "600",
+                                            "letterSpacing": "1px",
+                                            "capitalization": "uppercase"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "soft-saas": {
+        "type": {
+            "display": {
+                "weight": "700",
+                "letterSpacing": "-1px",
+                "capitalization": "none"
+            },
+            "title": {
+                "weight": "600",
+                "letterSpacing": "0px",
+                "capitalization": "none"
+            },
+            "eyebrow": {
+                "weight": "600",
+                "letterSpacing": "1px",
+                "capitalization": "uppercase"
+            }
+        },
+        "patches": {
+            "divi/heading|display": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "700",
+                                        "letterSpacing": "-1px"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/heading|title": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "600",
+                                        "letterSpacing": "0px"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/heading|eyebrow": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "600",
+                                        "letterSpacing": "1px",
+                                        "capitalization": "uppercase"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/text|eyebrow": {
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "weight": "600",
+                                            "letterSpacing": "1px",
+                                            "capitalization": "uppercase"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "bold-vibrant": {
+        "type": {
+            "display": {
+                "weight": "800",
+                "letterSpacing": "-1px",
+                "capitalization": "none"
+            },
+            "title": {
+                "weight": "700",
+                "letterSpacing": "0px",
+                "capitalization": "none"
+            },
+            "eyebrow": {
+                "weight": "700",
+                "letterSpacing": "2px",
+                "capitalization": "uppercase"
+            }
+        },
+        "patches": {
+            "divi/heading|display": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "800",
+                                        "letterSpacing": "-1px"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/heading|title": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "700",
+                                        "letterSpacing": "0px"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/heading|eyebrow": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "700",
+                                        "letterSpacing": "2px",
+                                        "capitalization": "uppercase"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/text|eyebrow": {
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "weight": "700",
+                                            "letterSpacing": "2px",
+                                            "capitalization": "uppercase"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "brutalist-flat": {
+        "type": {
+            "display": {
+                "weight": "900",
+                "letterSpacing": "-1px",
+                "capitalization": "uppercase"
+            },
+            "title": {
+                "weight": "700",
+                "letterSpacing": "0px",
+                "capitalization": "none"
+            },
+            "eyebrow": {
+                "weight": "700",
+                "letterSpacing": "2px",
+                "capitalization": "uppercase"
+            }
+        },
+        "patches": {
+            "divi/heading|display": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "900",
+                                        "letterSpacing": "-1px",
+                                        "capitalization": "uppercase"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/heading|title": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "700",
+                                        "letterSpacing": "0px"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/heading|eyebrow": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "700",
+                                        "letterSpacing": "2px",
+                                        "capitalization": "uppercase"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/text|eyebrow": {
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "weight": "700",
+                                            "letterSpacing": "2px",
+                                            "capitalization": "uppercase"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "luxe": {
+        "type": {
+            "display": {
+                "weight": "300",
+                "letterSpacing": "0px",
+                "capitalization": "none"
+            },
+            "title": {
+                "weight": "400",
+                "letterSpacing": "0px",
+                "capitalization": "none"
+            },
+            "eyebrow": {
+                "weight": "400",
+                "letterSpacing": "3px",
+                "capitalization": "uppercase"
+            }
+        },
+        "patches": {
+            "divi/heading|display": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "300",
+                                        "letterSpacing": "0px"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/heading|title": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "400",
+                                        "letterSpacing": "0px"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/heading|eyebrow": {
+                "title": {
+                    "decoration": {
+                        "font": {
+                            "font": {
+                                "desktop": {
+                                    "value": {
+                                        "weight": "400",
+                                        "letterSpacing": "3px",
+                                        "capitalization": "uppercase"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "divi/text|eyebrow": {
+                "content": {
+                    "decoration": {
+                        "bodyFont": {
+                            "body": {
+                                "font": {
+                                    "desktop": {
+                                        "value": {
+                                            "weight": "400",
+                                            "letterSpacing": "3px",
+                                            "capitalization": "uppercase"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

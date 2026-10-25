@@ -6,6 +6,7 @@ namespace Divi5Validator\Tests;
 
 use AiEditorDivi5\WP\KitAdapters;
 use AiEditorDivi5\WP\KitResolver;
+use AiEditorDivi5\WP\LanguageResolver;
 use AiEditorDivi5\WP\RecipeTokens;
 use AiEditorDivi5\WP\SectionRecipes;
 use AiEditorDivi5\WP\StyleKits;
@@ -127,6 +128,9 @@ class KitResolverTest extends TestCase
     {
         $raw = SectionRecipes::rawMarkup( 'hero-cta' );
         $this->assertIsString( $raw );
+        // The language step runs first, as when a recipe is served (type adapter Task 5: recipe headings carry type markers).
+        $raw = LanguageResolver::resolve( $raw, (array) RecipeTokens::default() );
+        $this->assertStringNotContainsString( '"aied":{"type"', $raw );
         $before = $this->comments( $raw );
         $index  = null;
         foreach ( $before as $i => $json ) {

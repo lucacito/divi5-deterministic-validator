@@ -1,6 +1,6 @@
 # Token usage of the AI Editor for Divi 5 (free plugin)
 
-Measured 2026-10-22 by `scripts/measure-tokens.php`. Tokens are ESTIMATED as bytes / 4; the real count depends on the model.
+Measured 2026-10-24 by `scripts/measure-tokens.php`. Tokens are ESTIMATED as bytes / 4; the real count depends on the model.
 
 Checking a layout runs in PHP on your server and costs **0 tokens**. What costs tokens is what the assistant has to read.
 
@@ -21,23 +21,23 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | A preview (dry run) of a one-line text change | verdict plus a capped diff, on the median page | 394 | 99 |
 | The style guide (default) | get_style_guide with no topic, read once before building a layout | 28,975 | 7,244 |
 | The style guide, topic design-languages | get_style_guide with topic "design-languages", only when asked for | 2,592 | 648 |
-| The style guide, topic design-language:editorial | get_style_guide with topic "design-language:editorial", only when asked for | 1,818 | 455 |
-| The style guide, topic design-language:glass-dark | get_style_guide with topic "design-language:glass-dark", only when asked for | 2,151 | 538 |
-| The style guide, topic design-language:organic-warm | get_style_guide with topic "design-language:organic-warm", only when asked for | 2,146 | 537 |
-| The style guide, topic design-language:tech-mono | get_style_guide with topic "design-language:tech-mono", only when asked for | 2,273 | 569 |
-| The style guide, topic design-language:playful-pastel | get_style_guide with topic "design-language:playful-pastel", only when asked for | 2,477 | 620 |
-| The style guide, topic design-language:corporate-trust | get_style_guide with topic "design-language:corporate-trust", only when asked for | 2,581 | 646 |
-| The style guide, topic design-language:soft-saas | get_style_guide with topic "design-language:soft-saas", only when asked for | 3,258 | 815 |
-| The style guide, topic design-language:bold-vibrant | get_style_guide with topic "design-language:bold-vibrant", only when asked for | 3,019 | 755 |
-| The style guide, topic design-language:brutalist-flat | get_style_guide with topic "design-language:brutalist-flat", only when asked for | 2,550 | 638 |
-| The style guide, topic design-language:luxe | get_style_guide with topic "design-language:luxe", only when asked for | 2,758 | 690 |
+| The style guide, topic design-language:editorial | get_style_guide with topic "design-language:editorial", only when asked for | 2,026 | 507 |
+| The style guide, topic design-language:glass-dark | get_style_guide with topic "design-language:glass-dark", only when asked for | 2,359 | 590 |
+| The style guide, topic design-language:organic-warm | get_style_guide with topic "design-language:organic-warm", only when asked for | 2,354 | 589 |
+| The style guide, topic design-language:tech-mono | get_style_guide with topic "design-language:tech-mono", only when asked for | 2,481 | 621 |
+| The style guide, topic design-language:playful-pastel | get_style_guide with topic "design-language:playful-pastel", only when asked for | 2,667 | 667 |
+| The style guide, topic design-language:corporate-trust | get_style_guide with topic "design-language:corporate-trust", only when asked for | 2,788 | 697 |
+| The style guide, topic design-language:soft-saas | get_style_guide with topic "design-language:soft-saas", only when asked for | 3,466 | 867 |
+| The style guide, topic design-language:bold-vibrant | get_style_guide with topic "design-language:bold-vibrant", only when asked for | 3,227 | 807 |
+| The style guide, topic design-language:brutalist-flat | get_style_guide with topic "design-language:brutalist-flat", only when asked for | 2,775 | 694 |
+| The style guide, topic design-language:luxe | get_style_guide with topic "design-language:luxe", only when asked for | 2,963 | 741 |
 | The style guide, topic backgrounds | get_style_guide with topic "backgrounds", only when asked for | 8,894 | 2,224 |
 | The style guide, topic dividers | get_style_guide with topic "dividers", only when asked for | 8,869 | 2,218 |
 | The style guide, topic motion | get_style_guide with topic "motion", only when asked for | 9,800 | 2,450 |
 | The style guide, topic hover-states | get_style_guide with topic "hover-states", only when asked for | 5,637 | 1,410 |
 | The style guide, topic layout-advanced | get_style_guide with topic "layout-advanced", only when asked for | 9,973 | 2,494 |
 | The style guide, topic layout-sizing | get_style_guide with topic "layout-sizing", only when asked for | 9,972 | 2,493 |
-| The style guide, topic typography | get_style_guide with topic "typography", only when asked for | 7,496 | 1,874 |
+| The style guide, topic typography | get_style_guide with topic "typography", only when asked for | 7,943 | 1,986 |
 | The style guide, topic imagery | get_style_guide with topic "imagery", only when asked for | 6,506 | 1,627 |
 | The style guide, topic controls | get_style_guide with topic "controls", only when asked for | 8,331 | 2,083 |
 | The style guide, topic toggles | get_style_guide with topic "toggles", only when asked for | 5,834 | 1,459 |
@@ -85,10 +85,10 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | The style guide, topic style-kit:underlined-label | get_style_guide with topic "style-kit:underlined-label", only when asked for | 8,892 | 2,223 |
 | The style guide, topic style-kit:pressable | get_style_guide with topic "style-kit:pressable", only when asked for | 9,575 | 2,394 |
 | The style guide, topic style-kit:hairline-halo | get_style_guide with topic "style-kit:hairline-halo", only when asked for | 9,294 | 2,324 |
-| The recipe catalog (default) | get_section_recipes with no filter: names under role headings, plus how to fetch one | 6,258 | 1,565 |
-| The recipe catalog (filtered, role hero) | get_section_recipes with role "hero": the one-line description of each matching recipe | 3,915 | 979 |
-| A served recipe (hero-cta, default look) | get_section_recipes with name "hero-cta" and no design_language | 3,397 | 850 |
-| A served recipe (hero-cta, glass-dark) | the same recipe with design_language "glass-dark" (tokens filled in; the size is the markup alone) | 3,374 | 844 |
+| The recipe catalog (default) | get_section_recipes with no filter: names under role headings, plus how to fetch one | 6,260 | 1,565 |
+| The recipe catalog (filtered, role hero) | get_section_recipes with role "hero": the one-line description of each matching recipe | 3,895 | 974 |
+| A served recipe (hero-cta, default look) | get_section_recipes with name "hero-cta" and no design_language | 3,450 | 863 |
+| A served recipe (hero-cta, glass-dark) | the same recipe with design_language "glass-dark" (tokens filled in; the size is the markup alone) | 3,427 | 857 |
 
 A refusal used to repeat the full list of allowed block types in every violation. Now the first violation about a parent keeps the list, the others point back to it, and at most 25 are listed (one entry counts the rest).
 

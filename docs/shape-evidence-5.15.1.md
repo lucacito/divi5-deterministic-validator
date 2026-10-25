@@ -22800,3 +22800,838 @@ Registered paths added: none (every path was already registered by a builder exp
 Candidates from `html-styles.json` that were measured and are not taught, with the reason:
 
 - `hs-text-orientation-justified`: no effect (dead). Measured DEAD on divi/text (first run 2026-10-22): the orientation path does not accept justified; justification is the body font textAlign justify path (hs-text-bodyfont-align-justify, PASS). orientation = justified (Divi's value name for justify). Decision text-justify when text-align-orientation is PASS. Not expected either way.
+
+## lt-heading-control
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.weight` = `"300"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 300` |
+| 900 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 300` |
+| 400 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 300` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Control: weight 300 differs from the default 500 (typography probe ty-h-weight-300).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-weight-300
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.weight` = `"300"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 300` |
+| 900 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 300` |
+| 400 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 300` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Weight 300 on the heading carrier (family Inter, variable 100-900).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-weight-400
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.weight` = `"400"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 400` |
+| 900 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 400` |
+| 400 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 400` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Weight 400 on the heading carrier (family Inter, variable 100-900).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-weight-600
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.weight` = `"600"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 600` |
+| 900 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 600` |
+| 400 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 600` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Weight 600 on the heading carrier (family Inter, variable 100-900).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-weight-700
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.weight` = `"700"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 700` |
+| 900 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 700` |
+| 400 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 700` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Weight 700 on the heading carrier (family Inter, variable 100-900).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-weight-800
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.weight` = `"800"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 800` |
+| 900 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 800` |
+| 400 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 800` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Weight 800 on the heading carrier (family Inter, variable 100-900).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-weight-900
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.weight` = `"900"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 900` |
+| 900 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 900` |
+| 400 px | yes | 1 | yes | `2:h2:font-weight: 500 -> 900` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Weight 900 on the heading carrier (family Inter, variable 100-900).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-weight-500
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.weight` = `"500"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h2:font-weight: 300 -> 500` |
+| 900 px | yes | 1 | yes | `2:h2:font-weight: 300 -> 500` |
+| 400 px | yes | 1 | yes | `2:h2:font-weight: 300 -> 500` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Weight 500 from a base of 300 (500 equals the default, so the base is moved first).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-tracking--3px
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.letterSpacing` = `"-3px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> -3px` |
+| 900 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> -3px` |
+| 400 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> -3px` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: Letter spacing -3px on the heading carrier.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-tracking--2px
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.letterSpacing` = `"-2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> -2px` |
+| 900 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> -2px` |
+| 400 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> -2px` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: Letter spacing -2px on the heading carrier.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-tracking--1px
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.letterSpacing` = `"-1px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> -1px` |
+| 900 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> -1px` |
+| 400 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> -1px` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: Letter spacing -1px on the heading carrier.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-tracking-1px
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.letterSpacing` = `"1px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> 1px` |
+| 900 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> 1px` |
+| 400 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> 1px` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: Letter spacing 1px on the heading carrier.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-tracking-2px
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.letterSpacing` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> 2px` |
+| 900 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> 2px` |
+| 400 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> 2px` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: Letter spacing 2px on the heading carrier.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-tracking-3px
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.letterSpacing` = `"3px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> 3px` |
+| 900 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> 3px` |
+| 400 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> 3px` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: Letter spacing 3px on the heading carrier.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-tracking-4px
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.letterSpacing` = `"4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> 4px` |
+| 900 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> 4px` |
+| 400 px | yes | 1 | yes | `2:h2:letter-spacing: normal -> 4px` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: Letter spacing 4px on the heading carrier.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-tracking-0px
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.letterSpacing` = `"0px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h2:letter-spacing: 2px -> normal` |
+| 900 px | yes | 1 | yes | `2:h2:letter-spacing: 2px -> normal` |
+| 400 px | yes | 1 | yes | `2:h2:letter-spacing: 2px -> normal` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: 0px from a base of 2px (0px equals the default).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-caps-uppercase
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.capitalization` = `"uppercase"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 1 | yes | `2:h2:text-transform: none -> uppercase` |
+| 900 px | yes | 1 | yes | `2:h2:text-transform: none -> uppercase` |
+| 400 px | yes | 1 | yes | `2:h2:text-transform: none -> uppercase` |
+
+Properties that changed (any width): `text-transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Capitalization uppercase.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-cascade
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.weight` = `"300"`
+- `title.decoration.font.font.desktop.value.letterSpacing` = `"-1px"`
+- `title.decoration.font.font.desktop.value.capitalization` = `"uppercase"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `2:h2:font-weight: 500 -> 300` |
+| 900 px | yes | 3 | yes | `2:h2:font-weight: 500 -> 300` |
+| 400 px | yes | 3 | yes | `2:h2:font-weight: 500 -> 300` |
+
+Properties that changed (any width): `font-weight`, `letter-spacing`, `text-transform`.
+
+Phone overflow at 400 px: no.
+
+Note: The three keys at desktop only: must reach tablet (900) and phone (400).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-text-control
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.weight` = `"300"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `1:div:font-weight: 500 -> 300` |
+| 900 px | yes | 2 | yes | `1:div:font-weight: 500 -> 300` |
+| 400 px | yes | 2 | yes | `1:div:font-weight: 500 -> 300` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Control: weight 300 differs from the default 500 (typography probe ty-tb-weight-300).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-text-weight-300
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.weight` = `"300"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `1:div:font-weight: 500 -> 300` |
+| 900 px | yes | 2 | yes | `1:div:font-weight: 500 -> 300` |
+| 400 px | yes | 2 | yes | `1:div:font-weight: 500 -> 300` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Weight 300 on the text carrier (family Inter, variable 100-900).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-text-weight-400
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.weight` = `"400"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `1:div:font-weight: 500 -> 400` |
+| 900 px | yes | 2 | yes | `1:div:font-weight: 500 -> 400` |
+| 400 px | yes | 2 | yes | `1:div:font-weight: 500 -> 400` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Weight 400 on the text carrier (family Inter, variable 100-900).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-text-weight-600
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.weight` = `"600"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `1:div:font-weight: 500 -> 600` |
+| 900 px | yes | 2 | yes | `1:div:font-weight: 500 -> 600` |
+| 400 px | yes | 2 | yes | `1:div:font-weight: 500 -> 600` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Weight 600 on the text carrier (family Inter, variable 100-900).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-text-weight-700
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.weight` = `"700"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `1:div:font-weight: 500 -> 700` |
+| 900 px | yes | 2 | yes | `1:div:font-weight: 500 -> 700` |
+| 400 px | yes | 2 | yes | `1:div:font-weight: 500 -> 700` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Weight 700 on the text carrier (family Inter, variable 100-900).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-text-weight-800
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.weight` = `"800"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `1:div:font-weight: 500 -> 800` |
+| 900 px | yes | 2 | yes | `1:div:font-weight: 500 -> 800` |
+| 400 px | yes | 2 | yes | `1:div:font-weight: 500 -> 800` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Weight 800 on the text carrier (family Inter, variable 100-900).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-text-weight-900
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.weight` = `"900"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `1:div:font-weight: 500 -> 900` |
+| 900 px | yes | 2 | yes | `1:div:font-weight: 500 -> 900` |
+| 400 px | yes | 2 | yes | `1:div:font-weight: 500 -> 900` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Weight 900 on the text carrier (family Inter, variable 100-900).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-text-weight-500
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.weight` = `"500"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `1:div:font-weight: 300 -> 500` |
+| 900 px | yes | 2 | yes | `1:div:font-weight: 300 -> 500` |
+| 400 px | yes | 2 | yes | `1:div:font-weight: 300 -> 500` |
+
+Properties that changed (any width): `font-weight`.
+
+Phone overflow at 400 px: no.
+
+Note: Weight 500 from a base of 300 (500 equals the default, so the base is moved first).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-text-tracking-1px
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.letterSpacing` = `"1px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `1:div:letter-spacing: normal -> 1px` |
+| 900 px | yes | 2 | yes | `1:div:letter-spacing: normal -> 1px` |
+| 400 px | yes | 2 | yes | `1:div:letter-spacing: normal -> 1px` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: Letter spacing 1px on the text carrier.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-text-tracking-2px
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.letterSpacing` = `"2px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `1:div:letter-spacing: normal -> 2px` |
+| 900 px | yes | 2 | yes | `1:div:letter-spacing: normal -> 2px` |
+| 400 px | yes | 2 | yes | `1:div:letter-spacing: normal -> 2px` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: Letter spacing 2px on the text carrier.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-text-tracking-3px
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.letterSpacing` = `"3px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `1:div:letter-spacing: normal -> 3px` |
+| 900 px | yes | 2 | yes | `1:div:letter-spacing: normal -> 3px` |
+| 400 px | yes | 2 | yes | `1:div:letter-spacing: normal -> 3px` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: Letter spacing 3px on the text carrier.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-text-tracking-4px
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.letterSpacing` = `"4px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `1:div:letter-spacing: normal -> 4px` |
+| 900 px | yes | 2 | yes | `1:div:letter-spacing: normal -> 4px` |
+| 400 px | yes | 2 | yes | `1:div:letter-spacing: normal -> 4px` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: Letter spacing 4px on the text carrier.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-text-tracking-0px
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.letterSpacing` = `"0px"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `1:div:letter-spacing: 2px -> normal` |
+| 900 px | yes | 2 | yes | `1:div:letter-spacing: 2px -> normal` |
+| 400 px | yes | 2 | yes | `1:div:letter-spacing: 2px -> normal` |
+
+Properties that changed (any width): `letter-spacing`.
+
+Phone overflow at 400 px: no.
+
+Note: 0px from a base of 2px (0px equals the default).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-text-caps-uppercase
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.capitalization` = `"uppercase"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 2 | yes | `1:div:text-transform: none -> uppercase` |
+| 900 px | yes | 2 | yes | `1:div:text-transform: none -> uppercase` |
+| 400 px | yes | 2 | yes | `1:div:text-transform: none -> uppercase` |
+
+Properties that changed (any width): `text-transform`.
+
+Phone overflow at 400 px: no.
+
+Note: Capitalization uppercase.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-text-cascade
+
+Block: `text`. Set on top of the base block:
+
+- `content.decoration.bodyFont.body.font.desktop.value.weight` = `"300"`
+- `content.decoration.bodyFont.body.font.desktop.value.letterSpacing` = `"2px"`
+- `content.decoration.bodyFont.body.font.desktop.value.capitalization` = `"uppercase"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 6 | yes | `1:div:font-weight: 500 -> 300` |
+| 900 px | yes | 6 | yes | `1:div:font-weight: 500 -> 300` |
+| 400 px | yes | 6 | yes | `1:div:font-weight: 500 -> 300` |
+
+Properties that changed (any width): `font-weight`, `letter-spacing`, `text-transform`.
+
+Phone overflow at 400 px: no.
+
+Note: The three keys at desktop only: must reach tablet (900) and phone (400).
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-level-h1
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.weight` = `"300"`
+- `title.decoration.font.font.desktop.value.letterSpacing` = `"-1px"`
+- `title.decoration.font.font.desktop.value.capitalization` = `"uppercase"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `2:h1:font-weight: 500 -> 300` |
+| 900 px | yes | 3 | yes | `2:h1:font-weight: 500 -> 300` |
+| 400 px | yes | 3 | yes | `2:h1:font-weight: 500 -> 300` |
+
+Properties that changed (any width): `font-weight`, `letter-spacing`, `text-transform`.
+
+Phone overflow at 400 px: no.
+
+Note: The same three keys on a h1 heading.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-level-h3
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.weight` = `"300"`
+- `title.decoration.font.font.desktop.value.letterSpacing` = `"-1px"`
+- `title.decoration.font.font.desktop.value.capitalization` = `"uppercase"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `2:h3:font-weight: 500 -> 300` |
+| 900 px | yes | 3 | yes | `2:h3:font-weight: 500 -> 300` |
+| 400 px | yes | 3 | yes | `2:h3:font-weight: 500 -> 300` |
+
+Properties that changed (any width): `font-weight`, `letter-spacing`, `text-transform`.
+
+Phone overflow at 400 px: no.
+
+Note: The same three keys on a h3 heading.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-level-h4
+
+Block: `heading`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.weight` = `"300"`
+- `title.decoration.font.font.desktop.value.letterSpacing` = `"-1px"`
+- `title.decoration.font.font.desktop.value.capitalization` = `"uppercase"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `2:h4:font-weight: 500 -> 300` |
+| 900 px | yes | 3 | yes | `2:h4:font-weight: 500 -> 300` |
+| 400 px | yes | 3 | yes | `2:h4:font-weight: 500 -> 300` |
+
+Properties that changed (any width): `font-weight`, `letter-spacing`, `text-transform`.
+
+Phone overflow at 400 px: no.
+
+Note: The same three keys on a h4 heading.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## lt-heading-in-card
+
+Block: `heading`, placed inside a `group`, with base settings on its wrapper(s) `group`. Set on top of the base block:
+
+- `title.decoration.font.font.desktop.value.weight` = `"300"`
+- `title.decoration.font.font.desktop.value.letterSpacing` = `"-1px"`
+- `title.decoration.font.font.desktop.value.capitalization` = `"uppercase"`
+
+Measured (page A = base, page B = base + the values above):
+
+| Width | Changed | Computed-style differences | Stylesheet differs | Example |
+|---|---|---|---|---|
+| 1280 px | yes | 3 | yes | `2:h3:font-weight: 500 -> 300` |
+| 900 px | yes | 3 | yes | `2:h3:font-weight: 500 -> 300` |
+| 400 px | yes | 3 | yes | `2:h3:font-weight: 500 -> 300` |
+
+Properties that changed (any width): `font-weight`, `letter-spacing`, `text-transform`.
+
+Phone overflow at 400 px: no.
+
+Note: The three keys on a heading inside a card group.
+
+Registered paths added: none (every path was already registered by a builder export, which stays the stronger evidence).
+
+## Not taught (language-type)
+
+Candidates from `language-type.json` that were measured and are not taught, with the reason:
+
+- `lt-heading-dead-weight-500`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). Default-value check (not a dead path): 500 is the module default, so Divi emits the CSS but the computed style is unchanged (css-only, computedDiffs 0 at every width).
+- `lt-heading-caps-none`: no effect (dead). Divi has no `none` capitalization value: Font.php 543-561 emits text-transform for uppercase|lowercase|capitalize only.
+- `lt-text-dead-weight-500`: only the emitted stylesheet changed, no computed style (not accepted without allowCssOnly and a note). Default-value check (not a dead path): 500 is the module default, so Divi emits the CSS but the computed style is unchanged (css-only, computedDiffs 0 at every width).
+- `lt-text-caps-none`: no effect (dead). Divi has no `none` capitalization value: Font.php 543-561 emits text-transform for uppercase|lowercase|capitalize only.

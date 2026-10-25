@@ -11,6 +11,9 @@ require_once __DIR__ . '/RecipeTokens.php';
 require_once __DIR__ . '/StyleKits.php';
 require_once __DIR__ . '/KitResolver.php';
 require_once __DIR__ . '/KitAdapters.php';
+require_once __DIR__ . '/BlockAttrs.php';
+require_once __DIR__ . '/LanguageAdapters.php';
+require_once __DIR__ . '/LanguageResolver.php';
 
 /**
  * Library of real, validated Divi 5 section recipes — whole proven sections the
@@ -334,10 +337,12 @@ final class SectionRecipes
      * the style kit id is.
      *
      * The style kit is $kit when given, otherwise the language's own `kit` (the default language,
-     * editorial, when no language is requested). Image tokens are resolved first, then the kit's
-     * markers and whole-value kit tokens (KitResolver), then colour and font tokens with the language.
-     * The markup handed out never contains a token or a kit marker: an unknown or invalid kit, kit data
-     * that cannot be read, or a marker the kit cannot resolve returns null, never partially resolved markup.
+     * editorial, when no language is requested). Four steps, in this order: image tokens (ImageTokens),
+     * the language's markers (LanguageResolver), the kit's markers and whole-value kit tokens
+     * (KitResolver), then colour and font tokens with the language (RecipeTokens); the last three are
+     * resolveMarkup(). The markup handed out never contains a token or a marker: an unknown or invalid
+     * kit, kit data that cannot be read, or a marker the language or the kit cannot resolve returns
+     * null, never partially resolved markup.
      */
     public static function recipe(string $name, ?string $language = null, ?string $kit = null): ?string
     {
@@ -358,11 +363,30 @@ final class SectionRecipes
                     null,
                     static fn ( ?string $u, string $t ): ?string => apply_filters( 'jhmg_aied_image_token', $u, $t )
                 );
-                $markup = RecipeTokens::resolve( KitResolver::resolve( $markup, $styleKit ), $lang );
-                return [] === KitResolver::leftovers( $markup ) ? $markup : null;
+                return self::resolveMarkup( $markup, $lang, $styleKit );
             }
         }
         return null;
+    }
+
+    /**
+     * The serve-time pipeline after the image step, the one place it is spelled: the language's markers
+     * (LanguageResolver), then the kit's markers and whole-value kit tokens (KitResolver), then colour and
+     * font tokens (RecipeTokens). Null when the language step leaves a language marker (so a type marker
+     * never reaches the kit step) or the kit step leaves anything (KitResolver::leftovers()).
+     *
+     * @param array<string,mixed> $language
+     * @param array<string,mixed> $kit
+     */
+    public static function resolveMarkup( string $markup, array $language, array $kit ): ?string
+    {
+        $markup = LanguageResolver::resolve( $markup, $language );
+        if ( [] !== LanguageResolver::leftovers( $markup ) ) {
+            return null;
+        }
+        $markup = RecipeTokens::resolve( KitResolver::resolve( $markup, $kit ), $language );
+
+        return [] === KitResolver::leftovers( $markup ) ? $markup : null;
     }
 
     /** The stored markup of one recipe with image tokens left unresolved (dev tooling and tests), or null. */

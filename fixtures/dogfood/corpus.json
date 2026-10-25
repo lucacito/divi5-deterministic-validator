@@ -269,7 +269,7 @@
         "language": "glass-dark",
         "task": "edit-base",
         "page": "edit-glass-edge/page.html",
-        "sha256": "31a20120028f79be6b5a71640b9e45bc9397a9822d024a6d2913016d2efee2bf",
+        "sha256": "4cc4ba13b4d15c61c841c24b8673ca4ebbf7e35f8e794a3995d4e849fb23c344",
         "provenance": "The recipe-built base page for the edit task (Prepare::editBase glass-edge / glass-dark), as served to the assistant on 2026-10-21; kit-built, so it scores full marks. Guide revision: the guide after round 2 of the polish.",
         "scores": {
             "button": [

@@ -19,6 +19,11 @@
       "body": "Source Sans 3",
       "eyebrow": "Source Sans 3"
     },
+    "type": {
+      "display": {"weight": "600", "letterSpacing": "-1px", "capitalization": "none"},
+      "title": {"weight": "600", "letterSpacing": "0px", "capitalization": "none"},
+      "eyebrow": {"weight": "600", "letterSpacing": "2px", "capitalization": "uppercase"}
+    },
     "radius": "4px on cards and buttons; images square or 4px. Nothing pill-shaped.",
     "section_padding": "120px top and bottom on desktop, 80px on tablet, 56px on phone. When in doubt, add space, not content.",
     "shadow": "None on most elements. At most one very soft shadow (0 12px 32px at 8% black) on a single featured card. Separate blocks with a 1px border in the border colour instead.",
@@ -51,6 +56,11 @@
       "body": "Inter",
       "eyebrow": "Inter"
     },
+    "type": {
+      "display": {"weight": "700", "letterSpacing": "-1px", "capitalization": "none"},
+      "title": {"weight": "600", "letterSpacing": "0px", "capitalization": "none"},
+      "eyebrow": {"weight": "500", "letterSpacing": "2px", "capitalization": "uppercase"}
+    },
     "radius": "20px on cards, 12px on buttons and images. Keep every corner of one card the same.",
     "section_padding": "100px top and bottom on desktop, 72px on tablet, 48px on phone.",
     "shadow": "No drop shadows; depth comes from layers. Cards use a semi-transparent background (rgba of the text colour at about 6%) with a 1px border at about 12% white. Real frosted-glass blur is not available in Divi's settings, so do not promise it.",
@@ -81,6 +91,11 @@
       "display": "Fraunces",
       "body": "DM Sans",
       "eyebrow": "DM Sans"
+    },
+    "type": {
+      "display": {"weight": "600", "letterSpacing": "-1px", "capitalization": "none"},
+      "title": {"weight": "600", "letterSpacing": "0px", "capitalization": "none"},
+      "eyebrow": {"weight": "600", "letterSpacing": "1px", "capitalization": "uppercase"}
     },
     "radius": "Generous and organic: 28px on cards and panels, 999px on buttons and tags, images with 32px corners or an arch shape (large radius on the top two corners only). Nothing sharp.",
     "section_padding": "96px top and bottom on desktop, 64px on tablet, 44px on phone. Let sections touch and overlap a little instead of leaving hard gaps.",
@@ -113,6 +128,11 @@
       "body": "JetBrains Mono",
       "eyebrow": "JetBrains Mono"
     },
+    "type": {
+      "display": {"weight": "600", "letterSpacing": "-1px", "capitalization": "none"},
+      "title": {"weight": "500", "letterSpacing": "0px", "capitalization": "none"},
+      "eyebrow": {"weight": "500", "letterSpacing": "2px", "capitalization": "uppercase"}
+    },
     "radius": "Almost none: 2px on buttons, inputs and cards, images square. Never rounder than 4px anywhere.",
     "section_padding": "88px top and bottom on desktop, 64px on tablet, 40px on phone. Tight, even, repeated: the same padding on every section.",
     "shadow": "No shadows at all. Structure comes from 1px hairline borders in the border colour and from visible grid lines between cells. The accent colour is reserved for the primary button and one small marker per section; links stay in the text colour with an underline.",
@@ -143,6 +163,11 @@
       "display": "Fredoka",
       "body": "Nunito",
       "eyebrow": "Fredoka"
+    },
+    "type": {
+      "display": {"weight": "700", "letterSpacing": "0px", "capitalization": "none"},
+      "title": {"weight": "600", "letterSpacing": "0px", "capitalization": "none"},
+      "eyebrow": {"weight": "600", "letterSpacing": "1px", "capitalization": "none"}
     },
     "radius": "Big and round: 36px on cards and panels, 999px on buttons, tags and avatars, circles for icons and some images. Mix in one blob or tilted shape per page.",
     "section_padding": "88px top and bottom on desktop, 60px on tablet, 40px on phone. Generous but lively; cards sit close together.",
@@ -175,6 +200,11 @@
       "body": "IBM Plex Sans",
       "eyebrow": "IBM Plex Sans"
     },
+    "type": {
+      "display": {"weight": "600", "letterSpacing": "0px", "capitalization": "none"},
+      "title": {"weight": "600", "letterSpacing": "0px", "capitalization": "none"},
+      "eyebrow": {"weight": "600", "letterSpacing": "1px", "capitalization": "uppercase"}
+    },
     "radius": "Small and consistent: 6px on cards, buttons and inputs; images square or 6px. No pills, no circles except avatars.",
     "section_padding": "96px top and bottom on desktop, 68px on tablet, 44px on phone. Steady and predictable from section to section.",
     "shadow": "Very light: a 1px border in the border colour on cards, and at most 0 2px 8px at 8% navy on a hovered card. No glow, no heavy depth.",
@@ -205,6 +235,11 @@
       "display": "Plus Jakarta Sans",
       "body": "Figtree",
       "eyebrow": "Figtree"
+    },
+    "type": {
+      "display": {"weight": "700", "letterSpacing": "-1px", "capitalization": "none"},
+      "title": {"weight": "600", "letterSpacing": "0px", "capitalization": "none"},
+      "eyebrow": {"weight": "600", "letterSpacing": "1px", "capitalization": "uppercase"}
     },
     "radius": "16px on cards, panels and images, 12px on buttons and inputs. Set all four corners of every element explicitly. Nothing sharp and nothing pill-shaped.",
     "section_padding": "104px top and bottom on desktop, 72px on tablet, 48px on phone. Cards inside a section sit 24px apart.",
@@ -237,6 +272,11 @@
       "body": "Work Sans",
       "eyebrow": "Work Sans"
     },
+    "type": {
+      "display": {"weight": "800", "letterSpacing": "-1px", "capitalization": "none"},
+      "title": {"weight": "700", "letterSpacing": "0px", "capitalization": "none"},
+      "eyebrow": {"weight": "700", "letterSpacing": "2px", "capitalization": "uppercase"}
+    },
     "radius": "Sharp blocks with one soft corner pair: full-width blocks and images square; cards and panels 32px on the top-left and bottom-right corners and 0px on the other two (set all four corners explicitly); buttons 8px.",
     "section_padding": "80px top and bottom on desktop, 56px on tablet, 36px on phone. Tight: the headline should take most of the room.",
     "shadow": "No soft shadows. Weight comes from colour and borders: a 3px solid border in the text colour on cards and on the secondary button, on a card background in the surface colour. On hover a card rotates 3 degrees and a button scales to 108%. The cobalt is a background colour: put the inverse text colour on it.",
@@ -267,6 +307,11 @@
       "display": "Archivo",
       "body": "Public Sans",
       "eyebrow": "Space Mono"
+    },
+    "type": {
+      "display": {"weight": "900", "letterSpacing": "-1px", "capitalization": "uppercase"},
+      "title": {"weight": "700", "letterSpacing": "0px", "capitalization": "none"},
+      "eyebrow": {"weight": "700", "letterSpacing": "2px", "capitalization": "uppercase"}
     },
     "radius": "0px everywhere: cards, panels, images, buttons and inputs. Set all four corners to 0px. Nothing round, not even avatars.",
     "section_padding": "64px top and bottom on desktop, 48px on tablet, 32px on phone. Dense, with content running close to the borders.",
@@ -299,12 +344,17 @@
       "body": "Jost",
       "eyebrow": "Jost"
     },
+    "type": {
+      "display": {"weight": "300", "letterSpacing": "0px", "capitalization": "none"},
+      "title": {"weight": "400", "letterSpacing": "0px", "capitalization": "none"},
+      "eyebrow": {"weight": "400", "letterSpacing": "3px", "capitalization": "uppercase"}
+    },
     "radius": "0px on cards and images, 2px at most on buttons and inputs. Nothing rounded.",
     "section_padding": "160px top and bottom on desktop, 112px on tablet, 72px on phone. Emptiness is the design: one idea per section, and leave the rest empty.",
     "shadow": "No shadows. Depth comes from the tone step between the background and the surface colour and from 1px borders in the border colour. The gold is for one thin rule, an eyebrow label on a plain background and the primary button fill only: never for body text, never for text over a photo (use the inverse text colour there) and never over a large area.",
     "motion": "subtle",
     "kit": "gilt-hairline",
-    "rhythm": "One warm near-black page: the background colour and the surface colour alternate section by section, and a hairline divider module (1px line in the accent colour) separates ideas inside a section. Headlines are the serif at weight 300 with generous line height. Eyebrow labels are in capital letters with 0.1em letter spacing. Full-bleed photography sits under a gradient scrim whose two stops are both the overlay colour, with the inverse text colour on it. Motion is slow: one fade entrance of 2000ms with the ease-out speed curve on each headline, the hero headline included, nothing else.",
+    "rhythm": "One warm near-black page: the background colour and the surface colour alternate section by section, and a hairline divider module (1px line in the accent colour) separates ideas inside a section. Headlines are the serif at weight 300 with generous line height. Eyebrow labels are in capital letters with 3px letter spacing. Full-bleed photography sits under a gradient scrim whose two stops are both the overlay colour, with the inverse text colour on it. Motion is slow: one fade entrance of 2000ms with the ease-out speed curve on each headline, the hero headline included, nothing else.",
     "favors": ["centered", "stacked", "split", "overlap", "list"],
     "avoids": ["grid", "bento", "carousel", "form"],
     "hero": "Centered and full-height (85vh): a full-bleed photograph under a gradient scrim whose two stops are both the overlay colour, a small eyebrow in capital letters in the inverse text colour (gold is too weak as small text over a photo), a very large light serif headline in the inverse text colour, one short line in the inverse text colour and a single gold button with the dark accent text colour on it. Nothing else.",

@@ -10,6 +10,7 @@ require_once __DIR__ . '/StyleKits.php';
 require_once __DIR__ . '/KitAdapters.php';
 require_once __DIR__ . '/KitResolver.php';
 require_once __DIR__ . '/RecipeTokens.php';
+require_once __DIR__ . '/LanguageAdapters.php';
 
 /**
  * AI-facing Divi 5 authoring guide.
@@ -1763,6 +1764,56 @@ MD;
 
     /** Topic `typography`: heading and body fonts, lines, shadows and text effects, every shape proven on the real Divi 5.15.1. At most 10,000 bytes. */
     private static function typographyTopic(): string
+    {
+        return self::typographyTopicText() . self::typographyLanguageSentence();
+    }
+
+    /**
+     * The `typography` topic's last section, "Design language type", generated from LanguageAdapters::APPLIED['type'],
+     * TYPE_HEADING_LEVELS, TYPE_PATHS and TYPE_PROVEN (the cascade wording only while the carrier's cascade is proven): ''
+     * when no block takes the language type. It names no number: the numbers are each language's Type line. At most 450 B.
+     *
+     * @param array<string,list<string>>|null $applied defaults to LanguageAdapters::APPLIED['type']
+     * @param array<string,bool>|null         $proven  defaults to LanguageAdapters::TYPE_PROVEN
+     */
+    public static function typographyLanguageSentence( ?array $applied = null, ?array $proven = null ): string
+    {
+        $applied ??= LanguageAdapters::APPLIED['type'];
+        $proven  ??= LanguageAdapters::TYPE_PROVEN;
+        $byRole   = [];
+        $where    = [];
+        $cascade  = true;
+        foreach ( $applied as $block => $roles ) {
+            $path = LanguageAdapters::TYPE_PATHS[ $block ] ?? null;
+            if ( null === $path || [] === $roles ) {
+                continue;
+            }
+            $heading = 'divi/heading' === $block;
+            foreach ( $roles as $role ) {
+                $byRole[ $role ][] = $heading
+                    ? implode( ' and ', LanguageAdapters::TYPE_HEADING_LEVELS[ $role ] ?? [] ) . ( 'display' === ( LanguageAdapters::TYPE_FONT[ $role ] ?? 'display' ) ? '' : ' (' . LanguageAdapters::TYPE_FONT[ $role ] . ' font)' )
+                    : 'labels';
+            }
+            $proved   = true === ( $proven[ ( $heading ? 'heading' : 'text' ) . '-cascade' ] ?? false );
+            $cascade  = $cascade && $proved;
+            $where[]  = '`' . $path . ( $proved ? '.desktop.value`' : '.{bp}.value` (desktop, tablet, phone)' ) . ' on a ' . ( $heading ? 'heading' : 'text' );
+        }
+        if ( [] === $byRole ) {
+            return '';
+        }
+        $covers = [];
+        foreach ( LanguageAdapters::TYPE_ROLES as $role ) {
+            if ( isset( $byRole[ $role ] ) ) {
+                $covers[] = '`' . $role . '` ' . implode( ' and ', $byRole[ $role ] );
+            }
+        }
+
+        return "\n\n## Design language type\n\nThe language sets headline type (Type line, topic=design-language:<id>): " . implode( ', ', $covers )
+            . '. Set its weight and `letterSpacing` (`capitalization` `uppercase` only where the language names capital letters) at '
+            . implode( ', ', $where ) . ( $cascade ? '; it reaches 900 and 400 px (rendered).' : '.' );
+    }
+
+    private static function typographyTopicText(): string
     {
         return <<<'MD'
 # Typography: weight, case, spacing, shadows and text effects

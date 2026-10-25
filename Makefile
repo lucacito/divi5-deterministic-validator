@@ -1,4 +1,4 @@
-.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-page-title verify-products verify-oauth verify-test-connection verify-html-to-divi verify-guide-shapes verify-shapes verify-recipes verify-kits verify-components verify-style-values card-report dogfood-prepare dogfood-score dogfood-render divi-currency
+.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-page-title verify-products verify-oauth verify-test-connection verify-html-to-divi verify-guide-shapes verify-shapes verify-recipes verify-kits verify-language-type verify-components verify-style-values card-report type-report dogfood-prepare dogfood-score dogfood-render divi-currency
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -315,10 +315,24 @@ verify-kits:
 	@node scripts/verify-kits.cjs
 
 # ---------------------------------------------------------------
+# verify-language-type — renders a type sheet (a display h1 and h2, a title h3 in a padded group, an eyebrow h4 and an eyebrow text, each with a type marker and the language's font tokens) for every design language on the real Divi at 1280, 900 and 400 px, built through the real pipeline (SectionRecipes::resolveMarkup with the language and its own kit, LayoutGate); the expected weight, letter spacing, capitals and family are read from the RESOLVED markup, never typed; fails on PHP errors, an empty or overflowing page, a console error, a slot that is missing or on the page twice or a run that checked no slot (type), an expectation with a hole (type-expectation), a computed font-weight, letter-spacing, text-transform or first font-family that disagrees (type-weight, type-tracking, type-caps, type-family), a web font with no loaded face at the weight after document.fonts.ready (type-font-loaded) and a heading or text wider than its column or the window (type-overflow, overflow); writes dist/type-sheet/ (screenshots, observations.json, index.html); first runs the pure tests and the page measurement against synthetic pages in a real Chromium, one departure per code (Docker site; dev site only; ONE run at a time, from the main checkout with the branch checked out; every page it creates is titled `aied type <runToken> <language>` and deleted, `node scripts/verify-language-type.cjs --clean-orphans` removes leftovers when no run is going). Narrow it: ARGS="--languages brutalist-flat,luxe"
+# ---------------------------------------------------------------
+verify-language-type:
+	@node scripts/test-verify-language-type.cjs
+	@node scripts/test-language-type-run.cjs
+	@node scripts/verify-language-type.cjs $(ARGS)
+
+# ---------------------------------------------------------------
 # card-report — classifies every divi/group (and every column with a frame, radius or shadow) of the shipped section recipes as wrapper, padded-wrapper, rule, grid-cell, chip, inverted, card or panel; the card/panel blocks are the ones a card marker goes on (card adapter plan, Task 2). Pure PHP, no site. `make card-report ARGS=--all` lists the plain wrappers too.
 # ---------------------------------------------------------------
 card-report:
 	@php scripts/card-migration-report.php $(ARGS)
+
+# ---------------------------------------------------------------
+# type-report — classifies every divi/heading and every uppercase eyebrow-font divi/text of the shipped section recipes as display, title or eyebrow (the blocks a type marker goes on) or as a named exemption, and prints the totals (type adapter plan, Task 4). A block that already carries a type marker is classified by it and shown MARKED. Pure PHP, no site. `make type-report ARGS=--all` lists the texts that are no label too.
+# ---------------------------------------------------------------
+type-report:
+	@php scripts/type-migration-report.php $(ARGS)
 
 # shq: one shell word in single quotes, with an embedded single quote escaped ('\''), so values with spaces or quotes stay ONE argument.
 # An empty value becomes an empty word (the script then reports the missing argument); $(ARGS) stays unquoted on purpose (several flags).

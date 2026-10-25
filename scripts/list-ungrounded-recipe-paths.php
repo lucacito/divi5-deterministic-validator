@@ -6,8 +6,8 @@
  *
  *   php scripts/list-ungrounded-recipe-paths.php
  *
- * Recipes are read as SERVED: every style kit's markers resolved (a marker is not a Divi attribute), so the paths each
- * kit's adapter writes are listed too.
+ * Recipes are read as SERVED (tests/Support/ServedVariants.php): every language's type markers and every style kit's
+ * markers resolved (a marker is not a Divi attribute), so the paths each adapter writes are listed too.
  *
  * Output: "path -> recipe, recipe" per line, then a summary and any difference from the frozen file. Pure PHP, read-only.
  */
@@ -22,12 +22,10 @@ require_once __DIR__ . '/../tests/Support/ShapeRegistry.php';
 if ( ! defined( 'ABSPATH' ) ) {
     define( 'ABSPATH', __DIR__ . '/' ); // the plugin classes refuse to load outside WordPress without it
 }
-require_once __DIR__ . '/../wp-plugin/src/StyleKits.php';
-require_once __DIR__ . '/../wp-plugin/src/KitAdapters.php';
-require_once __DIR__ . '/../wp-plugin/src/KitResolver.php';
+require_once __DIR__ . '/../tests/Support/ServedVariants.php';
 
-use AiEditorDivi5\WP\KitResolver;
 use AiEditorDivi5\WP\StyleKits;
+use Divi5Validator\Tests\Support\ServedVariants;
 use Divi5Validator\Tests\Support\ShapePaths;
 use Divi5Validator\Tests\Support\ShapeRegistry;
 
@@ -42,8 +40,8 @@ if ( [] === $kits ) {
 }
 foreach ( (array) $recipes as $r ) {
     $paths = [];
-    foreach ( $kits as $kit ) {
-        foreach ( ShapePaths::fromMarkup( KitResolver::resolve( (string) $r['markup'], (array) StyleKits::get( $kit ) ) ) as $path ) {
+    foreach ( ServedVariants::of( (string) $r['markup'] ) as $served ) {
+        foreach ( ShapePaths::fromMarkup( $served ) as $path ) {
             $paths[ $path ] = true;
         }
     }
