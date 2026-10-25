@@ -23,11 +23,13 @@ require_once __DIR__ . '/Support/Colour.php';
  * the frame colour against the band, both as painted (a translucent colour composited over the band; a transparent fill is
  * the band itself, 1.00:1). Over every shipped kit x design language x band {light, accent, panel} x button role.
  *
- * THIS FILE PINS THE CURRENT STATE, measured at 895610e by a pure audit over KitAdapters::patch(). It is deliberately green
- * today and documents the defect; Task 3a (the hover fix, Ruling 7: `invert` with a `same` frame wider than 0px keeps the REST
- * frame colour on hover) flips the numbers below (60 -> 48 vanishing cells, 30 -> 18 on the light band) and replaces
- * testTheFramedHoverFailuresToday with the zero-exception proof testAFramedButtonKeepsItsBoxOnHover. Nothing here is skipped,
- * and no baseline file exists: the failing cells are listed in full below.
+ * The audit was measured at 895610e (Task 1) and pinned the defect: 60 vanishing cells (30 on the light band, 30 on a panel)
+ * and, in Ruling 7's proof scope, 16 framed cells whose hover box fell below 1.5:1 (glass-edge and heavy-block, `control`, on
+ * the light band; 12 of them below 1.1:1). Task 3a (the hover fix, Ruling 7: `invert` with a `same` frame wider than 0px keeps
+ * the REST frame colour on hover) fixed all 16 with that one condition: the hover frame is the rest frame, so the hover box is
+ * never smaller than the rest box. The audit now counts 48 vanishing cells (18 on the light band: the three 0px `invert` kits,
+ * which have no frame to keep; 30 on a panel, by design), and testAFramedButtonKeepsItsBoxOnHover holds the proof with zero
+ * exceptions. Nothing here is skipped, and no baseline file exists: every remaining vanishing cell is listed in full below.
  */
 class KitHoverVisibilityTest extends TestCase
 {
@@ -45,8 +47,30 @@ class KitHoverVisibilityTest extends TestCase
     /** ...and none on hover (below this) is a vanishing hover. */
     private const NO_BOX = 1.1;
 
-    /** The five `invert` kits whose button loses its box on hover on the LIGHT band: the frame colour is `same` and follows the swapped fill. */
-    private const LIGHT_KITS = [ 'glass-edge', 'heavy-block', 'flat-square', 'block-caps', 'pill-caps' ];
+    /**
+     * The `invert` kits whose button loses its box on hover on the LIGHT band: the three 0px `same` kits, whose only box is the
+     * fill, and the swapped fill melts into the page. Before the Ruling 7 fix glass-edge and heavy-block were here too (their
+     * `same` frame followed the swapped fill); they now keep their rest frame on hover.
+     */
+    private const LIGHT_KITS = [ 'flat-square', 'block-caps', 'pill-caps' ];
+
+    /** The two framed `invert` + `same` kits Ruling 7 moved (a `same` frame wider than 0px). */
+    private const FIXED_KITS = [ 'glass-edge', 'heavy-block' ];
+
+    /**
+     * sha256 of json_encode() of every KitAdapters::patch() over every (block, role, band in light|surface|accent|dark|panel,
+     * ground in none|inverted|accent) of APPLIED that is not null, keyed "kit|block|role|band|ground", taken BEFORE the Ruling 7
+     * edit (Task 3a Step 0, at 1d51dc9): the 38 kits other than FIXED_KITS (4,484 patches), and FIXED_KITS' patches other than
+     * `divi/button` and `divi/contact-form` (212 patches). The fix may move neither.
+     */
+    private const UNMOVED_OTHER_KITS = '5e2ef225c5b0efd611624309ef3bbb09e5a5667d27fb4f9fff4d21c373bee9f5';
+    private const UNMOVED_OTHER_KITS_COUNT = 4484;
+    private const UNMOVED_FIXED_KITS_NON_BUTTON = '2523a6b36e1b6239d06e42a80a33e3a08390b940d00cf93022eaef1fe1ef9c07';
+    private const UNMOVED_FIXED_KITS_NON_BUTTON_COUNT = 212;
+
+    /** The same hash over the three 0px `invert` kits (flat-square, block-caps, pill-caps; 354 patches) before the edit. */
+    private const UNMOVED_ZERO_WIDTH_INVERT = '1da93c7676edfb93917dffcd4cc1b933777828750aac203ec48cb4f925b37317';
+    private const UNMOVED_ZERO_WIDTH_INVERT_COUNT = 354;
 
     /** The six languages whose `accent-text` is within 1.1:1 of `bg` (the swapped fill and frame melt into the page). */
     private const LIGHT_LANGUAGES = [ 'editorial', 'glass-dark', 'tech-mono', 'corporate-trust', 'soft-saas', 'luxe' ];
@@ -55,11 +79,11 @@ class KitHoverVisibilityTest extends TestCase
     private const PANEL_KITS = [ 'flat-square', 'block-caps', 'pill-caps' ];
 
     /**
-     * The framed kits' cells with a rest box (>= 1.5:1) whose hover box falls below 1.5:1, as measured today; Task 3a turns this
-     * into [] (Ruling 7). The first twelve are the ones below 1.1:1 (the six languages of LIGHT_LANGUAGES); organic-warm (1.19:1)
-     * and bold-vibrant (1.41:1) are the other four.
+     * The framed kits' cells with a rest box (>= 1.5:1) whose hover box fell below 1.5:1 BEFORE the Ruling 7 fix (measured at
+     * 895610e; kept as history, the proof below now demands none). Twelve were below 1.1:1 (the six languages of
+     * LIGHT_LANGUAGES); organic-warm (1.19:1) and bold-vibrant (1.41:1) were the other four.
      */
-    private const FRAMED_FAILURES_TODAY = [
+    private const FRAMED_FAILURES_BEFORE_THE_FIX = [
         'glass-edge|editorial|light|control', 'glass-edge|glass-dark|light|control', 'glass-edge|organic-warm|light|control',
         'glass-edge|tech-mono|light|control', 'glass-edge|corporate-trust|light|control', 'glass-edge|soft-saas|light|control',
         'glass-edge|bold-vibrant|light|control', 'glass-edge|luxe|light|control',
@@ -169,11 +193,11 @@ class KitHoverVisibilityTest extends TestCase
         $this->assertCount( 2400, $cells, '40 kits x 10 languages x 3 bands x 2 roles' );
 
         $vanishing = self::vanishing();
-        $this->assertCount( 60, $vanishing, 'cells with a box at rest (>= 1.5:1) and none on hover (< 1.1:1), measured at 895610e' );
+        $this->assertCount( 48, $vanishing, 'cells with a box at rest (>= 1.5:1) and none on hover (< 1.1:1), after the Ruling 7 fix (60 at 895610e)' );
 
         $light = array_values( array_filter( $vanishing, static fn ( string $k ): bool => str_contains( $k, '|light|' ) ) );
         $panel = array_values( array_filter( $vanishing, static fn ( string $k ): bool => str_contains( $k, '|panel|' ) ) );
-        $this->assertCount( 30, $light );
+        $this->assertCount( 18, $light, '30 before the Ruling 7 fix' );
         $this->assertCount( 30, $panel );
         $this->assertCount( 0, array_filter( $vanishing, static fn ( string $k ): bool => str_contains( $k, '|accent|' ) ), 'the accent band has no vanishing hover' );
         $this->assertCount( 0, array_filter( $vanishing, static fn ( string $k ): bool => str_ends_with( $k, '|control-secondary' ) ), 'only the primary button loses its box' );
@@ -194,7 +218,7 @@ class KitHoverVisibilityTest extends TestCase
         sort( $expectedPanel );
         sort( $light );
         sort( $panel );
-        $this->assertSame( $expectedLight, $light, 'light: the five invert kits in the six languages whose accent-text melts into the page' );
+        $this->assertSame( $expectedLight, $light, 'light: the three 0px invert kits in the six languages whose accent-text melts into the page' );
         $this->assertSame( $expectedPanel, $panel, 'panel: the three 0px invert kits in all ten languages (kit-limits Ruling 2, by design)' );
     }
 
@@ -220,37 +244,129 @@ class KitHoverVisibilityTest extends TestCase
     }
 
     /**
-     * Ruling 7's proof scope today: framed kits (a rest frame wider than 0px) x 10 languages x {light, panel} x both roles, a
-     * rest box of at least 1.5:1 must still be at least 1.5:1 on hover. TODAY it fails in 16 cells (12 below 1.1:1), all
-     * glass-edge and heavy-block `control` on the light band. Task 3a flips this to the empty list and renames the test
-     * testAFramedButtonKeepsItsBoxOnHover (zero exceptions, no baseline).
+     * Ruling 7's proof: framed kits (a rest frame wider than 0px) x 10 languages x {light, panel} x both roles, a rest box of at
+     * least 1.5:1 is still at least 1.5:1 on hover. Zero exceptions, no baseline file. (The accent band is out of scope: spec
+     * issue 3, four tech-mono cells at 1.10:1 for framed `invert` kits with a `text`/`accent` frame, a stated limit.) Before the
+     * fix this failed in the 16 cells of FRAMED_FAILURES_BEFORE_THE_FIX.
      */
-    public function testTheFramedHoverFailuresToday(): void
+    public function testAFramedButtonKeepsItsBoxOnHover(): void
     {
         $failures = [];
         $framed   = 0;
-        $below    = 0;
         foreach ( self::cells() as $key => [ $rest, $hover, $width ] ) {
             if ( $width <= 0 || str_contains( $key, '|accent|' ) ) {
                 continue;
             }
             ++$framed;
             if ( $rest >= self::HAS_BOX && $hover < self::HAS_BOX ) {
-                $failures[] = $key;
-                if ( $hover < self::NO_BOX ) {
-                    ++$below;
-                }
+                $failures[] = sprintf( '%s rest %.2f hover %.2f', $key, $rest, $hover );
             }
         }
         $this->assertSame( 920, $framed, 'framed cells in scope (light and panel, both roles)' );
-        $this->assertSame( self::FRAMED_FAILURES_TODAY, $failures, 'the framed button cells that lose their box on hover today' );
-        $this->assertSame( 12, $below, 'twelve of them are below 1.1:1: glass-edge and heavy-block, control, light, the six LIGHT_LANGUAGES' );
+        $this->assertSame( [], $failures, 'a framed button that has a box at rest keeps it on hover' );
+
+        $least = INF;
+        foreach ( self::FRAMED_FAILURES_BEFORE_THE_FIX as $key ) {
+            $least = min( $least, self::cells()[ $key ][1] );
+        }
+        $this->assertGreaterThanOrEqual( self::HAS_BOX, $least, 'the 16 cells that failed before now pass' );
     }
 
-    public function testTheFailingFramedKitsAreTheTwoDefaultsTheFixTouches(): void
+    /**
+     * Every patch the fix may not move is byte-identical to the patch before the edit: the 38 other kits, and the two fixed
+     * kits' non-button, non-form patches (Review Focus 4).
+     */
+    public function testOnlyTheFramedInvertSameHoverFrameMoved(): void
+    {
+        [ $others, $fixedRest ] = [ self::patchesOf( static fn ( string $id ): bool => ! in_array( $id, self::FIXED_KITS, true ), false ), self::patchesOf( static fn ( string $id ): bool => in_array( $id, self::FIXED_KITS, true ), true ) ];
+        $this->assertCount( self::UNMOVED_OTHER_KITS_COUNT, $others );
+        $this->assertSame( self::UNMOVED_OTHER_KITS, hash( 'sha256', (string) json_encode( $others ) ), 'the 38 other kits are untouched' );
+        $this->assertCount( self::UNMOVED_FIXED_KITS_NON_BUTTON_COUNT, $fixedRest );
+        $this->assertSame( self::UNMOVED_FIXED_KITS_NON_BUTTON, hash( 'sha256', (string) json_encode( $fixedRest ) ), 'glass-edge and heavy-block: only buttons and forms move' );
+
+        // The only kits the condition reaches are FIXED_KITS.
+        $reached = [];
+        foreach ( StyleKits::ids() as $id ) {
+            $kit = StyleKits::get( $id );
+            $this->assertIsArray( $kit );
+            if ( 'invert' === $kit['hover'] && 'same' === $kit['border']['color'] && '0px' !== $kit['border']['width'] ) {
+                $reached[] = $id;
+            }
+        }
+        $this->assertSame( self::FIXED_KITS, $reached );
+    }
+
+    /** glass-edge and heavy-block: on light, accent and dark the hover frame is the rest frame; fill and label still swap. */
+    public function testTheFramedInvertSameHoverKeepsTheRestFrame(): void
+    {
+        foreach ( self::FIXED_KITS as $id ) {
+            $kit = StyleKits::get( $id );
+            $this->assertIsArray( $kit );
+            foreach ( [ 'light', 'accent', 'dark' ] as $on ) {
+                $patch = KitAdapters::patch( 'divi/button', 'control', $on, $kit );
+                $this->assertIsArray( $patch );
+                $d = $patch['button']['decoration'];
+                $restFrame  = $d['border']['desktop']['value']['styles']['all']['color'];
+                $restFill   = $d['background']['desktop']['value']['color'];
+                $restLabel  = $d['font']['font']['desktop']['value']['color'];
+                $this->assertSame( $restFill, $restFrame, "$id on $on: a `same` frame is the fill at rest" );
+                $this->assertSame( $restFrame, $d['border']['desktop']['hover']['styles']['all']['color'], "$id on $on: the hover frame keeps the rest frame" );
+                $this->assertSame( $restLabel, $d['background']['desktop']['hover']['color'], "$id on $on: the hover fill is the rest label" );
+                $this->assertSame( $restFill, $d['font']['font']['desktop']['hover']['color'], "$id on $on: the hover label is the rest fill" );
+            }
+        }
+    }
+
+    /** The three 0px `invert` kits (no frame to keep) are byte-identical to the patches before the edit. */
+    public function testTheZeroWidthInvertKitsAreUnchanged(): void
+    {
+        $zero    = [ 'flat-square', 'block-caps', 'pill-caps' ];
+        $patches = self::patchesOf( static fn ( string $id ): bool => in_array( $id, $zero, true ), false );
+        $this->assertCount( self::UNMOVED_ZERO_WIDTH_INVERT_COUNT, $patches );
+        $this->assertSame( self::UNMOVED_ZERO_WIDTH_INVERT, hash( 'sha256', (string) json_encode( $patches ) ) );
+    }
+
+    /**
+     * Every non-null KitAdapters::patch() of the kits $pick accepts, keyed "kit|block|role|band|ground" in the order of
+     * StyleKits::ids(), APPLIED, the five bands and the grounds (none, inverted, accent); with $skipButtons the `divi/button` and
+     * `divi/contact-form` patches are left out.
+     *
+     * @param callable(string):bool $pick
+     * @return array<string,array<string,mixed>>
+     */
+    private static function patchesOf( callable $pick, bool $skipButtons ): array
+    {
+        $out = [];
+        foreach ( StyleKits::ids() as $id ) {
+            if ( ! $pick( $id ) ) {
+                continue;
+            }
+            $kit = StyleKits::get( $id );
+            self::assertIsArray( $kit );
+            foreach ( KitAdapters::APPLIED as $block => $roles ) {
+                if ( $skipButtons && ( 'divi/button' === $block || 'divi/contact-form' === $block ) ) {
+                    continue;
+                }
+                foreach ( $roles as $role ) {
+                    foreach ( [ 'light', 'surface', 'accent', 'dark', 'panel' ] as $on ) {
+                        foreach ( [ null, 'inverted', 'accent' ] as $ground ) {
+                            $patch = KitAdapters::patch( $block, $role, $on, $kit, $ground );
+                            if ( null !== $patch ) {
+                                $out[ "$id|$block|$role|$on|" . ( $ground ?? '-' ) ] = $patch;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $out;
+    }
+
+    public function testTheFailingFramedKitsWereTheTwoDefaultsTheFixTouches(): void
     {
         $kits = [];
-        foreach ( self::FRAMED_FAILURES_TODAY as $key ) {
+        foreach ( self::FRAMED_FAILURES_BEFORE_THE_FIX as $key ) {
             $kits[ explode( '|', $key )[0] ] = true;
         }
         $this->assertSame( [ 'glass-edge', 'heavy-block' ], array_keys( $kits ) );
