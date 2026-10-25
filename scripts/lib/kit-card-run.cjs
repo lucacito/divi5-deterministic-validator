@@ -200,4 +200,4 @@ async function checkCards(p, { width, expects, buttonExpects, hairline }) {
   return { problems, observations, cardsChecked: slots.length, layout: row.layout };
 }
 
-module.exports = { checkCards, transitionMs };
+module.exports = { checkCards, transitionMs, hoverJudged };
