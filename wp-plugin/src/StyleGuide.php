@@ -1790,7 +1790,9 @@ MD;
             }
             $heading = 'divi/heading' === $block;
             foreach ( $roles as $role ) {
-                $byRole[ $role ][] = $heading ? implode( ' and ', LanguageAdapters::TYPE_HEADING_LEVELS[ $role ] ?? [] ) : 'uppercase labels';
+                $byRole[ $role ][] = $heading
+                    ? implode( ' and ', LanguageAdapters::TYPE_HEADING_LEVELS[ $role ] ?? [] ) . ( 'display' === ( LanguageAdapters::TYPE_FONT[ $role ] ?? 'display' ) ? '' : ' (' . LanguageAdapters::TYPE_FONT[ $role ] . ' font)' )
+                    : 'labels';
             }
             $proved   = true === ( $proven[ ( $heading ? 'heading' : 'text' ) . '-cascade' ] ?? false );
             $cascade  = $cascade && $proved;
@@ -1806,8 +1808,8 @@ MD;
             }
         }
 
-        return "\n\n## Design language type\n\nA design language sets headline type (Type line, topic=design-language:<id>): " . implode( ', ', $covers )
-            . '. Write its weight and `letterSpacing` (`capitalization` `uppercase` only where the language names capital letters) at '
+        return "\n\n## Design language type\n\nThe language sets headline type (Type line, topic=design-language:<id>): " . implode( ', ', $covers )
+            . '. Set its weight and `letterSpacing` (`capitalization` `uppercase` only where the language names capital letters) at '
             . implode( ', ', $where ) . ( $cascade ? '; it reaches 900 and 400 px (rendered).' : '.' );
     }
 
