@@ -2169,7 +2169,7 @@ MD;
     /** Topic `controls`: button, blurb, icon, number counter and divider styling, every shape proven on the real Divi 5.15.1. At most 10,000 bytes. */
     private static function controlsTopic(): string
     {
-        return self::controlsTopicText() . self::controlsKitSentence();
+        return self::controlsTopicText() . self::controlsKitSentence() . self::objectValuesParagraph();
     }
 
     /**
@@ -2199,6 +2199,54 @@ MD;
         }
 
         return "\n\n## Style kits\n\n" . ucfirst( implode( ', ', $parts ) ) . '; colours come from the design language (topic=kit-rules).';
+    }
+
+    /**
+     * The shapes of the object-valued content keys the validator knows (SchemaRules::contentKeyRules(), `mustBeObject`) for
+     * which a plain string is a render fatal: each one is worth a one-line example so a hand-written page gets it right.
+     * The examples are the shapes of the shipped recipes (a test compares them with the real testimonial and contact form).
+     */
+    /** Modules the validator guards but the guides never teach (video is not taught: StyleGuideTypographyTopicTest), so the paragraph does not name them. */
+    public const OBJECT_VALUES_NOT_TAUGHT = [ 'divi/video' ];
+
+    public const OBJECT_SHAPES = [
+        'divi/testimonial'  => [ 'company' => '{"text": "Company"}', 'portrait' => '{"url": "...", "alt": "..."}' ],
+        'divi/contact-form' => [ 'button' => '{"text": "Send"}' ],
+    ];
+
+    /**
+     * "## Values that must be objects": generated from the validator's own table, so it can never disagree with what the
+     * plugin refuses. A string where Divi needs an object makes Divi answer HTTP 500 for the whole page (rendered on Divi
+     * 5.15.1), which the save gate reports as SCALAR_WHERE_OBJECT. Names every module and key, and gives the shape where one
+     * is known (OBJECT_SHAPES). '' when the table has no object-valued key.
+     *
+     * @param array<string,list<array{0:string,1:bool,2:bool}>>|null $rules defaults to SchemaRules::contentKeyRules()
+     */
+    public static function objectValuesParagraph( ?array $rules = null ): string
+    {
+        $rules ??= ( new \Divi5Validator\SchemaRules() )->contentKeyRules();
+        $items = [];
+        foreach ( $rules as $module => $keys ) {
+            if ( in_array( $module, self::OBJECT_VALUES_NOT_TAUGHT, true ) ) {
+                continue;
+            }
+            $names = [];
+            foreach ( $keys as [ $key, , $mustBeObject ] ) {
+                if ( true === $mustBeObject ) {
+                    $shape   = self::OBJECT_SHAPES[ $module ][ $key ] ?? null;
+                    $names[] = '`' . $key . '`' . ( null === $shape ? '' : ' ' . $shape );
+                }
+            }
+            if ( [] !== $names ) {
+                $items[] = '`' . $module . '` ' . implode( ', ', $names );
+            }
+        }
+        if ( [] === $items ) {
+            return '';
+        }
+
+        return "\n\n## Values that must be objects\n\nOn these keys `innerContent.desktop.value` is an object, never a plain string: a string makes Divi answer HTTP 500 for the whole page and the save is refused (SCALAR_WHERE_OBJECT): "
+            . implode( '; ', $items ) . '. A testimonial\'s `author` and `jobTitle` are plain strings and its `content` is HTML.';
     }
 
     private static function controlsTopicText(): string

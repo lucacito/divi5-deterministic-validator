@@ -150,8 +150,8 @@ final class CarrierBudgetTest extends TestCase
 
         $controlsDelta = strlen( StyleGuide::controlsKitSentence() ) - strlen( StyleGuide::controlsKitSentence( $oldApplied ) );
         $this->assertSame( strlen( ' or `rule-accent`' ), $controlsDelta, 'Ruling 10: the divider marker list gains `rule-accent`, nothing else' );
-        $this->assertSame( 8331 + $controlsDelta, strlen( StyleGuide::markdown( 'controls' ) ) );
-        $this->assertSame( 8348, strlen( StyleGuide::markdown( 'controls' ) ) );
+        $this->assertSame( 8331 + $controlsDelta + strlen( StyleGuide::objectValuesParagraph() ), strlen( StyleGuide::markdown( 'controls' ) ), 'dogfood round 2: the object-values paragraph is the only other growth' );
+        $this->assertSame( 9105, strlen( StyleGuide::markdown( 'controls' ) ) );
 
         $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
         $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
