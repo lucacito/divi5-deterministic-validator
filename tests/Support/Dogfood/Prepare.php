@@ -28,12 +28,13 @@ final class Prepare
         '04-design-language.md' => 'design-language:%LANGUAGE%',
         '05-controls.md'        => 'controls',
         '06-forms.md'           => 'forms',
+        '07-kit-patterns.md'    => 'kit-patterns',
     ];
 
     public const TASKS = [ 'freehand', 'edit' ];
 
     /**
-     * filename => content, in write order: the 6 guide files, TASK.md, page.html (edit only), prepare.json.
+     * filename => content, in write order: the 7 guide files, TASK.md, page.html (edit only), prepare.json.
      * Pure; throws \InvalidArgumentException (the message lists the valid ids) on an unknown kit, language or task.
      *
      * @return array<string,string>

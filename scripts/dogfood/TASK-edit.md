@@ -1,7 +1,7 @@
 # Task
 
 You are an AI assistant that edits Divi 5 pages through a WordPress plugin. You have been given the plugin's own guide (the .md files in this
-directory: 01-style-guide.md is the main guide; 02..06 are topics it points to) and the current page layout in page.html (a landing page already
+directory: 01-style-guide.md is the main guide; 02..07 are topics it points to) and the current page layout in page.html (a landing page already
 built in the design language "%LANGUAGE%" and the style kit "%KIT%"). Use ONLY these files. Do not read any other file on this machine, do
 not search the web, do not look at the repository.
 
