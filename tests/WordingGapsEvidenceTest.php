@@ -251,6 +251,48 @@ class WordingGapsEvidenceTest extends TestCase
         $this->assertStringNotContainsString( 'show:', substr( $gate, (int) strpos( $gate, 'const RULE_SLOTS' ), 3000 ), 'the gate writes no show key on its rule slots' );
     }
 
+    /**
+     * Task 7, probe P2 (Divi 5.15.1, 2026-10-25): a divider module's box is 23px high at line weights 1px, 2px and 4px, at 1280,
+     * 900 and 400 px, for the control (a 2px line) and every candidate: the line is drawn inside the box.
+     */
+    public function testTheDividerBoxIs23pxAtEveryWeight(): void
+    {
+        $dir        = __DIR__ . '/../fixtures/shapes/';
+        $candidates = json_decode( (string) file_get_contents( $dir . 'candidates/kit-patterns-divider.json' ), true );
+        $results    = json_decode( (string) file_get_contents( $dir . 'probe-results-kit-patterns-divider.json' ), true );
+        $this->assertIsArray( $candidates );
+        $this->assertIsArray( $results );
+
+        $weights = [];
+        foreach ( $candidates as $c ) {
+            $this->assertSame( 'divider', $c['block'] );
+            $this->assertTrue( $c['geometry'], "{$c['id']}: a geometry probe" );
+            $this->assertSame( '2px', $c['base']['divider']['advanced']['line']['desktop']['value']['weight'], 'the control is a 2px line' );
+            $this->assertSame( [ 'divider.advanced.line.desktop.value.weight' ], array_keys( $c['set'] ) );
+            $this->assertSame( 'kd-divider-weight-' . $c['set']['divider.advanced.line.desktop.value.weight'], $c['id'] );
+            $weights[] = $c['set']['divider.advanced.line.desktop.value.weight'];
+        }
+        $this->assertSame( StyleGuide::PATTERN_DIVIDER_WEIGHTS, $weights );
+
+        $this->assertSame( array_column( $candidates, 'id' ), array_column( $results, 'id' ) );
+        $box = (int) StyleGuide::PATTERN_DIVIDER_BOX;
+        $this->assertSame( '23px', StyleGuide::PATTERN_DIVIDER_BOX );
+        foreach ( $results as $r ) {
+            $this->assertEqualsCanonicalizing( [ 400, 900, 1280 ], array_map( 'intval', array_keys( $r['detail'] ) ), "{$r['id']}: three widths" );
+            foreach ( $r['detail'] as $width => $d ) {
+                foreach ( [ 'control', 'candidate' ] as $side ) {
+                    $this->assertSame( $box, $d['geometry'][ $side ]['rect']['height'], "{$r['id']} $side at $width" );
+                }
+                $this->assertSame( 0, $d['overflowPx'], "{$r['id']} at $width" );
+                $this->assertSame( [], $d['changedProps'], "{$r['id']} at $width: the module's own computed style did not change" );
+            }
+        }
+
+        $vocab = (string) file_get_contents( $dir . 'kit-patterns-vocabulary.md' );
+        $this->assertStringContainsString( '| divider-box-23 | PASS |', $vocab );
+        $this->assertTrue( StyleGuide::PATTERN_PROVEN['divider-box-23'] );
+    }
+
     // Gap 11a: the testimonial ------------------------------------------------------------------------------------------
 
     public function testTheTestimonialRecipeInks(): void

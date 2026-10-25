@@ -40,6 +40,12 @@ final class LanguageTypeBudgetTest extends TestCase
     /** wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 5: brutalist-flat "a 6px black line" -> "a strong black line" (+3 B), luxe's two "1px line in the accent colour" phrases -> "(the kit's accent rule)" (-8 and -10 B). */
     private const RULING_5_DELTA = [ 'brutalist-flat' => 3, 'luxe' => -18 ];
 
+    /** wording gaps T7 (third blind round, card fill): glass-dark no longer calls its translucent tint the card colour (the card adapter fills
+     * cards with `surface`): the three colour lines become the standard `surface (cards)` line (-187 B), and the prose rewords
+     * "translucent cards" -> "layered cards" (-4), the shadow's semi-transparent background -> the surface colour (-17), and the
+     * rhythm's and cta's "translucent " dropped (-12, -12): -232 B. The design-languages index carries the summary (-4 B: 2592 -> 2588). */
+    private const TASK_7_DELTA = [ 'glass-dark' => -232 ];
+
     private const BEFORE_TYPOGRAPHY = 7496;
 
     private const TYPOGRAPHY_SENTENCE_MAX = 450;
@@ -79,7 +85,7 @@ final class LanguageTypeBudgetTest extends TestCase
             // wording gaps T4 (plan 2026-10-25-wording-gaps): each topic also gains its generated Kit line (Ruling 4) and one newline, and brutalist-flat and luxe the Ruling 5 rewords (+3, -18 B).
             $kitLine = DesignLanguages::kitLine( (array) DesignLanguages::get( $id ) );
             self::assertLessThanOrEqual( DesignLanguages::GENERATED_LINE_MAX, strlen( $kitLine ), "design-language:$id Kit line is over its cap" );
-            $delta  += strlen( $kitLine ) + 1 + ( self::RULING_5_DELTA[ $id ] ?? 0 );
+            $delta  += strlen( $kitLine ) + 1 + ( self::RULING_5_DELTA[ $id ] ?? 0 ) + ( self::TASK_7_DELTA[ $id ] ?? 0 );
             self::assertSame( $before + strlen( $typeLine ) + 1 + strlen( $spaceLine ) + 1 + $delta, $now, "design-language:$id must grow by exactly its Type line, its Section spacing line and one newline each (plus the tech-mono reword)" );
             self::assertLessThanOrEqual( self::TOPIC_BOUND, $now );
         }

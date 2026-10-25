@@ -1,0 +1,77 @@
+[
+ {
+  "id": "kd-divider-weight-1px",
+  "block": "divider",
+  "expect": "PASS",
+  "geometry": true,
+  "base": {
+   "divider": {
+    "advanced": {
+     "line": {
+      "desktop": {
+       "value": {
+        "color": "#111827",
+        "weight": "2px",
+        "style": "solid"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "divider.advanced.line.desktop.value.weight": "1px"
+  },
+  "note": "Divider default space: the module rect height with a 1px line (geometry). Compare the control (2px) and candidate heights to read the box around the line."
+ },
+ {
+  "id": "kd-divider-weight-2px",
+  "block": "divider",
+  "expect": "PASS",
+  "geometry": true,
+  "base": {
+   "divider": {
+    "advanced": {
+     "line": {
+      "desktop": {
+       "value": {
+        "color": "#111827",
+        "weight": "2px",
+        "style": "solid"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "divider.advanced.line.desktop.value.weight": "2px"
+  },
+  "note": "Divider default space: the module rect height with a 2px line (geometry). Compare the control (2px) and candidate heights to read the box around the line."
+ },
+ {
+  "id": "kd-divider-weight-4px",
+  "block": "divider",
+  "expect": "PASS",
+  "geometry": true,
+  "base": {
+   "divider": {
+    "advanced": {
+     "line": {
+      "desktop": {
+       "value": {
+        "color": "#111827",
+        "weight": "2px",
+        "style": "solid"
+       }
+      }
+     }
+    }
+   }
+  },
+  "set": {
+   "divider.advanced.line.desktop.value.weight": "4px"
+  },
+  "note": "Divider default space: the module rect height with a 4px line (geometry). Compare the control (2px) and candidate heights to read the box around the line."
+ }
+]

@@ -26,6 +26,12 @@ final class LanguageRhythmBudgetTest extends TestCase
     /** wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 5: brutalist-flat "a 6px black line" -> "a strong black line" (+3 B), luxe's two "1px line in the accent colour" phrases -> "(the kit's accent rule)" (-8 and -10 B). */
     private const RULING_5_DELTA = [ 'brutalist-flat' => 3, 'luxe' => -18 ];
 
+    /** wording gaps T7 (third blind round, card fill): glass-dark no longer calls its translucent tint the card colour (the card adapter fills
+     * cards with `surface`): the three colour lines become the standard `surface (cards)` line (-187 B), and the prose rewords
+     * "translucent cards" -> "layered cards" (-4), the shadow's semi-transparent background -> the surface colour (-17), and the
+     * rhythm's and cta's "translucent " dropped (-12, -12): -232 B. The design-languages index carries the summary (-4 B: 2592 -> 2588). */
+    private const TASK_7_DELTA = [ 'glass-dark' => -232 ];
+
     /** Bytes of each `design-language:<id>` topic before the Section spacing line (dogfood round 2: +15 B per sentence-case role in the Type line). */
     private const BEFORE_LANGUAGE_TOPICS = [
         'editorial'       => 2056,
@@ -53,7 +59,7 @@ final class LanguageRhythmBudgetTest extends TestCase
         // render-fatal sweep: 9105 -> 9271 (+166 B = the longer generated object-values paragraph, StyleGuideObjectValuesTest).
         // wording gaps T4 (plan 2026-10-25-wording-gaps): 9271 -> 9355 (+84 B = StyleGuide::controlsFormClause(), spec gap 14).
         self::assertSame( 9355, strlen( StyleGuide::markdown( 'controls' ) ) );
-        self::assertSame( 2592, strlen( StyleGuide::markdown( 'design-languages' ) ) );
+        self::assertSame( 2588, strlen( StyleGuide::markdown( 'design-languages' ) ) ); // wording gaps T7: 2592 -> 2588 (glass-dark summary "translucent" -> "layered")
         self::assertSame( 9972, strlen( StyleGuide::markdown( 'layout-sizing' ) ) );
     }
 
@@ -68,7 +74,7 @@ final class LanguageRhythmBudgetTest extends TestCase
             $delta = 'tech-mono' === $id ? self::TECH_MONO_PROSE_DELTA : 0;
             // wording gaps T4 (plan 2026-10-25-wording-gaps): each topic also gains its generated Kit line (Ruling 4) and one newline, and brutalist-flat and luxe the Ruling 5 rewords (+3, -18 B).
             $kitLine = DesignLanguages::kitLine( (array) DesignLanguages::get( $id ) );
-            $delta  += strlen( $kitLine ) + 1 + ( self::RULING_5_DELTA[ $id ] ?? 0 );
+            $delta  += strlen( $kitLine ) + 1 + ( self::RULING_5_DELTA[ $id ] ?? 0 ) + ( self::TASK_7_DELTA[ $id ] ?? 0 );
             self::assertSame( $before + strlen( $line ) + 1 + $delta, $now, "$id: must grow by exactly its Section spacing line and one newline (and the Kit line)" );
             self::assertLessThanOrEqual( self::TOPIC_BOUND, $now, "$id: over the topic bound" );
         }

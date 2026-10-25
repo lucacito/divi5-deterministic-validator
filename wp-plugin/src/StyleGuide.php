@@ -554,7 +554,18 @@ final class StyleGuide
         'icon-hugs-center' => true,
         'row-of-icons'     => true,
         'row-of-tags'      => true,
+        'divider-box-23'   => true,
     ];
+
+    /**
+     * Probe P2 (fixtures/shapes/candidates/kit-patterns-divider.json, results probe-results-kit-patterns-divider.json, the
+     * `divider-box-23` row): the line weights rendered and the height of the divider module's box at each of them, at 1280,
+     * 900 and 400 px (pinned by WordingGapsEvidenceTest::testTheDividerBoxIs23pxAtEveryWeight).
+     */
+    public const PATTERN_DIVIDER_WEIGHTS = [ '1px', '2px', '4px' ];
+
+    /** @see PATTERN_DIVIDER_WEIGHTS */
+    public const PATTERN_DIVIDER_BOX = '23px';
 
     /** The flex-row wrap group of the rendered P1 page (fixtures/shapes/kit-patterns-rows-page.html, pinned by a test). */
     public const PATTERN_ROW_LAYOUT = [ 'display' => 'flex', 'flexDirection' => 'row', 'flexWrap' => 'wrap', 'columnGap' => '12px', 'rowGap' => '8px', 'alignItems' => 'center' ];
@@ -599,9 +610,13 @@ final class StyleGuide
         $tags = $is( 'row-of-tags' )
             ? 'A row of tags is one `divi/group` with ' . $row . ': one line on a wide screen, wrapping on a phone (rendered). '
             : 'A row of several tags is not proven: copy the recipe\'s shape (one tag per card). ';
+        $noHover = ! self::chipsHaveHover();
+        $eyebrow = in_array( 'eyebrow', LanguageAdapters::APPLIED['type']['divi/text'] ?? [], true )
+            ? ' (`' . LanguageAdapters::TYPE_PATHS['divi/text'] . '.desktop.value`: weight, letterSpacing, and capitalization uppercase only where the language\'s Type line says capital letters)'
+            : '';
         $out[] = "## Tags\n\n" . $tags
-            . 'Each tag is a `divi/group` padded at `module.decoration.spacing.desktop.value.padding` = `' . (string) json_encode( self::PATTERN_TAG_PADDING ) . '` holding ONE `divi/text` label in the language\'s eyebrow style, in the muted colour (the band\'s ink on a dark band); it hugs its label, no width. '
-            . 'Its frame takes the kit\'s border width and style (' . $widths['zero'] . ' for a 0px kit' . ( null === $widths['double'] ? '' : ', ' . $widths['double'] . ' for a double under ' . $widths['double'] ) . '), its corners the control radius: a square kit gives square tags even where a language says pill (the kit wins). Recipe: `portfolio-featured-grid`.';
+            . 'Each tag is a `divi/group` padded at `module.decoration.spacing.desktop.value.padding` = `' . (string) json_encode( self::PATTERN_TAG_PADDING ) . '` holding ONE `divi/text` label in the language\'s eyebrow style' . $eyebrow . ', in the muted colour (the band\'s ink on a dark band); it hugs its label, no width' . ( $noHover ? ', no hover' : '' ) . '. '
+            . 'Its frame takes the kit\'s border width and style, at least ' . $widths['zero'] . ( null === $widths['double'] ? '' : ' (' . $widths['double'] . ' for a double)' ) . ', its corners the control radius: a square kit gives square tags even where a language says pill (the kit wins). Recipe: `portfolio-featured-grid`.';
 
         // Icon chips (gap 1b).
         if ( $is( 'icon-hugs-left' ) ) {
@@ -611,7 +626,7 @@ final class StyleGuide
             $icon = 'An icon chip\'s box is not measured: copy the recipe\'s shape. ';
         }
         $icon .= $is( 'row-of-icons' ) ? 'For a row of icon chips use the same flex-row group as for tags. ' : 'A row of several icon chips is not proven: copy the recipe\'s shape. ';
-        $out[] = "## Icon chips\n\n" . $icon . 'Corners, fill and glyph colour: topic=kit-rules. Recipes: `icon-values`, `features-carousel-strip`.';
+        $out[] = "## Icon chips\n\n" . $icon . ( $noHover ? 'It has no hover. ' : '' ) . 'Corners, fill and glyph colour: topic=kit-rules. Recipes: `icon-values`, `features-carousel-strip`.';
 
         // Plan columns and the featured plan (gaps 2, 3).
         $card     = (array) KitAdapters::patch( 'divi/column', 'card', 'light', $kit );
@@ -636,7 +651,9 @@ final class StyleGuide
             . 'Plans sit side by side as the `divi/column`s of one row, each a `card` (the kit\'s frame, radius and padding); the row\'s column gap separates them, since a kit rule has no side edge. '
             . 'Inside a plan a quiet `rule` top edge on the features group separates the price from the list; its `on` is the card\'s fill, `' . $band( $cardFill ) . '` on a plain card (' . $quiet( $band( $cardFill ) ) . ' colour). '
             . 'The featured plan is a `card` on an `accent` ground: fill ' . $gFill . ', frame ' . $gFrame . ', text ' . ( self::GROUND_INK[ $gFill ] ?? '?' ) . '; its features group takes the quiet rule on ' . $band( $gFill ) . ' (' . $quiet( $band( $gFill ) ) . ') and its button the primary on ' . $band( $gFill ) . ' (a filled kit\'s button there has ' . $filled( $band( $gFill ) ) . '). '
-            . 'A button inside an inverted panel takes `panel`: a filled kit\'s has ' . $filled( 'panel' ) . '. Recipe: `pricing-three-tier` (its middle plan is the featured one).';
+            . 'A button inside an inverted panel takes `panel`: a filled kit\'s has ' . $filled( 'panel' ) . '. '
+            . ( self::rulesHaveNoSideEdge() ? 'A brief asking for plans "separated by rules" is met by that column gap and the quiet top-edge rule inside each plan. ' : '' )
+            . 'Recipe: `pricing-three-tier` (its middle plan is the featured one).';
 
         // Quiet and strong rules, dividers (gaps 6, 8).
         $faint = [];
@@ -655,6 +672,7 @@ final class StyleGuide
             . ( [] === $faint ? '' : sprintf( 'A quiet `rule` is a decorative separator, not a boundary: its hairline is only %.2f:1 to %.2f:1 on light and surface. ', min( $faint ), max( $faint ) ) )
             . ( [] === $same ? '' : 'Where the hairline is the text colour (' . implode( ', ', $same ) . ') quiet and strong differ only by width. ' )
             . 'A line that opens a section or a list is a `rule-strong` divider; quiet `rule` dividers separate the rows under it. A divider needs no `show` key and no spacing: the kit\'s dividers carry neither and render. '
+            . ( $is( 'divider-box-23' ) ? 'Its module box is ' . self::PATTERN_DIVIDER_BOX . ' high at line weights ' . self::joinAnd( self::PATTERN_DIVIDER_WEIGHTS ) . ' (rendered): the line is drawn inside it, so the weight does not change the layout. ' : '' )
             . 'Recipes: `list-icon-dividers` (dividers), `team-grid` (strong top edges on groups).';
 
         // Hover colours (gap 7), read from patch() for the first kit of each hover kind.
@@ -757,10 +775,50 @@ final class StyleGuide
         if ( [] !== $framed && [] !== $dull ) {
             $limits[] = '- On an accent band, in ' . implode( ', ', $dull ) . ' the hover of a kit with a text or accent frame (' . implode( ', ', $framed ) . ') is faint: text and accent are within 1.5:1.';
         }
-        $limits[] = '- Divi\'s default space around a divider line is not measured.';
+        if ( ! $is( 'divider-box-23' ) ) {
+            $limits[] = '- Divi\'s default space around a divider line is not measured.';
+        }
         $out[]    = "## Limits\n\n" . implode( "\n", $limits );
 
         return implode( "\n\n", $out ) . "\n";
+    }
+
+    /** Whether any chip patch (a tag or an icon chip, every kit, every chip band) writes a `hover` key anywhere (kit-patterns says "no hover" only while none does). */
+    public static function chipsHaveHover(): bool
+    {
+        foreach ( StyleKits::ids() as $id ) {
+            foreach ( [ 'divi/group', 'divi/icon' ] as $block ) {
+                foreach ( KitAdapters::CHIP_BANDS as $on ) {
+                    foreach ( array_keys( self::leafPaths( KitAdapters::chipPatch( $block, $on, (array) StyleKits::get( $id ) ) ) ) as $path ) {
+                        if ( in_array( 'hover', explode( '.', $path ), true ) ) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Whether every group and column rule (both roles, every kit, every rule band) draws only a top edge: `styles.all` at 0px
+     * and no left, right or bottom side (kit-patterns says a plan grid is separated by the column gap only while this holds).
+     */
+    public static function rulesHaveNoSideEdge(): bool
+    {
+        foreach ( StyleKits::ids() as $id ) {
+            foreach ( [ 'divi/group', 'divi/column' ] as $block ) {
+                foreach ( [ 'rule', 'rule-strong' ] as $role ) {
+                    foreach ( KitAdapters::RULE_BANDS as $on ) {
+                        $styles = (array) ( KitAdapters::patch( $block, $role, $on, (array) StyleKits::get( $id ) )['module']['decoration']['border']['desktop']['value']['styles'] ?? [] );
+                        if ( [] !== array_diff( array_keys( $styles ), [ 'all', 'top' ] ) || '0px' !== ( $styles['all']['width'] ?? null ) ) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     /** Dotted path => value of every leaf of $node. @param array<mixed> $node @return array<string,mixed> */

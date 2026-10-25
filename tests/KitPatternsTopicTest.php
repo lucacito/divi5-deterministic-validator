@@ -6,6 +6,7 @@ namespace Divi5Validator\Tests;
 
 use AiEditorDivi5\WP\DesignLanguages;
 use AiEditorDivi5\WP\KitAdapters;
+use AiEditorDivi5\WP\LanguageAdapters;
 use AiEditorDivi5\WP\McpHandler;
 use AiEditorDivi5\WP\RestController;
 use AiEditorDivi5\WP\SectionRecipes;
@@ -21,7 +22,7 @@ require_once __DIR__ . '/../wp-plugin/src/OpenApiSpec.php';
 require_once __DIR__ . '/../wp-plugin/src/StyleGuide.php';
 require_once __DIR__ . '/../wp-plugin/src/RestController.php';
 require_once __DIR__ . '/../wp-plugin/src/McpHandler.php';
-foreach ( [ 'SectionRecipes', 'ImagePack', 'ImageTokens', 'DesignLanguages', 'StyleKits', 'KitAdapters', 'KitResolver', 'RecipeTokens' ] as $kitPatternsTestClass ) {
+foreach ( [ 'SectionRecipes', 'ImagePack', 'ImageTokens', 'DesignLanguages', 'StyleKits', 'KitAdapters', 'KitResolver', 'RecipeTokens', 'LanguageAdapters' ] as $kitPatternsTestClass ) {
     require_once __DIR__ . '/../wp-plugin/src/' . $kitPatternsTestClass . '.php';
 }
 require_once __DIR__ . '/Support/Colour.php';
@@ -120,8 +121,8 @@ class KitPatternsTopicTest extends TestCase
     {
         $text = self::topic();
 
-        // The tag frame: the kit's border width, 1px for a 0px kit, 3px for a double under 3px (KitAdapters::chipPatch()).
-        $this->assertStringContainsString( "the kit's border width and style (1px for a 0px kit, 3px for a double under 3px)", $text );
+        // The tag frame: the kit's border width, at least 1px (a 0px kit), 3px for a double under 3px (KitAdapters::chipPatch()).
+        $this->assertStringContainsString( "the kit's border width and style, at least 1px (3px for a double)", $text );
         foreach ( StyleKits::ids() as $id ) {
             $kit    = (array) StyleKits::get( $id );
             $w      = (int) $kit['border']['width'];
@@ -289,7 +290,7 @@ class KitPatternsTopicTest extends TestCase
     {
         // The plugin's verdicts equal the "Adapter decisions" table of the P1 vocabulary file.
         $vocab = (string) file_get_contents( __DIR__ . '/../fixtures/shapes/kit-patterns-vocabulary.md' );
-        preg_match_all( '/^\| ([a-z-]+) \| (PASS|FAIL|DEAD|[A-Za-z -]+) \|/m', $vocab, $rows, PREG_SET_ORDER );
+        preg_match_all( '/^\| ([a-z0-9-]+) \| (PASS|FAIL|DEAD|[A-Za-z -]+) \|/m', $vocab, $rows, PREG_SET_ORDER );
         $table = [];
         foreach ( $rows as $row ) {
             if ( 'Claim' !== $row[1] ) {
@@ -328,6 +329,75 @@ class KitPatternsTopicTest extends TestCase
         $this->assertStringNotContainsString( "Divi's default centre", $no );
         $no = StyleGuide::kitPatterns( array_merge( StyleGuide::PATTERN_PROVEN, [ 'icon-hugs-left' => false ] ) );
         $this->assertStringNotContainsString( 'hugs its glyph', $no );
+
+        // Probe P2 (Task 7): the divider's box, said in the dividers section; the old limit only while it is not proven.
+        $box = 'Its module box is 23px high at line weights 1px, 2px and 4px (rendered): the line is drawn inside it, so the weight does not change the layout.';
+        $this->assertStringContainsString( $box, $text );
+        $this->assertStringNotContainsString( 'space around a divider line is not measured', $text );
+        $no = StyleGuide::kitPatterns( array_merge( StyleGuide::PATTERN_PROVEN, [ 'divider-box-23' => false ] ) );
+        $this->assertStringNotContainsString( $box, $no );
+        $this->assertStringContainsString( "- Divi's default space around a divider line is not measured.", $no );
+    }
+
+    /** Task 7 (third blind round): tags and icon chips have no hover, said only while no chip patch writes one. */
+    public function testTheChipsHaveNoHover(): void
+    {
+        $checked = 0;
+        foreach ( StyleKits::ids() as $id ) {
+            foreach ( [ 'divi/group', 'divi/icon' ] as $block ) {
+                foreach ( KitAdapters::CHIP_BANDS as $on ) {
+                    $json = (string) json_encode( KitAdapters::chipPatch( $block, $on, (array) StyleKits::get( $id ) ) );
+                    $this->assertStringNotContainsString( '"hover"', $json, "$id $block on $on writes no hover" );
+                    ++$checked;
+                }
+            }
+        }
+        $this->assertSame( 320, $checked, '40 kits x 2 carriers x 4 bands' );
+        $this->assertFalse( StyleGuide::chipsHaveHover() );
+        $text = self::topic();
+        $tags = substr( $text, (int) strpos( $text, '## Tags' ), (int) strpos( $text, '## Icon chips' ) - (int) strpos( $text, '## Tags' ) );
+        $this->assertStringContainsString( 'it hugs its label, no width, no hover.', $tags );
+        $icon = substr( $text, (int) strpos( $text, '## Icon chips' ), (int) strpos( $text, '## Plan columns' ) - (int) strpos( $text, '## Icon chips' ) );
+        $this->assertStringContainsString( 'It has no hover.', $icon );
+    }
+
+    /** Task 7: the tag label names where the eyebrow style is written (LanguageAdapters::TYPE_PATHS, a registered path). */
+    public function testTheTagLabelNamesTheEyebrowPath(): void
+    {
+        $this->assertContains( 'eyebrow', LanguageAdapters::APPLIED['type']['divi/text'] );
+        $path = LanguageAdapters::TYPE_PATHS['divi/text'] . '.desktop.value';
+        $this->assertSame( 'content.decoration.bodyFont.body.font.desktop.value', $path );
+        $this->assertStringContainsString( "eyebrow style (`$path`: weight, letterSpacing, and capitalization uppercase only where the language's Type line says capital letters)", self::topic() );
+        foreach ( [ 'weight', 'letterSpacing', 'capitalization' ] as $key ) {
+            $this->assertTrue( ShapeRegistry::load()->coversLeaf( LanguageAdapters::TYPE_PATHS['divi/text'] . '.{bp}.value.' . $key ), $key );
+        }
+        // The Type line the clause points to says "capital letters" exactly where the eyebrow is uppercase.
+        foreach ( DesignLanguages::ids() as $id ) {
+            $language = (array) DesignLanguages::get( $id );
+            $line     = (string) preg_replace( '/^.*(- Type: [^\n]*).*$/s', '$1', StyleGuide::markdown( 'design-language:' . $id ) );
+            $eyebrow  = substr( $line, (int) strpos( $line, 'eyebrow labels' ) );
+            $this->assertSame( 'uppercase' === $language['type']['eyebrow']['capitalization'], str_contains( $eyebrow, 'capital letters' ), $id );
+        }
+    }
+
+    /** Task 7: plans "separated by rules" = the column gap plus the quiet rule inside each plan; said only while no rule has a side edge. */
+    public function testThePlanSeparationSentence(): void
+    {
+        foreach ( StyleKits::ids() as $id ) {
+            foreach ( [ 'divi/group', 'divi/column' ] as $block ) {
+                foreach ( [ 'rule', 'rule-strong' ] as $role ) {
+                    foreach ( KitAdapters::RULE_BANDS as $on ) {
+                        $styles = KitAdapters::patch( $block, $role, $on, (array) StyleKits::get( $id ) )['module']['decoration']['border']['desktop']['value']['styles'];
+                        $this->assertSame( [ 'all', 'top' ], array_keys( $styles ), "$id $block $role on $on" );
+                        $this->assertSame( '0px', $styles['all']['width'] );
+                    }
+                }
+            }
+        }
+        $this->assertTrue( StyleGuide::rulesHaveNoSideEdge() );
+        $this->assertStringContainsString( 'A brief asking for plans "separated by rules" is met by that column gap and the quiet top-edge rule inside each plan.', self::topic() );
+        // The recipe it describes: the plain plans' features groups carry the quiet rule (testTheFeaturedPlan).
+        ( new WordingGapsEvidenceTest( 'testTheFeaturedPlan' ) )->testTheFeaturedPlan();
     }
 
     public function testTheQuietStrongSentenceIsGenerated(): void

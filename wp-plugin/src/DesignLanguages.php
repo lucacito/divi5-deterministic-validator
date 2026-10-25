@@ -134,9 +134,9 @@ final class DesignLanguages
      * accent, accent_text, border, inverse (hex) and `overlay`, an `rgba(r,g,b,a)` scrim
      * (0.35 <= a <= 0.8). `inverse` is the text colour for dark bands and photos; `overlay`
      * is the scrim laid over a photo so `inverse` text stays readable. It MAY also have `surface_glass`, an
-     * `rgba(r,g,b,a)` string (0 < a < 1): the translucent card colour of a glass language,
-     * in which case `surface` is only its opaque equivalent (fallback for plain panels).
-     * A consumer that wants "the card colour" uses `surface_glass` when set, else `surface`.
+     * `rgba(r,g,b,a)` string (0 < a < 1): the translucent tint of a glass language, served only through the
+     * `surface-glass` colour token (RecipeTokens). No recipe and no kit adapter uses it: cards are filled with `surface`
+     * (the card adapter), so the language brief prints `surface` as the card colour for every language (wording gaps Task 7).
      *
      * @return array<string,mixed>|null
      */
@@ -178,16 +178,9 @@ final class DesignLanguages
 
         $c = (array) $lang['colors'];
         $f = (array) $lang['fonts'];
-        $glass = isset( $c['surface_glass'] ) && is_string( $c['surface_glass'] ) && '' !== $c['surface_glass'];
-        $cardLines = $glass
-            ? [
-                sprintf( '- background `%s`, border `%s`', (string) $c['bg'], (string) $c['border'] ),
-                sprintf( '- card colour (use this for cards, translucent, set as the background of the card): `%s`', (string) $c['surface_glass'] ),
-                sprintf( '- surface `%s` is the opaque equivalent, a fallback for plain panels only (do not use it for cards)', (string) $c['surface'] ),
-            ]
-            : [
-                sprintf( '- background `%s`, surface (cards) `%s`, border `%s`', (string) $c['bg'], (string) $c['surface'], (string) $c['border'] ),
-            ];
+        $cardLines = [
+            sprintf( '- background `%s`, surface (cards) `%s`, border `%s`', (string) $c['bg'], (string) $c['surface'], (string) $c['border'] ),
+        ];
         $lines = [
             sprintf( '# Design language: %s (`%s`)', (string) $lang['title'], (string) $lang['id'] ),
             '',
