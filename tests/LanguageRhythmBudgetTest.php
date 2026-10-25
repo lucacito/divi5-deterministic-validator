@@ -23,18 +23,18 @@ final class LanguageRhythmBudgetTest extends TestCase
     /** tech-mono's section_padding prose was reworded in Task 2: "the same padding on every section" -> "every ordinary section has the same padding". */
     private const TECH_MONO_PROSE_DELTA = 10;
 
-    /** Bytes of each `design-language:<id>` topic before the Section spacing line. */
+    /** Bytes of each `design-language:<id>` topic before the Section spacing line (dogfood round 2: +15 B per sentence-case role in the Type line). */
     private const BEFORE_LANGUAGE_TOPICS = [
-        'editorial'       => 2026,
-        'glass-dark'      => 2359,
-        'organic-warm'    => 2354,
-        'tech-mono'       => 2481,
+        'editorial'       => 2056,
+        'glass-dark'      => 2389,
+        'organic-warm'    => 2384,
+        'tech-mono'       => 2511,
         'playful-pastel'  => 2667,
-        'corporate-trust' => 2788,
-        'soft-saas'       => 3466,
-        'bold-vibrant'    => 3227,
-        'brutalist-flat'  => 2775,
-        'luxe'            => 2963,
+        'corporate-trust' => 2818,
+        'soft-saas'       => 3496,
+        'bold-vibrant'    => 3257,
+        'brutalist-flat'  => 2790,
+        'luxe'            => 2993,
     ];
 
     private const TOPIC_BOUND = 10000;
@@ -47,7 +47,7 @@ final class LanguageRhythmBudgetTest extends TestCase
         // carriers adapter: kit-rules 8997 -> 9598 (Ruling 8), style-kits 8444 -> 8178 (Ruling 7), controls 8331 -> 8348 (Ruling 10).
         self::assertSame( 9598, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
         self::assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ) );
-        self::assertSame( 8348, strlen( StyleGuide::markdown( 'controls' ) ) );
+        self::assertSame( 9105, strlen( StyleGuide::markdown( 'controls' ) ) );
         self::assertSame( 2592, strlen( StyleGuide::markdown( 'design-languages' ) ) );
         self::assertSame( 9972, strlen( StyleGuide::markdown( 'layout-sizing' ) ) );
     }

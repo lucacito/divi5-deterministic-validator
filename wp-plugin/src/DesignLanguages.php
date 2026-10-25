@@ -439,6 +439,12 @@ final class DesignLanguages
             return '';
         }
         $names = [ 'display' => 'headlines (h1, h2)', 'title' => 'titles (h3)', 'eyebrow' => 'eyebrow labels' ];
+        // A role that writes no capitals is said to be sentence case once the language has capitals somewhere, so a language
+        // that asks for capital-letter headlines is not read as capitals for the titles too (a blind page-building run did exactly that).
+        $anyCaps = false;
+        foreach ( array_keys( $names ) as $role ) {
+            $anyCaps = $anyCaps || 'uppercase' === ( is_array( $type[ $role ] ?? null ) ? ( $type[ $role ]['capitalization'] ?? '' ) : '' );
+        }
         $parts = [];
         foreach ( $names as $role => $name ) {
             $spec = $type[ $role ] ?? null;
@@ -450,7 +456,7 @@ final class DesignLanguages
                 $name,
                 self::plainValue( $spec['weight'] ?? '' ),
                 self::plainValue( $spec['letterSpacing'] ?? '' ),
-                'uppercase' === ( $spec['capitalization'] ?? '' ) ? ', capital letters' : ''
+                'uppercase' === ( $spec['capitalization'] ?? '' ) ? ', capital letters' : ( $anyCaps ? ', sentence case' : '' )
             );
         }
         return '- Type: ' . implode( '; ', $parts ) . ' (where to write them: topic=typography).';

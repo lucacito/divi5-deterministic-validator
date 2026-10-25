@@ -1,0 +1,5 @@
+{
+    "source": "divi5-invalid-fixture",
+    "_comment": "divi/contact-form button innerContent.desktop.value as a string instead of an object - Divi 5.15.1 answers HTTP 500 for the whole page (rendered on the dev site 2026-10-25, dogfood round 2)",
+    "post_content": "<!-- wp:divi/placeholder --><!-- wp:divi/section {\"builderVersion\":\"5.8.0\"} --><!-- wp:divi/row {\"builderVersion\":\"5.8.0\"} --><!-- wp:divi/column {\"builderVersion\":\"5.8.0\"} --><!-- wp:divi/contact-form {\"button\":{\"innerContent\":{\"desktop\":{\"value\":\"Send\"}}},\"builderVersion\":\"5.8.0\"} /--><!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section --><!-- /wp:divi/placeholder -->"
+}

@@ -747,6 +747,24 @@ class DogfoodScorerTest extends TestCase
         $this->assertSame( [ 'rule.colour' ], array_column( $r['failures'], 'check' ), 'role colours are per band' );
     }
 
+    public function testAnAccentDividerIsJudgedAsTheAccentRule(): void
+    {
+        // dogfood round 2: an accent-coloured divider at the strong width is the `rule-accent` role (divider only, light and surface
+        // bands), not a strong rule with the wrong colour
+        $scorer = new Scorer( self::KIT, self::LANG );
+        $bg     = '#0b1020';
+        $accent = self::language( self::LANG )['colors']['accent'];
+        $d      = $scorer->details( self::dividerPage( $accent, '2px', $bg ) );
+        $this->assertSame( 'rule-accent', $d[0]['role'] );
+        $this->assertSame( [], $scorer->score( self::dividerPage( $accent, '2px', $bg ) )['failures'], 'the accent rule passes' );
+        // the same colour at the quiet width is neither role: it still fails
+        $r = $scorer->score( self::dividerPage( $accent, '1px', $bg ) );
+        $this->assertNotSame( [], $r['failures'], 'an accent line at the quiet width fails' );
+        // and a plain strong rule is still a strong rule
+        $d = $scorer->details( self::dividerPage( '#f2f4fa', '2px', $bg ) );
+        $this->assertSame( 'rule-strong', $d[0]['role'] );
+    }
+
     public function testBandsAreInferredByTheFixedRolePriority(): void
     {
         $inner = self::leaf( 'divi/text', [] );

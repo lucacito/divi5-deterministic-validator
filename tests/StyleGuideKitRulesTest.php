@@ -652,8 +652,9 @@ class StyleGuideKitRulesTest extends TestCase
         }
         $this->assertStringStartsWith( "\n\n## Style kits\n\n", $sentence );
         $this->assertLessThanOrEqual( 250, strlen( $sentence ), 'budget: at most 250 B on the controls topic' );
-        $this->assertStringEndsWith( $sentence, StyleGuide::markdown( 'controls' ) );
-        $this->assertSame( 8123 + strlen( $sentence ), strlen( StyleGuide::markdown( 'controls' ) ), 'the controls topic grew by exactly the sentence (8,123 B before)' );
+        $objects = StyleGuide::objectValuesParagraph();
+        $this->assertStringEndsWith( $sentence . $objects, StyleGuide::markdown( 'controls' ) );
+        $this->assertSame( 8123 + strlen( $sentence ) + strlen( $objects ), strlen( StyleGuide::markdown( 'controls' ) ), 'the controls topic grew by exactly the sentence and the object-values paragraph (8,123 B before)' );
         $this->assertSame( '', StyleGuide::controlsKitSentence( [ 'divi/button' => [ 'control' ], 'divi/group' => [ 'card', 'rule' ] ] ), 'neither a divider nor an icon adapter: no sentence' );
         $this->assertSame( StyleGuide::controlsKitSentence(), StyleGuide::controlsKitSentence( KitAdapters::APPLIED ) );
         $dividerOnly = StyleGuide::controlsKitSentence( [ 'divi/divider' => [ 'rule', 'rule-strong' ] ] );
@@ -666,7 +667,7 @@ class StyleGuideKitRulesTest extends TestCase
         // Review fix: re-pinned deliberately (8,317 -> 8,331): the sentence says what really follows the kit (width, style, corners)
         // and that colours come from the design language, and names only the carriers in the map.
         // carriers adapter: 8331 -> 8348 (Ruling 10: the divider's marker list gains `rule-accent`, generated).
-        $this->assertSame( 8348, strlen( StyleGuide::markdown( 'controls' ) ) );
+        $this->assertSame( 9105, strlen( StyleGuide::markdown( 'controls' ) ) );
         $this->assertStringContainsString( 'colours come from the design language', $sentence );
         $this->assertStringNotContainsString( 'colour and corners follow the kit', $sentence );
         $this->assertStringNotContainsString( 'A divider or an icon chip', $sentence );
@@ -1006,7 +1007,7 @@ class StyleGuideKitRulesTest extends TestCase
         $noRadius = StyleGuide::controlsKitSentence( null, $yes, array_merge( $cyes, [ 'icon-radius' => false ] ) );
         $this->assertStringNotContainsString( 'corners', $noRadius );
         // carriers adapter: 8331 -> 8348 (Ruling 10).
-        $this->assertSame( 8348, strlen( StyleGuide::markdown( 'controls' ) ), 'the shipped controls topic' );
+        $this->assertSame( 9105, strlen( StyleGuide::markdown( 'controls' ) ), 'the shipped controls topic' );
     }
 
     public function testTheCompositionOneSideRuleSectionSaysTheKitDecides(): void
@@ -1334,7 +1335,7 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
         // carriers adapter: kit-rules 9000 -> 9600 (Ruling 8), controls 8331 -> 8348 (Ruling 10), catalog 8444 -> 8178 (Ruling 7).
         $this->assertLessThanOrEqual( 9600, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
-        $this->assertSame( 8348, strlen( StyleGuide::markdown( 'controls' ) ) );
+        $this->assertSame( 9105, strlen( StyleGuide::markdown( 'controls' ) ) );
         $this->assertSame( 6474, strlen( StyleGuide::markdown( 'forms' ) ) );
         $this->assertSame( 8706, strlen( StyleGuide::markdown( 'composition' ) ) );
         $this->assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ) );
@@ -1357,7 +1358,7 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertLessThanOrEqual( 29108, $size, 'Ruling 5 ceiling' );
         // carriers adapter: kit-rules 9000 -> 9600 (Ruling 8), controls 8331 -> 8348 (Ruling 10), catalog 8444 -> 8178 (Ruling 7).
         $this->assertLessThanOrEqual( 9600, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules (spec Ruling 5 raised the 7,000 B pin to 7,600 B; the real bound is 10,000 B)' );
-        $this->assertSame( 8348, strlen( StyleGuide::markdown( 'controls' ) ) );
+        $this->assertSame( 9105, strlen( StyleGuide::markdown( 'controls' ) ) );
         $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
         $this->assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog' );
         $max = 0;
@@ -1668,7 +1669,7 @@ class StyleGuideKitRulesTest extends TestCase
         // carriers adapter: kit-rules 9000 -> 9600 (Ruling 8), controls 8331 -> 8348 (Ruling 10), catalog 8444 -> 8178 (Ruling 7).
         $this->assertLessThanOrEqual( 9600, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
         $this->assertGreaterThan( 7864, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'round 3 added its clauses' );
-        $this->assertSame( 8348, strlen( StyleGuide::markdown( 'controls' ) ) );
+        $this->assertSame( 9105, strlen( StyleGuide::markdown( 'controls' ) ) );
         $this->assertSame( 6474, strlen( StyleGuide::markdown( 'forms' ) ) );
         $this->assertSame( 8706, strlen( StyleGuide::markdown( 'composition' ) ) );
         $this->assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ) );
