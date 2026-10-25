@@ -136,7 +136,10 @@ class RhythmAuditTest extends TestCase
         $this->assertCount( 46, $pinned );
         $this->assertEqualsCanonicalizing( array_keys( $pinned ), array_keys( $got ), 'the classified recipes are exactly the pinned ones' );
         foreach ( $pinned as $recipe => [ $role, $d, $t, $p ] ) {
-            $this->assertSame( [ $role, $d, $t, $p ], [ $got[ $recipe ]['role'], $got[ $recipe ]['desktop'], $got[ $recipe ]['tablet'], $got[ $recipe ]['phone'] ], $recipe );
+            // Since Task 5 (scripts/migrate-rhythm-markers.php) a classified section is found by its marker and its own padding
+            // is gone (the language writes it), so the pinned D/T/P are the measured values before the migration.
+            $this->assertTrue( $got[ $recipe ]['marked'], "$recipe carries its rhythm marker" );
+            $this->assertSame( [ $role, null, null, null ], [ $got[ $recipe ]['role'], $got[ $recipe ]['desktop'], $got[ $recipe ]['tablet'], $got[ $recipe ]['phone'] ], $recipe );
         }
     }
 
@@ -301,7 +304,11 @@ class RhythmAuditTest extends TestCase
         // The rule of the plan header: a candidate has px top = bottom > 0 at ALL THREE breakpoints; nothing else does.
         foreach ( RhythmAudit::sections( self::library() ) as $r ) {
             $key = RhythmAudit::key( $r );
-            if ( null !== $r['role'] ) {
+            if ( null !== $r['role'] && $r['marked'] ) {
+                // Since Task 5 a classified section is marked and carries no padding of its own: the language decides it.
+                $this->assertSame( [ null, null, null ], [ $r['desktop'], $r['tablet'], $r['phone'] ], $key );
+                $this->assertSame( [ 'desktop' => '-', 'tablet' => '-', 'phone' => '-' ], $r['raw'], $key );
+            } elseif ( null !== $r['role'] ) {
                 $this->assertIsInt( $r['desktop'], $key );
                 $this->assertIsInt( $r['tablet'], $key );
                 $this->assertIsInt( $r['phone'], $key );
@@ -311,5 +318,16 @@ class RhythmAuditTest extends TestCase
                 $this->assertNotNull( $r['exempt'], "$key has no role, so it must be a named exemption" );
             }
         }
+    }
+
+    public function testEveryClassifiedSectionIsMarked(): void
+    {
+        // Flipped by Task 5 (scripts/migrate-rhythm-markers.php): every classified section carries its marker, no exempt one does.
+        $marked = 0;
+        foreach ( RhythmAudit::sections( self::library() ) as $r ) {
+            $this->assertSame( null !== $r['role'], $r['marked'], RhythmAudit::key( $r ) );
+            $marked += $r['marked'] ? 1 : 0;
+        }
+        $this->assertSame( 46, $marked );
     }
 }

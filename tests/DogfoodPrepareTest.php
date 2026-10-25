@@ -15,8 +15,8 @@ use PHPUnit\Framework\TestCase;
  */
 class DogfoodPrepareTest extends TestCase
 {
-    /** sha256 of the prototype's edit-glass-edge/page.html (54,680 bytes since the type markers, type adapter Task 5), which is exactly editBase('glass-edge', 'glass-dark'). */
-    private const EDIT_BASE_SHA256 = '4cc4ba13b4d15c61c841c24b8673ca4ebbf7e35f8e794a3995d4e849fb23c344';
+    /** sha256 of the prototype's edit-glass-edge/page.html (54,860 bytes since the rhythm markers, rhythm adapter Task 5), which is exactly editBase('glass-edge', 'glass-dark'). */
+    private const EDIT_BASE_SHA256 = '71102e5182c371f9ec2537789e20030141ef2845744804f333cb49bb108630dd';
 
     private const GUIDE_NAMES = [ '01-style-guide.md', '02-kit-rules.md', '03-style-kit.md', '04-design-language.md', '05-controls.md', '06-forms.md' ];
 
@@ -80,7 +80,7 @@ class DogfoodPrepareTest extends TestCase
         $result = LayoutGate::check( $base );
         $this->assertTrue( $result->isValid(), json_encode( array_map( static fn ( $v ) => $v->code(), $result->violations() ) ) );
         $this->assertSame( self::EDIT_BASE_SHA256, hash( 'sha256', $base ) );
-        $this->assertSame( 54680, strlen( $base ) );
+        $this->assertSame( 54860, strlen( $base ) );
     }
 
     public function testRecipePageRefusesARecipeThatDoesNotResolve(): void
