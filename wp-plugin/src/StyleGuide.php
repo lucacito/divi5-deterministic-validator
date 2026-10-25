@@ -345,7 +345,7 @@ final class StyleGuide
         $what = $both ? 'An `item` is a boxed item and an `item-rule` a rule row' : ( $item ? 'An `item` is a boxed item' : 'An `item-rule` is a rule row' );
         $s    = [
             $what . ', on a `divi/accordion` (one accordion styles all its items, never one item alone) or a `divi/toggle`.',
-            ( $both ? 'Both: the' : 'The' ) . ' title in the text colour, open and closed; the answer in the muted colour; the icons in the text colour (an accordion has no open icon); every state is written, so none falls back to Divi\'s grey defaults; no hover.',
+            ( $both ? 'Both: the' : 'The' ) . ' title in the text colour, open and closed; the answer in the muted colour; the icons in the text colour (an accordion has no open icon); every state is written; no hover.',
         ];
         if ( $item ) {
             $s[] = 'An `item` is filled like a card (the surface colour, the bg colour on a surface band), the same in both states, and takes the card\'s frame, radius and rest shadow; on a toggle it also takes the card padding (an accordion keeps Divi\'s own item padding: its padding setting would pad the answer).';
@@ -354,7 +354,9 @@ final class StyleGuide
             $s[] = 'An `item-rule` (on a light or surface band only) is filled with the band colour, has square corners, only a bottom rule (the kit\'s width, at least 1px, and style, in the card frame colour) and no shadow; the recipe keeps its own padding.';
         }
         if ( [] !== $accordion ) {
-            $s[] = "On the accordion write all of it on the parent; each item gets it: fills at `openToggle.decoration.background.{$d}.color` and `closedToggle.decoration.background.{$d}.color`, titles at `openToggle.decoration.font.font.{$d}.color` and `closedToggle.decoration.font.font.{$d}.color`, the icon at `closedToggleIcon.decoration.icon.{$d}.color`, the answer at `content.decoration.bodyFont.body.font.{$d}.color`.";
+            // Divi draws a parent's frame, radius and shadow on EVERY item (kit-item-vocabulary.md notes 4 and 48: the module.json
+            // selector is `{{selector}} .et_pb_toggle`), never around the accordion as a whole (wording gaps, spec gap 4).
+            $s[] = "On the accordion write all of it on the parent; Divi draws the frame, radius and shadow around each item, never around the whole accordion, and the items carry none: fills at `openToggle.decoration.background.{$d}.color` and `closedToggle.decoration.background.{$d}.color`, titles at `openToggle.decoration.font.font.{$d}.color` and `closedToggle.decoration.font.font.{$d}.color`, the icon at `closedToggleIcon.decoration.icon.{$d}.color`, the answer at `content.decoration.bodyFont.body.font.{$d}.color`.";
         }
         if ( [] !== $accordion ) {
             $s[] = "An item is a `divi/accordion-item`: `title.innerContent.{$d}` (the question), `content.innerContent.{$d}` (the answer, `<p>` HTML) and `module.advanced.open.{$d}` = \"on\" on the open item"
@@ -376,31 +378,30 @@ final class StyleGuide
     }
 
     /**
-     * The one sentence that defines `on`, the band a kit block sits on (round 3 of the guide polish: four of six dogfood runs
+     * The one sentence that defines `on`, the band a kit block sits on (round 3 of the guide polish: four of six blind test runs
      * could not tell which band a dark language is). Generated from the bands the adapters accept (KitAdapters::RULE_BANDS and
-     * CHIP_BANDS, which cover the button, card, item and form bands too): a band is described only if it is accepted and a band
-     * without a description here is never named.
+     * CHIP_BANDS, which cover the button, card, item and form bands too), each named with its fill colour role from
+     * KitAdapters::BAND_FILL (wording gaps, spec gap 10: an assistant writes colours by role): a band is described only if it
+     * is accepted and a band without a fill role is never named.
      *
      * @param list<string>|null $bands defaults to the union of the two constants (a parameter only so a test can prove the sentence follows them)
      */
     public static function bandSentence( ?array $bands = null ): string
     {
         $bands ??= array_values( array_unique( array_merge( KitAdapters::RULE_BANDS, KitAdapters::CHIP_BANDS ) ) );
-        $says    = [
-            'light'   => "is the language's own page colour (a dark language's too)",
-            'surface' => 'its surface',
-            'accent'  => 'the accent',
-            'dark'    => 'a photo or overlay',
-            'panel'   => 'the inside of an inverted card',
+        $notes   = [
+            'light' => " (the page colour, a dark language's too)",
+            'dark'  => ' (a photo)',
+            'panel' => ' (inside an inverted card)',
         ];
         $parts = [];
         foreach ( $bands as $band ) {
-            if ( isset( $says[ $band ] ) ) {
-                $parts[] = '`' . $band . '` ' . $says[ $band ];
+            if ( isset( KitAdapters::BAND_FILL[ $band ] ) ) {
+                $parts[] = '`' . $band . '` ' . KitAdapters::BAND_FILL[ $band ] . ( $notes[ $band ] ?? '' );
             }
         }
 
-        return [] === $parts ? '' : ' `on` is the band a block sits on: ' . implode( ', ', $parts ) . '.';
+        return [] === $parts ? '' : ' `on` names the band by its fill: ' . implode( ', ', $parts ) . '.';
     }
 
     /**
@@ -422,13 +423,12 @@ final class StyleGuide
         $has     = static fn ( string $role ): bool => in_array( $role, $roles, true );
 
         $out = "# Kit rules: what each module takes from a kit\n\n"
-            . "The same for every kit. Each kit's own values and ready-made blocks: topic=style-kit:<id>.\n\n"
+            . "The same for every kit. Each kit's own values and ready-made blocks: topic=style-kit:<id>; patterns: topic=kit-patterns.\n\n"
             . self::appliedSentence( $applied ) . ' ' . self::notAppliedSentence( $applied, $media ) . "\n\n"
             . "## Reusing a kit topic's blocks\n\n"
-            . "Every block in a kit topic is real: resolved by the plugin's own pipeline for the `editorial` language on a light section, with placeholder text. "
-            . "Put it inside a column. With another design language keep the structure and swap each colour for its role (listed beside the blocks as value = role(s)), not by its value: two roles can share one value; "
-            . "and swap the font family for your language's body font. "
-            . "Where a design language's prose and the kit disagree about the corners, borders, shadow or hover of a block a kit styles, the kit wins."
+            . "Every block in a kit topic is real (the plugin's pipeline, a light section, placeholder text), resolved for the `design_language` you pass (else the kit's language, or editorial). "
+            . "Put it in a column. In another language swap each colour by its role (the legend), never by value: two roles can share one value; and the font for your language's body font. "
+            . "Where a language's prose and the kit disagree about a block a kit styles, the kit wins."
             . self::bandSentence() . "\n";
         if ( $has( 'control' ) ) {
             $out .= "\n## Buttons\n\n"
@@ -916,9 +916,11 @@ final class StyleGuide
         }
 
         if ( $roleOf( 'divi/group', 'chip' ) && ( $is( $chipProven, 'tag-radius' ) || $is( $chipProven, 'tag-frame' ) ) ) {
-            $tag = array_values( array_filter( [
+            $widths = self::tagWidths( $chipProven );
+            $tag    = array_values( array_filter( [
                 $is( $chipProven, 'tag-radius' ) ? '`radius` (the four corners, the kit\'s control radius)' : '',
-                $is( $chipProven, 'tag-frame' ) ? '`styles.all` (width, style, colour; 1px at least)' : '',
+                // The kit's width, not "1px" (wording gaps, spec gap 1a: round 1 read "1px at least" as 1px).
+                $is( $chipProven, 'tag-frame' ) ? '`styles.all` (width and style: the kit\'s, ' . $widths['zero'] . ' at least' . ( null === $widths['double'] ? '' : ', ' . $widths['double'] . ' for a double' ) . ')' : '',
             ] ) );
             $parts[] = 'Tag: `module.decoration.border.desktop.value` with ' . implode( ' and ', $tag ) . '. Its fill stays transparent; its padding and size are yours.'
                 . ( $is( $chipProven, 'tag-frame' ) ? ' Frame colour: the quiet colour when the kit\'s border colour is `border` or `same`, else the strong one.' : '' );
@@ -2462,7 +2464,27 @@ MD;
     /** Topic `controls`: button, blurb, icon, number counter and divider styling, every shape proven on the real Divi 5.15.1. At most 10,000 bytes. */
     private static function controlsTopic(): string
     {
-        return self::controlsTopicText() . self::controlsKitSentence() . self::objectValuesParagraph();
+        $dead = 'changed nothing (rendered: dead); write them on the module.';
+
+        return str_replace( $dead, $dead . self::controlsFormClause(), self::controlsTopicText() ) . self::controlsKitSentence() . self::objectValuesParagraph();
+    }
+
+    /**
+     * The clause the `controls` topic adds after "Padding and box shadow written on the `button` element ... changed nothing
+     * (rendered: dead); write them on the module." (wording gaps, spec gap 14): that is true of `divi/button`, and on a contact
+     * form's submit the same `button.decoration.*` groups are the live ones (kit-form-vocabulary.md). Said only while the form
+     * probe proves both (KitAdapters::FORM_PROVEN `button-padding` and `button-shadow`); '' otherwise.
+     *
+     * @param array<string,bool>|null $proven defaults to KitAdapters::FORM_PROVEN (a parameter only so a test can plant a verdict)
+     */
+    public static function controlsFormClause( ?array $proven = null ): string
+    {
+        $proven ??= KitAdapters::FORM_PROVEN;
+        if ( true !== ( $proven['button-padding'] ?? false ) || true !== ( $proven['button-shadow'] ?? false ) ) {
+            return '';
+        }
+
+        return ' This is a `divi/button`; a contact form\'s submit is the opposite (topic=kit-rules).';
     }
 
     /**
@@ -3044,8 +3066,8 @@ Put these alongside `builderVersion` on the relevant block. `{bp}` = `desktop`.
 **Backgrounds** (section/row/column `module`):
 - solid: `module.decoration.background.{bp}.value.color` = "#0a0a0a"
 - gradient: `module.decoration.background.{bp}.value.gradient.enabled`="on",
-  `…gradient.stops.0.{position,color}` (0,"rgba(10,10,10,.5)"),
-  `…gradient.stops.1.{position,color}` (100,"rgba(0,0,0,.6)"), `…gradient.length`="100%"
+  `…gradient.stops` = a list: `[{"position":0,"color":"rgba(10,10,10,.5)"},{"position":100,"color":"rgba(0,0,0,.6)"}]`,
+  `…gradient.length`="100%"
 
 **Spacing** (units px/vw/%/em):
 `module.decoration.spacing.{bp}.value.padding.{top,right,bottom,left}` = "6vw";
@@ -3172,13 +3194,11 @@ On each `divi/column`: `module.advanced.type.desktop.value` = "1_2" / "1_3" / "1
 `module.decoration.sizing.{bp}.value.flexType`: desktop "12_24" / "8_24" / "6_24", phone and phoneWide "24_24"
 (N=4 also tablet and tabletWide "12_24").
 
-## Mobile: collapse multi-column rows to one column
-On every row that has more than one column, add a phone layout that stacks the
-columns vertically so the page is one column on mobile:
-```
-module.decoration.layout.phone.value = {"display":"flex","flexDirection":"column","rowGap":"0px"}
-```
-(Set this on the divi/row alongside its desktop columnStructure.)
+## Mobile: rows and flex groups
+A row of columns stacks on a phone only by the row shape of "Columns stack on a phone"
+above (the row's `flexWrap` "wrap" at `phone` and `phoneWide`, each column's `flexType`
+"24_24"). A flex `divi/group` or column of modules side by side stacks by its own
+`module.decoration.layout.phone.value.flexDirection` "column".
 
 ## Buttons side by side (horizontal CTAs)
 Two buttons placed directly in a column STACK vertically. To put a pair of CTAs
