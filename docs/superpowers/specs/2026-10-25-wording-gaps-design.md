@@ -148,7 +148,7 @@ schema from memory; no weakened test; no baseline file; the default guide stays 
 Status at the time of writing: built on `feat/wording-gaps` (merged to local main faf8a4e) plus the fix wave `feat/wording-fix`
 (head 652e2a6: third blind round fixes, review fixes). NO release, version bump, zip rebuild or readme edit; the validator
 (`src/`, `wp-plugin/validator/`) and the tracked zip are untouched. Numbers below are measured (`StyleGuide::markdown()`,
-`scripts/measure-tokens.php`, the pinned tests); the one live result still open is marked `TBD-CONTROLLER`.
+`scripts/measure-tokens.php`, the pinned tests); the live results are recorded below.
 
 ### Per gap: the text that answers it
 
@@ -232,7 +232,7 @@ brutalist-flat 3,012 -> 3,188, luxe 3,219 -> 3,454. `docs/token-usage.md` was re
 
 ### Live ledger
 
-- Full `make verify-kits` on the fix-wave head: `TBD-CONTROLLER`.
+- Full `make verify-kits`: 264 PASS 0 FAIL over 88 kit/language cells (run on main faf8a4e, 2026-10-25, about 3 hours: the first full run after the hover fix; the fix wave after it changed only guide text, language prose and tests, no kit code).
 - P1 and P2 probes: recorded above. Plugin Check, `make verify-shapes` and the narrowed recipe render were not re-run by this docs task.
 - Suites: free 6365, Pro 2169.
 
