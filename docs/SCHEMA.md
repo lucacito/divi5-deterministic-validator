@@ -181,6 +181,13 @@ Each leaf module has its own top-level content attribute with an `innerContent` 
 
 **Critical**: the `value` for `divi/image` and `divi/button` is an **object**, not a scalar. Passing a scalar string where an object is expected is the deep-merge fatal case.
 
+**Render fatals found by rendering (2026-10-25, Divi 5.15.1):** a plain string where Divi needs an object answers HTTP 500 for the whole
+page for `divi/testimonial` `company` (object `{"text": ...}`) and `portrait` (object `{"url": ..., "alt": ...}`) and for
+`divi/contact-form` `button` (object `{"text": ...}`); each was rendered as a string (500) and as the object (clean) on the dev site, and
+the object shapes are the ones of the shipped recipes (real exports). They are in `SchemaRules::contentKeyRules()` as `mustBeObject`
+(violation `SCALAR_WHERE_OBJECT`), with invalid fixtures `fixtures/invalid/scalar-where-object-{testimonial-company,testimonial-portrait,contact-form-button}.json`.
+The same string on `divi/icon` `icon` and on `divi/social-media-follow-network` `socialNetwork` rendered without a fatal and is not a violation.
+
 ---
 
 ## 6. Responsive attribute pattern
