@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Divi5Validator\Tests;
 
+use AiEditorDivi5\WP\DesignLanguages;
 use AiEditorDivi5\WP\KitAdapters;
 use AiEditorDivi5\WP\KitResolver;
 use AiEditorDivi5\WP\LayoutGate;
 use AiEditorDivi5\WP\RecipeTokens;
 use AiEditorDivi5\WP\StyleKits;
+use Divi5Validator\Tests\Support\Colour;
 use Divi5Validator\Tests\Support\DeadOnModule;
+use Divi5Validator\Tests\Support\RuleChipAudit;
 use Divi5Validator\Tests\Support\ShapePaths;
 use Divi5Validator\Tests\Support\ShapeRegistry;
 use PHPUnit\Framework\TestCase;
@@ -24,6 +27,8 @@ require_once __DIR__ . '/../wp-plugin/src/KitResolver.php';
 require_once __DIR__ . '/../wp-plugin/src/KitAdapters.php';
 require_once __DIR__ . '/../wp-plugin/src/CodePolicy.php';
 require_once __DIR__ . '/../wp-plugin/src/LayoutGate.php';
+require_once __DIR__ . '/Support/Colour.php';
+require_once __DIR__ . '/Support/RuleChipAudit.php';
 require_once __DIR__ . '/Support/ShapePaths.php';
 require_once __DIR__ . '/Support/ShapeRegistry.php';
 require_once __DIR__ . '/Support/DeadOnModule.php';
@@ -678,5 +683,281 @@ class KitCarrierAdapterTest extends TestCase
                 $this->assertNotContains( 'rule-accent', $roles, "$block takes no rule-accent (Ruling 2)" );
             }
         }
+    }
+
+    // ---- Task 4: the contrast and visibility proofs (zero exceptions, no baseline file) -------------------------------------
+
+    /** The opaque colour of a colour token or value resolved by the real pipeline (alpha forms included) over $ground. @param array<string,mixed> $lang */
+    private static function opaqueOn( string $value, array $lang, string $ground ): ?string
+    {
+        return Colour::opaque( RecipeTokens::resolve( $value, $lang ), $ground );
+    }
+
+    /** @return array<string,array<string,mixed>> every design language by id */
+    private static function languages(): array
+    {
+        $out = [];
+        foreach ( DesignLanguages::ids() as $id ) {
+            $lang = DesignLanguages::get( $id );
+            self::assertIsArray( $lang );
+            $out[ $id ] = $lang;
+        }
+        self::assertCount( 10, $out );
+        return $out;
+    }
+
+    /**
+     * Contrast problems of one `rule-accent` divider patch on band $on in one language ([] = fine), keyed "$where|<check>": the
+     * line (colour token resolved by the real pipeline, composited over the band) at least RuleChipAudit::ACCENT_RULE_FLOOR, and
+     * drawn at the strong width (at least 2px; a double at least 3px) so it is a mark and not a hairline.
+     *
+     * @param array<string,mixed> $patch
+     * @param array<string,mixed> $lang
+     * @return array<string,string>
+     */
+    public static function accentRuleProblems( array $patch, string $on, array $lang, string $where ): array
+    {
+        $leaves = self::leaves( $patch );
+        $p      = 'divider.advanced.line.desktop.value.';
+        $colour = isset( $leaves[ $p . 'color' ] ) ? (string) $leaves[ $p . 'color' ] : null;
+        if ( null === $colour ) {
+            return [ "$where|colour" => "$where: the accent rule has no line colour" ];
+        }
+        $out   = [];
+        $band  = KitRuleAdapterTest::bandOf( $on, $lang );
+        $ink   = self::opaqueOn( $colour, $lang, $band );
+        $ratio = null === $ink ? 0.0 : Colour::contrast( $ink, $band );
+        if ( $ratio < RuleChipAudit::ACCENT_RULE_FLOOR ) {
+            $out[ "$where|contrast" ] = sprintf( '%s: the accent rule (%s) on %s is %.3f:1, needs %.1f', $where, $colour, $band, $ratio, RuleChipAudit::ACCENT_RULE_FLOOR );
+        }
+        $width = (string) ( $leaves[ $p . 'weight' ] ?? '' );
+        $px    = 1 === preg_match( '/^(\d+)px$/', $width, $m ) ? (int) $m[1] : 0;
+        if ( $px < 2 || ( 'double' === ( $leaves[ $p . 'style' ] ?? '' ) && $px < 3 ) ) {
+            $out[ "$where|width" ] = "$where: the accent rule width '$width' is not a mark (2px at least, a double 3px)";
+        }
+        return $out;
+    }
+
+    public function testAccentRuleContrastOnEveryKitLanguageAndBand(): void
+    {
+        $problems = [];
+        $checked  = 0;
+        foreach ( $this->shippedKits() as $id => $kit ) {
+            foreach ( self::languages() as $langId => $lang ) {
+                foreach ( KitAdapters::ACCENT_RULE_BANDS as $on ) {
+                    $problems = array_merge( $problems, self::accentRuleProblems( $this->patch( 'divi/divider', 'rule-accent', $kit, $on ), $on, $lang, "$id/$langId/$on" ) );
+                    ++$checked;
+                }
+            }
+        }
+        $this->assertSame( 40 * 10 * 2, $checked );
+        $this->assertSame( 800, $checked );
+        $this->assertSame( [], array_values( $problems ), "unreadable accent rules (fix the role table or the band list in KitAdapters, never the floor; no exceptions):\n" . implode( "\n", array_slice( $problems, 0, 60 ) ) . "\n(" . count( $problems ) . ' problems)' );
+    }
+
+    public function testTheAccentRuleBandsAreMaximal(): void
+    {
+        $this->assertSame( 2.3, RuleChipAudit::ACCENT_RULE_FLOOR );
+        foreach ( self::ALL_BANDS as $on ) {
+            $min = INF;
+            foreach ( self::languages() as $lang ) {
+                $min = min( $min, RuleChipAudit::ratio( 'accent', $on, $lang ) );
+            }
+            if ( in_array( $on, KitAdapters::ACCENT_RULE_BANDS, true ) ) {
+                $this->assertGreaterThanOrEqual( RuleChipAudit::ACCENT_RULE_FLOOR, $min, "$on is a taken band: the accent reaches the floor in every language" );
+            } else {
+                $this->assertLessThan( RuleChipAudit::ACCENT_RULE_FLOOR, $min, "$on is left out because at least one language is below the floor (measured accent 1.000, dark 1.401, panel 1.103): no band was left out by hand" );
+            }
+        }
+    }
+
+    /**
+     * Contrast problems of one `divi/blurb` chip patch on band $on in one language: the glyph on its painted fill at 3:1
+     * (a graphic, WCAG 1.4.11), and the fill is never the colour of the band (the chip would vanish).
+     *
+     * @param array<string,mixed> $patch
+     * @param array<string,mixed> $lang
+     * @return array<string,string>
+     */
+    public static function blurbChipProblems( array $patch, string $on, array $lang, string $where ): array
+    {
+        $leaves     = self::leaves( $patch );
+        $fillToken  = isset( $leaves['imageIcon.decoration.background.desktop.value.color'] ) ? (string) $leaves['imageIcon.decoration.background.desktop.value.color'] : null;
+        $glyphToken = isset( $leaves['imageIcon.advanced.color.desktop.value'] ) ? (string) $leaves['imageIcon.advanced.color.desktop.value'] : null;
+        if ( null === $fillToken || null === $glyphToken ) {
+            return [ "$where|glyph" => "$where: the blurb chip has no fill or no glyph colour" ];
+        }
+        $out  = [];
+        $band = KitRuleAdapterTest::bandOf( $on, $lang );
+        $fill = self::opaqueOn( $fillToken, $lang, $band );
+        if ( null === $fill ) {
+            return [ "$where|fill" => "$where: the icon fill $fillToken does not resolve" ];
+        }
+        if ( strtolower( $fill ) === strtolower( $band ) ) {
+            $out[ "$where|fill" ] = "$where: the icon fill paints $fill, the colour of the band";
+        }
+        $glyph = self::opaqueOn( $glyphToken, $lang, $fill );
+        $ratio = null === $glyph ? 0.0 : Colour::contrast( $glyph, $fill );
+        if ( $ratio < 3.0 ) {
+            $out[ "$where|glyph" ] = sprintf( '%s: the glyph (%s) on its fill %s is %.3f:1, needs 3.0', $where, $glyphToken, $fill, $ratio );
+        }
+        return $out;
+    }
+
+    public function testBlurbChipGlyphContrast(): void
+    {
+        $problems = [];
+        $checked  = 0;
+        foreach ( $this->shippedKits() as $id => $kit ) {
+            foreach ( self::languages() as $langId => $lang ) {
+                foreach ( self::CHIP_BANDS as $on ) {
+                    $problems = array_merge( $problems, self::blurbChipProblems( $this->patch( 'divi/blurb', 'chip', $kit, $on ), $on, $lang, "$id/$langId/$on" ) );
+                    ++$checked;
+                }
+            }
+        }
+        $this->assertSame( 40 * 10 * 4, $checked );
+        $this->assertSame( 1600, $checked );
+        $this->assertSame( [], array_values( $problems ), "unreadable blurb chips (fix the chip rules in KitAdapters::chipPatch(), never the floor; no exceptions):\n" . implode( "\n", array_slice( $problems, 0, 60 ) ) . "\n(" . count( $problems ) . ' problems)' );
+    }
+
+    /**
+     * The four text inks of the library testimonial (author, job title, company, content): the colour tokens of the RAW recipe,
+     * read from the recipe file, so the proof holds before and after the block is marked (the migration removes the fill, frame
+     * and radius, never the inks). @return array<string,string> attribute => colour token
+     */
+    private static function testimonialInks(): array
+    {
+        $recipes = (array) json_decode( (string) file_get_contents( __DIR__ . '/../wp-plugin/data/section-recipes.json' ), true );
+        foreach ( $recipes as $recipe ) {
+            if ( 'testimonial' !== ( $recipe['name'] ?? '' ) ) {
+                continue;
+            }
+            self::assertSame( 1, preg_match( '/<!-- wp:divi\/testimonial (\{.*?\}) \/-->/s', (string) $recipe['markup'], $m ) );
+            $attrs = json_decode( $m[1], true );
+            self::assertIsArray( $attrs );
+            $out = [];
+            foreach ( [ 'author', 'jobTitle', 'company', 'content' ] as $name ) {
+                $leaves = self::leaves( (array) ( $attrs[ $name ]['decoration'] ?? [] ) );
+                $tokens = array_values( array_filter( $leaves, static fn ( $v, $k ): bool => str_ends_with( (string) $k, '.color' ), ARRAY_FILTER_USE_BOTH ) );
+                self::assertCount( 1, $tokens, "the testimonial's $name carries exactly one ink colour" );
+                $out[ $name ] = (string) $tokens[0];
+            }
+            return $out;
+        }
+        self::fail( 'the testimonial recipe is not in the library' );
+    }
+
+    public function testTheTestimonialsOwnInksAreReadableOnBothFills(): void
+    {
+        $inks = self::testimonialInks();
+        $this->assertSame( [ 'author', 'jobTitle', 'company', 'content' ], array_keys( $inks ) );
+        foreach ( $inks as $name => $token ) {
+            $this->assertMatchesRegularExpression( '/^\{\{aied:color:(text|muted)\}\}$/', $token, "$name is a plain text colour token (no hex)" );
+        }
+        // The fills the kit gives a testimonial on every band it takes: surface, and bg on a surface band.
+        $fills = [];
+        foreach ( $this->shippedKits() as $kit ) {
+            foreach ( [ 'card', 'panel' ] as $role ) {
+                foreach ( self::CARD_BANDS as $on ) {
+                    $leaf = self::leaves( $this->patch( 'divi/testimonial', $role, $kit, $on ) )['module.decoration.background.desktop.value.color'] ?? null;
+                    $this->assertIsString( $leaf );
+                    $fills[ $leaf ] = true;
+                }
+            }
+        }
+        $fillTokens = array_keys( $fills );
+        sort( $fillTokens );
+        $this->assertSame( [ '{{aied:color:bg}}', '{{aied:color:surface}}' ], $fillTokens, 'a testimonial is filled with surface or bg only' );
+
+        $problems = [];
+        $checked  = 0;
+        foreach ( self::languages() as $langId => $lang ) {
+            foreach ( $fillTokens as $fillToken ) {
+                $fill = self::opaqueOn( $fillToken, $lang, '#ffffff' );
+                $this->assertNotNull( $fill );
+                foreach ( $inks as $name => $token ) {
+                    $ink   = self::opaqueOn( $token, $lang, (string) $fill );
+                    $ratio = null === $ink ? 0.0 : Colour::contrast( $ink, (string) $fill );
+                    if ( $ratio < 4.5 ) {
+                        $problems[] = sprintf( '%s: %s (%s) on %s is %.3f:1, needs 4.5', $langId, $name, $token, $fillToken, $ratio );
+                    }
+                    ++$checked;
+                }
+            }
+        }
+        $this->assertSame( 80, $checked );
+        $this->assertSame( [], $problems, "unreadable testimonial text (no exceptions):\n" . implode( "\n", $problems ) );
+    }
+
+    public function testTheCarrierLooksAreDistinct(): void
+    {
+        $kits = $this->shippedKits();
+        // Blurb chip: the looks are the distinct control radii.
+        $radii = [];
+        foreach ( $kits as $kit ) {
+            $leaf = self::leaves( $this->patch( 'divi/blurb', 'chip', $kit, 'light' ) )['imageIcon.decoration.border.desktop.value.radius'] ?? null;
+            $this->assertSame( '{{aied:kit:radius-control}}', $leaf );
+            $radii[ (string) ( StyleKits::valueToken( $kit, 'radius-control' )['topLeft'] ?? '' ) ] = true;
+        }
+        $radii = array_keys( $radii );
+        sort( $radii );
+        $this->assertSame( [ '0px', '10px', '12px', '2px', '4px', '6px', '8px', '999px' ], $radii, 'eight blurb chip looks' );
+
+        // Accent rule: the looks are the distinct width x style pairs.
+        $looks = [];
+        $p     = 'divider.advanced.line.desktop.value.';
+        foreach ( $kits as $kit ) {
+            $leaves = self::leaves( $this->patch( 'divi/divider', 'rule-accent', $kit, 'light' ) );
+            $looks[ $leaves[ $p . 'weight' ] . ' ' . $leaves[ $p . 'style' ] ] = true;
+        }
+        $looks = array_keys( $looks );
+        sort( $looks );
+        $this->assertSame( [ '2px dashed', '2px solid', '3px dotted', '3px solid', '4px double', '4px solid' ], $looks, 'six accent rule looks' );
+        // The counter and the testimonial are the group's rule and card by identity (tests above), so their looks are the group's.
+    }
+
+    public function testTheCarrierContrastChecksCatchWhatTheyShould(): void
+    {
+        $lang = DesignLanguages::get( 'playful-pastel' );
+        $this->assertIsArray( $lang );
+        $kit = $this->shippedKits()['steady-solid'];
+
+        $good = $this->patch( 'divi/divider', 'rule-accent', $kit, 'light' );
+        $this->assertSame( [], self::accentRuleProblems( $good, 'light', $lang, 'x' ) );
+        // The accent on the accent band, and on the dark band, is under the floor in this language.
+        $this->assertArrayHasKey( 'x|contrast', self::accentRuleProblems( $good, 'accent', $lang, 'x' ) );
+        // A hairline accent rule is not a mark.
+        $thin = $good;
+        $thin['divider']['advanced']['line']['desktop']['value']['weight'] = '1px';
+        $this->assertArrayHasKey( 'x|width', self::accentRuleProblems( $thin, 'light', $lang, 'x' ) );
+        $double = $good;
+        $double['divider']['advanced']['line']['desktop']['value']['style']  = 'double';
+        $double['divider']['advanced']['line']['desktop']['value']['weight'] = '2px';
+        $this->assertArrayHasKey( 'x|width', self::accentRuleProblems( $double, 'light', $lang, 'x' ) );
+        // A quiet colour fails the floor; no colour at all is a problem.
+        $quiet = $good;
+        $quiet['divider']['advanced']['line']['desktop']['value']['color'] = '{{aied:color:border}}';
+        $this->assertArrayHasKey( 'x|contrast', self::accentRuleProblems( $quiet, 'light', $lang, 'x' ) );
+        unset( $quiet['divider']['advanced']['line']['desktop']['value']['color'] );
+        $this->assertArrayHasKey( 'x|colour', self::accentRuleProblems( $quiet, 'light', $lang, 'x' ) );
+
+        // Blurb chip: clean on every band, then the planted defects.
+        foreach ( self::CHIP_BANDS as $on ) {
+            $this->assertSame( [], self::blurbChipProblems( $this->patch( 'divi/blurb', 'chip', $kit, $on ), $on, $lang, 'x' ), "chip on $on" );
+        }
+        $fill  = 'imageIcon.decoration.background.desktop.value.color';
+        $glyph = 'imageIcon.advanced.color.desktop.value';
+        $bad   = $this->patch( 'divi/blurb', 'chip', $kit, 'accent' );
+        $bad['imageIcon']['decoration']['background']['desktop']['value']['color'] = '{{aied:color:accent}}';
+        $this->assertArrayHasKey( 'x|fill', self::blurbChipProblems( $bad, 'accent', $lang, 'x' ), 'an accent fill on an accent band vanishes' );
+        $bad = $this->patch( 'divi/blurb', 'chip', $kit, 'light' );
+        $bad['imageIcon']['advanced']['color']['desktop']['value'] = '{{aied:color:accent}}';
+        $this->assertArrayHasKey( 'x|glyph', self::blurbChipProblems( $bad, 'light', $lang, 'x' ), 'a glyph equal to its fill' );
+        $bad = $this->patch( 'divi/blurb', 'chip', $kit, 'light' );
+        unset( $bad['imageIcon']['advanced'] );
+        $this->assertArrayHasKey( 'x|glyph', self::blurbChipProblems( $bad, 'light', $lang, 'x' ), 'a missing glyph colour' );
+        $this->assertArrayHasKey( $fill, self::leaves( $this->patch( 'divi/blurb', 'chip', $kit, 'light' ) ) );
+        $this->assertArrayHasKey( $glyph, self::leaves( $this->patch( 'divi/blurb', 'chip', $kit, 'light' ) ) );
     }
 }
