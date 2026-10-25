@@ -31,7 +31,8 @@ require_once __DIR__ . '/Support/ShapeRegistry.php';
 /**
  * Task 6 of the style kits plan: the guide topics `style-kits` (what a kit is, the catalog, how to choose) and
  * `style-kit:<id>` (one kit in words, plus a primary and a secondary button resolved by the real pipeline for the
- * `editorial` language).
+ * `editorial` language). Since wording gaps Task 3b a topic can be asked in any language (default: the language that starts
+ * with the kit), so these tests ask for `editorial` explicitly; StyleGuideLanguageParamTest covers every kit x language.
  */
 class StyleGuideKitTopicsTest extends TestCase
 {
@@ -111,7 +112,7 @@ class StyleGuideKitTopicsTest extends TestCase
     {
         foreach ( StyleKits::ids() as $id ) {
             $kit  = StyleKits::get( $id );
-            $text = StyleGuide::markdown( 'style-kit:' . $id );
+            $text = StyleGuide::markdown( 'style-kit:' . $id, 'editorial' );
             $this->assertStringStartsWith( '# Style kit: ' . $kit['title'], $text );
             $this->assertStringContainsString( (string) $kit['summary'], $text );
             $this->assertStringContainsString( (string) $kit['radius']['control'], $text );
@@ -205,7 +206,7 @@ class StyleGuideKitTopicsTest extends TestCase
         $lifts = $frames = $none = $under = 0;
         foreach ( StyleKits::ids() as $id ) {
             $kit  = (array) StyleKits::get( $id );
-            $text = StyleGuide::markdown( 'style-kit:' . $id );
+            $text = StyleGuide::markdown( 'style-kit:' . $id, 'editorial' );
             [ $role, $hover ] = self::expectedCardFacts( $kit );
             $width  = '0px' === $kit['border']['width'] ? '1px' : $kit['border']['width'];
             $bottom = 'bottom' === ( $kit['border']['sides'] ?? 'all' );
@@ -271,7 +272,7 @@ class StyleGuideKitTopicsTest extends TestCase
         $editorial = (array) \AiEditorDivi5\WP\DesignLanguages::get( 'editorial' );
         $shared    = 0;
         foreach ( StyleKits::ids() as $id ) {
-            $text = StyleGuide::markdown( 'style-kit:' . $id );
+            $text = StyleGuide::markdown( 'style-kit:' . $id, 'editorial' );
             $this->assertSame( [], self::legendProblems( $text, $editorial ), $id );
             if ( str_contains( $text, '#ffffff = surface and accent-text' ) ) {
                 ++$shared;
@@ -284,7 +285,7 @@ class StyleGuideKitTopicsTest extends TestCase
     {
         $editorial = (array) \AiEditorDivi5\WP\DesignLanguages::get( 'editorial' );
         $id        = (string) StyleKits::ids()[0];
-        $text      = StyleGuide::markdown( 'style-kit:' . $id );
+        $text      = StyleGuide::markdown( 'style-kit:' . $id, 'editorial' );
         $this->assertSame( [], self::legendProblems( $text, $editorial ) );
 
         $dropped = str_replace( '#ffffff = surface and accent-text', '#ffffff = accent-text', $text );
@@ -310,7 +311,7 @@ class StyleGuideKitTopicsTest extends TestCase
     {
         foreach ( StyleKits::ids() as $id ) {
             $kit   = (array) StyleKits::get( $id );
-            $text  = StyleGuide::markdown( 'style-kit:' . $id );
+            $text  = StyleGuide::markdown( 'style-kit:' . $id, 'editorial' );
             $patch = (array) KitAdapters::patch( 'divi/group', 'card', 'light', $kit );
             $deco  = (array) $patch['module']['decoration'];
             $lifts = isset( $deco['transform'] );
@@ -324,7 +325,7 @@ class StyleGuideKitTopicsTest extends TestCase
     /** @return array<string,array<string,mixed>> role => decoded attributes of the first block of that role in the topic */
     private function cardBlocks( string $topic ): array
     {
-        $text = StyleGuide::markdown( $topic );
+        $text = StyleGuide::markdown( $topic, 'editorial' );
         $out  = [];
         foreach ( [ 'Card' => 'card', 'Panel' => 'panel' ] as $label => $role ) {
             $this->assertSame( 1, preg_match( '/' . $label . ':\n\n```\n(<!-- wp:divi\/group (\{.*?\}) -->.*?<!-- \/wp:divi\/group -->)\n```/s', $text, $m ), $topic . ': a ' . $role . ' snippet' );
@@ -380,7 +381,7 @@ class StyleGuideKitTopicsTest extends TestCase
         $seen = [];
         foreach ( StyleKits::ids() as $id ) {
             $kit    = (array) StyleKits::get( $id );
-            $text   = StyleGuide::markdown( 'style-kit:' . $id );
+            $text   = StyleGuide::markdown( 'style-kit:' . $id, 'editorial' );
             $pair   = $kit['shadow']['rest'] . '/' . $kit['shadow']['hover'];
             $lift   = 'lift' === $kit['hover'];
             $bottom = 'bottom' === ( $kit['border']['sides'] ?? 'all' );
@@ -412,7 +413,7 @@ class StyleGuideKitTopicsTest extends TestCase
         $seen = 0;
         foreach ( StyleKits::ids() as $id ) {
             $kit  = (array) StyleKits::get( $id );
-            $text = StyleGuide::markdown( 'style-kit:' . $id );
+            $text = StyleGuide::markdown( 'style-kit:' . $id, 'editorial' );
             foreach ( [ 'control' => 'primary', 'control-secondary' => 'secondary' ] as $role => $name ) {
                 $d        = KitAdapters::patch( 'divi/button', $role, 'light', $kit )['button']['decoration'];
                 // No fill and no side wider than 0px (an underline kit's ghost secondary keeps a zero-width bottom side).
@@ -446,7 +447,7 @@ class StyleGuideKitTopicsTest extends TestCase
             $bottom      = KitAdapters::patch( 'divi/button', 'control-secondary', 'light', $kit )['button']['decoration']['border']['desktop']['value']['styles']['bottom'];
             $plain       = '0px' === $bottom['width'];
             $seen[ $id ] = $plain;
-            $this->assertSame( $plain, str_contains( StyleGuide::markdown( 'style-kit:' . $id ), 'The secondary button draws no underline' ), $id );
+            $this->assertSame( $plain, str_contains( StyleGuide::markdown( 'style-kit:' . $id, 'editorial' ), 'The secondary button draws no underline' ), $id );
         }
         $this->assertSame( [ 'underline-link' => false, 'underlined-label' => true ], $seen );
     }
@@ -454,7 +455,7 @@ class StyleGuideKitTopicsTest extends TestCase
     /** @return array{attrs:array<string,mixed>,block:string,button:array<string,mixed>} the inverted panel snippet of a kit topic, decoded */
     private function invertedPanel( string $topic ): array
     {
-        $text = StyleGuide::markdown( $topic );
+        $text = StyleGuide::markdown( $topic, 'editorial' );
         $this->assertSame( 1, preg_match( '/Inverted panel:\n\n```\n(<!-- wp:divi\/group (\{.*?\}) -->\n<!-- wp:divi\/button (\{.*?\}) \/-->\n<!-- \/wp:divi\/group -->)\n```/s', $text, $m ), $topic . ': an inverted panel snippet' );
         $out = [ 'block' => $m[1] ];
         foreach ( [ 'attrs' => 2, 'button' => 3 ] as $key => $i ) {
@@ -534,7 +535,7 @@ class StyleGuideKitTopicsTest extends TestCase
     {
         foreach ( StyleKits::ids() as $id ) {
             $kit  = (array) StyleKits::get( $id );
-            $text = StyleGuide::markdown( 'style-kit:' . $id );
+            $text = StyleGuide::markdown( 'style-kit:' . $id, 'editorial' );
             $this->assertStringNotContainsString( 'A panel can sit on an `inverted` ground', $text, "$id: the generic ground rule is in kit-rules" );
             $this->assertStringContainsString( 'A button on an inverted panel takes the `panel` treatment: ', $text, $id );
             $d    = KitAdapters::patch( 'divi/button', 'control', 'panel', $kit )['button']['decoration'];
@@ -563,7 +564,7 @@ class StyleGuideKitTopicsTest extends TestCase
     {
         $editorial = (array) \AiEditorDivi5\WP\DesignLanguages::get( 'editorial' );
         foreach ( StyleKits::ids() as $id ) {
-            $text   = StyleGuide::markdown( 'style-kit:' . $id );
+            $text   = StyleGuide::markdown( 'style-kit:' . $id, 'editorial' );
             $legend = $this->invertedPanel( 'style-kit:' . $id );
             $prose  = (string) preg_replace( '/```.*?```/s', '', $text );
             $this->assertMatchesRegularExpression( '/' . preg_quote( (string) $editorial['colors']['text'], '/' ) . ' = [^;.)]*\btext\b/', $prose, "$id: the panel fill hex names its role" );
@@ -573,7 +574,7 @@ class StyleGuideKitTopicsTest extends TestCase
         }
         // Planted: drop the ink's entry from the legend and the check fails.
         $id   = (string) StyleKits::ids()[0];
-        $text = StyleGuide::markdown( 'style-kit:' . $id );
+        $text = StyleGuide::markdown( 'style-kit:' . $id, 'editorial' );
         $bg   = (string) $editorial['colors']['bg'];
         $gone = (string) preg_replace( '/' . preg_quote( $bg, '/' ) . ' = [^;.)]+/', $bg . ' is', $text );
         $this->assertNotSame( $text, $gone );
@@ -584,11 +585,12 @@ class StyleGuideKitTopicsTest extends TestCase
     {
         $max = 0;
         foreach ( StyleKits::ids() as $id ) {
-            $max = max( $max, strlen( StyleGuide::markdown( 'style-kit:' . $id ) ) );
+            $max = max( $max, strlen( StyleGuide::markdown( 'style-kit:' . $id, 'editorial' ) ) );
         }
         $this->assertLessThanOrEqual( self::TOPIC_BUDGET, $max );
         // Re-pinned deliberately (accordion plan T2+T4): 9,992 before; the shared prose moved to kit-rules and a toggle was added.
-        $this->assertSame( 9599, $max, 'the largest kit topic today (neo-brutal; was 8124 before the inverted panel, 9992 before kit-rules)' );
+        // Wording gaps Task 3b: -43 B read in editorial (the builderVersion 5.8.0 of five samples, the card legend names the language).
+        $this->assertSame( 9599 - 43, $max, 'the largest kit topic today (neo-brutal; was 8124 before the inverted panel, 9992 before kit-rules)' );
         // The default guide grew only by ", kit-rules" in its topic line (Ruling 19: the line names every topic): 28,964 + 11.
         $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide changed only by the new topic name' );
         // Re-pinned deliberately (forms adapter T2): +30 B, the form named in the kit-driven sentence and "Forms, " dropped from the not-applied one.
@@ -603,7 +605,7 @@ class StyleGuideKitTopicsTest extends TestCase
     private function buttons( string $topic ): array
     {
         // The inverted panel's button is a third button, on its own surface; it has its own test.
-        preg_match_all( '/<!-- wp:divi\/button (\{.*?\}) \/-->/', (string) preg_replace( '/Inverted panel:\n\n```.*?```/s', '', StyleGuide::markdown( $topic ) ), $m );
+        preg_match_all( '/<!-- wp:divi\/button (\{.*?\}) \/-->/', (string) preg_replace( '/Inverted panel:\n\n```.*?```/s', '', StyleGuide::markdown( $topic, 'editorial' ) ), $m );
         $out = [];
         foreach ( $m[0] as $i => $block ) {
             $attrs = json_decode( $m[1][ $i ], true );
@@ -699,7 +701,7 @@ class StyleGuideKitTopicsTest extends TestCase
             // Derived from the adapter, never a literal: an outline kit's secondary fill is "ghost".
             $secondaryFill = KitAdapters::secondaryFill( (string) $kit['fill'] );
             $line          = $this->catalogLine( $catalog, $id );
-            $topic         = StyleGuide::markdown( 'style-kit:' . $id );
+            $topic         = StyleGuide::markdown( 'style-kit:' . $id, 'editorial' );
             $this->assertNotSame( 'solid', $secondaryFill, $id );
             if ( 'ghost' === $secondaryFill ) {
                 $seen++;

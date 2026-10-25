@@ -83,6 +83,30 @@ final class StyleGuide
         return 'Topics: call get_style_guide with topic=<name>: ' . implode( ', ', self::topicNames() ) . '.';
     }
 
+    /**
+     * The one `builderVersion` the guide teaches, carried by every sample block a kit topic prints (the kit samples once copied
+     * the attributes of the recipe blocks they were modelled on, builderVersion included: 5.0.0-public-beta.1 and 5.0.2).
+     */
+    public const BUILDER_VERSION = '5.8.0';
+
+    /** The description of the `design_language` parameter in the MCP schema and the OpenAPI spec. */
+    public static function languageParameterDescription(): string
+    {
+        return 'With topic=style-kit:<id>: resolve the sample blocks in this design language (ids: ' . implode( ', ', DesignLanguages::ids() ) . '). Default: the language that starts with that kit, else editorial.';
+    }
+
+    /** The language a `style-kit:<id>` topic is resolved in when none is asked: the first language whose own kit it is, else editorial. */
+    public static function kitTopicLanguage( string $kitId ): string
+    {
+        foreach ( DesignLanguages::ids() as $id ) {
+            if ( $kitId === ( DesignLanguages::get( $id )['kit'] ?? null ) ) {
+                return $id;
+            }
+        }
+
+        return 'editorial';
+    }
+
     /** The description of the `topic` parameter in the MCP schema and the OpenAPI spec (generated; at most 300 characters, and kept at 260 or fewer so the next adapters' topic names fit). */
     public static function topicParameterDescription(): string
     {
@@ -93,9 +117,14 @@ final class StyleGuide
      * The guide as Markdown. Pure — no WordPress calls — so it is trivially testable.
      * With no topic (null or ''), the default guide; with a topic, only that topic's text.
      * An unknown topic is a normal answer that lists the valid topics.
+     * $language (a design language id; null or '' = none) is read only by a `style-kit:<id>` topic, whose sample blocks are
+     * resolved in it (default: kitTopicLanguage()); an unknown id is a normal answer that lists the valid ids, whatever the topic.
      */
-    public static function markdown( ?string $topic = null ): string
+    public static function markdown( ?string $topic = null, ?string $language = null ): string
     {
+        if ( null !== $language && '' !== $language && null === DesignLanguages::get( $language ) ) {
+            return DesignLanguages::markdown( $language ); // the refusal get_section_recipes gives: the valid ids
+        }
         if ( null === $topic || '' === $topic ) {
             return self::guide() . "\n\n" . self::topicLine();
         }
@@ -148,7 +177,8 @@ final class StyleGuide
             return DesignLanguages::markdown( substr( $topic, strlen( 'design-language:' ) ) );
         }
         if ( str_starts_with( $topic, 'style-kit:' ) && in_array( $topic, self::topics(), true ) ) {
-            return self::styleKitTopic( substr( $topic, strlen( 'style-kit:' ) ) );
+            $kit = substr( $topic, strlen( 'style-kit:' ) );
+            return self::styleKitTopic( $kit, null === $language || '' === $language ? self::kitTopicLanguage( $kit ) : $language );
         }
         $lines = [ '# Unknown topic', '', sprintf( 'There is no topic "%s". Valid topics:', SectionRecipes::plain( $topic ) ), '' ];
         foreach ( self::topics() as $valid ) {
@@ -789,13 +819,13 @@ final class StyleGuide
 
     /**
      * Topic `style-kit:<id>`: one kit's decisions and its own resolved blocks (primary and secondary button, card, panel,
-     * inverted panel, toggle), produced by the real pipeline for the editorial language, plus ONE pointer to `kit-rules` for
-     * what is the same in every kit. At most 10,000 bytes.
+     * inverted panel, toggle), produced by the real pipeline for the language $languageId (both colour legends name it), plus
+     * ONE pointer to `kit-rules` for what is the same in every kit. At most 9,950 bytes under every language.
      */
-    private static function styleKitTopic( string $id ): string
+    private static function styleKitTopic( string $id, string $languageId = 'editorial' ): string
     {
         $kit      = StyleKits::get( $id );
-        $language = DesignLanguages::get( 'editorial' );
+        $language = DesignLanguages::get( $languageId );
         if ( null === $kit || null === $language ) {
             return StyleKits::markdown( $id );
         }
@@ -814,7 +844,7 @@ final class StyleGuide
         if ( '' !== $primary && '' !== $secondary ) {
             $lines[] = '## Buttons in this kit';
             $lines[] = '';
-            $lines[] = 'Colours in these blocks (resolved for `editorial` on a light section), as value = role(s): '
+            $lines[] = 'Colours in these blocks (resolved for `' . $languageId . '` on a light section), as value = role(s): '
                 . self::kitColourLegend( array_values( array_filter( [ KitAdapters::patch( 'divi/button', 'control', 'light', $kit ), KitAdapters::patch( 'divi/button', 'control-secondary', 'light', $kit ) ] ) ), $language ) . '.';
             $lines[] = '';
             $lines[] = 'Primary:';
@@ -841,7 +871,7 @@ final class StyleGuide
             }
         }
 
-        $cards = self::kitCardSection( $kit, $language );
+        $cards = self::kitCardSection( $kit, $language, $languageId );
         if ( '' !== $cards ) {
             $lines[] = '';
             $lines[] = $cards;
@@ -858,7 +888,7 @@ final class StyleGuide
      * @param array<string,mixed> $kit
      * @param array<string,mixed> $language
      */
-    private static function kitCardSection( array $kit, array $language ): string
+    private static function kitCardSection( array $kit, array $language, string $languageId ): string
     {
         $card  = self::kitCard( $kit, $language, 'card', 'Card' );
         $panel = self::kitCard( $kit, $language, 'panel', 'Panel' );
@@ -908,7 +938,7 @@ final class StyleGuide
             . $frame . ' ' . $hover
             . sprintf( ' Shadow: rest %s, hover %s.', (string) $shadow['rest'], (string) $shadow['hover'] );
         $lines[] = '';
-        $lines[] = 'Colours in these blocks, as value = role(s): ' . $legend . '.';
+        $lines[] = 'Colours in these blocks (resolved for `' . $languageId . '`), as value = role(s): ' . $legend . '.';
         $lines[] = '';
         $lines[] = 'Card:';
         $lines[] = '';
@@ -956,7 +986,7 @@ final class StyleGuide
             'aied'           => [ 'kit' => 'item', 'on' => 'light' ],
             'title'          => [ 'innerContent' => [ 'desktop' => [ 'value' => 'Toggle title' ] ] ],
             'content'        => [ 'innerContent' => [ 'desktop' => [ 'value' => '<p>Placeholder answer.</p>' ] ] ],
-            'builderVersion' => '5.8.0',
+            'builderVersion' => self::BUILDER_VERSION,
         ];
         $markup = '<!-- wp:divi/toggle ' . RecipeTokens::encodeJson( $attrs ) . ' /-->';
         $markup = RecipeTokens::resolve( KitResolver::resolve( $markup, $kit ), $language );
@@ -977,12 +1007,12 @@ final class StyleGuide
         $group = [
             'aied'           => [ 'kit' => $role, 'on' => 'light' ],
             'module'         => [ 'decoration' => [ 'layout' => [ 'desktop' => [ 'value' => [ 'flexDirection' => 'column', 'rowGap' => '12px' ] ] ] ] ],
-            'builderVersion' => '5.0.2',
+            'builderVersion' => self::BUILDER_VERSION,
         ];
         $child = [
             'module'         => [ 'decoration' => [ 'layout' => [ 'desktop' => [ 'value' => [ 'display' => 'block' ] ] ] ] ],
             'content'        => [ 'innerContent' => [ 'desktop' => [ 'value' => '<h4>' . $text . ' title</h4><p>Placeholder text for the ' . strtolower( $text ) . '.</p>' ] ] ],
-            'builderVersion' => '5.0.0-public-beta.1',
+            'builderVersion' => self::BUILDER_VERSION,
         ];
         $markup = '<!-- wp:divi/group ' . RecipeTokens::encodeJson( $group ) . ' -->' . "\n"
             . '<!-- wp:divi/text ' . RecipeTokens::encodeJson( $child ) . ' /-->' . "\n"
@@ -1009,7 +1039,7 @@ final class StyleGuide
                 // The kit writes no padding on a panel; without the recipe's own the button would sit on the panel's edges.
                 'spacing' => [ 'desktop' => [ 'value' => [ 'padding' => array_fill_keys( [ 'top', 'right', 'bottom', 'left' ], self::PANEL_PADDING ) ] ] ],
             ] ],
-            'builderVersion' => '5.0.2',
+            'builderVersion' => self::BUILDER_VERSION,
         ];
         $button = self::kitButton( $kit, $language, 'control', 'Button', 'panel' );
         if ( '' === $button ) {
@@ -1114,7 +1144,7 @@ final class StyleGuide
                 'decoration'   => [ 'font' => [ 'font' => [ 'desktop' => [ 'value' => [ 'family' => '{{aied:font:body}}' ] ] ] ] ],
                 'innerContent' => [ 'desktop' => [ 'value' => [ 'text' => $text, 'id' => 0 ] ] ],
             ],
-            'builderVersion' => '5.0.0-public-beta.1',
+            'builderVersion' => self::BUILDER_VERSION,
         ];
         $markup = '<!-- wp:divi/button ' . RecipeTokens::encodeJson( $attrs ) . ' /-->';
         $markup = RecipeTokens::resolve( KitResolver::resolve( $markup, $kit ), $language );

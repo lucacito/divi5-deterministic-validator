@@ -149,7 +149,7 @@ final class RestController
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
 
-        // GET /style-guide — Divi 5 authoring + styling vocabulary (?topic=<name> serves one topic; the names are StyleGuide::topics(), also the last line of the default guide)
+        // GET /style-guide — Divi 5 authoring + styling vocabulary (?topic=<name> serves one topic; the names are StyleGuide::topics(), also the last line of the default guide; ?design_language= with ?topic=style-kit:<id> resolves the kit's sample blocks in that language)
         register_rest_route(self::NS, '/style-guide', [
             'methods'             => WP_REST_Server::READABLE,
             'callback'            => [$this, 'style_guide'],
@@ -207,7 +207,11 @@ final class RestController
         if ($topic === null) {
             return new WP_REST_Response(['error' => 'Invalid parameter: "topic" must be a string'], 400);
         }
-        return new WP_REST_Response(['guide' => StyleGuide::markdown($topic === '' ? null : $topic)], 200);
+        $language = PageAccess::stringArg(['design_language' => $request->get_param('design_language')], 'design_language');
+        if ($language === null) {
+            return new WP_REST_Response(['error' => 'Invalid parameter: "design_language" must be a string'], 400);
+        }
+        return new WP_REST_Response(['guide' => StyleGuide::markdown($topic === '' ? null : $topic, $language === '' ? null : $language)], 200);
     }
 
     public function section_recipes(WP_REST_Request $request): WP_REST_Response

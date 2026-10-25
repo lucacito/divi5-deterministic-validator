@@ -142,7 +142,7 @@ class StyleGuideKitRulesTest extends TestCase
             $this->assertSame( 1, substr_count( $rules, $sentence ), "kit-rules says once: $sentence" );
         }
         foreach ( StyleKits::ids() as $id ) {
-            $text = StyleGuide::markdown( 'style-kit:' . $id );
+            $text = StyleGuide::markdown( 'style-kit:' . $id, 'editorial' );
             foreach ( self::MOVED as $sentence ) {
                 $this->assertStringNotContainsString( $sentence, $text, "$id no longer repeats: $sentence" );
             }
@@ -165,7 +165,7 @@ class StyleGuideKitRulesTest extends TestCase
     /** @return array{attrs:array<string,mixed>,block:string} */
     private function toggleSnippet( string $topic ): array
     {
-        $text = StyleGuide::markdown( $topic );
+        $text = StyleGuide::markdown( $topic, 'editorial' );
         $this->assertSame( 1, preg_match( '/\nToggle \(an `item`[^\n]*\n\n```\n(<!-- wp:divi\/toggle (\{.*?\}) \/-->)\n```/s', $text, $m ), "$topic: a toggle snippet" );
         $attrs = json_decode( $m[2], true );
         $this->assertIsArray( $attrs );
@@ -197,7 +197,7 @@ class StyleGuideKitRulesTest extends TestCase
             foreach ( ShapePaths::fromBlockAttrs( $found['attrs'] ) as $path ) {
                 $this->assertTrue( $registry->covers( $path ), "$id toggle uses an unregistered path $path" );
             }
-            $this->assertStringContainsString( sprintf( 'Toggle (an `item`, padding %s).', $kit['space']['card'] ), StyleGuide::markdown( 'style-kit:' . $id ) );
+            $this->assertStringContainsString( sprintf( 'Toggle (an `item`, padding %s).', $kit['space']['card'] ), StyleGuide::markdown( 'style-kit:' . $id, 'editorial' ) );
         }
     }
 
@@ -205,7 +205,7 @@ class StyleGuideKitRulesTest extends TestCase
     {
         $editorial = (array) DesignLanguages::get( 'editorial' );
         foreach ( StyleKits::ids() as $id ) {
-            $text  = StyleGuide::markdown( 'style-kit:' . $id );
+            $text  = StyleGuide::markdown( 'style-kit:' . $id, 'editorial' );
             $prose = (string) preg_replace( '/```.*?```/s', '', $text );
             preg_match_all( '/#[0-9a-f]{6}\b|rgba\([^)]*\)/i', $this->toggleSnippet( 'style-kit:' . $id )['block'], $lits );
             $this->assertNotSame( [], $lits[0] );
@@ -219,7 +219,7 @@ class StyleGuideKitRulesTest extends TestCase
     public function testTheInvertedPanelSnippetKeepsAPanelPadding(): void
     {
         foreach ( StyleKits::ids() as $id ) {
-            $text = StyleGuide::markdown( 'style-kit:' . $id );
+            $text = StyleGuide::markdown( 'style-kit:' . $id, 'editorial' );
             $this->assertSame( 1, preg_match( '/Inverted panel:\n\n```\n<!-- wp:divi\/group (\{.*?\}) -->/s', $text, $m ), $id );
             $attrs = (array) json_decode( $m[1], true );
             $this->assertSame( [ 'top' => '32px', 'right' => '32px', 'bottom' => '32px', 'left' => '32px' ], $attrs['module']['decoration']['spacing']['desktop']['value']['padding'] ?? null, "$id: the button does not sit on the panel's edges" );
@@ -232,13 +232,13 @@ class StyleGuideKitRulesTest extends TestCase
         $max = 0;
         $at  = '';
         foreach ( StyleKits::ids() as $id ) {
-            $len = strlen( StyleGuide::markdown( 'style-kit:' . $id ) );
+            $len = strlen( StyleGuide::markdown( 'style-kit:' . $id, 'editorial' ) );
             if ( $len > $max ) {
                 [ $max, $at ] = [ $len, $id ];
             }
         }
         $this->assertLessThanOrEqual( self::BUDGET, $max );
-        $this->assertSame( [ 'neo-brutal', 9599 ], [ $at, $max ], 'the largest kit topic (was 9,992 before kit-rules, without the toggle)' );
+        $this->assertSame( [ 'neo-brutal', 9599 + self::SAMPLES_DELTA ], [ $at, $max ], 'the largest kit topic (was 9,992 before kit-rules, without the toggle)' );
         // Re-pinned deliberately (forms adapter T2): kit-rules 3,525 + the Contact forms paragraph (+776 B in all after fix round 2, with the 30 B applied-sentence change: fix round 1's underline wording, the accent-band clause of the field frame and the `button.decoration.*` path clause, all generated; the hard cap is 10,000 B); the catalog 8,423 + "forms (`divi/contact-form`: `form`)" less "Forms, " in the not-applied sentence (30 B).
         // Rules and chips adapter T3 (plan 2026-10-21), re-pinned deliberately: without the Images paragraph kit-rules was 4,301; the
         // applied sentence gained its tail (+119 B) and the Rules and chips paragraph (+529 B) arrived: 4,949.
@@ -360,7 +360,7 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertLessThanOrEqual( 10000, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog' );
         $max = 0;
         foreach ( StyleKits::ids() as $id ) {
-            $len = strlen( StyleGuide::markdown( 'style-kit:' . $id ) );
+            $len = strlen( StyleGuide::markdown( 'style-kit:' . $id, 'editorial' ) );
             $this->assertLessThanOrEqual( 9599 + 40, $len, "$id grows at most 40 B (no form example in a kit topic)" );
             $max = max( $max, $len );
         }
@@ -703,9 +703,17 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertStringContainsString( StyleGuide::appliedSentence(), StyleGuide::markdown( 'kit-rules' ), 'kit-rules' );
         $this->assertStringContainsString( StyleGuide::appliedNounsSentence(), StyleGuide::markdown( 'style-kits' ), 'style-kits' );
         foreach ( StyleKits::ids() as $id ) {
-            $this->assertStringNotContainsString( 'rules (`divi/group`', StyleGuide::markdown( 'style-kit:' . $id ), "$id: the applied sentence is not repeated in a kit topic" );
+            $this->assertStringNotContainsString( 'rules (`divi/group`', StyleGuide::markdown( 'style-kit:' . $id, 'editorial' ), "$id: the applied sentence is not repeated in a kit topic" );
         }
     }
+
+    /**
+     * Wording gaps Task 3b: every kit topic READ IN EDITORIAL moved by exactly this many bytes against the sizes pinned below
+     * (five sample blocks, the three buttons and the card and panel text, now carry the guide's builderVersion 5.8.0 instead of
+     * 5.0.0-public-beta.1, and the card legend names the language). The size tests read the editorial samples explicitly: since
+     * Task 3b a kit topic asked without a language is served in the language that starts with that kit (StyleGuideLanguageParamTest).
+     */
+    private const SAMPLES_DELTA = -43;
 
     /** Every kit topic's size before the rules and chips adapter (Task 3 Step 0 capture). */
     private const KIT_TOPIC_SIZES_BEFORE = [
@@ -769,12 +777,12 @@ class StyleGuideKitRulesTest extends TestCase
         $max = 0;
         $this->assertCount( 40, self::KIT_TOPIC_SIZES_BEFORE );
         foreach ( self::KIT_TOPIC_SIZES_BEFORE as $id => $before ) {
-            $len = strlen( StyleGuide::markdown( 'style-kit:' . $id ) );
+            $len = strlen( StyleGuide::markdown( 'style-kit:' . $id, 'editorial' ) );
             $this->assertLessThanOrEqual( $before + 40, $len, "$id grows at most 40 B" );
-            $this->assertSame( $before, $len, "$id: the applied sentence is not in a kit topic, so a kit topic does not move" );
+            $this->assertSame( $before + self::SAMPLES_DELTA, $len, "$id: the applied sentence is not in a kit topic, so a kit topic does not move" );
             $max = max( $max, $len );
         }
-        $this->assertSame( 9599, $max, 'the largest kit topic (neo-brutal) is unchanged' );
+        $this->assertSame( 9599 + self::SAMPLES_DELTA, $max, 'the largest kit topic (neo-brutal) is unchanged' );
         $this->assertLessThanOrEqual( 9700, $max );
 
         // The catalog with 50 kits (the owner's cap) stays within 9,950 B with the new tail.
@@ -1345,9 +1353,9 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
         $max = 0;
         foreach ( StyleKits::ids() as $id ) {
-            $max = max( $max, strlen( StyleGuide::markdown( 'style-kit:' . $id ) ) );
+            $max = max( $max, strlen( StyleGuide::markdown( 'style-kit:' . $id, 'editorial' ) ) );
         }
-        $this->assertSame( 9599, $max, 'the largest kit topic did not move' );
+        $this->assertSame( 9599 + self::SAMPLES_DELTA, $max, 'the largest kit topic did not move' );
         foreach ( StyleGuide::topics() as $topic ) {
             $this->assertStringNotContainsString( 'aied', StyleGuide::markdown( $topic ), "$topic names no marker token" );
         }
@@ -1367,9 +1375,9 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog' );
         $max = 0;
         foreach ( StyleKits::ids() as $id ) {
-            $max = max( $max, strlen( StyleGuide::markdown( 'style-kit:' . $id ) ) );
+            $max = max( $max, strlen( StyleGuide::markdown( 'style-kit:' . $id, 'editorial' ) ) );
         }
-        $this->assertSame( 9599, $max, 'the largest kit topic did not move' );
+        $this->assertSame( 9599 + self::SAMPLES_DELTA, $max, 'the largest kit topic did not move' );
         foreach ( StyleGuide::topics() as $topic ) {
             $this->assertStringNotContainsString( 'aied', StyleGuide::markdown( $topic ), "$topic names no marker token" );
         }
@@ -1388,11 +1396,11 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog' );
         $max = 0;
         foreach ( self::KIT_TOPIC_SIZES_BEFORE as $id => $before ) {
-            $len = strlen( StyleGuide::markdown( 'style-kit:' . $id ) );
-            $this->assertSame( $before, $len, "$id: byte-equal to the size pinned before the polish" );
+            $len = strlen( StyleGuide::markdown( 'style-kit:' . $id, 'editorial' ) );
+            $this->assertSame( $before + self::SAMPLES_DELTA, $len, "$id: byte-equal to the size pinned before the polish" );
             $max = max( $max, $len );
         }
-        $this->assertSame( 9599, $max );
+        $this->assertSame( 9599 + self::SAMPLES_DELTA, $max );
         foreach ( StyleGuide::topics() as $topic ) {
             $this->assertStringNotContainsString( 'aied', StyleGuide::markdown( $topic ), "$topic names no marker token" );
         }
@@ -1681,11 +1689,11 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertSame( 258, strlen( StyleGuide::topicParameterDescription() ) );
         $max = 0;
         foreach ( self::KIT_TOPIC_SIZES_BEFORE as $id => $before ) {
-            $len = strlen( StyleGuide::markdown( 'style-kit:' . $id ) );
-            $this->assertSame( $before, $len, "$id is byte-equal to its size before round 3" );
+            $len = strlen( StyleGuide::markdown( 'style-kit:' . $id, 'editorial' ) );
+            $this->assertSame( $before + self::SAMPLES_DELTA, $len, "$id is byte-equal to its size before round 3" );
             $max = max( $max, $len );
         }
-        $this->assertSame( 9599, $max );
+        $this->assertSame( 9599 + self::SAMPLES_DELTA, $max );
         foreach ( StyleGuide::topics() as $topic ) {
             $this->assertStringNotContainsString( 'aied', StyleGuide::markdown( $topic ), "$topic names no marker token" );
         }

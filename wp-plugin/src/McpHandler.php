@@ -213,6 +213,7 @@ final class McpHandler
                     'type'       => 'object',
                     'properties' => [
                         'topic' => ['type' => 'string', 'description' => StyleGuide::topicParameterDescription()],
+                        'design_language' => ['type' => 'string', 'description' => StyleGuide::languageParameterDescription()],
                     ],
                     'required'   => [],
                 ],
@@ -430,7 +431,11 @@ final class McpHandler
         if ($topic === null) {
             return $this->rpcError($id, -32602, 'Invalid params — guide "topic" must be a string');
         }
-        return $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => StyleGuide::markdown($topic === '' ? null : $topic)]]]);
+        $language = PageAccess::stringArg($args, 'design_language');
+        if ($language === null) {
+            return $this->rpcError($id, -32602, 'Invalid params — guide "design_language" must be a string');
+        }
+        return $this->rpcResult($id, ['content' => [['type' => 'text', 'text' => StyleGuide::markdown($topic === '' ? null : $topic, $language === '' ? null : $language)]]]);
     }
 
     private function toolSectionRecipes(mixed $id, array $args): WP_REST_Response
