@@ -32,6 +32,13 @@ class DetectorTest extends TestCase
      */
     private const TABLE = [ 'languages' => 284, 'exact' => 129, 'harmless' => 39, 'none' => 76, 'refused' => 40, 'wrong' => 0 ];
 
+    /**
+     * The language confidence measured on the same 284 pages (FIX 1 of the review): the lowest score, the lowest share
+     * of inspected colour/font leaves in the detected palette, and the pages the floor (`Detector::LANGUAGE_MIN_SCORE`,
+     * `LANGUAGE_MIN_SHARE`) refuses. Shrink-only for `refused`; the minima may only rise.
+     */
+    private const LANGUAGE_FLOOR_TABLE = [ 'min_score' => 6, 'min_share' => 0.688, 'refused' => 0 ];
+
     /** sha256 of the drawn (recipe, language, kit) list, so a PHP generator change cannot move the table silently. */
     private const DRAW_HASH = 'ddea0049ef2f55e90188adc5906f6d846523010dd86793c9fa1c7f6c25626a0c';
 
@@ -69,11 +76,16 @@ class DetectorTest extends TestCase
         $table = ContextTable::current();
         $count = [ 'languages' => 0, 'exact' => 0, 'harmless' => 0, 'none' => 0, 'refused' => 0, 'wrong' => 0 ];
         $wrong = [];
+        $floor = [ 'min_score' => PHP_INT_MAX, 'min_share' => 1.0, 'refused' => 0 ];
         $byLanguage = $draws;
         usort( $byLanguage, static fn ( array $a, array $b ): int => [ $a[1], $a[0], $a[2] ] <=> [ $b[1], $b[0], $b[2] ] ); // memo locality only
         foreach ( $byLanguage as [ $name, $l, $k ] ) {
             $page = self::build( $name, $l, $k );
             $d    = Detector::detect( $page, null, null, $to, $table );
+            $lc   = $d['confidence']['language'];
+            $floor['min_score'] = min( $floor['min_score'], $lc['score'] );
+            $floor['min_share'] = min( $floor['min_share'], $lc['share'] );
+            $floor['refused']  += Detector::REFUSED_LOW_CONFIDENCE === $d['refused'] ? 1 : 0;
             if ( $d['language'] !== $l ) {
                 $wrong[] = "$name $l $k: language " . json_encode( $d['language'] );
                 continue;
@@ -105,6 +117,51 @@ class DetectorTest extends TestCase
         }
         $this->assertSame( [], $wrong, 'no wrong language, no wrong kit accepted' );
         $this->assertSame( self::TABLE, $count );
+        $this->assertSame( self::LANGUAGE_FLOOR_TABLE, $floor );
+        $this->assertGreaterThanOrEqual( Detector::LANGUAGE_MIN_SCORE, $floor['min_score'] );
+        $this->assertGreaterThanOrEqual( Detector::LANGUAGE_MIN_SHARE, $floor['min_share'] );
+    }
+
+    /**
+     * The review's scenario: one text colour that is editorial's `bg` (#faf7f2) on a dark #123456 section. Without the
+     * floor it was read as editorial (score 1, margin 1) and switched to luxe, the colour became luxe `bg` #16120e: dark
+     * text on a dark section.
+     */
+    private const THIN_PAGE = '<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#123456"}}}}}} --><!-- wp:divi/row --><!-- wp:divi/column --><!-- wp:divi/text {"content":{"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"color":"#faf7f2"}}}}}}}} /--><!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section -->';
+
+    public function testThinEvidenceIsRefused(): void
+    {
+        $d = Detector::detect( self::THIN_PAGE, null, null, Design::make( 'luxe', 'gilt-hairline' ) );
+        $this->assertSame( Detector::REFUSED_LOW_CONFIDENCE, $d['refused'] );
+        $this->assertNull( $d['language'] );
+        $this->assertNull( $d['kit'] );
+        $this->assertSame( [ 'score' => 1, 'margin' => 1, 'matched' => 1, 'inspected' => 2, 'share' => 0.5 ], $d['confidence']['language'] );
+        $this->assertStringContainsString( 'from_language', (string) $d['message'] );
+        $this->assertStringContainsString( 'editorial', (string) $d['message'] );
+    }
+
+    public function testAGivenLanguageBypassesTheFloor(): void
+    {
+        $d = Detector::detect( self::THIN_PAGE, 'editorial', null, Design::make( 'luxe', 'gilt-hairline' ) );
+        $this->assertNull( $d['refused'] );
+        $this->assertSame( 'editorial', $d['language'] );
+        $this->assertSame( 'given', $d['source']['language'] );
+        $this->assertArrayNotHasKey( 'language', $d['confidence'] );
+    }
+
+    public function testEachFloorRefusesOnItsOwn(): void
+    {
+        // Score 2 but a share of 2/5: two palette colours among five colour leaves.
+        $text = static fn ( string $c ): string => '<!-- wp:divi/text {"content":{"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"color":"' . $c . '"}}}}}}}} /-->';
+        $page = $text( '#faf7f2' ) . $text( '#faf7f2' ) . $text( '#123456' ) . $text( '#123457' ) . $text( '#123458' );
+        $d    = Detector::detect( $page, null, null );
+        $this->assertSame( 2, $d['confidence']['language']['score'] );
+        $this->assertSame( 0.4, $d['confidence']['language']['share'] );
+        $this->assertSame( Detector::REFUSED_LOW_CONFIDENCE, $d['refused'] );
+        // Share 1.0 but a score of 1.
+        $d = Detector::detect( $text( '#faf7f2' ), null, null );
+        $this->assertSame( [ 1, 1.0 ], [ $d['confidence']['language']['score'], $d['confidence']['language']['share'] ] );
+        $this->assertSame( Detector::REFUSED_LOW_CONFIDENCE, $d['refused'] );
     }
 
     public function testATieThatUnresolvesDifferentlyIsRefused(): void

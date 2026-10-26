@@ -386,6 +386,19 @@ class SwitchDesignTest extends TestCase
         $this->assertStringContainsString( 'Pass from_language', $p['pages'][0]['detail'] );
     }
 
+    public function testThinDetectionEvidenceIsSkippedLowConfidenceUnlessTheLanguageIsGiven(): void
+    {
+        // The review's scenario: one editorial `bg` text colour on a dark #123456 section.
+        $GLOBALS['__wp_posts'][11]->post_content = '<!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#123456"}}}}}} --><!-- wp:divi/row --><!-- wp:divi/column --><!-- wp:divi/text {"content":{"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"color":"#faf7f2"}}}}}}}} /--><!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section -->';
+        $p = $this->tool->run( [ 'page_id' => 11, 'to_language' => 'luxe', 'dry_run' => true ] );
+        $this->assertSame( 'low_confidence', $p['pages'][0]['reason'] );
+        $this->assertStringContainsString( 'Pass from_language', $p['pages'][0]['detail'] );
+        $this->assertSame( 0, $p['would_change'] );
+        $q = $this->tool->run( [ 'page_id' => 11, 'from_language' => 'editorial', 'to_language' => 'luxe', 'dry_run' => true ] );
+        $this->assertNotSame( 'low_confidence', $q['pages'][0]['reason'] ?? null, 'the caller vouches for a given language' );
+        $this->assertSame( 'given', $q['pages'][0]['from']['source']['language'] );
+    }
+
     public function testConformIsEitherBuiltOrRefusedPlainly(): void
     {
         try {

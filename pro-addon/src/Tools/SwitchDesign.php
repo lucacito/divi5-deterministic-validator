@@ -321,7 +321,9 @@ final class SwitchDesign implements ProTool
         $found = Detector::detect( $stored, $args['from_language'], $args['from_kit'], $to );
         $from  = [ 'language' => $found['language'], 'kit' => $found['kit'], 'source' => $found['source'], 'confidence' => $found['confidence'] ];
         if ( null !== $found['refused'] ) {
-            return $row + [ 'skip' => 'detection_ambiguous', 'detail' => (string) $found['message'], 'from' => $from + [ 'runner_up' => $found['runner_up'] ] ];
+            $skip = Detector::REFUSED_LOW_CONFIDENCE === $found['refused'] ? 'low_confidence' : 'detection_ambiguous';
+
+            return $row + [ 'skip' => $skip, 'detail' => (string) $found['message'], 'from' => $from + [ 'runner_up' => $found['runner_up'] ] ];
         }
         $source     = Design::make( (string) $found['language'], (string) $found['kit'] );
         $toLanguage = $args['to_language'] ?? $source->languageId;
