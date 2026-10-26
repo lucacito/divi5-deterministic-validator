@@ -324,6 +324,11 @@ direct build byte for byte in:
   D3 36, D4 9, D5 0, none unclassified (the plan's 6,571 less 23 `divi/slider` switches whose font context is a tie left
   ambiguous by the strict-majority rule);
 - seeded cross: 4,199 of 4,544 (8 pairs; 12 pairs measured 9,512 of 10,224);
+- review fix 3: the classifier's D1 is now a family leaf of a `divi/text` or `divi/slider` only and D3 a `divi/group` fill
+  only (this table's wording; type markers are resolved away in both pages, so the block name is the narrowest test), and
+  the TOTAL number of differing leaves per class is pinned exactly (matrix 1: D1 1,337, D2 960, D3 216, D4 38, D5 0;
+  seeded cross: D1 747, D2 600, D3 192, D4 138, D5 6 blocks), so a second wrong leaf inside a classified switch fails;
+  no switch count moved;
 - round trip A -> B -> A: 5,856 of 6,390 (the rest are D classes); switching twice: 6,381 of 6,390;
 - every one of 913 sampled outputs passes the layout gate;
 - scorer lockstep: all 710 pairs equal, check for check, against the independent dogfood scorer;

@@ -24,12 +24,17 @@ use AiEditorDivi5\WP\StyleKits;
  * an empty object are one leaf). JSON-equal attributes are `D5` (key order only). Otherwise every leaf present on one
  * side only, or with another value, is classified by the spec's rules, one `if` each, in this order:
  *
- * - `D1`: a font family leaf (key `family`): an untyped text or slider font whose source family two roles shared;
+ * - `D1`: a font family leaf (key `family`) of a `divi/text` or `divi/slider` (the spec names untyped texts, their h4
+ *   heading fonts and the slider; type markers are resolved away in both pages, so the block name is the narrowest
+ *   test the output allows): a font whose source family two roles shared;
  * - `D2`: a leaf under `image.decoration.border` of a `divi/image`: a flush image read as a kit image;
- * - `D3`: a background `color` leaf of a `divi/group` or `divi/column` (a fill whose value two roles share, left);
+ * - `D3`: a background `color` leaf of a `divi/group` (the spec's group fill whose value two roles share, left);
  * - `D4`: a leaf at a path some kit candidate patch of the block's name writes (`KITS_FOR_PATHS`): an unmarked block
  *   whose literals equal what the source kit writes, switched as kit-driven ("indistinguishable is switched");
  * - anything else: `UNCLASSIFIED` (a failure: a difference the spec does not name).
+ *
+ * Because a class is decided per leaf, a second wrong leaf inside an already classified switch does not change the
+ * switch's class: the proofs therefore also pin the TOTAL number of differing leaves per class (`leafTally`).
  *
  * Pure and deterministic. The kit path set is read from the free pipeline (`Expectations`), never spelled here.
  */
@@ -53,12 +58,42 @@ final class DesignDiffClassifier
      */
     public static function classify( string $switched, string $direct ): array
     {
+        return self::classesOf( self::details( $switched, $direct ) );
+    }
+
+    /**
+     * The classes of a `details()` list, unique, in ORDER.
+     *
+     * @param list<array{class:string}> $details
+     *
+     * @return list<string>
+     */
+    public static function classesOf( array $details ): array
+    {
         $seen = [];
-        foreach ( self::details( $switched, $direct ) as $d ) {
+        foreach ( $details as $d ) {
             $seen[ $d['class'] ] = true;
         }
 
         return array_values( array_filter( self::ORDER, static fn ( string $c ): bool => isset( $seen[ $c ] ) ) );
+    }
+
+    /**
+     * Add a `details()` list to a running count of differing leaves per class (a D5 block counts once).
+     *
+     * @param array<string,int>         $tally class => leaves, in ORDER, zero classes included (start with `[]`)
+     * @param list<array{class:string}> $details
+     *
+     * @return array<string,int>
+     */
+    public static function leafTally( array $tally, array $details ): array
+    {
+        $tally = $tally + array_fill_keys( self::ORDER, 0 );
+        foreach ( $details as $d ) {
+            ++$tally[ $d['class'] ];
+        }
+
+        return $tally;
     }
 
     /** The first class of a switch's differences in ORDER, or null when byte-identical. */
@@ -174,13 +209,13 @@ final class DesignDiffClassifier
     {
         $segments = explode( '.', $path );
         $leaf     = end( $segments );
-        if ( 'family' === $leaf ) {
+        if ( 'family' === $leaf && in_array( $name, [ 'divi/text', 'divi/slider' ], true ) ) {
             return 'D1';
         }
         if ( 'divi/image' === $name && str_starts_with( $path, 'image.decoration.border.' ) ) {
             return 'D2';
         }
-        if ( in_array( $name, [ 'divi/group', 'divi/column' ], true ) && 'color' === $leaf && in_array( 'background', $segments, true ) ) {
+        if ( 'divi/group' === $name && 'color' === $leaf && in_array( 'background', $segments, true ) ) {
             return 'D3';
         }
         if ( isset( self::kitPaths()[ $name ][ $path ] ) ) {
