@@ -245,10 +245,10 @@ class DesignInventoryTest extends TestCase
 
     public function testTheToolCountTodayAndTheHistoryCap(): void
     {
-        // 21 Pro tools at this head (check_page_render of 2026-10-25-pro-render-check.md has not merged); the 7 in MCP_REST_ONLY
-        // are not in the spec. Task 8 moves every count by exactly one when switch_design joins.
-        $this->assertCount( 21, Tools::all() );
-        $this->assertCount( 7, ProOpenApi::MCP_REST_ONLY );
+        // 21 Pro tools at Task 0 (check_page_render of 2026-10-25-pro-render-check.md has not merged); Task 8 moved every
+        // count by exactly one when switch_design joined: 22 tools, the 8 in MCP_REST_ONLY are not in the spec.
+        $this->assertCount( 22, Tools::all() );
+        $this->assertCount( 8, ProOpenApi::MCP_REST_ONLY );
         $this->assertSame( 524288, PageHistory::MAX_BYTES, 'a snapshot, and so a restorable page, is at most 512 KB' );
     }
 }
