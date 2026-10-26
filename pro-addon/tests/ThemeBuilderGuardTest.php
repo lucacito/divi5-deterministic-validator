@@ -67,21 +67,36 @@ class ThemeBuilderGuardTest extends TestCase
 
     public function testEveryFreePluginClassTheAddOnReferencesIsRequiredByTheCompatCheck(): void
     {
-        $found = [];
+        $found  = [];
+        $design = [];
         foreach ( new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( self::root(), \FilesystemIterator::SKIP_DOTS ) ) as $file ) {
             if ( 'php' !== $file->getExtension() ) {
                 continue;
             }
             $code = self::code( (string) file_get_contents( $file->getPathname() ) );
             if ( preg_match_all( '/AiEditorDivi5\\\\WP\\\\([A-Za-z0-9_]+)/', $code, $m ) ) {
+                $isDesign = str_contains( str_replace( '\\', '/', $file->getPath() ), '/src/Design' );
                 foreach ( $m[1] as $name ) {
-                    $found[ 'AiEditorDivi5\\WP\\' . $name ] = $file->getFilename();
+                    if ( $isDesign ) {
+                        $design[ 'AiEditorDivi5\\WP\\' . $name ] = $file->getFilename();
+                    } else {
+                        $found[ 'AiEditorDivi5\\WP\\' . $name ] = $file->getFilename();
+                    }
                 }
             }
         }
         $this->assertNotSame( [], $found, 'the scan found no references at all, so it is broken' );
         foreach ( $found as $class => $where ) {
             $this->assertContains( $class, \AiEditorDivi5\Pro\Compat::REQUIRED_CLASSES, "{$where} references {$class}, which Compat::REQUIRED_CLASSES does not list" );
+        }
+
+        // The design switch (src/Design) needs free classes that older free versions lack (the type and rhythm adapters are not in
+        // every published free version), so they are NOT in REQUIRED_CLASSES (that would switch every Pro tool off on a free plugin
+        // that still serves them); the switch tool refuses at run time instead (plan 2026-10-25-pro-design-switch, Task 8).
+        // This list is deliberate: a new free class in Design\* needs an edit here and a row in FreeApiCompatTest.
+        $allowed = [ 'AiEditorDivi5\\WP\\DesignLanguages', 'AiEditorDivi5\\WP\\LanguageAdapters', 'AiEditorDivi5\\WP\\StyleKits' ];
+        foreach ( $design as $class => $where ) {
+            $this->assertContains( $class, $allowed, "{$where} (Design) references {$class}: add it to this list and to FreeApiCompatTest, or use a class Compat::REQUIRED_CLASSES lists" );
         }
     }
 

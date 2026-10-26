@@ -37,6 +37,20 @@ class FreeApiCompatTest extends TestCase
             [ $w . 'FieldTarget', 'resolve', [ 'id' => 'int' ], 'array' ],
             [ $w . 'CustomFieldReader', 'classify', [ 'key' => 'string' ], 'string' ],
             [ $w . 'CustomFields', 'postHasMeta', [ 'key' => 'string' ], 'bool' ],
+            // The design switch (Design\*) resolves markers through the free pipeline and builds nothing itself.
+            [ $w . 'SectionRecipes', 'resolveMarkup', [ 'markup' => 'string', 'language' => 'array', 'kit' => 'array' ], '?string' ],
+            [ $w . 'SectionRecipes', 'rawMarkup', [ 'name' => 'string' ], '?string' ],
+            [ $w . 'SectionRecipes', 'names', [], 'array' ],
+            [ $w . 'DesignLanguages', 'get', [ 'id' => 'string' ], '?array' ],
+            [ $w . 'DesignLanguages', 'ids', [], 'array' ],
+            [ $w . 'StyleKits', 'get', [ 'id' => 'string' ], '?array' ],
+            [ $w . 'StyleKits', 'ids', [], 'array' ],
+            [ $w . 'StyleKits', 'problems', [ 'kit' => 'array' ], 'array' ],
+            [ $w . 'StyleKits', 'valueToken', [ 'kit' => 'array', 'name' => 'string' ], '?array' ],
+            [ $w . 'RecipeTokens', 'encodeJson', [ 'value' => 'mixed' ], 'string' ],
+            [ $w . 'BlockAttrs', 'decode', [ 'json' => 'string' ], '?stdClass' ],
+            [ $w . 'KitResolver', 'leftovers', [ 'markup' => 'string' ], 'array' ],
+            [ $w . 'LanguageResolver', 'leftovers', [ 'markup' => 'string' ], 'array' ],
         ];
     }
 
@@ -166,6 +180,43 @@ class FreeApiCompatTest extends TestCase
         $this->assertSame( 'WP_Error|bool', (string) $m->getReturnType() );
         $s = new \ReflectionMethod( \AiEditorDivi5\WP\OpenApiSpec::class, 'spec' );
         $this->assertTrue( $s->isStatic() && $s->isPublic() );
+    }
+
+    /** The constants and shapes the design switch (Design\*) reads from the free plugin, pinned as they are today. */
+    public function testTheConstantsTheDesignSwitchReadsKeepTheirValues(): void
+    {
+        $this->assertIsString( \AiEditorDivi5\WP\BlockAttrs::BLOCK );
+        $this->assertSame( 1, preg_match( \AiEditorDivi5\WP\BlockAttrs::BLOCK, '<!-- wp:divi/text {"a":1} /-->' ), 'BlockAttrs::BLOCK must still match an opening comment with attributes' );
+        $this->assertSame(
+            [
+                'type'   => [
+                    'divi/heading' => [ 'display', 'title', 'eyebrow' ],
+                    'divi/text'    => [ 'eyebrow' ],
+                ],
+                'rhythm' => [
+                    'divi/section' => [ 'section', 'open', 'tight' ],
+                ],
+            ],
+            \AiEditorDivi5\WP\LanguageAdapters::APPLIED
+        );
+        $this->assertSame(
+            [
+                'display' => [ 'h1', 'h2' ],
+                'title'   => [ 'h3' ],
+                'eyebrow' => [ 'h4' ],
+            ],
+            \AiEditorDivi5\WP\LanguageAdapters::TYPE_HEADING_LEVELS
+        );
+        $this->assertSame( 524288, \AiEditorDivi5\WP\PageHistory::MAX_BYTES );
+    }
+
+    /** The five private KitResolver constants Design\MarkerSpace copies must still exist (their values are pinned by MarkerSpaceTest). */
+    public function testTheKitResolverConstantsTheMarkerSpaceCopiesStillExist(): void
+    {
+        foreach ( [ 'ROLE_BLOCKS', 'ROLE_SURFACES', 'ROLE_GROUNDS', 'GROUND_SURFACES', 'GROUND_BLOCKS' ] as $name ) {
+            $this->assertTrue( ( new \ReflectionClass( \AiEditorDivi5\WP\KitResolver::class ) )->hasConstant( $name ), "KitResolver::{$name} is gone" );
+            $this->assertIsArray( ( new \ReflectionClassConstant( \AiEditorDivi5\WP\KitResolver::class, $name ) )->getValue(), $name );
+        }
     }
 
     public function testTheEditTargetErrorConstantsStayTheSame(): void
