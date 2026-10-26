@@ -15,8 +15,9 @@ Each step says how you know it worked. "Blocked on owner" = nobody else can do i
       propose numbers.
 - [ ] **Open TODO(owner) items in `docs/pricing-page.md`:** what Lifetime includes; whether the no-card trial keeping tools
       after it ends is acceptable.
-- [ ] **What to call "in development"** in public: the design switch and the post-save render check with rollback
-      (`demo-script.md` placeholders). Recommendation: say nothing, or "planned", until shipped.
+- [ ] **What to call "in development"** in public: the post-save render check with rollback is PARKED (`demo-script.md`
+      placeholder; say nothing, or "planned", until built). The design switch (`switch_design`) is BUILT and merged to local main
+      but NOT released: say nothing until the Pro release ships it (`docs/superpowers/specs/2026-10-25-pro-design-switch-design.md` Outcome).
 
 ## 1. Free 4.15.0 on WordPress.org (blocked on owner: SVN password, upload)
 
