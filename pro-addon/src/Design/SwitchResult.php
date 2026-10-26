@@ -17,6 +17,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * `colour` / `font`) or under `left` (`unknown_colours`, `unknown_fonts`, `ambiguous`, `global_refs`). `inspected` is
  * their number, so the report never hides a decision. Markers, images and the blocks that were not recovered are
  * counted besides (`switched.markers|type|rhythm|images`, `assumed` kind `marker` / `image`, `left.drifted|unclassified`).
+ * In `conform` mode (spec 5.6) a drifted block that was conformed is counted under `switched.markers` and listed under
+ * `conformed` (block, name, marker, the differing leaf paths, how many leaves it overrode) instead of `left.drifted`;
+ * every removed leaf whose value differed from the source patch is listed under `overridden` (block, name, path, old
+ * value). Both are empty in `leave` mode.
  * Pure: every map is in a fixed order (roles and values sorted, lists in document order).
  */
 final class SwitchResult
@@ -28,6 +32,8 @@ final class SwitchResult
      * @param array{markers:array<string,int>, type:array<string,int>, rhythm:array<string,int>, colours:array<string,int>, fonts:array<string,int>, images:int} $switched
      * @param array{unknown_colours:array<string,int>, unknown_fonts:array<string,int>, ambiguous:list<array<string,mixed>>, drifted:list<array<string,mixed>>, unclassified:list<array<string,mixed>>, global_refs:int} $left
      * @param list<array<string,mixed>> $assumed
+     * @param list<array<string,mixed>> $conformed  `conform` mode: the drifted blocks that got their marker
+     * @param list<array<string,mixed>> $overridden `conform` mode: every removed leaf whose value differed (path, old value)
      */
     public function __construct(
         public readonly string $content,
@@ -36,7 +42,9 @@ final class SwitchResult
         public readonly array $left,
         public readonly array $assumed,
         public readonly int $inspected,
-        public readonly ?string $error = null
+        public readonly ?string $error = null,
+        public readonly array $conformed = [],
+        public readonly array $overridden = []
     ) {
     }
 
@@ -95,6 +103,10 @@ final class SwitchResult
             'assumed'       => array_slice( $this->assumed, 0, $max ),
             'assumed_count' => count( $this->assumed ),
             'inspected'     => $this->inspected,
+            'conformed'        => array_slice( $this->conformed, 0, $max ),
+            'conformed_count'  => count( $this->conformed ),
+            'overridden'       => array_slice( $this->overridden, 0, $max ),
+            'overridden_count' => count( $this->overridden ),
             'error'         => $this->error,
         ];
     }

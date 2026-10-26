@@ -103,8 +103,7 @@ class DesignSwitchTest extends TestCase
         } catch ( \InvalidArgumentException $e ) {
             $this->assertStringContainsString( 'leave, conform', $e->getMessage() );
         }
-        $this->expectException( \LogicException::class );
-        DesignSwitch::run( '', $d, self::own( 'luxe' ), 'conform' );
+        $this->assertSame( '', DesignSwitch::run( '', $d, self::own( 'luxe' ), 'conform' )->content, 'conform is a mode (Task 7)' );
     }
 
     /**

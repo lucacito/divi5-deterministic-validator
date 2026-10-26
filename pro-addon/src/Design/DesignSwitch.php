@@ -20,7 +20,11 @@ use AiEditorDivi5\WP\StyleKits;
  * target (`SectionRecipes::resolveMarkup`), so every patch, merge rule and re-application order is the free plugin's own
  * (controller Ruling 2). Unresolving, block by block in document order (`PageScan`, bands under the SOURCE palette):
  * 1. marker recovery (`MarkerRecovery`): a full match puts the marker back as a top-level `aied` and strips the matched
- *    leaves; a `drifted` or `unclassified` block keeps its decoration (`leave` mode) and is listed;
+ *    leaves; a `drifted` or `unclassified` block keeps its decoration (`leave` mode) and is listed. In the opt-in
+ *    `conform` mode (spec 5.6, plan Task 7) a `drifted` block is conformed instead: EVERY leaf at a path its nearest
+ *    candidate's source patch writes is removed whatever its value (`Leaves::strip`), the candidate's marker is put
+ *    back, so the target kit styles it, and each removed leaf whose value differed from the source patch is reported
+ *    under `overridden` (`MarkerRecovery::overridden`); an `unclassified` block is left in both modes;
  * 2. the media token: an object at a path where the installed recipes carry `{{aied:kit:radius-media}}` (read from the
  *    library at run time, never spelled here) that equals the source kit's `StyleKits::valueToken('radius-media')`
  *    becomes the token again (D2: under a source kit whose media radius is zero a flush image reads as a kit image and is
@@ -38,7 +42,7 @@ use AiEditorDivi5\WP\StyleKits;
  */
 final class DesignSwitch
 {
-    /** The modes the tool accepts (`conform` is plan Task 7). */
+    /** The modes the tool accepts: `leave` (default, full matches only) and the opt-in `conform` (spec 5.6). */
     public const MODES = [ 'leave', 'conform' ];
 
     /** The whole-value kit token of the media radius (the free `KitResolver` token form). */
@@ -69,7 +73,6 @@ final class DesignSwitch
      * Switch a page from one design to another.
      *
      * @throws \InvalidArgumentException for a mode outside MODES
-     * @throws \LogicException for `conform` (not built yet: plan Task 7)
      */
     public static function run( string $page, Design $from, Design $to, string $mode = 'leave', ?ContextTable $table = null ): SwitchResult
     {
@@ -78,13 +81,13 @@ final class DesignSwitch
             return SwitchResult::untouched( $page );
         }
         $table = $table ?? ContextTable::current();
-        [ $unresolved, $parts ] = self::unresolveWithReport( $page, $from, $to, $table );
+        [ $unresolved, $parts ] = self::unresolveWithReport( $page, $from, $to, $table, $mode );
         $resolved = SectionRecipes::resolveMarkup( $unresolved, $to->language, $to->kit );
         if ( null === $resolved ) {
             return SwitchResult::untouched( $page, SwitchResult::ERROR_UNRESOLVED );
         }
 
-        return new SwitchResult( $resolved, $resolved !== $page, $parts['switched'], $parts['left'], $parts['assumed'], $parts['inspected'] );
+        return new SwitchResult( $resolved, $resolved !== $page, $parts['switched'], $parts['left'], $parts['assumed'], $parts['inspected'], null, $parts['conformed'], $parts['overridden'] );
     }
 
     /**
@@ -92,9 +95,11 @@ final class DesignSwitch
      * pipeline runs. The target only breaks ties (a tie whose target patches agree, a collision whose roles give one
      * target value). Used by `Detector` to compare two source kits.
      */
-    public static function unresolve( string $page, Design $from, Design $to, ?ContextTable $table = null ): string
+    public static function unresolve( string $page, Design $from, Design $to, ?ContextTable $table = null, string $mode = 'leave' ): string
     {
-        return self::unresolveWithReport( $page, $from, $to, $table ?? ContextTable::current() )[0];
+        self::checkMode( $mode );
+
+        return self::unresolveWithReport( $page, $from, $to, $table ?? ContextTable::current(), $mode )[0];
     }
 
     /**
@@ -123,15 +128,12 @@ final class DesignSwitch
         if ( ! in_array( $mode, self::MODES, true ) ) {
             throw new \InvalidArgumentException( sprintf( 'Unknown mode "%s". Valid modes: %s.', $mode, implode( ', ', self::MODES ) ) );
         }
-        if ( 'conform' === $mode ) {
-            throw new \LogicException( 'The conform mode is not built yet.' );
-        }
     }
 
     /**
-     * @return array{0:string, 1:array{switched:array, left:array, assumed:list<array<string,mixed>>, inspected:int}}
+     * @return array{0:string, 1:array{switched:array, left:array, assumed:list<array<string,mixed>>, inspected:int, conformed:list<array<string,mixed>>, overridden:list<array<string,mixed>>}}
      */
-    private static function unresolveWithReport( string $page, Design $from, Design $to, ContextTable $table ): array
+    private static function unresolveWithReport( string $page, Design $from, Design $to, ContextTable $table, string $mode ): array
     {
         $src      = self::expectations( $from );
         $tgt      = self::expectations( $to );
@@ -145,6 +147,9 @@ final class DesignSwitch
         $left      = SwitchResult::emptyLeft();
         $assumed   = [];
         $inspected = 0;
+        $conform   = 'conform' === $mode;
+        $conformed = [];
+        $overridden = [];
 
         $out = '';
         $at  = 0;
@@ -179,6 +184,16 @@ final class DesignSwitch
                 }
                 if ( null !== $r['assumed'] ) {
                     $assumed[] = [ 'block' => $index, 'name' => $name, 'kind' => 'marker', 'marker' => $r['marker'], 'reason' => $r['assumed'] ];
+                }
+            } elseif ( 'drifted' === $r['status'] && $conform && null !== $r['patch'] && null !== $r['marker'] ) {
+                $over = MarkerRecovery::overridden( $attrs, $r['patch'] );
+                Leaves::strip( $attrs, $r['patch'] );
+                $attrs->aied = (object) $r['marker'];
+                $changed     = true;
+                self::bump( $switched['markers'], (string) $r['marker']['kit'] );
+                $conformed[] = [ 'block' => $index, 'name' => $name, 'marker' => $r['marker'], 'differing' => $r['differing'], 'overridden' => count( $over ) ];
+                foreach ( $over as $o ) {
+                    $overridden[] = [ 'block' => $index, 'name' => $name, 'path' => $o['path'], 'old' => $o['old'] ];
                 }
             } elseif ( 'drifted' === $r['status'] ) {
                 $left['drifted'][] = [ 'block' => $index, 'name' => $name, 'marker' => $r['marker'], 'differing' => $r['differing'] ];
@@ -258,7 +273,7 @@ final class DesignSwitch
         ksort( $left['unknown_colours'], SORT_STRING );
         ksort( $left['unknown_fonts'], SORT_STRING );
 
-        return [ $out, [ 'switched' => $switched, 'left' => $left, 'assumed' => $assumed, 'inspected' => $inspected ] ];
+        return [ $out, [ 'switched' => $switched, 'left' => $left, 'assumed' => $assumed, 'inspected' => $inspected, 'conformed' => $conformed, 'overridden' => $overridden ] ];
     }
 
     /**

@@ -144,6 +144,34 @@ final class MarkerRecovery
         ];
     }
 
+    /**
+     * `conform` mode (spec 5.6): the leaves `Leaves::strip( $attrs, $patch )` would remove whose value differs from the
+     * patch's, in patch order, as [dotted path, old value]. A leaf the block lacks is not removed, so not listed; a path
+     * where the block holds an object (the patch writes a scalar) is removed whole and listed with that object.
+     *
+     * @return list<array{path:string, old:mixed}>
+     */
+    public static function overridden( \stdClass $attrs, \stdClass $patch ): array
+    {
+        $out = [];
+        foreach ( Leaves::of( $patch ) as [ $path, $value ] ) {
+            $node  = $attrs;
+            $found = true;
+            foreach ( $path as $key ) {
+                if ( ! $node instanceof \stdClass || ! property_exists( $node, $key ) ) {
+                    $found = false;
+                    break;
+                }
+                $node = $node->{$key};
+            }
+            if ( $found && Leaves::encode( $node ) !== Leaves::encode( $value ) ) {
+                $out[] = [ 'path' => implode( '.', $path ), 'old' => $node ];
+            }
+        }
+
+        return $out;
+    }
+
     /** Does the block hold anything at a leaf path some source kit patch of its name writes? */
     public static function isDecorated( string $block, \stdClass $attrs, Expectations $src ): bool
     {
