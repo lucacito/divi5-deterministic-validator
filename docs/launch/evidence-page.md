@@ -6,6 +6,8 @@ Date: 2026-10-25
 Owner notes (remove before publishing):
 - Paths in [brackets] are repo paths, for checking. On the public page, replace them with plain words or links to a public
   copy; do not publish internal paths if you prefer not to.
+- The design switch (section 4, last paragraph, and the Pro suite count in section 7) is built but UNRELEASED: publish those
+  lines only with the Pro release that ships it.
 - Several numbers describe work merged to main AFTER 4.14.0 (the render-fatal guards, carriers/type/rhythm adapters, the
   wording gaps). Publish them only once 4.15.0 (free) is live, or label them "in the next release".
 -->
@@ -103,6 +105,20 @@ fills, labels, padding, shadows, real hovers and clicks, overflow and painted co
 **Recipes.** 71 section recipes, each validated in the test suite; all 71 rendered on the real Divi at three widths under the
 default look and the languages: **426 PASS, 0 FAIL** [CLAUDE.md, "Rules and chips adapter", guide polish pre-release round].
 
+**Switching a finished page to another design (Pro `switch_design`; built, unreleased: ships with the next Pro release).**
+A page built under one design and switched to another is compared with the same page built directly under the new design.
+Between the ten default designs, **6,549 of 7,100** switched recipes are byte-identical to the direct build; the rest differ
+in four named classes whose counts are pinned (458, 48, 36 and 9; none unclassified). Across all 40 kits, **4,800 of 4,800**
+and **4,480 of 4,480** kit-layer switches are byte-identical. All 913 sampled outputs pass the layout gate, and all 710
+sampled pairs match the independent dogfood scorer check for check
+[`docs/superpowers/specs/2026-10-25-pro-design-switch-design.md`, Outcome]. Live, on the real Divi 5.15.1: **62 PASS, 0 FAIL**
+(the saved switched page equals the directly built page, the preview token is single-use, a page changed after the preview
+is skipped, undo restores the page exactly, and both pages render the same at 1280 and 400 px) [`make verify-pro-switch-design`].
+What this does not prove: pages built by hand switch only partially in the default mode (matching blocks are switched, the
+rest are listed); colours and fonts the tool does not recognise are left; and the tool needs the free plugin release that
+ships the design adapters. We found no competitor that states a role-based, previewed, undoable restyle of an existing page
+[`docs/launch/competitor-refresh-2026-10-25.md`]; that is what we found, not a proof that none exists.
+
 ## 5. Blind assistants: can a fresh AI follow the guide?
 
 We give a fresh assistant ONLY the guide the plugin serves and a brief, then score its page statically against what the real
@@ -127,11 +143,11 @@ live gate over 41 sample pages: 615 PASS, 0 FAIL on Divi 5.15.1 [CLAUDE.md, "`ht
 
 ## 7. The test suites and live gates
 
-- Free plugin suite: 6,365 tests; Pro suite: 2,169 [CLAUDE.md, "Wording gaps"]. `make test` exits 0 only when everything passes.
+- Free plugin suite: 6,365 tests; Pro suite: 2,367 (2,169 before the design switch) [CLAUDE.md, "Wording gaps", "Design switch (Pro)"]. `make test` exits 0 only when everything passes.
 - Live gates on the real Divi 5.15.1 (each creates throwaway content and deletes it): history, dry run, global styles, page
   title, OAuth, Test connection, components, custom fields, Divi Projects, style values, guide shapes, HTML conversion, kits,
-  shapes, recipes, and the Pro gates for settings, Theme Builder, site tools, REST, build_site, custom fields and WooCommerce
-  products [CLAUDE.md, "Entry points"; "Current state" for the 4.13.0 run].
+  shapes, recipes, and the Pro gates for settings, Theme Builder, site tools, REST, build_site, custom fields, WooCommerce
+  products and (unreleased) the design switch [CLAUDE.md, "Entry points"; "Current state" for the 4.13.0 run].
 
 ## What this does not prove
 

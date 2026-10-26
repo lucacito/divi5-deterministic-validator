@@ -5,7 +5,8 @@ Date: 2026-10-25
 # Demo script: "Your AI on a client's Divi 5 site, with a gate and an undo"
 
 Length: about 5 minutes. Everything in the main path exists today (free 4.14.0 + Pro 0.12.1, or main after 4.15.0 ships).
-Two clearly marked PLACEHOLDER segments are for features still in development; cut them or show them only as "coming", never
+One segment (the design switch) is BUILT BUT UNRELEASED: it ships with the next Pro release, so record it only from main with
+the new Pro build. One PLACEHOLDER segment (render check with rollback) is parked; cut it or show it only as "coming", never
 as shipped.
 
 ## Before you record
@@ -101,11 +102,22 @@ internal links to missing or unpublished pages.
 "The AI is creative; the checker decides what is saved. Free on WordPress.org; Pro adds site-wide tools, Theme Builder,
 global styles and WooCommerce. Links below." Show the WordPress.org page and divi5lab.com.
 
+## Built, unreleased segment (ships with the next Pro release; show only with that build)
+
+- **[BUILT, UNRELEASED: design switch]** Re-skin a finished page, built with this plugin, from one design language/kit to
+  another in one call: `switch_design` (Pro, MCP + REST only). Show the dry run first (the report of what would change and
+  what is left), then the call with the token, then the page, then `undo_batch`. It does not need the render check. It needs
+  the free plugin release that ships the type, rhythm and carriers adapters (on main, not in the published 4.14.0): on 4.14.0
+  the tool answers "needs a newer version of the free plugin". Say what is proven: a recipe page switched equals the same
+  page built directly under the new design in 6,549 of 7,100 sampled switches between the ten default designs, the rest
+  differ in named, pinned ways, and the live gate saw the switched and the directly built page render the same on the real
+  Divi (62 PASS, 0 FAIL) [`docs/superpowers/specs/2026-10-25-pro-design-switch-design.md`, Outcome]. Do not say it restyles
+  hand-built pages perfectly: in the default `leave` mode only blocks that match a role are switched and the rest are
+  listed. Do not say "no other tool does this"; say "we found no other tool that states it" (see
+  `competitor-refresh-2026-10-25.md`). Do not show it before the Pro release is out.
+
 ## PLACEHOLDER segments (in development, NOT shipped; do not present as available)
 
-- **[PLACEHOLDER: design switch]** Re-skin a finished page from one design language/kit to another in one step. Today the
-  assistant can rebuild a section under a new language and kit by hand; a one-step switch does not exist. If shown, caption:
-  "In development".
 - **[PLACEHOLDER: render check with rollback]** After a save, render the page on the server and roll back automatically if
   Divi throws. Today: the checker refuses the 80 content keys proven to crash Divi before saving, and undo is manual; a
   post-save render check exists only as a spike (`docs/post-save-render-check-evidence-5.14.md`). If shown, caption:

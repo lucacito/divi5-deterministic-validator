@@ -1,6 +1,6 @@
 # Pro design switch: `switch_design` restyles a page to another design language and style kit (design)
 
-Date: 2026-10-25. Status: design, not built. Plan: `docs/superpowers/plans/2026-10-25-pro-design-switch.md`.
+Date: 2026-10-25. Status: built and merged to local main (Tasks 0-9), NOT released; see the Outcome. Plan: `docs/superpowers/plans/2026-10-25-pro-design-switch.md`.
 Owner decision (2026-10-25): revenue first. The Pro add-on needs features agencies and freelancers pay for and
 competitors do not have. This one turns the design system the free plugin already ships (10 design languages, 40 style
 kits, the kit, type and rhythm adapters) into a one-call, deterministic restyle of an EXISTING page.
@@ -296,4 +296,57 @@ changed between preview and run skipped; then delete everything (`aied switch ` 
 
 ## Outcome
 
-(Filled at the end of the build: measured counts, live gate result, review findings.)
+Built as Pro tool `switch_design` (22nd Pro tool; MCP and REST only, `ProOpenApi::MCP_REST_ONLY`; the ChatGPT budget stays
+16 free + 14 Pro = 30 operations). Engine in `pro-addon/src/Design/*` and `pro-addon/src/Tools/SwitchDesign.php`; ZERO change to
+`wp-plugin/` or `src/`. Merged to local main (merge ed8fa11); NO release, NO version bump (Pro file still 0.12.1); the
+tracked free zip is untouched. Measured facts only:
+
+**What the tool does.** Switches the design language and/or style kit of one page or Divi Project, or up to 25 (`page_ids`),
+deterministically (no AI). Preview first (a `dry_run` flow with a single-use 30-minute `PreviewToken` per user and a
+per-page content hash: a page changed since the preview is skipped). Every result goes through `LayoutGate`, is saved
+through the free `HistoryService` (one snapshot per page) and is one undoable batch (item kind `post_content`). Skip reasons:
+`not_found`, `forbidden`, `too_large_for_undo`, `detection_ambiguous`, `same_design`, `unresolved`, `nothing_to_switch`,
+`invalid_result`. Modes: `leave` (default: only blocks that fully match a kit or language role are switched; hand-written
+blocks are left and reported) and `conform` (opt-in: also restyles drifted hand-written blocks; conformed and overridden
+lists in the report). The engine re-resolves the page through the free pipeline `SectionRecipes::resolveMarkup`, so no
+adapter logic is re-implemented. Detection of the source design by palette match when `from_*` is not given: languages
+284 of 284 on the library pages; kits 129 exact, 39 harmless, 76 none, 40 refused, 0 wrong (a refusal asks for `from_kit`).
+
+**Headline proof (Task 6, `pro-addon/tests`).** A library recipe built under (L1, K1) and switched to (L2, K2) equals the
+direct build byte for byte in:
+- kit layer: 4,800 of 4,800 and 4,480 of 4,480;
+- matrix of the ten default designs to each other: 6,549 of 7,100; the rest are the named difference classes D1 458, D2 48,
+  D3 36, D4 9, D5 0, none unclassified (the plan's 6,571 less 23 `divi/slider` switches whose font context is a tie left
+  ambiguous by the strict-majority rule);
+- seeded cross: 4,199 of 4,544 (8 pairs; 12 pairs measured 9,512 of 10,224);
+- round trip A -> B -> A: 5,856 of 6,390 (the rest are D classes); switching twice: 6,381 of 6,390;
+- every one of 913 sampled outputs passes the layout gate;
+- scorer lockstep: all 710 pairs equal, check for check, against the independent dogfood scorer;
+- conform on the hand-written dogfood corpus: scorer totals 9,785 of 12,894 (leave) -> 10,832 of 13,081 (conform), no cell
+  loses passed checks, 68 pinned engine-versus-scorer role disagreements (50 underlined-label groups, all passing, and 18
+  on one unmarked accent badge); the corpus failures under leave are pinned (66 checks on 8 blocks, 5 of them fail under
+  their own design too).
+
+**Live gate `make verify-pro-switch-design`** (Docker site, Divi 5.15.1, 2026-10-26): 62 PASS, 0 FAIL. The switched stored
+page equals the directly built page byte for byte (compared after WordPress's attribute escaping of stored block JSON, so
+`<p>` stored as `\u003cp\u003e` is equal); the one-time token; REST and MCP parity; permissions (an author gets 403, an editor
+without `edit_post` gets a bare `forbidden` row); a page changed after the preview is skipped; undo restores byte for byte;
+the real Divi renders the switched and the direct page the same at 1280 and 400 px (computed styles of every module equal and
+boxes within 0.5 px, the contact form's random captcha boxes excluded); no orphan page.
+
+**Suites at the merge.** Pro 2,367 tests (228 s wall, budget 240 s; the count re-checked with `--list-tests` at the docs
+commit); free 6,365 unchanged.
+
+**Guard.** On a free plugin that lacks the classes or roles the engine needs, ONLY `switch_design` is disabled, with a plain
+400 "needs a newer version of the free plugin". The published free 4.14.0 lacks `LanguageAdapters` and the other adapters
+this tool re-applies, so the tool will not run against it. `Compat::MIN_FREE` is set at release (section 11, item 4).
+
+**Honest limits.** Pages built by hand (not through this plugin's kits) switch only partially in `leave` mode; unrecognised
+colours and fonts are left and reported; tablet and hover states of hand-written blocks are not remapped beyond what the
+roles express; the difference classes D1-D4 above are real, named, pinned differences, not hidden. The market claim (a
+one-call, previewed, validated, undoable, AI-free restyle across 10 languages x 40 kits) rests on a search that found no
+competitor stating it (`docs/launch/competitor-refresh-2026-10-25.md`); that is an absence in our reading, not a proof.
+
+**Not done.** No release, version bump or `MIN_FREE` change; no ChatGPT operation; the render-check rollback is a separate,
+PARKED plan (`2026-10-25-pro-render-check.md`) and is not part of this build. Code-review findings of the whole-branch
+review are recorded by the reviewing agent, not here.

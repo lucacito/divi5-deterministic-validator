@@ -6,7 +6,7 @@ Date: 2026-10-25
 Owner notes (remove before publishing):
 - Tokens used: {{sites:personal}} {{sites:freelancer}} {{sites:agency}} {{price:personal}} {{price:freelancer}} {{price:agency}}
   {{cap:founding}} {{percent:founding}} {{tier:lifetime}} {{price:lifetime}} {{cap:lifetime}} {{trial:days}} {{reminders}} {{refund:days}}.
-- Tool counts: free 21 (wp-plugin/readme.txt), Pro 21 (pro-addon/README.md, src/Tools/). Re-count before publishing.
+- Tool counts: free 21 (wp-plugin/readme.txt), Pro 22 (pro-addon/README.md, src/Tools/; the 22nd, `switch_design`, is built but UNRELEASED: publish this page only with the Pro release that ships it, or remove its bullet and say 21). Re-count before publishing.
 - Competitor rows come ONLY from docs/launch/competitor-refresh-2026-10-25.md (retrieved 2026-10-25). Re-check prices on the day you publish:
   Divi Cake's launch price ends 8 November 2026.
 - TODO(owner) markers carried over from docs/pricing-page.md are still open (Lifetime scope, no-card trial keeps tools).
@@ -37,9 +37,9 @@ its own mistake.
 
 New pages are always drafts. The AI never saves custom code through a page layout.
 
-## What Pro adds: 21 tools
+## What Pro adds: 22 tools
 
-The free plugin on WordPress.org already edits, previews, checks and undoes Divi 5 pages (21 tools). Pro adds 21 more for
+The free plugin on WordPress.org already edits, previews, checks and undoes Divi 5 pages (21 tools). Pro adds 22 more for
 the work around the page.
 
 **Build and launch a whole site**
@@ -61,6 +61,12 @@ the work around the page.
 **Your design system**
 - `manage_global_colors`, `manage_global_variables`, `manage_global_presets`: create and change Divi global colours,
   variables and module presets, all or nothing, with a preview and undo.
+- `switch_design` (built, unreleased: ships with the next Pro release): restyle a page or Divi Project, or up to 25 at once,
+  to another of the ten design languages and forty style kits in one call: colours and fonts by role, buttons, cards, rules,
+  tags, accordions, forms, headline type and section spacing. No AI is used, so the same request gives the same page. You see
+  a preview first, every result goes through the checker, and one undo puts every page back. Best on pages built with the
+  plugin; hand-built blocks that do not match a design role are left as they are and listed (an opt-in mode restyles the
+  near matches too). Needs the free plugin version that ships the design adapters.
 
 **Content and WooCommerce**
 - `set_custom_fields`: set custom field values on one post (keys your site already uses), all or nothing, undoable.
@@ -88,7 +94,7 @@ the work around the page.
 
 ## Plans
 
-Pick by the number of sites you manage. Every plan has all 21 Pro tools.
+Pick by the number of sites you manage. Every plan has all 22 Pro tools.
 
 | | Personal | Freelancer | Agency |
 |---|---|---|---|
@@ -111,6 +117,10 @@ and support stop. You get an email {{reminders}} days before renewal.
 **No AI credits.** You bring your own assistant. We never sit between you and your AI provider, so there is no meter.
 
 ## Honest limits
+
+- **`switch_design` works best on pages built with this plugin.** On a hand-built page it switches the blocks that match a
+  design role and lists the rest; colours and fonts it does not recognise are left alone; tablet and hover settings of
+  hand-built blocks are not remapped beyond what the roles express. (Built, unreleased.)
 
 - **Divi 5 only.** Divi 4 shortcode pages are not supported.
 - **Divi's own modules only.** A page with a module from another add-on (for example Divi Pixel or Divi Plus) is refused,
