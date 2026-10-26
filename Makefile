@@ -1,4 +1,4 @@
-.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-page-title verify-products verify-oauth verify-test-connection verify-html-to-divi verify-guide-shapes verify-shapes verify-recipes verify-kits verify-language-type verify-components verify-style-values card-report type-report rhythm-report dogfood-prepare dogfood-score dogfood-render divi-currency
+.PHONY: up down clean test test-pro build-pro verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-switch-design verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-page-title verify-products verify-oauth verify-test-connection verify-html-to-divi verify-guide-shapes verify-shapes verify-recipes verify-kits verify-language-type verify-components verify-style-values card-report type-report rhythm-report dogfood-prepare dogfood-score dogfood-render divi-currency
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -94,6 +94,13 @@ verify-pro-update-products:
 # ---------------------------------------------------------------
 verify-pro-bulk-adjust-prices:
 	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-pro-bulk-adjust-prices.php --user=1
+
+# ---------------------------------------------------------------
+# verify-pro-switch-design — real-site check of the Pro tool switch_design: six clean recipes built under editorial + quiet-solid are switched to luxe + gilt-hairline through the REST route and the MCP handler (dry run, one-time token, a page edited since the preview skipped, permissions, undo byte for byte) and the saved page must EQUAL the same recipes built directly under the target design, byte for byte; then both pages are rendered by the real Divi at 1280 and 400 px and every module's computed styles and box are compared (the run fails when nothing was compared); first runs the pure tests; screenshots in dist/switch-design/ (Docker site; dev site only; free + Pro plugins active, no licence needed; ONE gate at a time; every page is titled `aied switch <runToken> <role>` and deleted, `node scripts/verify-pro-switch-design.cjs --clean-orphans` removes leftovers when no run is going; it records two batches and deletes them, so a site with 20 batches already loses its oldest)
+# ---------------------------------------------------------------
+verify-pro-switch-design:
+	@node scripts/test-verify-pro-switch-design.cjs
+	@node scripts/verify-pro-switch-design.cjs $(ARGS)
 
 # ---------------------------------------------------------------
 # verify-pro-theme-layouts — real-site check of the Pro header/footer tools through the real registry (self-cleaning; free + Pro plugins must be active; dev site only: it evicts old batch rows)

@@ -23,6 +23,7 @@ use AiEditorDivi5\Pro\Tools\SetCustomCss;
 use AiEditorDivi5\Pro\Tools\SetCustomFields;
 use AiEditorDivi5\Pro\Tools\SetFrontPage;
 use AiEditorDivi5\Pro\Tools\SetPrimaryMenu;
+use AiEditorDivi5\Pro\Tools\SwitchDesign;
 use AiEditorDivi5\Pro\Tools\UndoBatch;
 use AiEditorDivi5\Pro\Tools\UpdateProducts;
 use AiEditorDivi5\Pro\Tools\UpdateThemeLayout;
@@ -61,6 +62,7 @@ final class Tools
             new CreateProduct( $log ),
             new UpdateProducts( $log ),
             new BulkAdjustPrices( $log ),
+            new SwitchDesign( $log ),
         ];
     }
 }

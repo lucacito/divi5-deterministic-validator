@@ -40,7 +40,7 @@ class DevGuardTest extends TestCase
     public function testEveryRealSiteVerifyScriptRunsTheGuardFirst(): void
     {
         $scripts = glob( __DIR__ . '/../../scripts/verify-pro-*.php' );
-        $this->assertCount( 15, $scripts );
+        $this->assertCount( 16, $scripts );
         foreach ( $scripts as $script ) {
             $code = (string) file_get_contents( $script );
             $this->assertStringContainsString( "require_once __DIR__ . '/dev-guard.php';", $code, basename( $script ) );
