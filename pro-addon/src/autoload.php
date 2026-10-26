@@ -20,6 +20,8 @@ require_once __DIR__ . '/Canon.php';
 require_once __DIR__ . '/Design/Bands.php';
 require_once __DIR__ . '/Design/JsonLeaves.php';
 require_once __DIR__ . '/Design/PageScan.php';
+require_once __DIR__ . '/Design/ContextTable.php';
+require_once __DIR__ . '/Design/RoleReverse.php';
 require_once __DIR__ . '/Batch/BatchRepository.php';
 require_once __DIR__ . '/Batch/BatchTable.php';
 require_once __DIR__ . '/Batch/WpdbBatchRepository.php';
