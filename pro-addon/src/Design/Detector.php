@@ -18,7 +18,8 @@ use AiEditorDivi5\WP\StyleKits;
  *
  * Language: the one with the most matches, a match being an inspected leaf (`color` / colour `value` / `family`) whose
  * value is in the language's palette (normalised colour keys) or font set, or a block that fully matches one of the
- * language's rhythm markers. A tie for the top, or no match at all, is refused.
+ * language's rhythm markers. A tie for the top, no match at all, or evidence below the confidence floor (a score under
+ * `LANGUAGE_MIN_SCORE`, or a share of matched colour/font leaves under `LANGUAGE_MIN_SHARE`) is refused.
  *
  * Kit (under that language): for every kit, the blocks that fully match one of its kit markers (the best candidate per
  * block) or carry its media radius at a library media path (a zero radius is evidence of nothing: a flush image), and the
@@ -45,7 +46,20 @@ final class Detector
      */
     public const KIT_SINGLE_BLOCK_FLOOR = 8;
 
+    /**
+     * The language confidence floor: a detected language with a score below this is refused `low_confidence` (pass
+     * `from_language`; a given language is never floored, the caller vouches for it). Measured on the 284 library
+     * detection pages (`DetectorTest::LANGUAGE_FLOOR_TABLE`): the lowest score there is 6 and the lowest share 0.688,
+     * so neither floor refuses a library page; a hand-made page with one palette colour among two colour leaves (score 1,
+     * share 0.5) would otherwise be read as that language and its one colour rewritten by role.
+     */
+    public const LANGUAGE_MIN_SCORE = 2;
+
+    /** The second floor: a smaller share of the inspected colour and font leaves in the palette is refused too. */
+    public const LANGUAGE_MIN_SHARE = 0.6;
+
     public const REFUSED_LANGUAGE_TIE  = 'language_tie';
+    public const REFUSED_LOW_CONFIDENCE = 'low_confidence';
     public const REFUSED_NO_LANGUAGE   = 'no_language';
     public const REFUSED_KIT_TIE       = 'kit_tie';
 
@@ -75,13 +89,22 @@ final class Detector
 
         if ( null === $languageId ) {
             $scores = [];
+            $counts = [];
             foreach ( DesignLanguages::ids() as $id ) {
-                $scores[ $id ] = self::languageScore( $blocks, $id );
+                $counts[ $id ] = self::languageScore( $blocks, $id );
+                $scores[ $id ] = $counts[ $id ]['score'];
             }
             $ranked = self::rank( $scores );
             $top    = $ranked[0];
             $second = $ranked[1] ?? null;
-            $result['confidence']['language'] = [ 'score' => $scores[ $top ], 'margin' => $scores[ $top ] - ( null === $second ? 0 : $scores[ $second ] ) ];
+            $inspected = $counts[ $top ]['inspected'];
+            $result['confidence']['language'] = [
+                'score'     => $scores[ $top ],
+                'margin'    => $scores[ $top ] - ( null === $second ? 0 : $scores[ $second ] ),
+                'matched'   => $counts[ $top ]['matched'],
+                'inspected' => $inspected,
+                'share'     => $inspected > 0 ? round( $counts[ $top ]['matched'] / $inspected, 3 ) : 0.0,
+            ];
             if ( 0 === $scores[ $top ] ) {
                 $result['refused'] = self::REFUSED_NO_LANGUAGE;
                 $result['message'] = 'No colour or font of any design language was found on this page. Pass from_language.';
@@ -92,6 +115,12 @@ final class Detector
                 $result['refused']   = self::REFUSED_LANGUAGE_TIE;
                 $result['runner_up'] = [ 'language' => $second, 'score' => $scores[ $second ] ];
                 $result['message']   = sprintf( 'The page matches the design languages %s and %s equally. Pass from_language.', $top, $second );
+
+                return $result;
+            }
+            if ( $scores[ $top ] < self::LANGUAGE_MIN_SCORE || $result['confidence']['language']['share'] < self::LANGUAGE_MIN_SHARE ) {
+                $result['refused'] = self::REFUSED_LOW_CONFIDENCE;
+                $result['message'] = sprintf( 'Too little of this page matches a design language to tell which one it was built with (best: %s, %d of %d colours and fonts). Pass from_language.', $top, $counts[ $top ]['matched'], $inspected );
 
                 return $result;
             }
@@ -208,12 +237,19 @@ final class Detector
         return $out;
     }
 
-    /** @param list<array{0:string,1:\stdClass,2:list<array<string,mixed>>}> $blocks */
-    private static function languageScore( array $blocks, string $id ): int
+    /**
+     * The language's score (colour/font leaf matches plus rhythm blocks), the colour/font leaves matched and the leaves
+     * inspected (every `family` leaf and every colour leaf that reads as a colour).
+     *
+     * @param list<array{0:string,1:\stdClass,2:list<array<string,mixed>>}> $blocks
+     *
+     * @return array{score:int, matched:int, inspected:int}
+     */
+    private static function languageScore( array $blocks, string $id ): array
     {
         $language = DesignLanguages::get( $id );
         if ( null === $language ) {
-            return 0;
+            return [ 'score' => 0, 'matched' => 0, 'inspected' => 0 ];
         }
         $colours = [];
         foreach ( (array) ( $language['colors'] ?? [] ) as $value ) {
@@ -229,14 +265,20 @@ final class Detector
             }
         }
         $exp   = DesignSwitch::expectations( Design::make( $id, (string) $language['kit'] ) );
-        $score = 0;
+        $score     = 0;
+        $matched   = 0;
+        $inspected = 0;
         foreach ( $blocks as [ $name, $attrs, $leaves ] ) {
             foreach ( $leaves as $leaf ) {
                 if ( self::FONT_KEY === $leaf['key'] ) {
-                    $score += isset( $fonts[ $leaf['value'] ] ) ? 1 : 0;
+                    ++$inspected;
+                    $matched += isset( $fonts[ $leaf['value'] ] ) ? 1 : 0;
                 } elseif ( in_array( $leaf['key'], self::COLOUR_KEYS, true ) ) {
-                    $key    = Bands::colourKey( $leaf['value'] );
-                    $score += null !== $key && isset( $colours[ $key ] ) ? 1 : 0;
+                    $key = Bands::colourKey( $leaf['value'] );
+                    if ( null !== $key ) {
+                        ++$inspected;
+                        $matched += isset( $colours[ $key ] ) ? 1 : 0;
+                    }
                 }
             }
             foreach ( MarkerSpace::languageCandidates( $name ) as $candidate ) {
@@ -251,7 +293,7 @@ final class Detector
             }
         }
 
-        return $score;
+        return [ 'score' => $score + $matched, 'matched' => $matched, 'inspected' => $inspected ];
     }
 
     /**

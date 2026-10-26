@@ -67,7 +67,9 @@ function collectModules(props) {
     for (const p of props) styles[p] = cs.getPropertyValue(p);
     const r = el.getBoundingClientRect();
     // the contact form's captcha line prints two RANDOM numbers on every load, so the boxes in that line differ from render to render: its
-    // styles are still compared, its boxes are not (`volatile`)
+    // styles are still compared, its boxes are not (`volatile`). This deliberately also covers the contact form's submit button box: its
+    // position and width depend on the width of the random captcha numbers (measured live: x and width shifted by about 7 px between two
+    // loads)
     const volatile = !!el.closest('.et_contact_bottom_container');
     return { key: el.tagName.toLowerCase() + '.' + classes.join('.'), styles, volatile, box: { x: r.left + sx, y: r.top + sy, w: r.width, h: r.height } };
   });

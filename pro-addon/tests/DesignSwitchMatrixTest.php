@@ -52,6 +52,15 @@ class DesignSwitchMatrixTest extends TestCase
         [ 'corporate-trust', 'outline-soft' ],
     ];
 
+    /**
+     * The TOTAL number of differing leaves per class (review fix 3), exact: measured 2026-10-26 with the classifier's D1
+     * narrowed to texts and sliders and D3 to groups (the spec section 6 table). Lowering one is a deliberate edit with
+     * the new measurement; raising one is a STOP (an extra wrong leaf).
+     */
+    private const MATRIX_ONE_LEAVES = [ 'D1' => 1337, 'D2' => 960, 'D3' => 216, 'D4' => 38, 'D5' => 0, 'STRUCTURE' => 0, 'UNCLASSIFIED' => 0 ];
+
+    private const CROSS_LEAVES = [ 'D1' => 747, 'D2' => 600, 'D3' => 192, 'D4' => 138, 'D5' => 6, 'STRUCTURE' => 0, 'UNCLASSIFIED' => 0 ];
+
     /** How many of the seeded pairs the suite switches between (Step 4 of the plan: 12 cut to 8 for the time budget). */
     public const CROSS_PAIRS = 8;
 
@@ -83,6 +92,12 @@ class DesignSwitchMatrixTest extends TestCase
         $this->assertSame( [ 'D3' ], DesignDiffClassifier::classify( str_replace( '#111111', '#222222', $grp ), $grp ) );
         $this->assertSame( [ 'D4' ], DesignDiffClassifier::classify( str_replace( '"4px"', '"9px"', $grp ), $grp ), 'a card radius is a kit path' );
         $this->assertSame( [ DesignDiffClassifier::UNCLASSIFIED ], DesignDiffClassifier::classify( str_replace( '"4px"', '"9px"', str_replace( 'divi/group', 'divi/text', $grp ) ), str_replace( 'divi/group', 'divi/text', $grp ) ), 'a text carries no kit path' );
+        $heading = str_replace( 'wp:divi/text', 'wp:divi/heading', $page );
+        $this->assertSame( [ DesignDiffClassifier::UNCLASSIFIED ], DesignDiffClassifier::classify( str_replace( 'Inter', 'Lora', $heading ), $heading ), 'D1 is a text or slider font only' );
+        $col = str_replace( 'divi/group', 'divi/column', $grp );
+        $this->assertSame( [ 'D4' ], DesignDiffClassifier::classify( str_replace( '#111111', '#222222', $col ), $col ), 'D3 is a group fill only (a column fill is a kit card path)' );
+        $two = str_replace( '"family":"Inter"', '"family":"Inter","color":"#111111"', $page );
+        $this->assertSame( [ 'D1' => 1, 'D2' => 0, 'D3' => 0, 'D4' => 0, 'D5' => 0, 'STRUCTURE' => 0, 'UNCLASSIFIED' => 1 ], DesignDiffClassifier::leafTally( [], DesignDiffClassifier::details( str_replace( [ 'Inter', '#111111' ], [ 'Lora', '#222222' ], $two ), $two ) ) );
 
         $details = DesignDiffClassifier::details( str_replace( 'Inter', 'Lora', $page ), $page );
         $this->assertSame( [ [ 'block' => 1, 'key' => 'divi/text#0', 'name' => 'divi/text', 'path' => 'content.decoration.bodyFont.body.font.desktop.value.family', 'class' => 'D1' ] ], $details );
@@ -98,6 +113,10 @@ class DesignSwitchMatrixTest extends TestCase
         $this->assertSame( 6549, $r['identical'] );
         $this->assertCaps( [ 'D1' => 458, 'D2' => 48, 'D3' => 36, 'D4' => 9, 'D5' => 0 ], DesignDiffClassifier::tally( $r['firsts'] ) );
         $this->assertSame( [ 'D1' => 458, 'D2' => 48, 'D3' => 36, 'D4' => 9 ], $r['combos'], 'no switch mixes two classes' );
+        // Leaves, not switches (review fix 3): an extra wrong leaf inside an already classified switch moves a total.
+        // D1 = 1,242 text body + 21 text h4 + 32 slider body + 42 slider title fonts; D2 = 240 flush images x 4 corners;
+        // D3 = 216 group fills; D4 = 9 panels x 4 padding sides + 2 hover frame colours.
+        $this->assertSame( self::MATRIX_ONE_LEAVES, $r['leaves'] );
         $this->assertSame( [
             'D1' => self::D1_RECIPES,
             'D2' => [ 'gallery-masonry-style', 'team-grid' ],
@@ -136,6 +155,7 @@ class DesignSwitchMatrixTest extends TestCase
         $combos  = [];
         $recipes = [];
         $bad     = [];
+        $leaves  = [];
         foreach ( SectionRecipes::names() as $recipe ) {
             $built = [];
             foreach ( $designs as $id => $d ) {
@@ -144,7 +164,9 @@ class DesignSwitchMatrixTest extends TestCase
             foreach ( $designs as $a => $from ) {
                 foreach ( $designs as $b => $to ) {
                     ++$n;
-                    $classes  = DesignDiffClassifier::classify( DesignSwitch::run( $built[ $a ], $from, $to )->content, $built[ $b ] );
+                    $details  = DesignDiffClassifier::details( DesignSwitch::run( $built[ $a ], $from, $to )->content, $built[ $b ] );
+                    $classes  = DesignDiffClassifier::classesOf( $details );
+                    $leaves   = DesignDiffClassifier::leafTally( $leaves, $details );
                     $firsts[] = $classes[0] ?? null;
                     if ( [] === $classes ) {
                         ++$same;
@@ -165,6 +187,9 @@ class DesignSwitchMatrixTest extends TestCase
         $this->assertSame( [], $bad, 'every difference is one of D1-D5' );
         $this->assertSame( 4199, $same );
         $this->assertCaps( [ 'D1' => 249, 'D2' => 30, 'D3' => 32, 'D4' => 30, 'D5' => 4 ], DesignDiffClassifier::tally( $firsts ) );
+        // D1 = 687 text body + 12 text h4 + 24 + 24 slider fonts; D2 = 150 x 4 corners; D3 = 192 group fills;
+        // D4 = 30 x 4 card radius corners + 12 frame widths + 6 frame styles; D5 = 6 blocks.
+        $this->assertSame( self::CROSS_LEAVES, $leaves );
         ksort( $combos, SORT_STRING );
         $this->assertCaps( [ 'D1' => 249, 'D2' => 30, 'D3' => 24, 'D3+D4' => 6, 'D3+D5' => 2, 'D4' => 30, 'D5' => 4 ], $combos );
         $this->assertSame( [ 'D1', 'D2', 'D3', 'D3+D4', 'D3+D5', 'D4', 'D5' ], array_keys( $combos ) );

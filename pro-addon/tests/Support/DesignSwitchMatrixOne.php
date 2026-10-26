@@ -54,7 +54,7 @@ final class DesignSwitchMatrixOne
      * @return array{
      *   switches:int, identical:int, firsts:list<?string>, combos:array<string,int>, recipes:array<string,list<string>>,
      *   identity_shortcut:int, identity_engine:int, identity_engine_failures:list<string>,
-     *   pairs:int, twice:int, twice_failures:list<string>, round_trip:int, round_trip_firsts:list<?string>,
+     *   leaves:array<string,int>, pairs:int, twice:int, twice_failures:list<string>, round_trip:int, round_trip_firsts:list<?string>,
      *   round_trip_recipes:array<string,int>, gated:int, gate_valid:int, preserved:int, leftovers:int, unclassified:list<string>
      * }
      */
@@ -65,7 +65,7 @@ final class DesignSwitchMatrixOne
         }
         $designs = self::defaultDesigns();
         $r = [
-            'switches' => 0, 'identical' => 0, 'firsts' => [], 'combos' => [], 'recipes' => [],
+            'switches' => 0, 'identical' => 0, 'firsts' => [], 'combos' => [], 'recipes' => [], 'leaves' => [],
             'identity_shortcut' => 0, 'identity_engine' => 0, 'identity_engine_failures' => [],
             'pairs' => 0, 'twice' => 0, 'twice_failures' => [], 'round_trip' => 0, 'round_trip_firsts' => [],
             'round_trip_recipes' => [], 'gated' => 0, 'gate_valid' => 0, 'preserved' => 0, 'leftovers' => 0, 'unclassified' => [],
@@ -80,7 +80,9 @@ final class DesignSwitchMatrixOne
                 foreach ( $designs as $b => $to ) {
                     ++$r['switches'];
                     $out     = DesignSwitch::run( $built[ $a ], $from, $to )->content;
-                    $classes = DesignDiffClassifier::classify( $out, $built[ $b ] );
+                    $details = DesignDiffClassifier::details( $out, $built[ $b ] );
+                    $classes = DesignDiffClassifier::classesOf( $details );
+                    $r['leaves'] = DesignDiffClassifier::leafTally( $r['leaves'], $details );
                     $r['firsts'][] = $classes[0] ?? null;
                     if ( [] === $classes ) {
                         ++$r['identical'];

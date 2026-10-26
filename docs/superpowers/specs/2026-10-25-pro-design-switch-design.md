@@ -216,7 +216,8 @@ Preview (`dry_run: true`): per page the section 5.5 report, `valid` + `violation
 (`PreviewToken`: argument hash, page id => "stored hash:planned hash", user, 30 minutes, single use). Pages refused in
 the preview: `invalid_result` (the gate fails; never saved), `too_large_for_undo` (stored or new content over
 `PageHistory::MAX_BYTES` = 512 KB: a whole-page restyle without an undo point is not offered), `forbidden`/`not_found`,
-`nothing_to_switch` (no role recovered), `detection_ambiguous`.
+`nothing_to_switch` (no role recovered), `detection_ambiguous`, `low_confidence` (review fix: a detected language below
+the confidence floor, `Detector::LANGUAGE_MIN_SCORE` 2 and `LANGUAGE_MIN_SHARE` 0.6; pass `from_language`).
 
 Apply: requires the token; recomputes; a page whose stored hash OR planned output hash changed since the preview is
 skipped `changed_since_preview` (the second catches a free-plugin update between preview and run); each page is written
@@ -305,12 +306,16 @@ tracked free zip is untouched. Measured facts only:
 deterministically (no AI). Preview first (a `dry_run` flow with a single-use 30-minute `PreviewToken` per user and a
 per-page content hash: a page changed since the preview is skipped). Every result goes through `LayoutGate`, is saved
 through the free `HistoryService` (one snapshot per page) and is one undoable batch (item kind `post_content`). Skip reasons:
-`not_found`, `forbidden`, `too_large_for_undo`, `detection_ambiguous`, `same_design`, `unresolved`, `nothing_to_switch`,
+`not_found`, `forbidden`, `too_large_for_undo`, `detection_ambiguous`, `low_confidence`, `same_design`, `unresolved`, `nothing_to_switch`,
 `invalid_result`. Modes: `leave` (default: only blocks that fully match a kit or language role are switched; hand-written
 blocks are left and reported) and `conform` (opt-in: also restyles drifted hand-written blocks; conformed and overridden
 lists in the report). The engine re-resolves the page through the free pipeline `SectionRecipes::resolveMarkup`, so no
 adapter logic is re-implemented. Detection of the source design by palette match when `from_*` is not given: languages
 284 of 284 on the library pages; kits 129 exact, 39 harmless, 76 none, 40 refused, 0 wrong (a refusal asks for `from_kit`).
+Review fix: a detected language needs a score of at least 2 and at least 60% of the inspected colour and font leaves in its
+palette, else `low_confidence` (pass `from_language`; a given language is not floored). On the 284 library pages the
+lowest score is 6 and the lowest share 0.688 (the slider), so 0 library pages are newly refused; the review's page (one
+editorial `bg` text colour on a dark #123456 section: score 1, share 0.5) is refused (`DetectorTest`).
 
 **Headline proof (Task 6, `pro-addon/tests`).** A library recipe built under (L1, K1) and switched to (L2, K2) equals the
 direct build byte for byte in:
@@ -319,6 +324,11 @@ direct build byte for byte in:
   D3 36, D4 9, D5 0, none unclassified (the plan's 6,571 less 23 `divi/slider` switches whose font context is a tie left
   ambiguous by the strict-majority rule);
 - seeded cross: 4,199 of 4,544 (8 pairs; 12 pairs measured 9,512 of 10,224);
+- review fix 3: the classifier's D1 is now a family leaf of a `divi/text` or `divi/slider` only and D3 a `divi/group` fill
+  only (this table's wording; type markers are resolved away in both pages, so the block name is the narrowest test), and
+  the TOTAL number of differing leaves per class is pinned exactly (matrix 1: D1 1,337, D2 960, D3 216, D4 38, D5 0;
+  seeded cross: D1 747, D2 600, D3 192, D4 138, D5 6 blocks), so a second wrong leaf inside a classified switch fails;
+  no switch count moved;
 - round trip A -> B -> A: 5,856 of 6,390 (the rest are D classes); switching twice: 6,381 of 6,390;
 - every one of 913 sampled outputs passes the layout gate;
 - scorer lockstep: all 710 pairs equal, check for check, against the independent dogfood scorer;
