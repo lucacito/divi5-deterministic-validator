@@ -111,6 +111,7 @@ require_once __DIR__ . '/Design/Expectations.php';
 require_once __DIR__ . '/Design/MarkerRecovery.php';
 require_once __DIR__ . '/Design/SwitchResult.php';
 require_once __DIR__ . '/Design/DesignSwitch.php';
+require_once __DIR__ . '/Design/Detector.php';
 require_once __DIR__ . '/Rest/ProRest.php';
 require_once __DIR__ . '/Rest/ProOpenApi.php';
 require_once __DIR__ . '/Admin/AdminActions.php';
