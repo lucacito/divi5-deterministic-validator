@@ -66,7 +66,10 @@ function collectModules(props) {
     const styles = {};
     for (const p of props) styles[p] = cs.getPropertyValue(p);
     const r = el.getBoundingClientRect();
-    return { key: el.tagName.toLowerCase() + '.' + classes.join('.'), styles, box: { x: r.left + sx, y: r.top + sy, w: r.width, h: r.height } };
+    // the contact form's captcha line prints two RANDOM numbers on every load, so the boxes in that line differ from render to render: its
+    // styles are still compared, its boxes are not (`volatile`)
+    const volatile = !!el.closest('.et_contact_bottom_container');
+    return { key: el.tagName.toLowerCase() + '.' + classes.join('.'), styles, volatile, box: { x: r.left + sx, y: r.top + sy, w: r.width, h: r.height } };
   });
   return { hasRoot: true, modules };
 }
@@ -121,6 +124,7 @@ function compareModules(switched, direct, opts = {}) {
     for (const p of PROPS) {
       if (a.styles[p] !== b.styles[p]) problems.push(['style-' + p, `${where}: switched ${JSON.stringify(a.styles[p])} vs direct ${JSON.stringify(b.styles[p])}`]);
     }
+    if (a.volatile === true || b.volatile === true) continue; // random captcha numbers: styles compared above, boxes not
     for (const [d, code] of BOX) {
       const x = a.box[d];
       const y = b.box[d];

@@ -92,6 +92,9 @@ $build = static function ( string $language, string $kit, array $recipes = AIED_
 $find = static function ( string $role ) use ( $run, $wpdb ): int {
     return (int) $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'page' AND post_title = %s ORDER BY ID DESC LIMIT 1", AIED_SW_TITLE . $run . ' ' . $role ) ); // phpcs:ignore
 };
+// With the Divi 5 builder flag on a page, WordPress/Divi store block attributes in their own escaped form (`<p>` becomes `\u003cp\u003e`,
+// `&` becomes `\u0026`): that is a storage normalisation, not a change of content. Compare built and stored content after undoing it.
+$canon  = static fn ( string $s ): string => str_replace( [ '\\u003c', '\\u003e', '\\u0026', '\\u002d\\u002d' ], [ '<', '>', '&', '--' ], $s );
 $stored = static function ( int $id ): string {
     clean_post_cache( $id );
     $p = get_post( $id );
@@ -192,9 +195,9 @@ try {
                     $check( false, "page {$role} saved", $id->get_error_message() );
                     continue;
                 }
-                $check( $stored( (int) $id ) === $content, "page {$role} is stored byte for byte as built (id {$id})" );
+                $check( $canon( $stored( (int) $id ) ) === $canon( $content ), "page {$role} is stored as built, up to WordPress's attribute escaping (id {$id})" );
                 if ( 'source' === $role ) {
-                    update_post_meta( (int) $id, '_aied_switch_original', wp_slash( $content ) );
+                    update_post_meta( (int) $id, '_aied_switch_original', wp_slash( $stored( (int) $id ) ) ); // what was actually stored: the undo must restore THAT, byte for byte
                 }
             }
             $info( 'ids', [ 'source' => $find( 'source' ), 'direct' => $find( 'direct' ), 'mcp' => $find( 'mcp' ), 'changed' => $find( 'changed' ), 'denied' => $find( 'denied' ) ] );
@@ -316,7 +319,7 @@ try {
 
                     add_filter( 'map_meta_cap', $deny, 99, 4 );
                     $denied = $rest( $route, [ 'page_id' => $N, 'to_language' => $targetDesign[0], 'to_kit' => $targetDesign[1], 'dry_run' => true ] );
-                    $check( 200 === $denied['status'] && 0 === ( $denied['data']['would_change'] ?? null ) && null === ( $denied['data']['token'] ?? 0 ) && [ 'id' => $N, 'reason' => 'forbidden' ] === ( $denied['data']['pages'][0] ?? null ), 'an editor without edit_post on the page: one bare {id, reason: forbidden} row (no title), would_change 0, no token', $denied['data']['pages'][0] ?? $denied['data'] );
+                    $check( 200 === $denied['status'] && 0 === ( $denied['data']['would_change'] ?? null ) && ! isset( $denied['data']['token'] ) && [ 'id' => $N, 'reason' => 'forbidden' ] === ( $denied['data']['pages'][0] ?? null ), 'an editor without edit_post on the page: one bare {id, reason: forbidden} row (no title), would_change 0, no token', $denied['data']['pages'][0] ?? $denied['data'] );
                     $stolen = '' === $adminToken ? ['status' => 0] : $rest( $route, [ 'page_id' => $N, 'to_language' => $targetDesign[0], 'to_kit' => $targetDesign[1], 'token' => $adminToken ] );
                     $check( '' !== $adminToken && 400 === $stolen['status'], 'another user\'s token is refused (400)', $stolen['status'] );
                     remove_filter( 'map_meta_cap', $deny, 99 );

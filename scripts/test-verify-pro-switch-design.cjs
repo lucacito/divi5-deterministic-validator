@@ -53,6 +53,17 @@ t('every listed property is judged, each under its own code', () => {
   for (const p of must) assert.ok(G.PROPS.includes(p), p + ' is compared');
 });
 
+// ---- volatile modules (the contact form's captcha line prints random numbers) ----
+t('a volatile module: its boxes are not compared, its styles still are', () => {
+  const a = page(); const b = page();
+  a[4].volatile = true; a[4].box.w += 40; a[4].box.x += 7;
+  assert.deepStrictEqual(G.compareModules(a, b).problems, [], 'the box of a volatile module may differ');
+  const c = page(); c[4].volatile = true; c[4].styles.color = 'rgb(1, 2, 3)';
+  assert.deepStrictEqual(G.compareModules(c, page()).problems.map((x) => x[0]), ['style-color'], 'its colour is still judged');
+  const d = page(); d[4].box.w += 40;
+  assert.deepStrictEqual(G.compareModules(d, page()).problems.map((x) => x[0]), ['box-width'], 'a module that is not volatile keeps its box check');
+});
+
 // ---- the box ----
 t('a box off by 0.4 px passes, by 0.6 px fails, and a non-number fails', () => {
   const ok = page(); ok[1].box.w += 0.4; ok[2].box.x -= 0.5;
