@@ -52,6 +52,9 @@ class DesignSwitchMatrixTest extends TestCase
         [ 'corporate-trust', 'outline-soft' ],
     ];
 
+    /** How many of the seeded pairs the suite switches between (Step 4 of the plan: 12 cut to 8 for the time budget). */
+    public const CROSS_PAIRS = 8;
+
     /**
      * The recipes with an untyped text (or slider) font whose source family two roles share: the 19 of the spec plus
      * `slider` (the accepted tie).
@@ -103,7 +106,14 @@ class DesignSwitchMatrixTest extends TestCase
         ], $r['recipes'], 'each class only where the spec names it' );
     }
 
-    /** Matrix 2: 71 recipes x 12 seeded (language, kit) designs to each other = 10,224 switches. */
+    /**
+     * Matrix 2: 71 recipes x the first 8 of the 12 seeded (language, kit) designs to each other = 4,544 switches.
+     *
+     * Reduced from 12 pairs (10,224 switches) by plan Task 6 Step 4: with 12 pairs the whole Pro suite took 237.6 s of
+     * the 240 s budget (measured 2026-10-26), with 8 about 211 s. The 12-pair figures, measured with this classifier
+     * before the cut: 9,512 identical (plan 9,533: minus 27 slider switches, the accepted tie, plus 6 identity switches,
+     * the shortcut), D1 540, D2 64, D3 42 + 12 with D4 + 2 with D5, D4 48, D5 4, no unclassified difference.
+     */
     public function testSeededCrossMatrix(): void
     {
         mt_srand( 7 );
@@ -117,7 +127,7 @@ class DesignSwitchMatrixTest extends TestCase
         $this->assertSame( self::SEEDED_PAIRS, $drawn, 'the draw is pinned literally: a PHP generator change cannot move it silently' );
 
         $designs = [];
-        foreach ( self::SEEDED_PAIRS as [ $l, $k ] ) {
+        foreach ( array_slice( self::SEEDED_PAIRS, 0, self::CROSS_PAIRS ) as [ $l, $k ] ) {
             $designs[ "$l/$k" ] = Design::make( $l, $k );
         }
         $n       = 0;
@@ -151,13 +161,12 @@ class DesignSwitchMatrixTest extends TestCase
                 }
             }
         }
-        $this->assertSame( 71 * 12 * 12, $n );
+        $this->assertSame( 71 * 8 * 8, $n );
         $this->assertSame( [], $bad, 'every difference is one of D1-D5' );
-        // Plan 9,533 (prototype): minus 27 slider switches (the accepted tie), plus 6 identity switches (the shortcut).
-        $this->assertSame( 9512, $same );
-        $this->assertCaps( [ 'D1' => 540, 'D2' => 64, 'D3' => 56, 'D4' => 48, 'D5' => 4 ], DesignDiffClassifier::tally( $firsts ) );
+        $this->assertSame( 4199, $same );
+        $this->assertCaps( [ 'D1' => 249, 'D2' => 30, 'D3' => 32, 'D4' => 30, 'D5' => 4 ], DesignDiffClassifier::tally( $firsts ) );
         ksort( $combos, SORT_STRING );
-        $this->assertCaps( [ 'D1' => 540, 'D2' => 64, 'D3' => 42, 'D3+D4' => 12, 'D3+D5' => 2, 'D4' => 48, 'D5' => 4 ], $combos );
+        $this->assertCaps( [ 'D1' => 249, 'D2' => 30, 'D3' => 24, 'D3+D4' => 6, 'D3+D5' => 2, 'D4' => 30, 'D5' => 4 ], $combos );
         $this->assertSame( [ 'D1', 'D2', 'D3', 'D3+D4', 'D3+D5', 'D4', 'D5' ], array_keys( $combos ) );
         foreach ( $recipes as $c => $set ) {
             $recipes[ $c ] = array_keys( $set );
