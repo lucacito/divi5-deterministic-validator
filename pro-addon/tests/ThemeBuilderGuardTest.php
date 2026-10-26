@@ -95,6 +95,8 @@ class ThemeBuilderGuardTest extends TestCase
         // that still serves them); the switch tool refuses at run time instead (plan 2026-10-25-pro-design-switch, Task 8).
         // This list is deliberate: a new free class in Design\* needs an edit here and a row in FreeApiCompatTest.
         $allowed = [ 'AiEditorDivi5\\WP\\DesignLanguages', 'AiEditorDivi5\\WP\\LanguageAdapters', 'AiEditorDivi5\\WP\\StyleKits' ];
+        // Task 3 (Expectations): the one-block pipeline call and the free decoder, both pinned in FreeApiCompatTest.
+        $allowed = [ ...$allowed, 'AiEditorDivi5\\WP\\BlockAttrs', 'AiEditorDivi5\\WP\\SectionRecipes' ];
         foreach ( $design as $class => $where ) {
             $this->assertContains( $class, $allowed, "{$where} (Design) references {$class}: add it to this list and to FreeApiCompatTest, or use a class Compat::REQUIRED_CLASSES lists" );
         }
