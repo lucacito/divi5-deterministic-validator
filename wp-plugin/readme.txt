@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi 5, divi, mcp, claude, chatgpt
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.14.0
+Stable tag:        4.15.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -272,6 +272,16 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 
 == Changelog ==
 
+= 4.15.0 =
+* New: a page keeps one look from the headlines down. Headline weight, letter spacing and capital letters now follow the chosen design language (a luxe page gets light, wide-spaced labels, a brutalist page heavy capitals), and the space between sections follows it too (a tight language gets tight sections, an airy one airy sections).
+* New: style kits now also set the look of a testimonial card, the icon of a blurb, the rule above a counter and the accent divider line, so they match the buttons and cards around them.
+* New: the checker now refuses 80 content shapes that make Divi answer "500 error" for the whole page, for example a testimonial's company written as plain text, or a heading's title written as an object. It reports exact violation codes so your assistant fixes the layout and retries. Found by rendering every content field of every Divi module on a real Divi 5.15.1 site.
+* New: a "kit-patterns" guide topic teaches your assistant how to write rows of tags and icon badges, price columns with a featured plan, rules, dividers and hover colors by hand. `get_style_guide` takes an optional `design_language`, so the kit topics show their examples in your language's colors and fonts.
+* Improved: a button that swaps its colors on hover now keeps its frame on hover, so it no longer loses its outline (this showed with the glass edge and heavy block kits).
+* Improved: in the built-in section patterns, headline weight and the space between sections now come from the design language. With the default look (editorial) some headlines are a little bolder than before and some sections are spaced differently.
+* Improved: the guide's language descriptions agree with the kits (a language no longer describes a card or button color the kit sets differently), and it says titles stay in normal case when a language only asks for capital letters in headlines.
+* Improved: verified on Divi 5.15.1.
+
 = 4.14.0 =
 * New: style kits now also set the look of divider lines, the rules between list items and price columns, small tag labels and icon badges (line style, width and corners), so a dashed, dotted or heavy kit reads as one design all the way down.
 * Improved: the guide now tells your assistant exactly how to write those by hand (widths, which settings to use, and that the kit wins when a design language says something different). Found by having fresh assistants build pages from the guide alone.
@@ -391,6 +401,9 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 * Initial release.
 
 == Upgrade Notice ==
+
+= 4.15.0 =
+The checker now refuses layouts that would make Divi show a "500 error", headline type and section spacing follow the design language, and kits style more modules. In the default look some headlines are a little bolder.
 
 = 4.14.0 =
 Style kits now also style divider lines, rules, tag labels and icon badges, so a page keeps one look. In the default look a few lines are slightly heavier and icon badges squarer. Nothing changes unless your assistant uses them.
