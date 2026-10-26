@@ -48,6 +48,7 @@ class FreeApiCompatTest extends TestCase
             [ $w . 'StyleKits', 'problems', [ 'kit' => 'array' ], 'array' ],
             [ $w . 'StyleKits', 'valueToken', [ 'kit' => 'array', 'name' => 'string' ], '?array' ],
             [ $w . 'RecipeTokens', 'encodeJson', [ 'value' => 'mixed' ], 'string' ],
+            [ $w . 'RecipeTokens', 'resolve', [ 'markup' => 'string', 'language' => 'array' ], 'string' ],
             [ $w . 'BlockAttrs', 'decode', [ 'json' => 'string' ], '?stdClass' ],
             [ $w . 'KitResolver', 'leftovers', [ 'markup' => 'string' ], 'array' ],
             [ $w . 'LanguageResolver', 'leftovers', [ 'markup' => 'string' ], 'array' ],
