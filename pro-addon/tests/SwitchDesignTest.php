@@ -348,6 +348,11 @@ class SwitchDesignTest extends TestCase
         $this->assertSame( 0, $p['would_change'] );
         $this->assertNull( $p['token'] );
         $this->assertSame( 'same_design', $p['pages'][0]['reason'] );
+        $this->assertSame( 'The page already has this design; nothing to change.', $p['pages'][0]['detail'] );
+        $c = $this->tool->run( $this->args( [ 'page_id' => 11, 'page_ids' => null, 'to_language' => 'editorial', 'to_kit' => 'quiet-solid', 'mode' => 'conform', 'dry_run' => true ] ) );
+        $this->assertSame( 'same_design', $c['pages'][0]['reason'], 'conform keeps the reason' );
+        $this->assertSame( 'The page already has this design. conform does not tidy a page within its own design: nothing was changed.', $c['pages'][0]['detail'] );
+        $this->assertSame( 0, $c['would_change'] );
     }
 
     public function testDefaultKitAndAnOmittedTargetKeepTheSources(): void

@@ -335,7 +335,13 @@ final class SwitchDesign implements ProTool
         $to  = Design::make( $toLanguage, $toKit );
         $row += [ 'from' => $from, 'to' => [ 'language' => $to->languageId, 'kit' => $to->kitId ] ];
         if ( $source->equals( $to ) ) {
-            return $row + [ 'skip' => 'same_design', 'detail' => 'The page already has this design; nothing to change.' ];
+            // `DesignSwitch::run()` returns the page unchanged when the source equals the target (plan Task 7), also in
+            // `conform` mode, so a drifted block is not conformed to the page's own design: say so instead of "nothing to change".
+            $detail = 'conform' === $args['mode']
+                ? 'The page already has this design. conform does not tidy a page within its own design: nothing was changed.'
+                : 'The page already has this design; nothing to change.';
+
+            return $row + [ 'skip' => 'same_design', 'detail' => $detail ];
         }
 
         $result = ( $this->switch )( $stored, $source, $to, $args['mode'] );
