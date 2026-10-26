@@ -66,11 +66,11 @@ final class MarkerRecovery
         $winners   = [];
         $matched   = []; // every full match: [candidate, leaf count]
         foreach ( [ ...$kit, ...$language ] as $candidate ) {
-            $patch = $src->attrs( $block, $candidate );
-            if ( null === $patch ) {
+            $prepared = $src->prepared( $block, $candidate );
+            if ( null === $prepared ) {
                 continue;
             }
-            $n = Leaves::count( $attrs, $patch );
+            $n = Leaves::countPrepared( $attrs, $prepared );
             if ( $n <= 0 ) {
                 continue;
             }
@@ -105,12 +105,12 @@ final class MarkerRecovery
             $near  = [];
             $most  = 0;
             foreach ( $kit as $candidate ) {
-                $patch = $src->attrs( $block, $candidate );
-                if ( null === $patch ) {
+                $prepared = $src->prepared( $block, $candidate );
+                if ( null === $prepared ) {
                     continue;
                 }
-                $agree = Leaves::agreeing( $attrs, $patch );
-                $total = count( Leaves::of( $patch ) );
+                $agree = Leaves::agreeingPrepared( $attrs, $prepared );
+                $total = count( $prepared );
                 if ( $agree <= 0 || 2 * $agree < $total ) {
                     continue;
                 }
@@ -148,8 +148,8 @@ final class MarkerRecovery
     public static function isDecorated( string $block, \stdClass $attrs, Expectations $src ): bool
     {
         foreach ( MarkerSpace::kitCandidates( $block ) as $candidate ) {
-            $patch = $src->attrs( $block, $candidate );
-            if ( null !== $patch && Leaves::touches( $attrs, $patch ) ) {
+            $prepared = $src->prepared( $block, $candidate );
+            if ( null !== $prepared && Leaves::touchesPrepared( $attrs, $prepared ) ) {
                 return true;
             }
         }

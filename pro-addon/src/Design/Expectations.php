@@ -23,8 +23,14 @@ use AiEditorDivi5\WP\SectionRecipes;
  */
 final class Expectations
 {
-    /** @var array<string,array{0:string,1:\stdClass}|null> marker key => [the resolved JSON text, its decoded object] */
+    /** @var array<string,string|null> marker key => the resolved JSON text (null: refused) */
     private array $memo = [];
+
+    /** @var array<string,\stdClass> marker key => the decoded object, decoded on first `attrs()` only (memory) */
+    private array $decoded = [];
+
+    /** @var array<string,array<string,string>|null> marker key => the prepared leaves (`Leaves::prepare`) */
+    private array $prepared = [];
 
     public function __construct( public readonly Design $design )
     {
@@ -38,7 +44,13 @@ final class Expectations
      */
     public function attrs( string $block, array $marker ): ?\stdClass
     {
-        return $this->entry( $block, $marker )[1] ?? null;
+        $key  = self::key( $block, $marker );
+        $json = $this->entry( $key, $block, $marker );
+        if ( null === $json ) {
+            return null;
+        }
+
+        return $this->decoded[ $key ] ??= BlockAttrs::decode( $json );
     }
 
     /**
@@ -48,17 +60,37 @@ final class Expectations
      */
     public function json( string $block, array $marker ): ?string
     {
-        return $this->entry( $block, $marker )[0] ?? null;
+        return $this->entry( self::key( $block, $marker ), $block, $marker );
     }
 
     /**
+     * The resolved attributes' leaves, prepared for repeated comparisons (`Leaves::prepare`), or null.
+     *
      * @param array<string,string> $marker
      *
-     * @return array{0:string,1:\stdClass}|null
+     * @return array<string,string>|null
      */
-    private function entry( string $block, array $marker ): ?array
+    public function prepared( string $block, array $marker ): ?array
     {
-        $key = $block . ' ' . (string) json_encode( $marker, JSON_UNESCAPED_SLASHES );
+        $key = self::key( $block, $marker );
+        if ( ! array_key_exists( $key, $this->prepared ) ) {
+            $json                   = $this->entry( $key, $block, $marker );
+            $attrs                  = $this->decoded[ $key ] ?? ( null === $json ? null : BlockAttrs::decode( $json ) );
+            $this->prepared[ $key ] = null === $attrs ? null : Leaves::prepare( $attrs );
+        }
+
+        return $this->prepared[ $key ];
+    }
+
+    /** @param array<string,string> $marker */
+    private static function key( string $block, array $marker ): string
+    {
+        return $block . ' ' . (string) json_encode( $marker, JSON_UNESCAPED_SLASHES );
+    }
+
+    /** @param array<string,string> $marker */
+    private function entry( string $key, string $block, array $marker ): ?string
+    {
         if ( ! array_key_exists( $key, $this->memo ) ) {
             $this->memo[ $key ] = $this->resolve( $block, $marker );
         }
@@ -66,12 +98,8 @@ final class Expectations
         return $this->memo[ $key ];
     }
 
-    /**
-     * @param array<string,string> $marker
-     *
-     * @return array{0:string,1:\stdClass}|null
-     */
-    private function resolve( string $block, array $marker ): ?array
+    /** @param array<string,string> $marker */
+    private function resolve( string $block, array $marker ): ?string
     {
         $prefix   = '<!-- wp:' . $block . ' ';
         $suffix   = ' /-->';
@@ -88,6 +116,6 @@ final class Expectations
             return null;
         }
 
-        return [ $json, $attrs ];
+        return $json;
     }
 }

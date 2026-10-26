@@ -51,6 +51,73 @@ final class Leaves
         return $n;
     }
 
+    /**
+     * A patch's leaves in a compact form for repeated comparisons: the path segments joined by NUL => the JSON text of
+     * the value, in document order (`countPrepared`, `agreeingPrepared` give the same answers as `count` / `agreeing`).
+     *
+     * @return array<string,string>
+     */
+    public static function prepare( \stdClass $patch ): array
+    {
+        $out = [];
+        foreach ( self::of( $patch ) as [ $path, $value ] ) {
+            $out[ implode( "\0", $path ) ] = self::encode( $value );
+        }
+
+        return $out;
+    }
+
+    /**
+     * `count()` with a prepared patch.
+     *
+     * @param array<string,string> $prepared
+     */
+    public static function countPrepared( \stdClass $attrs, array $prepared ): int
+    {
+        foreach ( $prepared as $path => $encoded ) {
+            [ $found, $got ] = self::lookup( $attrs, explode( "\0", (string) $path ) );
+            if ( ! $found || self::encode( $got ) !== $encoded ) {
+                return -1;
+            }
+        }
+
+        return count( $prepared );
+    }
+
+    /**
+     * `agreeing()` with a prepared patch.
+     *
+     * @param array<string,string> $prepared
+     */
+    public static function agreeingPrepared( \stdClass $attrs, array $prepared ): int
+    {
+        $n = 0;
+        foreach ( $prepared as $path => $encoded ) {
+            [ $found, $got ] = self::lookup( $attrs, explode( "\0", (string) $path ) );
+            if ( $found && self::encode( $got ) === $encoded ) {
+                ++$n;
+            }
+        }
+
+        return $n;
+    }
+
+    /**
+     * `touches()` with a prepared patch.
+     *
+     * @param array<string,string> $prepared
+     */
+    public static function touchesPrepared( \stdClass $attrs, array $prepared ): bool
+    {
+        foreach ( $prepared as $path => $encoded ) {
+            if ( self::lookup( $attrs, explode( "\0", (string) $path ) )[0] ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /** How many leaves of $patch are present in $attrs with the same JSON value (the others missing or different). */
     public static function agreeing( \stdClass $attrs, \stdClass $patch ): int
     {
