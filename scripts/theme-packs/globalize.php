@@ -20,7 +20,7 @@ $out  = $argv[2] ?? "$root/dist/theme-packs-global/$pack";
 if ( ! is_dir( $out ) ) { mkdir( $out, 0775, true ); }
 
 $labels = [ 'bg' => 'Background', 'surface' => 'Surface', 'text' => 'Text', 'muted' => 'Muted text', 'accent' => 'Accent', 'accent_text' => 'On accent', 'border' => 'Border', 'inverse' => 'On dark', 'overlay' => 'Overlay' ];
-$slug   = strtolower( preg_replace( '/[^a-z0-9]+/i', '-', explode( ' ', $spec['name'] )[0] ) );
+$slug   = strtolower( preg_replace( '/[^a-z0-9]+/i', '-', explode( ' ', preg_replace( '/^The\s+/i', '', $spec['name'] ) )[0] ) ); // ids must be unique per pack: "The Lantern House" is lantern, not the
 $byHex  = []; // hex => [ id, label, role ]
 foreach ( $spec['palette'] ?? [] as $role => $hex ) {
     if ( ! preg_match( '/^#[0-9a-f]{6}$/i', $hex ) || isset( $byHex[ strtolower( $hex ) ] ) ) { continue; }

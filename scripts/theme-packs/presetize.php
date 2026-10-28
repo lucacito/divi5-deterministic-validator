@@ -35,7 +35,7 @@ const PRESET_VERSION = '5.8.0';
 const PRESET_TIME    = 1790000000;
 const BLOCK_RE       = '/<!-- wp:(divi\/[\w-]+) (\{.*?\}) (\/?-->)/s';
 
-$brand   = explode( ' ', $spec['name'] )[0];
+$brand   = explode( ' ', preg_replace( '/^The\s+/i', '', $spec['name'] ) )[0];
 $labelOf = [];
 foreach ( json_decode( (string) file_get_contents( "$in/colors.json" ), true ) as [ $id, $c ] ) {
     $labelOf[ $id ] = trim( preg_replace( '/^' . preg_quote( $spec['name'], '/' ) . '\s*/', '', $c['label'] ) );
