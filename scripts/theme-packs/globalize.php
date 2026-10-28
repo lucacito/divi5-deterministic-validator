@@ -12,6 +12,10 @@ declare(strict_types=1);
  * rgba() values, gradients and anything else stay literal. The five Customizer colors are never touched.
  */
 $root = dirname( __DIR__, 2 );
+require_once $root . '/tests/bootstrap.php';
+require_once $root . '/tests/FakeWpdb.php';
+require_once $root . '/tests/WpRestShims.php';
+require_once $root . '/wp-plugin/src/autoload.php';
 $pack = $argv[1] ?? '';
 if ( '' === $pack ) { fwrite( STDERR, "usage: globalize.php <pack> [outdir]\n" ); exit( 2 ); }
 $spec = require __DIR__ . '/' . $pack . '.php';
@@ -22,7 +26,10 @@ if ( ! is_dir( $out ) ) { mkdir( $out, 0775, true ); }
 $labels = [ 'bg' => 'Background', 'surface' => 'Surface', 'text' => 'Text', 'muted' => 'Muted text', 'accent' => 'Accent', 'accent_text' => 'On accent', 'border' => 'Border', 'inverse' => 'On dark', 'overlay' => 'Overlay' ];
 $slug   = strtolower( preg_replace( '/[^a-z0-9]+/i', '-', explode( ' ', preg_replace( '/^The\s+/i', '', $spec['name'] ) )[0] ) ); // ids must be unique per pack: "The Lantern House" is lantern, not the
 $byHex  = []; // hex => [ id, label, role ]
-foreach ( $spec['palette'] ?? [] as $role => $hex ) {
+// The pack's own palette first (so its ids stay stable), then the design language's colors for every role the pack did not recolour:
+// a pack built straight from a language has no palette of its own, and its literal colors are the language's.
+$palette = ( $spec['palette'] ?? [] ) + ( AiEditorDivi5\WP\DesignLanguages::get( $spec['language'] )['colors'] ?? [] );
+foreach ( $palette as $role => $hex ) {
     if ( ! preg_match( '/^#[0-9a-f]{6}$/i', $hex ) || isset( $byHex[ strtolower( $hex ) ] ) ) { continue; }
     $byHex[ strtolower( $hex ) ] = [ "gcid-$slug-" . str_replace( '_', '-', $role ), ( $spec['name'] . ' ' . ( $labels[ $role ] ?? $role ) ), $role ];
 }
