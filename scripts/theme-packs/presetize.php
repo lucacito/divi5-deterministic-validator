@@ -138,6 +138,7 @@ foreach ( $looks as $module => $byKey ) {
 
 /** Pass 2: rewrite the blocks. */
 $used = [];
+$invalid = 0;
 foreach ( $files as $f ) {
     $j = json_decode( (string) file_get_contents( $f ), true );
     if ( ! isset( $j['post_content'] ) ) { continue; }
@@ -150,6 +151,7 @@ foreach ( $files as $f ) {
         return '<!-- wp:' . $m[1] . ' ' . pz_encode( $a ) . ' ' . $m[3];
     }, $j['post_content'] );
     $res = LayoutGate::check( $content );
+    if ( ! $res->isValid() ) { ++$invalid; }
     printf( "%-12s %s%s\n", basename( $f, '.json' ), $res->isValid() ? 'VALID' : 'INVALID', $res->isValid() ? '' : ' ' . $res->violations()[0]->code() . ' ' . $res->violations()[0]->message() );
     file_put_contents( "$out/" . basename( $f ), json_encode( [ 'post_title' => $j['post_title'], 'post_content' => $content ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) );
 }
@@ -157,3 +159,4 @@ copy( "$in/colors.json", "$out/colors.json" );
 file_put_contents( "$out/presets.json", json_encode( [ 'module' => $presets, 'group' => [] ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) );
 foreach ( $used as $module => $byName ) { foreach ( $byName as $name => $n ) { printf( "  %-13s %-34s %3d blocks\n", $module, $name, $n ); } }
 printf( "%s: %d presets, %d blocks rewritten, %d skipped (empty object) -> %s\n", $pack, array_sum( array_map( static fn ( $m ) => count( $m['items'] ), $presets ) ), array_sum( array_map( 'array_sum', $used ) ), $skipped, $out );
+exit( $invalid ? 1 : 0 );
