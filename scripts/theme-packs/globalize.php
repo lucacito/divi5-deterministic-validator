@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * DEV-ONLY. Usage: php scripts/theme-packs/globalize.php <pack> [outdir]
+ * DEV-ONLY. Usage: php scripts/theme-packs/globalize.php <pack> [outdir] [indir]
  * Turns the literal palette colours of a built pack (dist/theme-packs/<pack>/<role>.json) into references to Divi
  * global colors and writes <outdir>/<role>.json (still {post_title, post_content}) plus <outdir>/colors.json, the
  * list the importer needs: [ [ 'gcid-<pack>-<role>', { color, label, status } ], ... ] (Divi's own export shape).
@@ -15,7 +15,7 @@ $root = dirname( __DIR__, 2 );
 $pack = $argv[1] ?? '';
 if ( '' === $pack ) { fwrite( STDERR, "usage: globalize.php <pack> [outdir]\n" ); exit( 2 ); }
 $spec = require __DIR__ . '/' . $pack . '.php';
-$in   = "$root/dist/theme-packs/$pack";
+$in   = $argv[3] ?? "$root/dist/theme-packs/$pack"; // indir: a folder of <role>.json, e.g. the layouts as the store holds them
 $out  = $argv[2] ?? "$root/dist/theme-packs-global/$pack";
 if ( ! is_dir( $out ) ) { mkdir( $out, 0775, true ); }
 
@@ -32,6 +32,7 @@ $ref = static fn ( string $id ): string => '$variable({' . $Q . 'type' . $Q . ':
 $used = [];
 $count = 0;
 foreach ( glob( "$in/*.json" ) as $file ) {
+    if ( in_array( basename( $file ), [ "colors.json", "presets.json" ], true ) ) { continue; }
     $j = json_decode( (string) file_get_contents( $file ), true );
     $content = $j['post_content'];
     foreach ( $byHex as $hex => [ $id, $label, $role ] ) {

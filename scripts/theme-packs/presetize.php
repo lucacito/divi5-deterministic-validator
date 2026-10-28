@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * DEV-ONLY. Usage: php scripts/theme-packs/presetize.php <pack> [outdir]
+ * DEV-ONLY. Usage: php scripts/theme-packs/presetize.php <pack> [outdir] [indir]
  * Second step after globalize.php. Reads dist/theme-packs-global/<pack>/ and moves each module's typography and
  * button look into Divi module presets, so a buyer changes the pack's heading, body or button style in one place
  * (Divi's Presets panel) and every page follows. Writes <outdir>/<role>.json (still {post_title, post_content}), the
@@ -26,7 +26,7 @@ use AiEditorDivi5\WP\LayoutGate;
 $pack = $argv[1] ?? '';
 if ( '' === $pack ) { fwrite( STDERR, "usage: presetize.php <pack> [outdir]\n" ); exit( 2 ); }
 $spec = require __DIR__ . '/' . $pack . '.php';
-$in   = "$root/dist/theme-packs-global/$pack";
+$in   = $argv[3] ?? "$root/dist/theme-packs-global/$pack"; // indir: globalize.php's output folder (with its colors.json)
 $out  = $argv[2] ?? "$root/dist/theme-packs-preset/$pack";
 if ( ! is_file( "$in/colors.json" ) ) { fwrite( STDERR, "run globalize.php $pack first\n" ); exit( 2 ); }
 if ( ! is_dir( $out ) ) { mkdir( $out, 0775, true ); }
@@ -98,7 +98,7 @@ function pz_plan( string $module, array $a, array $labelOf ): ?array {
 }
 
 /** Pass 1: collect distinct looks per module in document order, then name them. */
-$files = array_values( array_filter( glob( "$in/*.json" ), static fn ( $f ) => "colors.json" !== basename( $f ) ) );
+$files = array_values( array_filter( glob( "$in/*.json" ), static fn ( $f ) => ! in_array( basename( $f ), [ "colors.json", "presets.json" ], true ) ) );
 $looks = []; // module => key => [ attrs, base, tag ]
 $skipped = 0;
 foreach ( $files as $f ) {
