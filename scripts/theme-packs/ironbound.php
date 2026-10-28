@@ -1,0 +1,322 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * Ironbound Strength Co.: a six-page Divi 5 theme pack for a strength and conditioning gym.
+ * Design language bold-vibrant (saturated yellow, cobalt, black, Unbounded headlines) with its own style kit (heavy-block).
+ * Same conventions as tidewell.php / haldenrow.php. Photographs are pinned by Pexels id ("px:ID[:width]"), curated by eye.
+ */
+
+$P = static fn ( string $t ): string => "<p>$t</p>";
+$crumb = static fn ( string $page ): string => '<p><a href="#">Home</a> / ' . $page . '</p>';
+
+return [
+    'name'     => 'Ironbound Strength Co.',
+    'language' => 'bold-vibrant',
+    'kit'      => null,
+    'pages'    => [
+        // ------------------------------------------------------------------ HOME
+        'home' => [ 'title' => 'Home', 'sections' => [
+            [ 'hero-bordered-cells', [
+                0 => 'Get strong. Stay strong.',
+                2 => $P( 'Small, coached strength classes, never more than twelve people' ),
+                4 => $P( 'Programming built around your week, not a template' ),
+                6 => $P( 'A free first week, so you feel it before you commit' ),
+                7 => 'Start your free week',
+            ] ],
+            [ 'icon-features', [
+                0 => 'Why Ironbound',
+                1 => 'fa:f44b', 3 => "<h3>Coached on every rep</h3>\n<p>A coach watches your lifts and fixes them while you are still under the bar, not after the session.</p>",
+                4 => 'fa:f0c0', 6 => "<h3>Twelve people, never more</h3>\n<p>Small classes mean real attention, a rack when you need one and a name the coach actually knows.</p>",
+                7 => 'fa:f21e', 9 => "<h3>Programming that adapts</h3>\n<p>Sore knee, busy week, new baby. Every session has a version that fits where you are today.</p>",
+                10 => 'fa:f091', 12 => "<h3>Progress you can see</h3>\n<p>We log your lifts and show you the numbers every month, so you know it is working.</p>",
+            ] ],
+            [ 'features-bento', [
+                0 => 'The programs',
+                1 => 'Five ways to train at Ironbound',
+                2 => $P( 'Pick a program for your goal. Switch any time, because the gym is one room and the coaches talk.' ),
+                3 => $P( '<a href="#">See membership</a>' ),
+                4 => 'px:4720782',
+                5 => 'A member pressing a loaded barbell in the squat rack',
+                6 => 'Barbell Club',
+                7 => $P( 'Squat, bench, deadlift and press, coached from the first plate. Our flagship class and the best way to get properly strong.' ),
+                10 => 'Conditioning', 11 => $P( 'Ropes, sleds and bikes. Hard, short and finished by the time your coffee cools.' ),
+                12 => 'fa:f2f2', 14 => 'Mobility and recovery', 15 => $P( 'Slow work for stiff hips, shoulders and backs. Come after a heavy week.' ),
+                16 => 'Strength for new lifters', 17 => $P( 'Never touched a barbell? Start here, with one coach to every four people.' ),
+                18 => 'One-to-one coaching',
+                19 => $P( 'Sessions built entirely around you, your schedule and the goal you came in with.' ),
+                20 => $P( '<a href="#">Ask about coaching</a>' ),
+            ] ],
+            [ 'stats-big-numbers', [
+                0 => 'Ironbound by the numbers',
+                1 => 'Small on purpose, serious about results',
+                2 => $P( '12' ), 3 => $P( 'members per class, at most' ),
+                4 => $P( '5AM' ), 5 => $P( 'first class every weekday' ),
+                6 => $P( '1:6' ), 7 => $P( 'average coach to member ratio' ),
+            ] ],
+            [ 'testimonials-avatar-grid', [
+                0 => 'Members',
+                1 => 'What changes after ninety days',
+                2 => $P( 'Three members on how it felt to start and what they notice now.' ),
+                3 => $P( '&ldquo;I was the person who avoided gyms. Three months in I deadlift my own bodyweight and look forward to Tuesday.&rdquo;' ),
+                4 => 'px:16120625', 5 => 'Ben T. portrait', 6 => $P( 'Ben T.' ), 7 => $P( 'Member since 2024' ),
+                8 => $P( '&ldquo;The coaches notice everything. My back stopped hurting because someone finally fixed how I hinge.&rdquo;' ),
+                9 => 'px:8436463', 10 => 'Mei L. portrait', 11 => $P( 'Mei L.' ), 12 => $P( 'Barbell Club' ),
+                13 => $P( '&ldquo;It is the first place where the programming adjusts to my week, and where nobody has an ego.&rdquo;' ),
+                14 => 'px:33970123', 15 => 'Paul R. portrait', 16 => $P( 'Paul R.' ), 17 => $P( 'Founding member' ),
+            ] ],
+            [ 'steps-horizontal', [
+                0 => 'Your first week',
+                1 => 'Walk in on Monday, lifting by Friday',
+                2 => $P( 'Your first week is free. Here is how it goes.' ),
+                4 => 'Book a class', 5 => $P( 'Pick any session on the schedule. No card needed.' ),
+                7 => 'Meet your coach', 8 => $P( 'Ten minutes before class to talk goals, injuries and what you want from this.' ),
+                10 => 'Train', 11 => $P( 'Three coached sessions across the week, scaled to you.' ),
+                13 => 'Decide', 14 => $P( 'Stay on a plan that fits, or walk away with a program to follow.' ),
+                15 => 'Book your free week',
+            ] ],
+            [ 'cta-card-over-image', [
+                0 => 'px:19025671:1920',
+                1 => 'Free first week',
+                2 => 'Come and lift something heavy.',
+                3 => $P( 'Three coached sessions, no card and no sales talk. Just a barbell and a coach.' ),
+                4 => 'Start your free week',
+            ] ],
+        ] ],
+
+        // ------------------------------------------------------------- PROGRAMS
+        'programs' => [ 'title' => 'Programs', 'sections' => [
+            [ 'header-image-band', [
+                0 => 'px:4720793:1920',
+                1 => $crumb( 'Programs' ),
+                2 => 'Programs',
+                3 => $P( 'Strength, conditioning and recovery, coached in small groups. Pick what fits your week.' ),
+            ] ],
+            [ 'features-zigzag', [
+                0 => 'The classes',
+                1 => 'Three ways to train, one coaching standard',
+                2 => $P( 'Every class is capped at twelve, scaled for your level and led by a coach who has done the work.' ),
+                3 => 'px:4720782',
+                4 => 'A member pressing a loaded barbell',
+                5 => 'Barbell Club',
+                6 => $P( 'Squat, bench, deadlift and overhead press with a coach on every rep. Fifty-five minutes, three days a week or as often as you like.' ),
+                7 => $P( '<a href="#">See the Barbell Club schedule</a>' ),
+                8 => 'Conditioning',
+                9 => $P( 'Ropes, sleds, bikes and bodyweight in short, hard rounds. You will sweat, you will finish and you will not be bored.' ),
+                10 => $P( '<a href="#">See the Conditioning schedule</a>' ),
+                11 => 'px:3076511',
+                12 => 'A member working battle ropes',
+                13 => 'px:6339448',
+                14 => 'A coach guiding a member through a stretch',
+                15 => 'Mobility and recovery',
+                16 => $P( 'Slow, controlled sessions for stiff hips, shoulders and backs. The class that keeps the other two going.' ),
+                17 => $P( '<a href="#">See the Mobility schedule</a>' ),
+            ] ],
+            [ 'checklist-two-column', [
+                0 => 'Included',
+                1 => 'What every membership includes',
+                2 => $P( 'No hidden fees, no add-ons for the things you actually need.' ),
+                5 => $P( 'Coached classes, every one' ),
+                8 => $P( 'Barbells, racks, sleds and ropes' ),
+                11 => $P( 'Monthly lift log and review' ),
+                14 => $P( 'Showers, lockers and towels' ),
+                17 => $P( 'Programming for days you cannot come in' ),
+                20 => $P( 'A free first week' ),
+                23 => $P( 'Pause for up to three months' ),
+                26 => $P( 'No joining fee, ever' ),
+            ] ],
+            [ 'compare-two-panels', [
+                0 => 'The difference',
+                1 => 'Training alone, or training here',
+                2 => $P( 'Most of our members trained alone for years before they walked in.' ),
+                3 => 'On your own',
+                4 => 'The way it usually goes',
+                7 => $P( 'The same routine for months, with no progress' ),
+                10 => $P( 'Nobody to tell you your form is off' ),
+                13 => $P( 'Skipped sessions that nobody notices' ),
+                16 => $P( 'A plateau you cannot see past' ),
+                17 => 'At Ironbound',
+                18 => 'The way it goes here',
+                21 => $P( 'A plan that progresses every four weeks' ),
+                24 => $P( 'A coach fixing your lifts as you do them' ),
+                27 => $P( 'A class that expects you and notices when you miss it' ),
+                30 => $P( 'A logged number that goes up' ),
+                31 => 'Try a free week',
+            ] ],
+            [ 'cta-band', [
+                0 => 'Find your program. Your first week is free.',
+                1 => 'Start your free week',
+                2 => $P( 'No card needed. Cancel nothing, because there is nothing to cancel.' ),
+            ] ],
+        ] ],
+
+        // ----------------------------------------------------------- MEMBERSHIP
+        'membership' => [ 'title' => 'Membership', 'sections' => [
+            [ 'header-title-band', [
+                0 => $crumb( 'Membership' ),
+                1 => 'Membership',
+                2 => $P( 'Simple monthly plans, no joining fee and no contract. Pause or leave whenever you need to.' ),
+            ] ],
+            [ 'pricing-three-tier', [
+                0 => 'Pricing', 1 => 'Pick how often you want to train',
+                2 => $P( 'Every plan includes coached classes, the full gym and a free first week. Billed monthly.' ),
+                3 => 'Drop-in', 4 => $P( 'For visitors and occasional sessions.' ), 5 => $P( '$25' ), 6 => $P( '/ class' ),
+                9 => $P( 'Any coached class' ), 12 => $P( 'Book 48 hours ahead' ), 15 => $P( 'Credits valid for 12 months' ),
+                16 => 'Book a class',
+                17 => $P( 'Most popular' ),
+                18 => 'Unlimited', 19 => $P( 'For a steady training habit.' ), 20 => $P( '$129' ), 21 => $P( '/ month' ),
+                24 => $P( 'Unlimited coached classes' ), 27 => $P( 'Book 7 days ahead' ), 30 => $P( 'Monthly lift log and review' ),
+                31 => 'Start unlimited',
+                32 => 'Coach+', 33 => $P( 'For a faster, more personal path.' ), 34 => $P( '$259' ), 35 => $P( '/ month' ),
+                38 => $P( 'Everything in Unlimited' ), 41 => $P( 'Two one-to-one sessions a month' ), 44 => $P( 'Quarterly nutrition review' ),
+                45 => 'Join Coach+',
+            ] ],
+            [ 'pricing-comparison-table', [
+                0 => 'Compare', 1 => 'Every plan, side by side',
+                2 => $P( 'All plans include a free first week and no joining fee.' ),
+                4 => $P( 'Drop-in' ), 5 => $P( '$25 / class' ), 6 => $P( 'Most popular' ),
+                7 => $P( 'Unlimited' ), 8 => $P( '$129 / month' ), 9 => $P( 'Coach+' ), 10 => $P( '$259 / month' ),
+                11 => $P( 'Coached group classes' ),
+                18 => $P( 'Classes per month' ), 19 => $P( 'Pay per class' ), 20 => $P( 'Unlimited' ), 21 => $P( 'Unlimited' ),
+                22 => $P( 'Monthly lift review' ),
+                28 => $P( 'One-to-one sessions' ),
+                33 => $P( 'Nutrition review' ),
+                38 => 'Join today',
+            ] ],
+            [ 'faq-two-column', [
+                0 => 'FAQ', 1 => 'About membership',
+                2 => $P( 'Something not covered here? Ask us and we will answer within a day.' ),
+                3 => 'Email the gym',
+                4 => 'Is there a contract?', 5 => $P( 'No. Plans renew monthly and you can cancel in two clicks. We would rather earn your next month.' ),
+                6 => 'Can I pause my membership?', 7 => $P( 'Yes, for up to three months a year, free. Tell us before your next billing date.' ),
+                8 => 'Do I need experience?', 9 => $P( 'No. Every class scales to your level, and our new lifters group starts from the empty bar.' ),
+                10 => 'What if I get injured?', 11 => $P( 'Tell your coach. We adjust every session around an injury and pause your plan if you need to heal.' ),
+                12 => 'Is there a student or military rate?', 13 => $P( 'Yes. Students, veterans and first responders save 15% on Unlimited with a valid ID.' ),
+                14 => 'Can I bring a friend?', 15 => $P( 'Every member can bring a guest to one class a month, free of charge.' ),
+            ] ],
+            [ 'cta-band', [
+                0 => 'Not sure yet? Train free for a week.',
+                1 => 'Start your free week',
+                2 => $P( 'Three coached sessions, no card needed.' ),
+            ] ],
+        ] ],
+
+        // -------------------------------------------------------------- COACHES
+        'coaches' => [ 'title' => 'Coaches', 'sections' => [
+            [ 'header-divider-intro', [
+                0 => 'The coaches',
+                1 => 'Coaches who watch every rep',
+                2 => $P( 'Four people, certified and still learning, who care more about your next lift than their own.' ),
+            ] ],
+            [ 'team-grid', [
+                0 => 'The team',
+                1 => 'Meet your coaches',
+                2 => $P( 'Every Ironbound coach holds a strength certification, first-aid training and a habit of asking how you slept.' ),
+                3 => 'px:31245340', 4 => 'Dana Ruiz portrait', 5 => 'Dana Ruiz', 6 => $P( 'Founder and head coach' ),
+                7 => 'px:13211450', 8 => 'Marcus Bell portrait', 9 => 'Marcus Bell', 10 => $P( 'Barbell Club' ),
+                11 => 'px:32695885', 12 => 'Kai Nakamura portrait', 13 => 'Kai Nakamura', 14 => $P( 'Conditioning' ),
+                15 => 'px:18962000', 16 => 'Tess Holloway portrait', 17 => 'Tess Holloway', 18 => $P( 'Mobility and new lifters' ),
+            ] ],
+            [ 'founder-note', [
+                0 => 'px:31245340', 1 => 'Dana Ruiz portrait',
+                2 => $P( 'Dana Ruiz' ), 3 => $P( 'Founder and head coach' ),
+                4 => 'A note from Dana',
+                5 => 'I built the gym I could not find.',
+                6 => $P( 'I coached in big gyms for years. Rooms of sixty people, coaches stretched thin, members quietly leaving after a month. I wanted a place where somebody notices when you walk in.' ),
+                7 => $P( 'So Ironbound is small on purpose: twelve people a class, coaches who know your numbers and a plan that fits your actual week. We are not trying to be the biggest gym in Denver.' ),
+                8 => $P( 'Come and train a week with us. I would love to meet you.' ),
+                9 => $P( '&mdash; Dana' ),
+            ] ],
+            [ 'values-list', [
+                0 => 'What we stand for', 1 => 'How we coach',
+                3 => 'Technique first', 4 => $P( 'Light weight, perfect form, then heavier. We never trade a clean rep for a bigger number.' ),
+                6 => 'Show up for people', 7 => $P( 'We notice who is missing, who is hurting and who is ready for more. That is the job.' ),
+                9 => 'Everyone starts somewhere', 10 => $P( 'Beginners, returners, athletes and parents all share this floor and nobody gets stared at.' ),
+                12 => 'Earn the next month', 13 => $P( 'No contracts, no tricks. If we do the work well you stay. If not, you should leave.' ),
+            ] ],
+            [ 'cta-card-over-image', [
+                0 => 'px:39219660:1920',
+                1 => 'Train with us',
+                2 => 'Meet your coach on day one.',
+                3 => $P( 'Your free week starts with ten minutes with a coach, just to talk.' ),
+                4 => 'Start your free week',
+            ] ],
+        ] ],
+
+        // ------------------------------------------------------------- THE GYM
+        'gym' => [ 'title' => 'The Gym', 'sections' => [
+            [ 'hero-split-left-overlap', [
+                0 => 'px:9545907', 1 => 'The Ironbound floor with racks, rigs and bikes',
+                2 => 'The gym',
+                3 => 'One big room built for lifting',
+                4 => $P( 'A former warehouse on Larimer Street with high ceilings, twelve racks, a sled lane and nowhere to hide. Everything you need and nothing you do not.' ),
+                5 => 'Book a tour',
+            ] ],
+            [ 'story-timeline', [
+                0 => 'px:6388373:1920',
+                1 => 'Our story',
+                2 => 'How Ironbound grew',
+                3 => $P( 'From one rack in a garage to a full floor on Larimer Street.' ),
+                4 => $P( '2019' ), 5 => 'One rack, one garage', 6 => $P( 'Dana coaches six friends in a rented garage on Saturday mornings.' ),
+                7 => $P( '2021' ), 8 => 'A waiting list', 9 => $P( 'Word spreads, the garage fills and the second rack arrives.' ),
+                10 => $P( '2023' ), 11 => 'A floor of our own', 12 => $P( 'We take the lease on Larimer Street and build the floor by hand.' ),
+                13 => $P( '2025' ), 14 => 'Still twelve a class', 15 => $P( 'More coaches, more classes and the same small groups.' ),
+            ] ],
+            [ 'gallery-masonry-style', [
+                0 => 'Inside',
+                1 => 'The floor, up close',
+                2 => $P( 'Racks, ropes, plates and chalk. The details of a gym that gets used.' ),
+                3 => 'px:7187951', 4 => 'A member working battle ropes under a mural',
+                5 => 'px:14502821', 6 => 'A rack of colour-coded kettlebells',
+                7 => 'px:19025671', 8 => 'A red power rack with a loaded barbell',
+                9 => 'px:6628962', 10 => 'Bumper plates on the platform',
+                11 => 'px:15679568', 12 => 'A coach spotting a sled push',
+                13 => 'px:8978325', 14 => 'Kettlebells on the turf lane',
+            ] ],
+            [ 'quote-over-image', [
+                0 => 'px:4720820:1920',
+                2 => $P( 'It is the only gym I have ever wanted to be early for.' ),
+                3 => $P( 'Priya S.' ), 4 => $P( 'Member since opening week' ),
+            ] ],
+            [ 'cta-band', [
+                0 => 'Come and see the floor.',
+                1 => 'Book a tour',
+                2 => $P( 'Tours run every day, no pressure and no pitch.' ),
+            ] ],
+        ] ],
+
+        // -------------------------------------------------------------- CONTACT
+        'contact' => [ 'title' => 'Contact', 'sections' => [
+            [ 'header-title-band', [
+                0 => $crumb( 'Contact' ),
+                1 => 'Say hello',
+                2 => $P( 'Questions, tours, coaching or just curious. A real person replies within a day.' ),
+            ] ],
+            [ 'contact-location-form', [
+                0 => 'px:18821957', 1 => 'The Ironbound building on Larimer Street',
+                4 => $P( 'Address' ), 5 => $P( '1180 Larimer Street, Denver, CO 80204' ),
+                8 => $P( 'Opening hours' ), 9 => $P( 'Mon to Fri 5:00am to 9:00pm, Sat and Sun 7:00am to 5:00pm' ),
+                10 => 'Visit or write',
+                11 => 'Come in, or send a note.',
+                12 => $P( 'Call (303) 555-0194 or email hello@ironbound.fit. We reply within a day.' ),
+                13 => 'Send message',
+            ] ],
+            [ 'faq-two-column', [
+                0 => 'FAQ', 1 => 'Good to know before you visit',
+                2 => $P( 'Anything else? Send a message and we will reply within a day.' ),
+                3 => 'Email us',
+                4 => 'Where do I park?', 5 => $P( 'Free parking behind the building on 12th Street, plus street parking on Larimer after 6pm.' ),
+                6 => 'What should I bring?', 7 => $P( 'Water, a towel if you like and shoes you can lift in. We provide everything else.' ),
+                8 => 'Do you have a changing room?', 9 => $P( 'Yes, with showers, lockers and towels, all included in your membership.' ),
+                10 => 'Can I tour without joining?', 11 => $P( 'Of course. Tours run daily and take about fifteen minutes.' ),
+                12 => 'Do you coach beginners?', 13 => $P( 'Every day. Our new lifters group starts from the empty bar with one coach to four people.' ),
+                14 => 'How do I cancel a class?', 15 => $P( 'Use the booking link in your confirmation email, up to four hours before class.' ),
+            ] ],
+            [ 'cta-band', [
+                0 => 'Your first week is free.',
+                1 => 'Start your free week',
+                2 => $P( 'Three coached sessions, no card needed.' ),
+            ] ],
+        ] ],
+    ],
+];
