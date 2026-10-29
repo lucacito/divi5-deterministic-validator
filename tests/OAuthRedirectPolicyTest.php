@@ -63,6 +63,57 @@ final class OAuthRedirectPolicyTest extends TestCase
         $this->assertFalse( P::isAllowedForRegistration( $uri ) );
     }
 
+    /** @return array<string,array{0:string}> */
+    public static function chatgptAllowed(): array
+    {
+        return [
+            'stable redirect'      => [ 'https://chatgpt.com/connector_platform_oauth_redirect' ],
+            'callback id redirect' => [ 'https://chatgpt.com/connector/oauth/abc123' ],
+            'id with dash/under'   => [ 'https://chatgpt.com/connector/oauth/Ab_9-xZ' ],
+        ];
+    }
+
+    #[DataProvider('chatgptAllowed')]
+    public function testChatgptRedirectsAreAcceptedAndMatchExactly( string $uri ): void
+    {
+        $this->assertTrue( P::isAllowedForRegistration( $uri ), $uri );
+        $this->assertTrue( P::matches( [ $uri ], $uri ), $uri );
+        $this->assertSame( 'chatgpt.com', P::displayHost( $uri ) );
+    }
+
+    /** @return array<string,array{0:string}> */
+    public static function chatgptRefused(): array
+    {
+        return [
+            'other path'            => [ 'https://chatgpt.com/api/callback' ],
+            'root'                  => [ 'https://chatgpt.com/' ],
+            'extra segment stable'  => [ 'https://chatgpt.com/connector_platform_oauth_redirect/x' ],
+            'trailing slash stable' => [ 'https://chatgpt.com/connector_platform_oauth_redirect/' ],
+            'empty callback id'     => [ 'https://chatgpt.com/connector/oauth/' ],
+            'nested callback id'    => [ 'https://chatgpt.com/connector/oauth/a/b' ],
+            'dot callback id'       => [ 'https://chatgpt.com/connector/oauth/a.b' ],
+            'long callback id'      => [ 'https://chatgpt.com/connector/oauth/' . str_repeat( 'a', 65 ) ],
+            'http'                  => [ 'http://chatgpt.com/connector_platform_oauth_redirect' ],
+            'port'                  => [ 'https://chatgpt.com:8443/connector_platform_oauth_redirect' ],
+            'query'                 => [ 'https://chatgpt.com/connector_platform_oauth_redirect?x=1' ],
+            'userinfo'              => [ 'https://evil.example@chatgpt.com/connector_platform_oauth_redirect' ],
+            'subdomain'             => [ 'https://evil.chatgpt.com/connector_platform_oauth_redirect' ],
+            'lookalike host'        => [ 'https://chatgpt.com.evil.example/connector_platform_oauth_redirect' ],
+            'openai.com'            => [ 'https://openai.com/connector_platform_oauth_redirect' ],
+        ];
+    }
+
+    #[DataProvider('chatgptRefused')]
+    public function testOtherChatgptShapedRedirectsAreRefused( string $uri ): void
+    {
+        $this->assertFalse( P::isAllowedForRegistration( $uri ), $uri );
+    }
+
+    public function testASiteOwnerCannotShadowTheBuiltInHostsThroughTheFilter(): void
+    {
+        $this->assertSame( [], P::cleanHosts( [ 'chatgpt.com', 'claude.ai' ] ) );
+    }
+
     public function testLoopbackAndDisplayHost(): void
     {
         $this->assertTrue( P::isLoopback( 'http://127.0.0.1:1/callback' ) );

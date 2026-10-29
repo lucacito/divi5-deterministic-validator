@@ -11,16 +11,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Which redirect URIs a client may register, and when a requested one counts as registered.
  *
- * Claude's hosted apps use one fixed callback on claude.ai (or claude.com); native clients (Claude Code and the
- * other desktop tools) use a loopback address on a port that changes every session (RFC 8252). Nothing else is
- * accepted unless the site owner's code adds a host through the `jhmg_aied_oauth_redirect_hosts` filter.
+ * Claude's hosted apps use one fixed callback on claude.ai (or claude.com); ChatGPT's connector flow uses a fixed
+ * callback on chatgpt.com, or one with a callback id in the path (OpenAI's published values); native clients
+ * (Claude Code and the other desktop tools) use a loopback address on a port that changes every session
+ * (RFC 8252). Nothing else is accepted unless the site owner's code adds a host through the
+ * `jhmg_aied_oauth_redirect_hosts` filter.
  */
 final class OAuthRedirectPolicy
 {
-    /** host => the exact callback path allowed on it. */
+    /**
+     * host => the callback paths allowed on it, each a full-string pattern (delimiter `#`, anchored with
+     * `^` and `\z`, so a path matches only if the whole path matches). Port 443 over https only.
+     */
     public const HOSTED = [
-        'claude.ai'  => '/api/mcp/auth_callback',
-        'claude.com' => '/api/mcp/auth_callback',
+        'claude.ai'   => [ '#^/api/mcp/auth_callback\z#' ],
+        'claude.com'  => [ '#^/api/mcp/auth_callback\z#' ],
+        // ChatGPT: the stable redirect, and the one with a callback id (letters, digits, dash, underscore).
+        'chatgpt.com' => [ '#^/connector_platform_oauth_redirect\z#', '#^/connector/oauth/[A-Za-z0-9_-]{1,64}\z#' ],
     ];
 
     private const LOOPBACK_HOSTS = [ 'localhost', '127.0.0.1', '[::1]' ];
@@ -38,7 +45,7 @@ final class OAuthRedirectPolicy
             return self::isLoopbackHost( $p['host'] );
         }
         if ( isset( self::HOSTED[ $p['host'] ] ) ) {
-            return 443 === $p['port'] && self::HOSTED[ $p['host'] ] === $p['path'];
+            return 443 === $p['port'] && self::hostedPath( $p['host'], $p['path'] );
         }
 
         return in_array( $p['host'], array_map( 'strtolower', $extraHosts ), true );
@@ -67,6 +74,17 @@ final class OAuthRedirectPolicy
         }
 
         return array_values( array_unique( $out ) );
+    }
+
+    private static function hostedPath( string $host, string $path ): bool
+    {
+        foreach ( self::HOSTED[ $host ] as $pattern ) {
+            if ( 1 === preg_match( $pattern, $path ) ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** Whether the URI points at this computer (a native app waiting on a local port). */

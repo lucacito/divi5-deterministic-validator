@@ -55,7 +55,7 @@ final class OAuthClients
         $clean = [];
         foreach ( $uris as $uri ) {
             if ( ! is_string( $uri ) || ! OAuthRedirectPolicy::isAllowedForRegistration( $uri, $this->extraRedirectHosts ) ) {
-                return $this->error( 'invalid_redirect_uri', 'A redirect address is not allowed. Only the Claude apps and apps on this computer can sign in.' );
+                return $this->error( 'invalid_redirect_uri', 'A redirect address is not allowed. Only the Claude apps, ChatGPT and apps on this computer can sign in.' );
             }
             $clean[] = $uri;
         }
