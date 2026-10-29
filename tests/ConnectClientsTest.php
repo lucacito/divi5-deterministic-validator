@@ -102,12 +102,14 @@ class ConnectClientsTest extends TestCase
         $this->assertSame('Bearer ' . self::KEY, $entry['headers']['Authorization']);
     }
 
-    public function testChatgptUsesActionsWithSpecUrlAndNoSnippet(): void
+    public function testChatgptIsAConnectorWithTheMcpAddressAndKeepsTheLegacySpecUrl(): void
     {
         $c = $this->clients()['chatgpt'];
-        $this->assertSame('actions', $c['transport']);
-        $this->assertNull($c['snippet'], 'ChatGPT has no MCP snippet');
-        $this->assertSame(self::SITE . '/wp-json/ai-editor-divi5/v1/openapi.json', $c['specUrl']);
+        $this->assertSame('connector', $c['transport']);
+        $this->assertNull($c['snippet'], 'ChatGPT has no config snippet: it signs in with OAuth');
+        $this->assertSame(self::SITE . '/wp-json/ai-editor-divi5/v1/mcp', $c['mcpUrl']);
+        $this->assertSame(self::SITE . '/wp-json/ai-editor-divi5/v1/openapi.json', $c['specUrl'], 'the legacy Action spec stays available');
+        $this->assertStringNotContainsString(self::KEY, json_encode($c), 'the API key is never part of the ChatGPT panel');
     }
 
     public function testEachClientLinksToItsGuide(): void

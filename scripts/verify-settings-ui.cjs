@@ -91,7 +91,7 @@ function check(ok, label) {
     await page.goto(settings);
     check(await page.locator('#aied-oauth-card').isVisible(), 'the Claude card is on the Settings screen');
     check(await page.locator('#aied-oauth-url').count() === 0, 'while off, no address is shown');
-    await page.locator('#aied-oauth-card button:has-text("Turn on sign-in for Claude")').click();
+    await page.locator('#aied-oauth-card button:has-text("Turn on sign-in for Claude and ChatGPT")').click();
     await page.waitForSelector('#aied-oauth-url', { timeout: 30000 });
     const url = (await page.locator('#aied-oauth-url').innerText()).trim();
     check(url === SITE + '/wp-json/ai-editor-divi5/v1/mcp', 'the address to paste is the MCP address: ' + url);
@@ -116,7 +116,7 @@ function check(ok, label) {
     // ---- turn off through the UI (the confirm dialog)
     page.once('dialog', (d) => d.accept());
     await page.locator('#aied-oauth-card button:has-text("Turn off and disconnect")').click();
-    await page.waitForSelector('#aied-oauth-card button:has-text("Turn on sign-in for Claude")', { timeout: 30000 });
+    await page.waitForSelector('#aied-oauth-card button:has-text("Turn on sign-in for Claude and ChatGPT")', { timeout: 30000 });
     check(wp('eval', "echo AiEditorDivi5\\WP\\OAuthSettings::enabled() ? 'on' : 'off';") === 'off', 'turned off through the UI');
     check(wp('eval', "echo AiEditorDivi5\\WP\\OAuthTable::exists() ? 'table' : 'none';") === 'none', 'and the table is gone');
 

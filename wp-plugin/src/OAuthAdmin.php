@@ -75,14 +75,14 @@ final class OAuthAdmin
         $cfg = OAuthRuntime::config();
         ?>
         <div class="aied-card" id="aied-oauth-card">
-            <h3><?php esc_html_e( 'Claude on the web, and other apps that sign in', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
+            <h3><?php esc_html_e( 'Claude on the web, ChatGPT, and other apps that sign in', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
             <p class="aied-muted"><?php esc_html_e( 'Connect claude.ai without installing anything on your computer. You paste one address into Claude, sign in to this site and press Allow. Claude then uses the plugin as you, with the same permissions your account has. Off by default; nothing changes for the other ways of connecting.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
             <?php if ( ! $on ) : ?>
                 <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                     <input type="hidden" name="action" value="ai_editor_divi5_oauth_toggle">
                     <input type="hidden" name="turn_on" value="1">
                     <?php wp_nonce_field( 'ai_editor_divi5_oauth_toggle' ); ?>
-                    <button type="submit" class="button button-primary"><?php esc_html_e( 'Turn on sign-in for Claude', 'jhmg-ai-editor-for-divi-5' ); ?></button>
+                    <button type="submit" class="button button-primary"><?php esc_html_e( 'Turn on sign-in for Claude and ChatGPT', 'jhmg-ai-editor-for-divi-5' ); ?></button>
                 </form>
             <?php else : ?>
                 <?php self::connectedView( $cfg ); ?>

@@ -244,11 +244,12 @@ final class AdminPage
      *    (its config file runs local commands only, so a remote server needs the bridge; needs Node.js).
      *  - VS Code (mcp.json): {"servers":{...}} with "type":"http".
      *  - Gemini CLI: one `gemini mcp add` command, not a config file.
-     *  - ChatGPT: no MCP snippet — it connects via OpenAPI Actions (specUrl).
+     *  - ChatGPT: no snippet. It connects as a custom MCP connector that signs in with OAuth (mcpUrl, plus the
+     *    sign-in switch); the older custom GPT Action (specUrl) is kept as a legacy route while OpenAI retires custom GPTs.
      *
      * `format` says what the snippet is ('json' = merged into a config file, 'command' = typed in a terminal).
      *
-     * @return array<string, array{transport:string, snippet:?string, format:?string, guide:?string, specUrl:?string}>
+     * @return array<string, array{transport:string, snippet:?string, format:?string, guide:?string, specUrl:?string, mcpUrl?:string}>
      */
     public static function connectClients(string $siteUrl, string $apiKey): array
     {
@@ -291,7 +292,7 @@ final class AdminPage
             'cursor'  => ['transport' => 'mcp',     'snippet' => $mcpSnippet,    'format' => 'json',    'guide' => $guides . 'connect-cursor-to-divi-5', 'specUrl' => null],
             'vscode'  => ['transport' => 'mcp',     'snippet' => $vscodeSnippet, 'format' => 'json',    'guide' => $guides . 'connect-cursor-to-divi-5', 'specUrl' => null],
             'gemini'  => ['transport' => 'mcp',     'snippet' => $geminiCommand, 'format' => 'command', 'guide' => null, 'specUrl' => null],
-            'chatgpt' => ['transport' => 'actions', 'snippet' => null,           'format' => null,      'guide' => $guides . 'connect-chatgpt-to-divi-5', 'specUrl' => $specUrl],
+            'chatgpt' => ['transport' => 'connector', 'snippet' => null,         'format' => null,      'guide' => $guides . 'connect-chatgpt-to-divi-5', 'specUrl' => $specUrl, 'mcpUrl' => $mcpUrl],
             'other'   => ['transport' => 'mcp',     'snippet' => $mcpSnippet,    'format' => 'json',    'guide' => null, 'specUrl' => null],
         ];
     }
@@ -300,7 +301,7 @@ final class AdminPage
      * Renders the tabbed per-assistant connection UI. Panels are NOT server-hidden;
      * admin.js hides inactive ones on load (progressive enhancement / no-JS fallback).
      *
-     * @param array<string, array{transport:string, snippet:?string, format:?string, guide:?string, specUrl:?string}> $clients
+     * @param array<string, array{transport:string, snippet:?string, format:?string, guide:?string, specUrl:?string, mcpUrl?:string}> $clients
      */
     public function connectCard( array $clients ): void
     {
@@ -354,26 +355,45 @@ final class AdminPage
         <?php
     }
 
-    /** Renders the per-client steps + snippet (MCP) or Actions steps (ChatGPT). */
+    /** Renders the per-client steps + snippet (MCP), or the connector steps (ChatGPT). */
     private function connectPanelBody( string $id, array $client ): void
     {
-        // ChatGPT: OpenAPI Actions, not MCP.
-        if ( ( $client['transport'] ?? '' ) === 'actions' ) {
+        // ChatGPT: a custom MCP connector that signs in with OAuth (an API key cannot be sent), plus the legacy Action.
+        if ( ( $client['transport'] ?? '' ) === 'connector' ) {
+            $mcpUrl = (string) ( $client['mcpUrl'] ?? '' );
             ?>
-            <p class="aied-note"><strong><?php esc_html_e( 'ChatGPT uses Actions, not MCP.', 'jhmg-ai-editor-for-divi-5' ); ?></strong></p>
+            <p class="aied-note"><strong><?php esc_html_e( 'ChatGPT connects with a sign-in, not with the API key.', 'jhmg-ai-editor-for-divi-5' ); ?></strong></p>
             <ol class="aied-steps">
-                <li><?php esc_html_e( 'In ChatGPT, go to Explore GPTs → Create (or My GPTs → Create a GPT).', 'jhmg-ai-editor-for-divi-5' ); ?></li>
-                <li><?php esc_html_e( 'Under Actions, click “Create new action”, then “Import from URL”.', 'jhmg-ai-editor-for-divi-5' ); ?></li>
+                <li><?php esc_html_e( 'On this page, turn on the sign-in for Claude and ChatGPT (the card further down). It is off until you do.', 'jhmg-ai-editor-for-divi-5' ); ?></li>
+                <li><?php esc_html_e( 'In ChatGPT, open Settings and turn on Developer mode (it sits with the apps or connectors settings; ChatGPT renames these menus from time to time).', 'jhmg-ai-editor-for-divi-5' ); ?></li>
                 <li>
-                    <?php esc_html_e( 'Import from this OpenAPI spec URL (copy the whole thing):', 'jhmg-ai-editor-for-divi-5' ); ?>
+                    <?php esc_html_e( 'Add a custom connector (an MCP server) and paste this address:', 'jhmg-ai-editor-for-divi-5' ); ?>
                     <span class="aied-spec-url-row">
-                        <code class="aied-spec-url"><?php echo esc_html( (string) ( $client['specUrl'] ?? '' ) ); ?></code>
-                        <button type="button" class="button aied-copy-inline" data-copy="<?php echo esc_attr( (string) ( $client['specUrl'] ?? '' ) ); ?>"><?php esc_html_e( 'Copy', 'jhmg-ai-editor-for-divi-5' ); ?></button>
+                        <code class="aied-spec-url"><?php echo esc_html( $mcpUrl ); ?></code>
+                        <button type="button" class="button aied-copy-inline" data-copy="<?php echo esc_attr( $mcpUrl ); ?>"><?php esc_html_e( 'Copy', 'jhmg-ai-editor-for-divi-5' ); ?></button>
                     </span>
                 </li>
-                <li><?php esc_html_e( 'Set Authentication to API Key, type Bearer, and paste the API key shown above.', 'jhmg-ai-editor-for-divi-5' ); ?></li>
+                <li><?php esc_html_e( 'Choose OAuth as the sign-in and leave any client ID and secret empty. Click Connect: this site opens, sign in if asked, then press Allow.', 'jhmg-ai-editor-for-divi-5' ); ?></li>
+                <li><?php esc_html_e( 'Ask ChatGPT to list your Divi pages. If something fails, press “Test connection” above.', 'jhmg-ai-editor-for-divi-5' ); ?></li>
             </ol>
-            <p class="aied-merge-warn"><?php esc_html_e( 'Requires your site to be reachable over public HTTPS — localhost or an unreachable staging box will not work, because ChatGPT calls your site from OpenAI’s servers. Creating a custom GPT also needs a paid ChatGPT plan.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            <p class="aied-merge-warn"><?php esc_html_e( 'Needs a public https address: ChatGPT calls your site from OpenAI’s servers, so a local or http-only site will not work. Custom connectors also need a paid ChatGPT plan with Developer mode. We have followed OpenAI’s published requirements but have not yet confirmed this route with a real ChatGPT account. If it does not work for you, please tell us on the plugin’s support forum.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            <details class="aied-legacy-route">
+                <summary><?php esc_html_e( 'Older route: a custom GPT with an Action (OpenAI is retiring custom GPTs)', 'jhmg-ai-editor-for-divi-5' ); ?></summary>
+                <p class="aied-muted"><?php esc_html_e( 'OpenAI has announced it is retiring custom GPTs and their Actions (reported for 11 December 2026). A GPT you already built keeps working until then, but Actions do not carry over to the new plugins, so use the connector above for anything new.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+                <ol class="aied-steps">
+                    <li><?php esc_html_e( 'In ChatGPT, go to Explore GPTs → Create (or My GPTs → Create a GPT).', 'jhmg-ai-editor-for-divi-5' ); ?></li>
+                    <li><?php esc_html_e( 'Under Actions, click “Create new action”, then “Import from URL”.', 'jhmg-ai-editor-for-divi-5' ); ?></li>
+                    <li>
+                        <?php esc_html_e( 'Import from this OpenAPI spec URL (copy the whole thing):', 'jhmg-ai-editor-for-divi-5' ); ?>
+                        <span class="aied-spec-url-row">
+                            <code class="aied-spec-url"><?php echo esc_html( (string) ( $client['specUrl'] ?? '' ) ); ?></code>
+                            <button type="button" class="button aied-copy-inline" data-copy="<?php echo esc_attr( (string) ( $client['specUrl'] ?? '' ) ); ?>"><?php esc_html_e( 'Copy', 'jhmg-ai-editor-for-divi-5' ); ?></button>
+                        </span>
+                    </li>
+                    <li><?php esc_html_e( 'Set Authentication to API Key, type Bearer, and paste the API key shown above.', 'jhmg-ai-editor-for-divi-5' ); ?></li>
+                </ol>
+                <p class="aied-merge-warn"><?php esc_html_e( 'The Action offers fewer tools than the connector and needs a paid ChatGPT plan and a public https address.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            </details>
             <?php
             return;
         }

@@ -45,12 +45,21 @@ class ConnectCardRenderTest extends TestCase
         $this->assertStringContainsString('only the inner', strtolower($this->render()));
     }
 
-    public function testChatgptPanelExplainsActionsAndHttps(): void
+    public function testChatgptPanelLeadsWithTheConnectorAndKeepsTheActionAsALegacyRoute(): void
     {
-        $html = strtolower($this->render());
-        $this->assertStringContainsString('actions', $html);
-        $this->assertStringContainsString('https', $html);
+        $panel = $this->panel('chatgpt');
+        $this->assertStringContainsString('https://acme.example/wp-json/ai-editor-divi5/v1/mcp', $panel, 'the connector address');
+        $this->assertStringContainsString('Developer mode', $panel);
+        $this->assertStringContainsString('OAuth', $panel);
+        $this->assertStringContainsString('not with the API key', $panel);
+        $this->assertStringContainsString('https', strtolower($panel));
+        $this->assertStringNotContainsString('sk-test-abc123', $panel, 'ChatGPT cannot send the key, so the panel never prints it');
+        $this->assertStringContainsString('<details class="aied-legacy-route">', $panel);
+        $this->assertStringContainsString('openapi.json', $panel, 'the legacy Action spec URL is still offered');
+        $this->assertLessThan(strpos($panel, '<details'), strpos($panel, 'Developer mode'), 'the connector comes before the legacy route');
+        $this->assertStringContainsString('not yet confirmed', strtolower($panel), 'untested claims are labelled as such');
     }
+
 
     public function testLinksToEachGuide(): void
     {
