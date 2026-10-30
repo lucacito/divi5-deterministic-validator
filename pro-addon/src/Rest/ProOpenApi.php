@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * The ChatGPT/OpenAPI face of every Pro tool, generated from each tool's own definition so it cannot drift from the MCP
+ * The ChatGPT/OpenAPI face (the older custom GPT Action route; ChatGPT's custom connector uses MCP and is not limited by the importer) of every Pro tool, generated from each tool's own definition so it cannot drift from the MCP
  * and REST faces. One operation per tool, except the tools listed in MCP_REST_ONLY (the importer caps a spec at 30 operations in
  * total; the free plugin has 16 and the first 14 Pro tools use the rest), every description at most 300 characters, and no
  * object schema without properties.

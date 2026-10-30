@@ -90,7 +90,7 @@ the work around the page.
   listing what was left out.
 - 71 section recipes, each checked by the validator; the style, landing, site and image guides; your Media Library first.
 - Read-only look-ups: your colours and presets, post types, ACF field groups, custom fields, WooCommerce products.
-- Sign in from Claude on the web (opt-in), or connect over MCP, REST or a ChatGPT Action.
+- Sign in from Claude on the web or ChatGPT (opt-in; ChatGPT's custom connector is set up to OpenAI's published requirements but not yet confirmed by us with a real account), or connect over MCP or REST. The older ChatGPT Action route still works until OpenAI retires custom GPTs.
 
 ## Plans
 
@@ -134,8 +134,9 @@ and support stop. You get an email {{reminders}} days before renewal.
 - **A page title change is not covered by undo**; your assistant tells you the old title.
 - **Approval mode covers page edits in the free plugin.** Pro tools use their own preview step instead (site builds, find and
   replace, templates, products and prices all preview first).
-- **ChatGPT Actions do not get every tool.** Seven Pro tools (colours, variables, presets, custom fields and the three
-  WooCommerce tools) and several free tools work over MCP and REST only.
+- **The older ChatGPT Action route does not get every tool.** Eight Pro tools (colours, variables, presets, custom fields,
+  the three WooCommerce tools and the design switch) and several free tools work over MCP and REST only. A ChatGPT custom
+  connector uses MCP, so it is offered all of them (not yet confirmed with a real ChatGPT account).
 - **Undo keeps up to 10 versions per page**; a very large page may not be snapshotted, and the response says so.
 - **`html_to_divi` does not fetch websites or linked stylesheets** and turns third-party images into placeholders.
 - **WooCommerce**: `create_product` makes simple products only; `bulk_adjust_prices` changes regular prices only.
@@ -189,7 +190,7 @@ Each distinct site address is one site; www, http/https and a trailing slash cou
 Yes. Install JHMG AI Editor for Divi 5 from WordPress.org first; Pro adds its tools to the same connection.
 
 **Which assistants work?**
-Claude (web, Desktop, Code), ChatGPT (custom GPT Action, the first 14 Pro tools), Cursor, Windsurf, VS Code Copilot, Gemini
+Claude (web, Desktop, Code), ChatGPT (custom connector, not yet confirmed by us with a real account; the older custom GPT Action gets the first 14 Pro tools), Cursor, Windsurf, VS Code Copilot, Gemini
 CLI and other MCP clients. You need your own assistant account.
 
 **Does it work with Divi 5.15 components?**

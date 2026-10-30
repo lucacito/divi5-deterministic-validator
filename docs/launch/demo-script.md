@@ -13,8 +13,8 @@ as shipped.
 
 - A disposable site (staging or the Docker dev site), Divi 5.15.1, free plugin + Pro active and licensed, a few existing pages
   (Home, About, Contact) that mention a phone number, and WooCommerce off unless you show it.
-- Claude Desktop or Claude Code connected (Settings tab, Test connection shows "Connected"). ChatGPT works for most tools but
-  not `html_to_divi` (MCP and REST only), so use Claude for the whole take.
+- Claude Desktop or Claude Code connected (Settings tab, Test connection shows "Connected"). ChatGPT is not confirmed on a real account
+  yet (connector) and the older Action route lacks `html_to_divi` (MCP and REST only), so use Claude for the whole take.
 - A client's landing page as an HTML file (your own, or one written by Claude earlier) in the clipboard.
 - Approval mode OFF at the start (you switch it on during the demo).
 - Browser tabs: wp-admin Pages, the plugin Dashboard, the front end.

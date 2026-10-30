@@ -13,7 +13,7 @@ Your AI assistant can be creative. Nothing it writes reaches your database until
 - **Undo for your AI's edits.** Before the plugin saves an edit it keeps a snapshot of the page, so you can restore the previous version. (A page too large to snapshot says so in the response; creating a new page has nothing to undo.)
 - **Theme Builder editing.** Change the live Divi header and footer, with a preview first.
 - **Whole-site build, one-step undo.** Build a site page by page as drafts, launch it in one previewed step, and take it all away again with one undo.
-- **Works with Claude, ChatGPT, Cursor and VS Code Copilot.** Over MCP and REST. You bring your own assistant.
+- **Works with Claude, ChatGPT, Cursor and VS Code Copilot.** Over MCP and REST; ChatGPT through a custom connector that signs in with your WordPress login (we have not yet confirmed that with a real ChatGPT account). You bring your own assistant.
 - **No metered AI credits.** We never sit between you and your AI provider, so there is no usage meter to run out.
 
 The free plugin on WordPress.org has 16 tools, including creating pages as drafts and undo. Pro adds 14 more: find and replace across the whole site, a site audit, Theme Builder tools, front page and menu control, publishing, and whole-site build.
@@ -82,4 +82,4 @@ You move to the higher plan and pay the difference for the time left on your cur
 No. After {{trial:days}} days the trial ends without charging you. Updates and support stop; the tools on sites where you activated it keep working, as with any lapsed licence. <!-- TODO(owner): this means a no-card trial gives Personal-tier tools permanently on the activated site. Keep, or require a card, or shorten? -->
 
 **Does it work with my AI assistant?**
-Claude Desktop and Claude Code, Cursor, VS Code Copilot and ChatGPT, over MCP or REST. You need your own assistant account.
+Claude Desktop and Claude Code, Cursor, VS Code Copilot and ChatGPT, over MCP or REST (ChatGPT through a custom connector, not yet confirmed by us with a real account). You need your own assistant account.

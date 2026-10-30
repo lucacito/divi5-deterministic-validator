@@ -39,7 +39,7 @@ Every change a Pro tool makes is recorded as a batch with an undo point. `undo_b
 * `list_batches` - list recent Pro changes.
 * `undo_batch` - undo one batch.
 
-Every tool is also available over REST (`POST /wp-json/ai-editor-divi5/v1/pro/<tool>`) and, except `manage_global_colors`, `manage_global_variables`, `manage_global_presets`, `set_custom_fields`, `create_product`, `update_products`, `bulk_adjust_prices` and `switch_design` (MCP and REST only), in the free plugin's ChatGPT OpenAPI spec, with the same permission checks. The Pro tools stay off, over every transport, until the licence is unlocked.
+Every tool is also available over REST (`POST /wp-json/ai-editor-divi5/v1/pro/<tool>`) and, except `manage_global_colors`, `manage_global_variables`, `manage_global_presets`, `set_custom_fields`, `create_product`, `update_products`, `bulk_adjust_prices` and `switch_design` (MCP and REST only), in the free plugin's ChatGPT OpenAPI spec, with the same permission checks. The Pro tools stay off, over every transport, until the licence is unlocked. ChatGPT's newer custom connector (set up in the free plugin's Settings) uses MCP, so it is offered every Pro tool, not only the ones in the spec; we have set it up to OpenAI's published requirements but have not yet confirmed it with a real ChatGPT account.
 
 Each tool checks the permission it really needs (for example `manage_options` to set the front page), not only that the request is authenticated.
 
@@ -65,7 +65,7 @@ Deleting the plugin removes its own data (licence state, batch history, saved co
 * Preview first (`dry_run`): it lists what would switch and what is left as it is, and gives a one-time token. A page changed since the preview is skipped, every result passes the layout checks before it is saved, and one `undo_batch` puts every page back.
 * `mode: conform` (opt-in) also restyles hand-written blocks that drifted from a kit style. The default only switches blocks that match a style exactly.
 * A page whose current design cannot be told safely is skipped with a request for `from_language` or `from_kit`.
-* Over MCP and REST only: this is the 22nd Pro tool, and the ChatGPT importer's 30 operations are used up.
+* Over MCP and REST only: this is the 22nd Pro tool, and the older ChatGPT Action importer's 30 operations are used up.
 * Needs the free plugin 4.15.0 for this tool only. On an older free plugin `switch_design` says so plainly and every other Pro tool keeps working (the add-on still runs with free 4.9.0 or newer).
 
 = 0.12.1 =
@@ -75,37 +75,37 @@ Deleting the plugin removes its own data (licence state, batch history, saved co
 
 = 0.12.0 =
 * New: `bulk_adjust_prices` raises or lowers the regular prices of every product a filter matches by a percent or a fixed amount: exact decimal arithmetic, your shop's rounding, an optional "end in" such as `0.95`, a preview with every price before and after, a single-use token for the real run, products that cannot be adjusted skipped with a reason, products changed since the preview skipped, a rollback if anything fails to save, and one undo. At most 100 products per call. It never changes sale prices, statuses or anything else.
-* Over MCP and REST only: this is the 21st Pro tool, and the ChatGPT importer's 30 operations are used up.
+* Over MCP and REST only: this is the 21st Pro tool, and the older ChatGPT Action importer's 30 operations are used up.
 * Needs the free plugin 4.9.0 or newer (the free plugin's read-only product tools, `list_products` and `get_product`, ship in that version; `update_products` and `bulk_adjust_prices` tell the assistant to read current values with them).
 
 = 0.11.0 =
 * New: `update_products` changes existing WooCommerce products: prices and sale schedules, stock, texts, SKU, categories, tags, images, weight, dimensions and tax status of simple, external and variable products, and the price and stock of a variable product's variation rows. Up to 25 products per call. Every real run needs the single-use token of a preview (`dry_run`) that shows each change as before and after; a product that changed since the preview is skipped. Checked before anything is saved, read back after, and put back if anything fails. It never changes a product's status, type or slug and never creates or deletes one. One `undo_batch` restores the previous values unless you changed those fields since.
-* Over MCP and REST only: this is the 20th Pro tool, and the ChatGPT importer's 30 operations are used up.
+* Over MCP and REST only: this is the 20th Pro tool, and the older ChatGPT Action importer's 30 operations are used up.
 
 = 0.10.0 =
 * New: `create_product` creates new simple WooCommerce products as drafts: name, descriptions, SKU, prices, stock, existing categories and tags and Media Library images, weight, dimensions and tax status. Up to 25 products per call, checked before anything is saved: if one is refused none is created and every reason is listed. A product is never published, an existing product is never changed, and every saved product is read back and compared (a difference removes what the call created). Add `dry_run` to preview. One `undo_batch` moves the created drafts to the trash, unless you edited, published or trashed one since.
-* Over MCP and REST only: this is the 19th Pro tool, and the ChatGPT importer's 30 operations are used up.
+* Over MCP and REST only: this is the 19th Pro tool, and the older ChatGPT Action importer's 30 operations are used up.
 
 = 0.9.0 =
 * New: `set_custom_fields` sets the custom field values of ONE page, Divi Project or other post you can edit, so an assistant can fill in what a layout shows through Divi's custom field binding (for example an Advanced Custom Fields name, price or link). Every field is checked first and nothing is written unless all of them pass: a key must already exist on your site (an Advanced Custom Fields field, or a key a post already uses), keys WordPress keeps private and names that look like passwords or tokens are refused, and so are values that contain code. Add `dry_run` to see each field's before and after without saving anything. A real run is one batch, and `undo_batch` puts every value back as long as nothing changed it afterwards.
-* Over MCP and REST only: this is the 18th Pro tool, and the ChatGPT importer's 30 operations are used up.
+* Over MCP and REST only: this is the 18th Pro tool, and the older ChatGPT Action importer's 30 operations are used up.
 * Needs the free plugin 4.8.0 or newer (the free plugin reads custom fields and edits Divi Projects from that version).
 
 = 0.8.0 =
 * New: `manage_global_variables` creates, edits and archives your site's Divi global variables of type numbers (for example `12px` or `clamp(1rem, 2vw + 1rem, 3rem)`) and strings (short plain text), so an assistant can set spacing, radius and size tokens before it builds pages. It never deletes a variable. Every real run needs the single-use preview token of a dry run of the same arguments; variables that changed since the preview are skipped and reported, never overwritten. Values are checked strictly (a number with an optional unit or calc, clamp, min, max of those; plain text without braces, semicolons, quotes, comment markers, unbalanced brackets or code). It needs Divi's Variables Manager permission as well as the theme options permission. One `undo_batch` puts it all back; undoing a created variable archives it (Divi never deletes a variable), unless it changed since.
 * Variables are written in the same stored form as Divi's own Variables Manager (with their id, type and update time), so a layout that cites one renders it.
 * Images, links, fonts and gradients variables are carried through untouched (they are not written yet). A site whose stored variables Divi's own save would damage (for example a stored colors group) is refused with the reason instead of being changed.
-* Over MCP and REST only: this is the 16th Pro tool, and the ChatGPT importer's 30 operations are used up by the first 14 (16 free + 14 Pro).
+* Over MCP and REST only: this is the 16th Pro tool, and the older ChatGPT Action importer's 30 operations are used up by the first 14 (16 free + 14 Pro).
 * New: `manage_global_presets` creates and updates your site's Divi module presets (for example a heading style) so an assistant can set the look of a whole kind of module before it builds pages. Creating never changes an existing preset; changing a preset or a module's default preset restyles every module that uses it, so each run needs the single-use preview token of a dry run, custom CSS and code in a preset are refused, and `undo_batch` puts the changes back as long as nothing changed them afterwards (a default preset Divi adds for a module that had none goes too). It never deletes a preset. Updating a module's default preset also needs `allow_default_presets`.
 * Presets stored in a form this tool does not manage (old-style entries, and option-group presets) are carried through untouched and refused as a target.
-* Over MCP and REST only: this is the 17th Pro tool and the third that is MCP and REST only (after `manage_global_colors` and `manage_global_variables`), and the ChatGPT importer's 30 operations are used up by the first 14 (16 free + 14 Pro).
+* Over MCP and REST only: this is the 17th Pro tool and the third that is MCP and REST only (after `manage_global_colors` and `manage_global_variables`), and the older ChatGPT Action importer's 30 operations are used up by the first 14 (16 free + 14 Pro).
 * `audit_site` now also reports global variable ids (`gvid-...`) that a page cites but your site does not have (code `UNKNOWN_VARIABLE_ID`); Divi silently drops such a value.
 * `audit_site` now also reports Divi dynamic content bound to a custom field (for example an ACF field) that your site does not have (code `UNKNOWN_CUSTOM_FIELD`); Divi shows an empty module for it. Needs the free plugin 4.7.0 or newer for this check.
 * Fix (also in 0.7.0's code path): an `undo_batch` takes the site-wide lock before it first reads the global colors.
 
 = 0.7.0 =
 * New: `manage_global_colors` creates, recolors, renames and deactivates your site's Divi global colors, so an assistant can set the palette before it builds pages. It never deletes a color. Every real run needs the single-use preview token of a dry run of the same arguments; colors that changed since the preview are skipped and reported, never overwritten. The five theme colors (primary, secondary, heading, body, link) change only when you pass `allow_theme_colors`, and only their color. Color values are checked strictly (hex or rgb/rgba/hsl/hsla numbers only). One `undo_batch` puts it all back; undoing a created color removes it, unless it changed since.
-* Over MCP and REST only: this is the 15th Pro tool, and the ChatGPT importer's 30 operations are used up by the first 14 (16 free + 14 Pro).
+* Over MCP and REST only: this is the 15th Pro tool, and the older ChatGPT Action importer's 30 operations are used up by the first 14 (16 free + 14 Pro).
 
 = 0.6.0 =
 * New: licence tiers (Personal, Freelancer, Agency) with per-tier site limits shown on the Pro tab.
@@ -116,7 +116,7 @@ Deleting the plugin removes its own data (licence state, batch history, saved co
 = 0.5.0 =
 * New: `build_site` builds a whole Divi 5 site as one undoable build. `add_page` creates one checked draft page per call: a page that fails the layout checks, or whose slug another page already uses, is refused with the exact reason and the pages already added are kept. `status` lists the build. `launch` publishes the pages, sets the front page and rebuilds the primary menu in one step, after a preview (`dry_run`) and with its single-use token; pages that changed or lost their slug since the preview are skipped and the rest goes live. Nothing is visible on the live site before the launch.
 * One `undo_batch` takes the whole build away again (the menu and the front page come back, the pages go to the trash, unless your menu or front page still uses them); a page you edited in the Divi builder afterwards is skipped and reported, never trashed behind your back, even with the force option. An unfinished build can be abandoned the same way, and the undo closes it even when nothing could be restored.
-* `build_site` uses the last of the 30 operations the ChatGPT importer accepts (16 free + 14 Pro).
+* `build_site` uses the last of the 30 operations the older ChatGPT Action importer accepts (16 free + 14 Pro).
 
 = 0.4.1 =
 * Safer previews: the token a preview returns now only works for the person who made it, only once, and only within 30 minutes. A preview of a Theme Builder template change has the same rules (it used to have no time limit).
