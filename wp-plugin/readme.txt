@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi 5, divi, mcp, claude, chatgpt
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.15.0
+Stable tag:        4.16.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -112,7 +112,7 @@ A separate, optional Pro add-on is available (details at https://divi5lab.com/pl
 * Gemini CLI, through MCP
 * Cursor and Windsurf, through MCP
 * VS Code with GitHub Copilot, through MCP
-* ChatGPT, through a custom GPT Action (OpenAPI)
+* ChatGPT, through a custom connector that signs in with your WordPress login (needs Developer mode on a paid ChatGPT plan; set up for OpenAI's published requirements but not yet confirmed by us), or, while OpenAI still allows it, a custom GPT Action (OpenAPI)
 * Any other MCP client, or any HTTP client through the REST API
 
 Works with Divi 5. Divi is a trademark of Elegant Themes. This plugin is not affiliated with, endorsed by, or sponsored by Elegant Themes.
@@ -148,7 +148,7 @@ This plugin does not connect to any external service. Your AI assistant connects
 * Pretty permalinks (Settings → Permalinks, any option except "Plain")
 * For Claude Desktop: Node.js (free, from nodejs.org)
 * For Claude on the web (claude.ai): your site must be reachable over public HTTPS
-* For ChatGPT: your site must be reachable over public HTTPS, and creating a custom GPT needs a paid ChatGPT plan
+* For ChatGPT: your site must be reachable over public HTTPS, you must turn on the sign-in in Settings, and custom connectors need a paid ChatGPT plan with Developer mode
 
 == Frequently Asked Questions ==
 
@@ -231,7 +231,7 @@ It is built for one job: editing Divi 5 layouts safely on a live site. It knows 
 
 = Is this an MCP server for Divi? =
 
-Yes. The plugin adds a Model Context Protocol (MCP) server to your own WordPress site, with 21 tools made for Divi 5 pages and Divi Projects. Any MCP client can use it: Claude, Cursor, Windsurf, VS Code with GitHub Copilot, Gemini CLI and others. ChatGPT connects through a custom GPT Action that offers most of the same tools.
+Yes. The plugin adds a Model Context Protocol (MCP) server to your own WordPress site, with 21 tools made for Divi 5 pages and Divi Projects. Any MCP client can use it: Claude, Cursor, Windsurf, VS Code with GitHub Copilot, Gemini CLI and others. ChatGPT connects through a custom connector that signs in with your WordPress login and gets every tool (the older custom GPT Action offers most of them).
 
 = Can I give it a screenshot or a URL and have it copy a page? =
 
@@ -271,6 +271,10 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 3. Features: everything your AI assistant can do on your Divi 5 site.
 
 == Changelog ==
+
+= 4.16.0 =
+* Improved: ChatGPT can now connect as a custom connector, which signs in with your WordPress login. OpenAI is retiring custom GPTs, and their Actions do not carry over. The Settings screen explains the new steps and keeps the old ones for GPTs you already built. We have followed OpenAI's published requirements but have not yet been able to test with a ChatGPT account.
+* Improved: the sign-in switch in Settings now says it covers Claude on the web and ChatGPT.
 
 = 4.15.0 =
 * New: a page keeps one look from the headlines down. Headline weight, letter spacing and capital letters now follow the chosen design language (a luxe page gets light, wide-spaced labels, a brutalist page heavy capitals), and the space between sections follows it too (a tight language gets tight sections, an airy one airy sections).
@@ -401,6 +405,9 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 * Initial release.
 
 == Upgrade Notice ==
+
+= 4.16.0 =
+ChatGPT can now connect as a custom connector that signs in with your WordPress login, since OpenAI is retiring custom GPT Actions. Not yet tested by us with a ChatGPT account. Nothing changes unless you turn on the sign-in.
 
 = 4.15.0 =
 The checker now refuses layouts that would make Divi show a "500 error", headline type and section spacing follow the design language, and kits style more modules. In the default look some headlines are a little bolder.

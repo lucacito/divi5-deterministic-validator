@@ -1,7 +1,6 @@
-# ChatGPT connector: release-time wording (draft, 2026-10-29)
+# ChatGPT connector: release wording (2026-10-29)
 
-Branch `feat/chatgpt-connector-oauth`. NOT released: no version bump, no zip rebuild, `wp-plugin/readme.txt` is untouched.
-This file holds the wording to apply at release time, and the owner-side tasks that are not in the repo.
+Shipped as free 4.16.0 on 2026-10-29: the readme edits below were applied, version bumped, zip rebuilt. The owner-side tasks at the end still apply (the divi5lab.com guide was rewritten in the same session).
 
 ## Why
 
