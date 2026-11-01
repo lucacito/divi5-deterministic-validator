@@ -61,7 +61,16 @@ function savePage() {
   // Everything travels as one base64 JSON payload, so nothing can break out of the PHP string.
   const b64 = Buffer.from(JSON.stringify({ c: content, t: TITLE })).toString('base64');
   const NS = 'AiEditorDivi5' + BS + 'WP' + BS;
-  const out = wp('eval', `$p=json_decode(base64_decode('${b64}'),true);$c=$p['c'];$g=${NS}LayoutGate::check($c);if(!$g->isValid()){echo '0|INVALID '.implode(',',array_map(fn($v)=>$v->toArray()['code'],$g->violations()));return;}`
+  // One argv string is capped at 128 KiB inside the container, so a big page travels as a file copied into it.
+  let payload = `'${b64}'`;
+  if (b64.length > 90000) {
+    const tmp = path.join(require('os').tmpdir(), `dogfood-payload-${process.pid}.b64`);
+    fs.writeFileSync(tmp, b64);
+    require('child_process').execFileSync('docker', ['compose', 'cp', tmp, 'wpcli:/tmp/dogfood-payload.b64'], { cwd: ROOT });
+    fs.unlinkSync(tmp);
+    payload = "file_get_contents('/tmp/dogfood-payload.b64')";
+  }
+  const out = wp('eval', `$p=json_decode(base64_decode(${payload}),true);$c=$p['c'];$g=${NS}LayoutGate::check($c);if(!$g->isValid()){echo '0|INVALID '.implode(',',array_map(fn($v)=>$v->toArray()['code'],$g->violations()));return;}`
     + `$id=wp_insert_post(wp_slash(['post_type'=>'page','post_title'=>$p['t'],'post_content'=>$c,'post_status'=>'draft','meta_input'=>['_et_pb_use_divi_5'=>'on','_et_pb_use_builder'=>'on']]));echo $id.'|valid';`);
   const [id, verdict] = out.split('|');
   const ok = /^\d+$/.test(id) && id !== '0';
