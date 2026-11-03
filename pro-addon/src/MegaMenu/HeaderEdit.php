@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace AiEditorDivi5\Pro\MegaMenu;
 
-use AiEditorDivi5\WP\BlockAttrs;
-
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
@@ -24,6 +22,9 @@ final class HeaderEdit
 
     /** What apply() writes on the Menu module, and what remove() recognises as its own. */
     private const MENU_HIDDEN_ON_DESKTOP = [ 'desktop' => [ 'value' => 'on' ], 'tablet' => [ 'value' => 'off' ], 'phone' => [ 'value' => 'off' ] ];
+
+    /** A block comment that carries attributes: opener (1), name (2), attribute JSON (3), closer (4). The JSON never holds `-->` (Blocks::encode escapes it). */
+    private const BLOCK = '/(<!--\s+wp:(divi\/[a-z0-9-]+)\s+)(\{.*?\})(\s*\/?-->)/s';
 
     private const ANY_COMMENT = '/<!--\s+(\/?)wp:(divi\/[a-z0-9-]+)(?:\s+\{.*?\})?\s*(\/?)-->/s';
 
@@ -96,7 +97,7 @@ final class HeaderEdit
     /** @return array{start:int,end:int,open:string,close:string,json:string,attrs:array<string,mixed>}|null the first self-closing Menu module */
     private static function findMenu( string $content ): ?array
     {
-        if ( false === preg_match_all( BlockAttrs::BLOCK, $content, $all, PREG_SET_ORDER | PREG_OFFSET_CAPTURE ) ) {
+        if ( false === preg_match_all( self::BLOCK, $content, $all, PREG_SET_ORDER | PREG_OFFSET_CAPTURE ) ) {
             return null;
         }
         foreach ( $all as $m ) {
@@ -117,7 +118,7 @@ final class HeaderEdit
     /** @return array{start:int,end:int}|null the byte range of the labelled wrapper group, closing comment included */
     private static function findWrapper( string $content ): ?array
     {
-        if ( false === preg_match_all( BlockAttrs::BLOCK, $content, $all, PREG_SET_ORDER | PREG_OFFSET_CAPTURE ) ) {
+        if ( false === preg_match_all( self::BLOCK, $content, $all, PREG_SET_ORDER | PREG_OFFSET_CAPTURE ) ) {
             return null;
         }
         foreach ( $all as $m ) {

@@ -132,3 +132,5 @@ require_once __DIR__ . '/MegaMenu/HeaderEdit.php';
 require_once __DIR__ . '/MegaMenu/MenuSource.php';
 require_once __DIR__ . '/MegaMenu/PostSource.php';
 require_once __DIR__ . '/MegaMenu/MegaMenuService.php';
+require_once __DIR__ . '/MegaMenu/PreviewSvg.php';
+require_once __DIR__ . '/Admin/MegaMenuPanel.php';

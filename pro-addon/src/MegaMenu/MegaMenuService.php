@@ -7,7 +7,6 @@ namespace AiEditorDivi5\Pro\MegaMenu;
 use AiEditorDivi5\Pro\ThemeBuilder\LayoutTarget;
 use AiEditorDivi5\Pro\ThemeBuilder\LayoutWriter;
 use AiEditorDivi5\Pro\ThemeBuilder\ThemeLayouts;
-use AiEditorDivi5\WP\ImageTokens;
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
@@ -167,6 +166,7 @@ final class MegaMenuService
     {
         $base = null !== $this->imageBase ? ( $this->imageBase )() : ( defined( 'AI_EDITOR_DIVI5_FILE' ) ? plugins_url( 'assets/images/', AI_EDITOR_DIVI5_FILE ) : '' );
 
-        return '' === $base ? '' : ImageTokens::resolve( '{{aied:image:card-blue-1}}', $base );
+        // The free plugin's built-in pack picture "card-blue-1" (manifest.json: file card-blue-1.svg, 4:3).
+        return '' === $base ? '' : rtrim( $base, '/' ) . '/card-blue-1.svg';
     }
 }

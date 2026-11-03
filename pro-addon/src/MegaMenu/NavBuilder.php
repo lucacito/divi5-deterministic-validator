@@ -66,7 +66,7 @@ final class NavBuilder
         return $this->b->group(
             [ 'display' => 'flex', 'flexDirection' => 'row', 'justifyContent' => 'space-between', 'alignItems' => 'center', 'columnGap' => '32px' ],
             $logo . $nav,
-            array_merge( Blocks::sizing( [ 'width' => '100%' ] ), Blocks::zIndex( 99 ), Blocks::disabledOn( [ 'tablet' => 'on', 'phone' => 'on' ] ) ),
+            array_merge( Blocks::sizing( [ 'width' => '100%' ] ), Blocks::zIndex( 999 ), Blocks::disabledOn( [ 'tablet' => 'on', 'phone' => 'on' ] ) ),
             Blocks::ADMIN_LABEL
         );
     }
