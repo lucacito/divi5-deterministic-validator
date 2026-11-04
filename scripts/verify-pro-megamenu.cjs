@@ -19,7 +19,7 @@ const ROOT = path.resolve(__dirname, '..');
 const SITE = 'http://localhost:8181';
 const OUT = path.join(ROOT, 'dist', 'megamenu');
 const { chromium } = require('/Users/Lucas/Documents/JHMG-Local/layoutlab/node_modules/playwright');
-const { devSiteOnly, makeWp, watchConsole } = require(path.join(ROOT, 'scripts', 'lib', 'throwaway-pages.cjs'));
+const { devSiteOnly, makeWp, loginCookies, watchConsole } = require(path.join(ROOT, 'scripts', 'lib', 'throwaway-pages.cjs'));
 
 devSiteOnly(SITE);
 const wp = makeWp(ROOT);
@@ -411,6 +411,52 @@ async function narrow(browser, layout, width, height, setup) {
   }
 }
 
+/**
+ * The admin side in a real browser (an administrator's session): what the Dashboard and the Mega menu tab show. Returns the facts the
+ * checks read; `overflow` counts elements that stick out of the box that holds them.
+ */
+async function adminView(browser) {
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  await ctx.addCookies(loginCookies(wp).map(([name, value]) => ({ name, value, url: SITE })));
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(String(e)));
+  try {
+    await page.goto(SITE + '/wp-admin/index.php', { waitUntil: 'load' });
+    const dash = await page.evaluate(() => {
+      const n = document.querySelector('.aied-mm-wpnotice');
+      return { notice: !!n, text: n ? n.innerText.replace(/\s+/g, ' ') : '', button: !!(n && n.querySelector('button[type=submit]')), link: n && n.querySelector('a') ? n.querySelector('a').getAttribute('href') : null };
+    });
+    await page.goto(SITE + '/wp-admin/admin.php?page=ai-editor-divi5&tab=megamenu', { waitUntil: 'load' });
+    const tab = await page.evaluate(() => {
+      const root = document.querySelector('#megamenu');
+      const cur = [...root.querySelectorAll('.aied-mm-card.is-current')];
+      const out = [...root.querySelectorAll('select, .aied-mm-card, .aied-mm-items, .aied-mm-badge')].filter((e) => {
+        const box = e.closest('td, .aied-mm-card, #megamenu');
+        const host = box && box !== e ? box : e.parentElement;
+        return e.getBoundingClientRect().right > host.getBoundingClientRect().right + 1;
+      });
+      const bc = cur[0] ? getComputedStyle(cur[0]).borderTopColor : null;
+      return {
+        wpNoticeOnTab: !!document.querySelector('.aied-mm-wpnotice'),
+        tabNotice: !!root.querySelector('.aied-mm-drift'),
+        current: cur.map((c) => ({ name: c.querySelector('h4').textContent.trim(), badge: (c.querySelector('.aied-mm-badge') || {}).textContent || '', border: getComputedStyle(c).boxShadow })),
+        badgeColour: bc,
+        cards: root.querySelectorAll('.aied-mm-card').length,
+        itemRows: root.querySelectorAll('.aied-mm-items tbody tr').length,
+        itemSelects: root.querySelectorAll('.aied-mm-items select').length,
+        cardSelects: root.querySelectorAll('.aied-mm-card select').length,
+        overflow: out.length,
+        helpClosed: !!root.querySelector('details.aied-mm-help') && !root.querySelector('details.aied-mm-help').open,
+        textLength: root.innerText.replace(/\s+/g, ' ').length,
+      };
+    });
+    return { dash, tab, errors };
+  } finally {
+    await ctx.close();
+  }
+}
+
 (async () => {
   const setup = step('setup');
   console.log(`setup: menu ${setup.menu_id}, ${setup.items} items, header ${setup.header_id}, baseline in place`);
@@ -522,12 +568,22 @@ async function narrow(browser, layout, width, height, setup) {
           await ctx.close();
         }
       };
+      const adminBefore = await adminView(browser);
+      check(L, '-', 'admin: a WordPress notice with the Update button shows on the Dashboard, linking to the tab', adminBefore.dash.notice && adminBefore.dash.button && /tab=megamenu/.test(adminBefore.dash.link || '') && /out of date/.test(adminBefore.dash.text), adminBefore.dash.text.slice(0, 140));
+      check(L, '-', 'admin: the tab itself shows its own notice, not a second WordPress one', adminBefore.tab.tabNotice === true && adminBefore.tab.wpNoticeOnTab === false);
+      check(L, '-', 'admin: the layout in use is highlighted on exactly one card, named "In use"', adminBefore.tab.current.length === 1 && adminBefore.tab.current[0].name === 'Link tiles' && adminBefore.tab.current[0].badge === 'In use' && adminBefore.tab.current[0].border !== 'none', JSON.stringify(adminBefore.tab.current));
+      check(L, '-', 'admin: one row per menu item with its own layout choice, none on the cards', adminBefore.tab.itemRows === setup.panels && adminBefore.tab.itemSelects === setup.panels && adminBefore.tab.cardSelects === 0 && adminBefore.tab.cards === 13, `${adminBefore.tab.itemRows} rows, ${adminBefore.tab.itemSelects} selects, ${adminBefore.tab.cardSelects} on cards`);
+      check(L, '-', 'admin: nothing sticks out of the box that holds it', adminBefore.tab.overflow === 0, String(adminBefore.tab.overflow));
+      check(L, '-', 'admin: the help is folded away and the visible text stays short', adminBefore.tab.helpClosed === true && adminBefore.tab.textLength < 3200, String(adminBefore.tab.textLength));
       const before = await probe();
       check(L, 1280, 'before the update the front end still has the old panels (no new link, no new top-level item)', before.Services === false && before.Blog === false && before.contact === false, JSON.stringify({ s: before.Services, b: before.Blog, c: before.contact }));
       const rf = step('drift_refresh');
       check(L, '-', 'update: a dry run changes nothing and is valid', rf.dry_untouched === true && rf.dry_valid === true);
       check(L, '-', 'update: saved once, an immediate second update changes nothing, one wrapper', rf.changed === true && rf.again === false && rf.wrappers === 1);
       check(L, '-', 'update: afterwards nothing is out of date, and every panel kept the layout it had', rf.drift_after === false && Object.values(rf.panels).every((v) => v === 'showcase-tiles'), JSON.stringify(rf.panels));
+      const adminAfter = await adminView(browser);
+      check(L, '-', 'admin: after the update the Dashboard notice is gone and the tab shows no notice', adminAfter.dash.notice === false && adminAfter.tab.tabNotice === false);
+      check(L, '-', 'admin: no script error on the admin screens', adminBefore.errors.concat(adminAfter.errors).length === 0, adminBefore.errors.concat(adminAfter.errors).slice(0, 2).join(' | '));
       const afterRefresh = await probe();
       check(L, 1280, 'after the update the new links are in the panels and the new top-level item is in the bar', afterRefresh.Services === true && afterRefresh.Blog === true && afterRefresh.contact === true, JSON.stringify({ s: afterRefresh.Services, b: afterRefresh.Blog, c: afterRefresh.contact }));
       check(L, 1280, 'no console error from the page before or after', before.errors.length === 0 && afterRefresh.errors.length === 0, before.errors.concat(afterRefresh.errors).slice(0, 2).join(' | '));
@@ -558,6 +614,8 @@ async function narrow(browser, layout, width, height, setup) {
     const teardown = step('teardown');
     check('teardown', '-', 'the header is restored to its original bytes', teardown.same_bytes === true, teardown.fallback ? 'via the database' : '');
     check('teardown', '-', 'no menu, menu item, fixture or user is left', teardown.menu_left === 0 && teardown.extra_left === 0 && teardown.users_left === 0);
+    check('teardown', '-', 'the undo batches that existed before the run are back, identical (the table trims to 20 and a run records more)', teardown.batches_back === true);
+    check('teardown', '-', 'none of the undo batches this run recorded is left (the tab would offer them as "Undo last change")', teardown.batches_left === 0, String(teardown.batches_left));
   }
   console.log('');
   console.log(`layouts run: ${summary.length} of ${ids.length}`);

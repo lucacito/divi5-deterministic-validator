@@ -34,6 +34,9 @@ final class MegaMenuPanel
     private const ITEM_KEY  = 'aied_pro_megamenu_item_';
     private const TTL       = 120;
 
+    /** The cached "does the header still match the menu" answer, site wide (the header is one for the whole site). */
+    private const DRIFT_KEY = 'aied_pro_megamenu_drift';
+
     public function __construct( private \Closure $unlocked, private MegaMenuService $service, ?\Closure $terminate = null, private ?MegaMenuUndo $undo = null )
     {
         $this->initTerminate( $terminate );
@@ -47,6 +50,11 @@ final class MegaMenuPanel
         add_action( 'admin_post_' . self::ACTION_REMOVE, [ $this, 'handleRemove' ] );
         add_action( 'admin_post_' . self::ACTION_UNDO, [ $this, 'handleUndo' ] );
         add_action( 'admin_post_' . self::ACTION_UPDATE, [ $this, 'handleUpdate' ] );
+        add_action( 'admin_notices', [ $this, 'adminNotice' ] );
+        // Anything that can make the header and the menu differ (or agree again) throws the cached answer away.
+        foreach ( [ 'wp_update_nav_menu', 'wp_update_nav_menu_item', 'wp_delete_nav_menu', 'save_post', 'deleted_post' ] as $tag ) {
+            add_action( $tag, [ $this, 'forgetDrift' ], 10, 0 );
+        }
     }
 
     /** `jhmg_aied_admin_tabs`: the tab exists only while the add-on is unlocked. */
@@ -90,15 +98,35 @@ final class MegaMenuPanel
             'megamenu_bad_layout' => [ 'error', __( 'That layout does not exist. Choose one of the layouts below.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
             'megamenu_error'      => [ 'error', '' !== $error ? $error : __( 'The mega menu could not be applied.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
         ];
+
+        // Which layouts are on the header now: layout id => the top-level items whose panel was built from it.
+        $inUse = [];
+        foreach ( $status['items'] as $it ) {
+            if ( null !== $it['layout'] ) {
+                $inUse[ $it['layout'] ][] = $it['title'];
+            }
+        }
+        $itemCount = count( $status['items'] );
+        $lastChange = null === $this->undo ? null : $this->undo->last( $me, current_user_can( 'manage_options' ) );
         ?>
         <style>
             .aied-mm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
-            .aied-mm-card { border: 1px solid #dcdcde; border-radius: 6px; padding: 12px; background: #fff; display: flex; flex-direction: column; gap: 6px; }
+            .aied-mm-card { border: 1px solid #dcdcde; border-radius: 6px; padding: 12px; background: #fff; display: flex; flex-direction: column; gap: 6px; position: relative; }
+            .aied-mm-card.is-current { border-color: #4f46e5; box-shadow: 0 0 0 2px #4f46e5; background: #f5f5ff; }
+            .aied-mm-badge { align-self: flex-start; background: #4f46e5; color: #fff; border-radius: 999px; padding: 2px 10px; font-size: 12px; font-weight: 600; line-height: 1.6; max-width: 100%; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
             .aied-mm-card h4 { margin: 4px 0 0; font-size: 14px; }
             .aied-mm-card p { margin: 0; color: #50575e; }
             .aied-mm-preview svg { display: block; width: 100%; height: auto; }
             .aied-mm-family { margin: 24px 0 8px; }
             .aied-mm-card form { margin-top: auto; padding-top: 6px; }
+            .aied-mm-items { max-width: 760px; }
+            .aied-mm-items td { vertical-align: middle; }
+            .aied-mm-items form { display: flex; gap: 6px; align-items: center; margin: 0; }
+            .aied-mm-items select { flex: 1 1 auto; min-width: 0; max-width: 100%; }
+            .aied-mm-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 12px 0; }
+            .aied-mm-actions form { margin: 0; }
+            .aied-mm-help { margin: 8px 0 0; }
+            .aied-mm-help li { margin-bottom: 4px; }
         </style>
         <div class="aied-card aied-pro" id="megamenu">
             <h2><?php esc_html_e( 'Mega menu', 'jhmg-ai-editor-for-divi-5-pro' ); ?></h2>
@@ -118,39 +146,25 @@ final class MegaMenuPanel
             <?php endif; ?>
 
             <p>
-                <strong><?php esc_html_e( 'Global header:', 'jhmg-ai-editor-for-divi-5-pro' ); ?></strong>
+                <strong><?php esc_html_e( 'Header:', 'jhmg-ai-editor-for-divi-5-pro' ); ?></strong>
                 <?php
                 echo null === $header
                     ? esc_html__( 'none', 'jhmg-ai-editor-for-divi-5-pro' )
                     : esc_html( '' !== $header['title'] ? $header['title'] : __( 'Untitled header', 'jhmg-ai-editor-for-divi-5-pro' ) );
-                ?>
-                &middot;
-                <strong><?php esc_html_e( 'Mega menu:', 'jhmg-ai-editor-for-divi-5-pro' ); ?></strong>
-                <?php echo $status['applied'] ? esc_html__( 'applied', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html__( 'not applied', 'jhmg-ai-editor-for-divi-5-pro' ); ?>
-            </p>
-            <?php if ( null !== $status['menu'] ) : ?>
-                <p>
-                    <?php
+                if ( null !== $status['menu'] ) {
+                    echo ' &middot; <strong>' . esc_html__( 'Menu:', 'jhmg-ai-editor-for-divi-5-pro' ) . '</strong> ';
                     echo esc_html( sprintf(
-                        /* translators: 1: menu name, 2: number of top-level items, 3: number of items with sub-items, 4: where the menu was found */
-                        __( 'Menu "%1$s": %2$d top-level items, %3$d with sub-items (%4$s).', 'jhmg-ai-editor-for-divi-5-pro' ),
+                        /* translators: 1: menu name, 2: number of top-level items, 3: number of items with sub-items */
+                        __( '%1$s (%2$d items, %3$d with sub-items)', 'jhmg-ai-editor-for-divi-5-pro' ),
                         $status['menu']['name'],
                         $status['menu']['items'],
-                        $status['menu']['panels'],
-                        $status['menu']['how']
+                        $status['menu']['panels']
                     ) );
-                    ?>
-                </p>
-            <?php endif; ?>
-            <p class="description"><?php esc_html_e( 'On desktop the mega menu replaces the normal menu. Tablet and phone keep the normal menu.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></p>
-
-            <?php if ( $status['applied'] && [] !== $status['items'] ) : ?>
-                <ul>
-                    <?php foreach ( $status['items'] as $it ) : ?>
-                        <li><strong><?php echo esc_html( $it['title'] ); ?></strong>: <?php echo null === $it['layoutName'] ? esc_html__( 'its own layout is not recognised', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html( $it['layoutName'] ); ?></li>
-                    <?php endforeach; ?>
-                </ul>
-            <?php endif; ?>
+                }
+                echo ' &middot; <strong>' . esc_html__( 'Mega menu:', 'jhmg-ai-editor-for-divi-5-pro' ) . '</strong> ';
+                echo $status['applied'] ? esc_html__( 'on', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html__( 'off', 'jhmg-ai-editor-for-divi-5-pro' );
+                ?>
+            </p>
 
             <?php if ( $usable && $status['applied'] && null !== $status['drift'] ) : ?>
                 <div class="notice notice-warning inline aied-mm-drift">
@@ -160,20 +174,22 @@ final class MegaMenuPanel
                             <li><?php echo esc_html( $line ); ?></li>
                         <?php endforeach; ?>
                     </ul>
-                    <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-                        <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_UPDATE ); ?>">
-                        <?php wp_nonce_field( self::ACTION_UPDATE ); ?>
-                        <p>
-                            <button type="submit" class="button button-primary"><?php esc_html_e( 'Update the mega menu', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
-                            <span class="description"><?php esc_html_e( 'Builds it again from your menu as it is now. Every item keeps its layout, and "Undo last change" steps back.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
-                        </p>
-                    </form>
+                    <?php $this->updateForm(); ?>
                 </div>
             <?php endif; ?>
 
-            <?php $lastChange = null === $this->undo ? null : $this->undo->last( $me, current_user_can( 'manage_options' ) ); ?>
+            <details class="aied-mm-help">
+                <summary><?php esc_html_e( 'How it works', 'jhmg-ai-editor-for-divi-5-pro' ); ?></summary>
+                <ul style="list-style:disc;margin-left:20px">
+                    <li><?php esc_html_e( 'Pick a layout and press "Use for all items". It replaces the menu on desktop; tablet and phone keep the normal menu.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></li>
+                    <li><?php esc_html_e( 'Once it is on, "Your menu items" lets you give one item a different layout. "Undo last change" steps back one change.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></li>
+                    <li><?php esc_html_e( 'A sub-item that has links under it becomes a heading (not clickable). Latest-post layouts show a snapshot: use the layout again to refresh it.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></li>
+                    <li><?php esc_html_e( 'The panels are built when you apply them. After you edit your menu, press "Update the mega menu".', 'jhmg-ai-editor-for-divi-5-pro' ); ?></li>
+                </ul>
+            </details>
+
             <?php if ( $status['applied'] || null !== $lastChange ) : ?>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                <div class="aied-mm-actions">
                     <?php if ( null !== $lastChange ) : ?>
                         <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                             <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_UNDO ); ?>">
@@ -192,32 +208,62 @@ final class MegaMenuPanel
                 </div>
             <?php endif; ?>
 
-            <h3><?php esc_html_e( 'Choose a layout', 'jhmg-ai-editor-for-divi-5-pro' ); ?></h3>
-            <p class="description">
-                <?php esc_html_e( '"Latest posts" layouts show a snapshot of the newest posts, taken when you apply them. Applying a layout to all items replaces any earlier mega menu; once one is on, you can limit a layout to a single menu item. "Undo last change" steps back one change (it also appears under Recent Pro changes on the Pro tab).', 'jhmg-ai-editor-for-divi-5-pro' ); ?>
-            </p>
+            <?php if ( $usable && $status['applied'] && $itemCount > 1 ) : ?>
+                <h3><?php esc_html_e( 'Your menu items', 'jhmg-ai-editor-for-divi-5-pro' ); ?></h3>
+                <table class="widefat striped aied-mm-items">
+                    <thead>
+                        <tr>
+                            <th><?php esc_html_e( 'Item', 'jhmg-ai-editor-for-divi-5-pro' ); ?></th>
+                            <th><?php esc_html_e( 'Layout in use', 'jhmg-ai-editor-for-divi-5-pro' ); ?></th>
+                            <th><?php esc_html_e( 'Change this item to', 'jhmg-ai-editor-for-divi-5-pro' ); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ( $status['items'] as $it ) : ?>
+                            <tr>
+                                <td><strong><?php echo esc_html( $it['title'] ); ?></strong></td>
+                                <td><?php echo null === $it['layoutName'] ? esc_html__( 'Not recognised', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html( $it['layoutName'] ); ?></td>
+                                <td>
+                                    <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                                        <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_APPLY ); ?>">
+                                        <input type="hidden" name="item" value="<?php echo esc_attr( (string) $it['id'] ); ?>">
+                                        <?php wp_nonce_field( self::ACTION_APPLY ); ?>
+                                        <select name="layout" aria-label="<?php echo esc_attr( sprintf( /* translators: %s: menu item */ __( 'Layout for %s', 'jhmg-ai-editor-for-divi-5-pro' ), $it['title'] ) ); ?>">
+                                            <?php foreach ( Layouts::FAMILIES as $family => $heading ) : ?>
+                                                <optgroup label="<?php echo esc_attr( $heading ); ?>">
+                                                    <?php foreach ( array_filter( Layouts::all(), static fn ( array $l ): bool => $l['family'] === $family ) as $l ) : ?>
+                                                        <option value="<?php echo esc_attr( (string) $l['id'] ); ?>"<?php echo $l['id'] === $it['layout'] ? ' selected' : ''; ?>><?php echo esc_html( (string) $l['name'] ); ?></option>
+                                                    <?php endforeach; ?>
+                                                </optgroup>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <button type="submit" class="button"><?php esc_html_e( 'Apply', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
 
+            <h3><?php esc_html_e( 'Layouts', 'jhmg-ai-editor-for-divi-5-pro' ); ?></h3>
             <?php foreach ( Layouts::FAMILIES as $family => $heading ) : ?>
                 <h4 class="aied-mm-family"><?php echo esc_html( $heading ); ?></h4>
                 <div class="aied-mm-grid">
                     <?php foreach ( array_filter( Layouts::all(), static fn ( array $l ): bool => $l['family'] === $family ) as $layout ) : ?>
-                        <div class="aied-mm-card">
+                        <?php $users = $inUse[ $layout['id'] ] ?? []; ?>
+                        <div class="aied-mm-card<?php echo [] !== $users ? ' is-current' : ''; ?>">
+                            <?php if ( [] !== $users ) : ?>
+                                <span class="aied-mm-badge"><?php echo esc_html( count( $users ) === $itemCount ? __( 'In use', 'jhmg-ai-editor-for-divi-5-pro' ) : sprintf( /* translators: %s: menu items */ __( 'In use on: %s', 'jhmg-ai-editor-for-divi-5-pro' ), implode( ', ', $users ) ) ); ?></span>
+                            <?php endif; ?>
                             <div class="aied-mm-preview"><?php echo PreviewSvg::for( $layout ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from constants, the name is escaped inside. ?></div>
                             <h4><?php echo esc_html( (string) $layout['name'] ); ?></h4>
-                            <p><?php echo esc_html( (string) $layout['blurb'] ); ?></p>
+                            <p><?php echo esc_html( (string) $layout['hint'] ); ?></p>
                             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                                 <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_APPLY ); ?>">
                                 <input type="hidden" name="layout" value="<?php echo esc_attr( (string) $layout['id'] ); ?>">
                                 <?php wp_nonce_field( self::ACTION_APPLY ); ?>
-                                <?php if ( $usable && $status['applied'] && count( $status['items'] ) > 1 ) : ?>
-                                    <select name="item" aria-label="<?php echo esc_attr__( 'Apply to', 'jhmg-ai-editor-for-divi-5-pro' ); ?>">
-                                        <option value="0"><?php esc_html_e( 'All menu items', 'jhmg-ai-editor-for-divi-5-pro' ); ?></option>
-                                        <?php foreach ( $status['items'] as $it ) : ?>
-                                            <option value="<?php echo esc_attr( (string) $it['id'] ); ?>"><?php echo esc_html( sprintf( /* translators: %s: menu item */ __( 'Only "%s"', 'jhmg-ai-editor-for-divi-5-pro' ), $it['title'] ) ); ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                <?php endif; ?>
-                                <button type="submit" class="button button-primary"<?php echo $usable ? '' : ' disabled'; ?>><?php esc_html_e( 'Use this layout', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
+                                <button type="submit" class="button button-primary"<?php echo $usable ? '' : ' disabled'; ?>><?php echo $status['applied'] ? esc_html__( 'Use for all items', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html__( 'Use this layout', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
                             </form>
                         </div>
                     <?php endforeach; ?>
@@ -225,6 +271,91 @@ final class MegaMenuPanel
             <?php endforeach; ?>
         </div>
         <?php
+    }
+
+    /** The "Update the mega menu" button (a form of its own: the notice on the tab and the one on every other admin screen). */
+    private function updateForm(): void
+    {
+        ?>
+        <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+            <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_UPDATE ); ?>">
+            <?php wp_nonce_field( self::ACTION_UPDATE ); ?>
+            <p>
+                <button type="submit" class="button button-primary"><?php esc_html_e( 'Update the mega menu', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
+                <span class="description"><?php esc_html_e( 'Builds it again from your menu as it is now. Every item keeps its layout, and "Undo last change" steps back.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
+            </p>
+        </form>
+        <?php
+    }
+
+    // ---- the notice on every admin screen ------------------------------------------------------------------------------
+
+    /**
+     * `admin_notices`: while the mega menu in the header no longer matches the menu, say so on every admin screen (not only on this
+     * tab) to a user who may change the header, with the button that fixes it. The answer is cached (see driftLines()) and forgotten
+     * whenever a menu item, a menu or any post is saved, so a page load does not rebuild the menu.
+     */
+    public function adminNotice(): void
+    {
+        if ( ! is_admin() || ! ( $this->unlocked )() || ! current_user_can( 'edit_theme_options' ) ) {
+            return;
+        }
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- reads where we are, changes nothing.
+        $page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( (string) $_GET['page'] ) ) : '';
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( (string) $_GET['tab'] ) ) : '';
+        if ( 'ai-editor-divi5' === $page && self::TAB === $tab ) {
+            return; // the tab shows it in full
+        }
+        $lines = $this->cachedDrift();
+        if ( [] === $lines ) {
+            return;
+        }
+        ?>
+        <div class="notice notice-warning aied-mm-wpnotice">
+            <p>
+                <strong><?php esc_html_e( 'Your mega menu is out of date.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></strong>
+                <?php echo esc_html( $lines[0] ); ?>
+                <?php if ( count( $lines ) > 1 ) : ?>
+                    <?php echo esc_html( sprintf( /* translators: %d: number of other changes */ _n( '(and %d more change)', '(and %d more changes)', count( $lines ) - 1, 'jhmg-ai-editor-for-divi-5-pro' ), count( $lines ) - 1 ) ); ?>
+                <?php endif; ?>
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=ai-editor-divi5&tab=' . self::TAB ) ); ?>"><?php esc_html_e( 'See what changed', 'jhmg-ai-editor-for-divi-5-pro' ); ?></a>
+            </p>
+            <?php $this->updateForm(); ?>
+        </div>
+        <?php
+    }
+
+    /** Forget the cached answer (a menu, a menu item, the header or any post was saved, or the mega menu itself was changed). */
+    public function forgetDrift( mixed ...$unused ): void
+    {
+        delete_transient( self::DRIFT_KEY );
+    }
+
+    /**
+     * What differs between the header and the menu, one sentence each, or [] when they match (or there is nothing to compare).
+     * Cached for an hour; a failure to compare counts as "nothing to report", never as an error on every admin screen.
+     *
+     * @return list<string>
+     */
+    private function cachedDrift(): array
+    {
+        $cached = get_transient( self::DRIFT_KEY );
+        if ( is_array( $cached ) && isset( $cached['lines'] ) && is_array( $cached['lines'] ) ) {
+            return array_values( array_map( 'strval', $cached['lines'] ) );
+        }
+        $lines = [];
+        try {
+            $status = $this->service->status();
+            if ( $status['applied'] && null !== $status['drift'] ) {
+                $lines = $this->driftLines( $status['drift'] );
+            }
+        } catch ( \Throwable ) {
+            $lines = [];
+        }
+        set_transient( self::DRIFT_KEY, [ 'lines' => $lines ], 3600 );
+
+        return $lines;
     }
 
     public function handleApply(): void
@@ -249,6 +380,7 @@ final class MegaMenuPanel
 
             return;
         }
+        $this->forgetDrift();
         if ( empty( $result['changed'] ) ) {
             $this->redirectToTab( self::TAB, 'megamenu_unchanged' );
 
@@ -284,6 +416,7 @@ final class MegaMenuPanel
 
             return;
         }
+        $this->forgetDrift();
         $this->redirectToTab( self::TAB, empty( $result['changed'] ) ? 'megamenu_unchanged' : 'megamenu_updated' );
     }
 
@@ -297,6 +430,7 @@ final class MegaMenuPanel
         }
         $me     = (int) get_current_user_id();
         $result = $this->undo->undoLast( $me, current_user_can( 'manage_options' ) );
+        $this->forgetDrift();
         if ( 'none' === $result['result'] ) {
             $this->redirectToTab( self::TAB, 'megamenu_undo_none' );
 
@@ -321,6 +455,7 @@ final class MegaMenuPanel
 
             return;
         }
+        $this->forgetDrift();
         $this->redirectToTab( self::TAB, empty( $result['changed'] ) ? 'megamenu_unchanged' : 'megamenu_removed' );
     }
 

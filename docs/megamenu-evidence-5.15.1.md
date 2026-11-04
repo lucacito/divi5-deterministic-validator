@@ -136,6 +136,40 @@ Limits: the notice, the Update button and the lines under it were tested through
 menu-changed scenario runs on one layout (`showcase-tiles`); a label's own page is no longer reachable from the panel (the owner's choice); the
 comparison sees link text, addresses, labels and descriptions, not a change that alters only markup.
 
+### Round 7 (2026-11-04): the admin screen, and a notice on every admin page
+
+Owner feedback after using the tab: highlight the layout in use; "only on this item" gave no visible way to change an item; the per-card
+dropdown was wider than its card; the out-of-date notice must be a WordPress notice, not only inside our tab; too much text.
+
+- **In use.** A card whose layout is on the header gets an accent frame and a badge: "In use" when every item with a panel uses it, "In use on: Blog"
+  otherwise (read back from the panel labels).
+- **One item.** The per-card "Apply to" dropdown is gone. Once a mega menu is on and there is more than one item with a panel, "Your menu items" lists
+  each item with its layout and its own layout choice and an Apply button. The cards say "Use for all items".
+- **Overflow.** No dropdown on the cards any more; the row dropdowns are capped to their cell (`min-width:0; max-width:100%`).
+- **WordPress notice.** `admin_notices` shows "Your mega menu is out of date" with the first change and an "Update the mega menu" button on every
+  admin screen (not on the Mega menu tab, which shows it in full), to a user who may change the header and only while the licence is unlocked. The
+  comparison is cached for an hour in one transient and forgotten when a menu, a menu item, the header or any post is saved or deleted, and after
+  apply, update, remove and undo.
+- **Less text.** One status line instead of three paragraphs; the help is folded into "How it works"; each card has one short "Best for" line (a `hint`
+  per layout) instead of a sentence.
+
+Gate additions (a real administrator session in Chromium): the notice and its button on the Dashboard before the update and not after; the tab shows
+its own notice and no second WordPress one; exactly one highlighted card named "In use" with a frame; one row and one select per item and none on
+the cards; nothing sticking out of the box that holds it; the help folded and the visible text under 3,200 characters (2,649 measured);
+no script error. Two defects of the gate itself, both mine, found on the way: it never deleted the undo batches it recorded, so the tab offered a gate
+batch as "Undo last change"; and the batch table keeps only the newest 20 rows, so a run evicted the batches that were there before it. The gate now
+saves every existing row at setup, deletes what it recorded and puts the saved rows back (checked, byte for byte). An earlier cleanup of mine deleted
+three batches that were the owner's own changes (they were after my last run ended, and I had assumed they were mine); they were rebuilt from the
+header's undo history (the content before each write is stored there, with the same hashes) and the newest is offered by "Undo last change" again.
+
+| Run | Width 400 | Width 900 | Width 1280 | Setup/scenarios/negatives/teardown | Total |
+|---|---|---|---|---|---|
+| A | 78 PASS, 0 FAIL | 78 PASS, 0 FAIL | 612 PASS, 0 FAIL | 152 PASS, 0 FAIL | 920 PASS, 0 FAIL |
+| B | 78 PASS, 0 FAIL | 78 PASS, 0 FAIL | 612 PASS, 0 FAIL | 152 PASS, 0 FAIL | 920 PASS, 0 FAIL |
+
+Limits: the notice runs a menu comparison once an hour and after any save, not on every page load; it needs the licence unlocked and the
+`edit_theme_options` right; the tab and the notice were looked at in a browser on one header (1280 px wide), not at tablet or phone widths of wp-admin.
+
 ## Defects the gate found, and what was done
 
 1. **Raw Dropdown settings fatal.** `module.advanced.dropdown` written as a raw object is a PHP fatal on Divi 5.15.1 (HTTP 500 for the whole

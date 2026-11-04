@@ -161,7 +161,7 @@ class MegaMenuPanelTest extends TestCase
         $this->assertStringContainsString( 'value="columns-footer"', $html );
         $this->assertStringContainsString( 'value="' . MegaMenuPanel::ACTION_APPLY . '"', $html );
         $this->assertStringContainsString( 'nonce-for-' . MegaMenuPanel::ACTION_APPLY, $html );
-        $this->assertStringContainsString( 'Tablet and phone keep the normal menu', $html );
+        $this->assertStringContainsString( 'tablet and phone keep the normal menu', $html );
     }
 
     public function testWithoutAGlobalHeaderTheNoticeShowsAndEveryUseButtonIsDisabled(): void
@@ -191,7 +191,7 @@ class MegaMenuPanelTest extends TestCase
     public function testTheMenuNamesAndCountsAreShownEscaped(): void
     {
         $html = $this->render();
-        $this->assertStringContainsString( 'Menu &quot;Main menu&quot;: 3 top-level items, 1 with sub-items', $html );
+        $this->assertStringContainsString( 'Main menu (3 items, 1 with sub-items)', $html );
         $this->assertStringContainsString( 'Main header', $html );
         $this->assertStringNotContainsString( '<script', $html );
     }
@@ -389,20 +389,58 @@ class MegaMenuPanelTest extends TestCase
         $this->assertSame( [ 2 => 'icons-cards', 20 => 'icons-cards' ], HeaderEdit::panels( $this->headerContent() ) );
     }
 
-    public function testTheTabListsTheItemsAndOffersOnlyThisItemOnceAMegaMenuIsOn(): void
+    private function withoutStyle( string $html ): string
+    {
+        return (string) preg_replace( '#<style>.*?</style>#s', '', $html );
+    }
+
+    public function testTheTabListsTheItemsWithTheirLayoutAndOffersAChangePerItemOnceAMegaMenuIsOn(): void
     {
         $service = $this->service( $this->twoPanelMenu() );
-        $html    = $this->render( $service );
-        $this->assertStringNotContainsString( 'name="item"', $html, 'nothing to limit before a mega menu exists' );
+        $html    = $this->withoutStyle( $this->render( $service ) );
+        $this->assertStringNotContainsString( '<h3>Your menu items</h3>', $html, 'nothing to change per item before a mega menu exists' );
+        $this->assertStringNotContainsString( 'is-current', $html );
+        $this->assertStringNotContainsString( 'In use', $html );
 
         $service->apply( 'columns-footer' );
         $service->apply( 'icons-cards', false, 20 );
-        $html = $this->render( $service );
-        $this->assertStringContainsString( '<strong>Services</strong>: Columns with a footer link', $html );
-        $this->assertStringContainsString( '<strong>Blog</strong>: Icon cards', $html );
-        $this->assertSame( 13, substr_count( $html, 'name="item"' ) );
-        $this->assertStringContainsString( '<option value="20">Only &quot;Blog&quot;</option>', $html );
-        $this->assertStringContainsString( 'All menu items', $html );
+        $html = $this->withoutStyle( $this->render( $service ) );
+        $this->assertStringContainsString( '<h3>Your menu items</h3>', $html );
+        // One row per item with its layout, and a form of its own that posts the item and a layout.
+        $this->assertMatchesRegularExpression( '#<td><strong>Services</strong></td>\s*<td>Columns with a footer link</td>#', $html );
+        $this->assertMatchesRegularExpression( '#<td><strong>Blog</strong></td>\s*<td>Icon cards</td>#', $html );
+        $this->assertSame( 2, substr_count( $html, 'name="item"' ), 'one per item row, none on the layout cards' );
+        $this->assertStringContainsString( 'name="item" value="20"', $html );
+        $this->assertStringContainsString( '<option value="icons-cards" selected>Icon cards</option>', $html );
+        $this->assertStringContainsString( '<option value="columns-footer" selected>Columns with a footer link</option>', $html );
+        $this->assertStringContainsString( '<optgroup label="Showcase panels">', $html );
+        // The cards say which layout is on, and for which items when it is not all of them.
+        $this->assertSame( 2, substr_count( $html, 'aied-mm-card is-current' ) );
+        $this->assertStringContainsString( '>In use on: Services</span>', $html );
+        $this->assertStringContainsString( '>In use on: Blog</span>', $html );
+        $this->assertSame( 13, substr_count( $html, 'Use for all items</button>' ) );
+    }
+
+    public function testALayoutOnEveryItemIsJustInUse(): void
+    {
+        $service = $this->service( $this->twoPanelMenu() );
+        $service->apply( 'columns-footer' );
+        $html = $this->withoutStyle( $this->render( $service ) );
+        $this->assertSame( 1, substr_count( $html, 'aied-mm-card is-current' ) );
+        $this->assertStringContainsString( '>In use</span>', $html );
+        $this->assertStringNotContainsString( 'In use on', $html );
+    }
+
+    public function testEveryCardHasAShortHintAndTheTabKeepsItsTextShort(): void
+    {
+        foreach ( Layouts::all() as $layout ) {
+            $this->assertMatchesRegularExpression( '/^Best for: .{10,70}$/', (string) $layout['hint'], $layout['id'] );
+        }
+        $html = $this->render( $this->service( $this->twoPanelMenu() ) );
+        $this->assertSame( 13, substr_count( $html, 'Best for: ' ) );
+        $this->assertStringContainsString( '<details class="aied-mm-help">', $html );
+        $text = trim( (string) preg_replace( '/\s+/', ' ', strip_tags( (string) preg_replace( '#<(style|svg).*?</\1>#s', '', $html ) ) ) );
+        $this->assertLessThan( 2400, strlen( $text ), 'the visible text of the tab stays short (' . strlen( $text ) . ' characters)' );
     }
 
     public function testThePostedItemPutsTheLayoutOnThatItemOnly(): void
@@ -687,5 +725,94 @@ class MegaMenuPanelTest extends TestCase
     {
         $this->panel()->register();
         $this->assertArrayHasKey( 'admin_post_' . MegaMenuPanel::ACTION_UPDATE, $GLOBALS['__wp_filters'] );
+    }
+
+    // ---- the notice on every admin screen ----------------------------------------------------------------------------------
+
+    private function noticeHtml( ?MegaMenuService $service = null ): string
+    {
+        ob_start();
+        $this->panel( $service )->adminNotice();
+
+        return (string) ob_get_clean();
+    }
+
+    public function testAnOutOfDateMegaMenuShowsAWordPressNoticeWithTheUpdateButtonOnEveryScreen(): void
+    {
+        $GLOBALS['__wp_is_admin'] = true;
+        $this->service( $this->twoPanelMenu() )->apply( 'columns-footer' );
+        $html = $this->noticeHtml( $this->service( $this->editedMenu() ) );
+        $this->assertStringContainsString( 'class="notice notice-warning aied-mm-wpnotice"', $html );
+        $this->assertStringContainsString( 'Your mega menu is out of date.', $html );
+        $this->assertStringContainsString( 'in your menu but not in the header yet', $html );
+        $this->assertStringContainsString( 'more change', $html );
+        $this->assertStringContainsString( 'value="' . MegaMenuPanel::ACTION_UPDATE . '"', $html );
+        $this->assertStringContainsString( 'Update the mega menu', $html );
+        $this->assertStringContainsString( 'tab=megamenu', $html );
+    }
+
+    public function testNoNoticeWhenTheHeaderMatchesOrNoneIsApplied(): void
+    {
+        $GLOBALS['__wp_is_admin'] = true;
+        $this->assertSame( '', $this->noticeHtml( $this->service( $this->editedMenu() ) ), 'no mega menu on the header: nothing to be out of date' );
+        $GLOBALS['__wp_transients'] = [];
+        $this->service( $this->twoPanelMenu() )->apply( 'columns-footer' );
+        $this->assertSame( '', $this->noticeHtml( $this->service( $this->twoPanelMenu() ) ) );
+    }
+
+    public function testNoNoticeOnTheMegaMenuTabItself(): void
+    {
+        $GLOBALS['__wp_is_admin'] = true;
+        $this->service( $this->twoPanelMenu() )->apply( 'columns-footer' );
+        $_GET = [ 'page' => 'ai-editor-divi5', 'tab' => 'megamenu' ];
+        $this->assertSame( '', $this->noticeHtml( $this->service( $this->editedMenu() ) ) );
+        $_GET = [ 'page' => 'ai-editor-divi5', 'tab' => 'pro' ];
+        $this->assertNotSame( '', $this->noticeHtml( $this->service( $this->editedMenu() ) ), 'another tab of the plugin still shows it' );
+    }
+
+    public function testNoNoticeWithoutTheLicenceOrThePermission(): void
+    {
+        $GLOBALS['__wp_is_admin'] = true;
+        $this->service( $this->twoPanelMenu() )->apply( 'columns-footer' );
+        $service = $this->service( $this->editedMenu() );
+
+        $this->unlocked = false;
+        $this->assertSame( '', $this->noticeHtml( $service ) );
+        $this->unlocked = true;
+
+        $GLOBALS['__wp_caps'] = [ 'edit_pages' => true ];
+        $this->assertSame( '', $this->noticeHtml( $service ) );
+    }
+
+    public function testTheAnswerIsCachedAndForgottenWhenTheMenuOrTheHeaderIsSaved(): void
+    {
+        $GLOBALS['__wp_is_admin'] = true;
+        $this->service( $this->twoPanelMenu() )->apply( 'columns-footer' );
+        $this->assertNotSame( '', $this->noticeHtml( $this->service( $this->editedMenu() ) ) );
+        $this->assertArrayHasKey( 'aied_pro_megamenu_drift', $GLOBALS['__wp_transients'] );
+
+        // Served from the cache: a service that would say "no drift" is not asked.
+        $this->assertNotSame( '', $this->noticeHtml( $this->service( $this->twoPanelMenu() ) ) );
+
+        // The hooks that throw it away are registered, and calling one does.
+        $panel = $this->panel();
+        $panel->register();
+        foreach ( [ 'wp_update_nav_menu', 'wp_update_nav_menu_item', 'wp_delete_nav_menu', 'save_post', 'deleted_post', 'admin_notices' ] as $tag ) {
+            $this->assertArrayHasKey( $tag, $GLOBALS['__wp_filters'], $tag );
+        }
+        $panel->forgetDrift( 5, [] );
+        $this->assertArrayNotHasKey( 'aied_pro_megamenu_drift', $GLOBALS['__wp_transients'] );
+        $this->assertSame( '', $this->noticeHtml( $this->service( $this->twoPanelMenu() ) ) );
+    }
+
+    public function testUpdatingThroughTheNoticeClearsTheCachedAnswer(): void
+    {
+        $GLOBALS['__wp_is_admin'] = true;
+        $this->service( $this->twoPanelMenu() )->apply( 'columns-footer' );
+        $service = $this->service( $this->editedMenu() );
+        $this->assertNotSame( '', $this->noticeHtml( $service ) );
+        $this->postAs( MegaMenuPanel::ACTION_UPDATE, [] );
+        $this->panel( $service )->handleUpdate();
+        $this->assertSame( '', $this->noticeHtml( $service ), 'after the update the notice is gone' );
     }
 }

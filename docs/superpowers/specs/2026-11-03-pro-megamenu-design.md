@@ -58,6 +58,14 @@ scenarios for both. Calls I made: an update keeps each item's layout and gives a
 "Three latest posts" keeps links (a label inside one inline row of links reads wrong); a label's own page is not reachable any more; no automatic
 update when a menu is saved (it would write the header behind the owner's back; the button is the owner's decision).
 
+## The admin screen (round 7)
+
+Owner feedback 2026-11-04 after using the tab: show which layout is in use; make changing one item visible; stop the dropdown overflowing; put the
+out-of-date notice in WordPress itself; cut the text. Calls I made: "only on this item" became a table of the menu's items (each with its layout and its
+own choice) instead of a dropdown on every card, which is also what removed the overflow; the cards offer only "Use for all items"; the WordPress notice
+shows the first change and links to the tab for the rest, and has the Update button itself; the notice is not dismissible (it is a state, and goes when the
+header matches); a per-layout "Best for" line replaces the generic description.
+
 ## Calls I made (owner can override)
 
 - The Menu module is kept for tablet and phone, not replaced (the logo lives inside it).

@@ -24,6 +24,7 @@
  */
 
 use AiEditorDivi5\Pro\Batch\Batches;
+use AiEditorDivi5\Pro\Batch\BatchTable;
 use AiEditorDivi5\Pro\MegaMenu\HeaderEdit;
 use AiEditorDivi5\Pro\MegaMenu\Layouts;
 use AiEditorDivi5\Pro\MegaMenu\MegaMenuService;
@@ -160,9 +161,28 @@ function mm_teardown(): array
             $usersLeft++;
         }
     }
+    // The undo batches this run recorded (an apply, a remove, an undo each write one) must not stay behind: the tab offers the newest one
+    // as "Undo last change". The tool filter keeps anything else a person did meanwhile.
+    $batchesLeft = 0;
+    $batchesBack = true;
+    if ( isset( $s['batch_floor'] ) && BatchTable::exists() ) {
+        $wpdb->query( $wpdb->prepare( 'DELETE FROM ' . BatchTable::name() . " WHERE id > %d AND tool IN ('apply_mega_menu', 'undo_batch')", (int) $s['batch_floor'] ) ); // phpcs:ignore
+        $batchesLeft = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . BatchTable::name() . " WHERE id > %d AND tool IN ('apply_mega_menu', 'undo_batch')", (int) $s['batch_floor'] ) ); // phpcs:ignore
+        // Rows that were there before the run and were trimmed away by it come back exactly as they were.
+        foreach ( (array) ( $s['batches_before'] ?? [] ) as $row ) {
+            if ( 0 === (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . BatchTable::name() . ' WHERE id = %d', (int) $row['id'] ) ) ) { // phpcs:ignore
+                $wpdb->insert( BatchTable::name(), $row );
+            }
+            if ( 0 === (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . BatchTable::name() . ' WHERE id = %d AND items = %s', (int) $row['id'], (string) $row['items'] ) ) ) { // phpcs:ignore
+                $batchesBack = false;
+            }
+        }
+    }
     delete_option( AIED_MM_STATE );
 
     return [
+        'batches_left' => $batchesLeft,
+        'batches_back' => $batchesBack,
         'restored'    => true,
         'same_bytes'  => $sameBytes,
         'fallback'    => $fallback,
@@ -263,7 +283,11 @@ switch ( $aiedMmStep ) {
         }
         $oldMenuId = (string) $m[1][0];
         $new       = (string) preg_replace( '/"menuId":\{"desktop":\{"value":"\d*"\}\}/', '"menuId":{"desktop":{"value":"' . $menuId . '"}}', $clean, 1 );
-        mm_save_state( [ 'header_id' => $hid, 'original' => $orig, 'original_sha' => sha1( $orig ), 'baseline' => $new, 'baseline_sha' => sha1( $new ), 'menu_id' => $menuId, 'item_ids' => $items, 'old_menu_id' => $oldMenuId, 'extra_ids' => [], 'user_ids' => [] ] );
+        global $wpdb;
+        $batchFloor = BatchTable::exists() ? (int) $wpdb->get_var( 'SELECT COALESCE(MAX(id), 0) FROM ' . BatchTable::name() ) : 0; // phpcs:ignore
+        // The table keeps only the newest 20 rows and a run records more than that, so every row that exists now is kept in the state and put back.
+        $batchesBefore = BatchTable::exists() ? (array) $wpdb->get_results( 'SELECT * FROM ' . BatchTable::name() . ' ORDER BY id', ARRAY_A ) : []; // phpcs:ignore
+        mm_save_state( [ 'batches_before' => $batchesBefore, 'batch_floor' => $batchFloor, 'header_id' => $hid, 'original' => $orig, 'original_sha' => sha1( $orig ), 'baseline' => $new, 'baseline_sha' => sha1( $new ), 'menu_id' => $menuId, 'item_ids' => $items, 'old_menu_id' => $oldMenuId, 'extra_ids' => [], 'user_ids' => [] ] );
         wp_update_post( [ 'ID' => $hid, 'post_content' => wp_slash( $new ) ] );
         clean_post_cache( $hid );
         if ( mm_raw( $hid ) !== $new ) {
