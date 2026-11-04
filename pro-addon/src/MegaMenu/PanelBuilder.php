@@ -28,6 +28,9 @@ final class PanelBuilder
     /** Width in px the panel's content may use (the panel width less its padding); columns share it so long titles wrap. */
     private int $avail = 0;
 
+    /** How many cards of this panel have been given their entrance so far: each starts 70 ms after the one before (at most 5 steps). */
+    private int $entered = 0;
+
     public function __construct( private Blocks $b )
     {
     }
@@ -39,7 +42,8 @@ final class PanelBuilder
      */
     public function dropdown( array $layout, array $item, array $ctx ): string
     {
-        $this->t = Palette::tone( (string) $layout['tone'] );
+        $this->t       = Palette::tone( (string) $layout['tone'] );
+        $this->entered = 0;
         $viewport = 'viewport' === $layout['mode'];
         $this->avail = (int) $layout['width'] - ( $viewport ? 0 : 40 );
         $inner    = $this->content( $layout, $item, $ctx );
@@ -244,7 +248,8 @@ final class PanelBuilder
                 Blocks::padding( [ '28px', '28px', '28px', '28px' ] ),
                 Blocks::border( '16px' ),
                 Blocks::shadow( '14px', '32px', $this->t['glow'], [ '20px', '40px', $this->t['glow'] ] ),
-                Blocks::lift()
+                Blocks::lift(),
+                $this->enter()
             )
         );
     }
@@ -266,6 +271,12 @@ final class PanelBuilder
 
     // ---- pieces ----------------------------------------------------------------------------------------------------
 
+    /** The entrance of the next card. */
+    private function enter(): array
+    {
+        return Blocks::enter( ( 70 * min( 5, $this->entered++ ) ) . 'ms' );
+    }
+
     /** An opaque card: its own surface colour, a hairline, a soft shadow, and on hover it rises, glows and takes the accent as its frame. @param array{0:string,1:string,2:string,3:string} $padding */
     private function surfaceCard( array $padding, string $radius = '16px' ): array
     {
@@ -274,7 +285,8 @@ final class PanelBuilder
             Blocks::padding( $padding ),
             Blocks::border( $radius, [ '1px', $this->t['line'] ], null, $this->t['accent'] ),
             Blocks::shadow( '4px', '16px', $this->t['soft'], [ '14px', '30px', $this->t['glow'] ] ),
-            Blocks::lift()
+            Blocks::lift(),
+            $this->enter()
         );
     }
 
@@ -382,6 +394,7 @@ final class PanelBuilder
                 Blocks::border( '18px' ),
                 Blocks::shadow( '12px', '30px', $this->t['glow'], [ '18px', '38px', $this->t['glow'] ] ),
                 Blocks::lift(),
+                $this->enter(),
                 Blocks::sizing( [ 'width' => '240px', 'maxWidth' => '100%' ] )
             )
         );
@@ -415,7 +428,8 @@ final class PanelBuilder
                 Blocks::padding( [ '20px', '20px', '20px', '20px' ] ),
                 Blocks::border( '18px' ),
                 Blocks::shadow( '12px', '30px', $this->t['glow'], [ '18px', '38px', $this->t['glow'] ] ),
-                Blocks::lift()
+                Blocks::lift(),
+                $this->enter()
             )
         );
     }

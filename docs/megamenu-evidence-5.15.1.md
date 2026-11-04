@@ -68,7 +68,20 @@ New gate checks (desktop, first dropdown of each layout): a gradient is drawn in
 
 Defects found by the first runs of this round and fixed: an empty block (the heading bar) was written as `<!-- wp:divi/group ... --><!-- /wp:divi/group -->` while WordPress saves it self-closing, so a second apply reported a change and the undo points broke (`Blocks::block` now writes an empty block self-closing); the banner had no hover lift (added); the weight check did not accept the bold card titles.
 
-Not done: a native entrance animation (still untested whether Divi replays it when a hidden dropdown opens); the older flex-based column layouts still use fixed column widths.
+### Round 4 (2026-11-04): entrance animation
+
+Spike first: a card with Divi's own entrance animation (`module.decoration.animation`, slide from the bottom) was sampled over three hover-opens in a row on Divi 5.15.1. Every open replayed it: opacity 0 to 1 over about 500 ms, the `et_animated slideBottom` class on during it and gone after, the card back at its resting place (and the hover lift still works afterwards). So a hidden Dropdown does NOT swallow the animation, which was the open question of round 3.
+
+Built: every card (intro panel, promo card, banner, tiles, icon cards, post cards) slides up 8% while fading in, 450 ms, each card starting 70 ms after the one before it (at most 5 steps); no custom code, eight new group paths (`style`, `direction`, `duration`, `delay`, `startingOpacity`, `speedCurve`, `repeat`, `intensity.slide`), tagged `render:gate`.
+
+Gate: the panel is measured only after the animation has ended (1100 ms after the hover), and a new check proves, on two opens in a row per card layout, that the cards animate when the panel opens and are fully visible with the animation gone about a second later.
+
+| Run | Width 400 | Width 900 | Width 1280 | Setup/negatives/teardown | Total |
+|---|---|---|---|---|---|
+| A | 78 PASS, 0 FAIL | 78 PASS, 0 FAIL | 602 PASS, 0 FAIL | 127 PASS, 0 FAIL | 885 PASS, 0 FAIL |
+| B | 78 PASS, 0 FAIL | 78 PASS, 0 FAIL | 602 PASS, 0 FAIL | 127 PASS, 0 FAIL | 885 PASS, 0 FAIL |
+
+Limits: whether Divi honours `prefers-reduced-motion` for this animation was not tested; on touch (click to open) the animation was not measured; the older flex-based column layouts still use fixed column widths.
 
 ## Defects the gate found, and what was done
 

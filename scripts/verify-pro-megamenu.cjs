@@ -215,6 +215,29 @@ async function desktop(browser, layout, setup, ap) {
 
     // Each top-level item with a dropdown: opens on hover, placed in the viewport, on top, stays open on the way in, every
     // sub-link present with its href, contrast, clipping, images, the newest posts, closes on leave.
+    // Entrance animation: when the panel opens its cards are animating (Divi's `et_animated` class, opacity below 1) and the animation has
+    // ended and left them fully visible a second later; closing and opening again plays it again.
+    if (ap.layout_cards && nav.dropdowns.length) {
+      const i0 = nav.dropdowns[0];
+      const probe = () => page.evaluate((sel) => {
+        const p = document.querySelector(sel);
+        const g = p ? [...p.querySelectorAll('div.et_pb_group')].filter((e) => getComputedStyle(e).boxShadow !== 'none' && parseFloat(getComputedStyle(e).borderTopLeftRadius) >= 14) : [];
+        return { n: g.length, animating: g.filter((e) => /\bet_animated\b/.test(e.className) || getComputedStyle(e).animationName !== 'none').length, minOpacity: g.length ? Math.min(...g.map((e) => parseFloat(getComputedStyle(e).opacity))) : null };
+      }, `[data-aied-mm="panel-${i0}"]`);
+      for (const round of [1, 2]) {
+        await page.mouse.move(5, 880);
+        await page.waitForTimeout(500);
+        await page.locator(`[data-aied-mm="top-${i0}"]`).hover();
+        let seen = null;
+        for (let k = 0; k < 8 && !(seen && seen.animating > 0); k++) { seen = await probe(); if (!(seen.animating > 0)) await page.waitForTimeout(25); }
+        check(layout, W, `entrance animation plays when the panel opens (open ${round}: ${seen ? seen.animating : 0} of ${seen ? seen.n : 0} cards animating)`, !!seen && seen.n > 0 && seen.animating > 0);
+        await page.waitForTimeout(1200);
+        const done = await probe();
+        check(layout, W, `entrance animation has ended and the cards are fully visible (open ${round})`, done.animating === 0 && done.minOpacity === 1, JSON.stringify(done));
+      }
+      await page.mouse.move(5, 880);
+      await page.waitForTimeout(500);
+    }
     let shotDone = false;
     for (const i of nav.dropdowns) {
       const title = setup.top[i].title;
@@ -225,7 +248,7 @@ async function desktop(browser, layout, setup, ap) {
       await page.waitForTimeout(350);
       check(layout, W, `"${title}" panel closed before hover`, !(await panel.evaluate(SHOWN)));
       await label.hover();
-      await page.waitForTimeout(350);
+      await page.waitForTimeout(1100); // the cards' entrance animation (450ms plus up to 350ms of stagger) must have ended before anything is measured
       const open = await panel.evaluate(SHOWN);
       check(layout, W, `"${title}" opens on hover`, open);
       if (!open) continue;

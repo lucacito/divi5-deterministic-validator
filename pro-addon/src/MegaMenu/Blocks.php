@@ -118,6 +118,15 @@ final class Blocks
         return [ 'border' => $border ];
     }
 
+    /**
+     * An entrance animation: the module slides up a short way while it fades in. Divi plays it again every time the Dropdown
+     * opens (measured on 5.15.1: three opens in a row, opacity 0 to 1, the animation class removed at the end).
+     */
+    public static function enter( string $delay ): array
+    {
+        return [ 'animation' => self::resp( [ 'style' => 'slide', 'direction' => 'bottom', 'duration' => '450ms', 'delay' => $delay, 'startingOpacity' => '0%', 'speedCurve' => 'ease-out', 'repeat' => 'once', 'intensity' => [ 'slide' => '8%' ] ] ) ];
+    }
+
     /** The module rises 4px on hover (the shape the style kits write for a lifted card). */
     public static function lift(): array
     {

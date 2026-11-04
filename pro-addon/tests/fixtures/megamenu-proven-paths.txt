@@ -59,6 +59,14 @@ divi/dropdown:module.decoration.spacing.{bp}.value.padding.right  render:spike
 divi/dropdown:module.decoration.spacing.{bp}.value.padding.syncHorizontal  render:spike
 divi/dropdown:module.decoration.spacing.{bp}.value.padding.syncVertical  render:spike
 divi/dropdown:module.decoration.spacing.{bp}.value.padding.top  render:spike
+divi/group:module.decoration.animation.{bp}.value.delay  render:gate
+divi/group:module.decoration.animation.{bp}.value.direction  render:gate
+divi/group:module.decoration.animation.{bp}.value.duration  render:gate
+divi/group:module.decoration.animation.{bp}.value.intensity.slide  render:gate
+divi/group:module.decoration.animation.{bp}.value.repeat  render:gate
+divi/group:module.decoration.animation.{bp}.value.speedCurve  render:gate
+divi/group:module.decoration.animation.{bp}.value.startingOpacity  render:gate
+divi/group:module.decoration.animation.{bp}.value.style  render:gate
 divi/group:module.decoration.background.{bp}.value.color  recipe
 divi/group:module.decoration.background.{bp}.value.gradient.direction  shape
 divi/group:module.decoration.background.{bp}.value.gradient.enabled  shape
