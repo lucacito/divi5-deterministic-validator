@@ -255,11 +255,14 @@ switch ( $aiedMmStep ) {
         }
         $add( $custom( 'About', home_url( '/about/' ) ), 0 );
 
-        if ( 1 !== preg_match_all( '/"menuId":\{"desktop":\{"value":"(\d*)"\}\}/', $orig, $m ) || 1 !== count( $m[0] ) ) {
+        // The baseline is the header WITHOUT a mega menu: when the site's own header already carries one (an owner trying the tab), it
+        // is taken out for the run (HeaderEdit::remove) and teardown puts the original bytes back.
+        $clean = HeaderEdit::remove( $orig );
+        if ( 1 !== preg_match_all( '/"menuId":\{"desktop":\{"value":"(\d*)"\}\}/', $clean, $m ) || 1 !== count( $m[0] ) ) {
             mm_fail( 'the header has no single Menu module menuId to point at the throwaway menu' );
         }
         $oldMenuId = (string) $m[1][0];
-        $new       = (string) preg_replace( '/"menuId":\{"desktop":\{"value":"\d*"\}\}/', '"menuId":{"desktop":{"value":"' . $menuId . '"}}', $orig, 1 );
+        $new       = (string) preg_replace( '/"menuId":\{"desktop":\{"value":"\d*"\}\}/', '"menuId":{"desktop":{"value":"' . $menuId . '"}}', $clean, 1 );
         mm_save_state( [ 'header_id' => $hid, 'original' => $orig, 'original_sha' => sha1( $orig ), 'baseline' => $new, 'baseline_sha' => sha1( $new ), 'menu_id' => $menuId, 'item_ids' => $items, 'old_menu_id' => $oldMenuId, 'extra_ids' => [], 'user_ids' => [] ] );
         wp_update_post( [ 'ID' => $hid, 'post_content' => wp_slash( $new ) ] );
         clean_post_cache( $hid );
@@ -273,11 +276,12 @@ switch ( $aiedMmStep ) {
         foreach ( $flat as $it ) {
             $byParent[ (int) $it->menu_item_parent ][] = $it;
         }
-        $descendants = static function ( int $pid ) use ( &$descendants, $byParent ): array {
+        // `label`: a second-level item that has a third level is shown as a non-clickable label (not a link).
+        $descendants = static function ( int $pid, int $depth = 1 ) use ( &$descendants, $byParent ): array {
             $out = [];
             foreach ( $byParent[ $pid ] ?? [] as $c ) {
-                $out[] = [ 'title' => wp_strip_all_tags( (string) $c->title ), 'url' => (string) $c->url ];
-                $out   = array_merge( $out, $descendants( (int) $c->ID ) );
+                $out[] = [ 'title' => wp_strip_all_tags( (string) $c->title ), 'url' => (string) $c->url, 'label' => 1 === $depth && ! empty( $byParent[ (int) $c->ID ] ) ];
+                $out   = array_merge( $out, $descendants( (int) $c->ID, $depth + 1 ) );
             }
 
             return $out;
@@ -304,7 +308,14 @@ switch ( $aiedMmStep ) {
         break;
 
     case 'list':
-        mm_out( [ 'ids' => Layouts::ids() ] );
+        // `flat`: layouts that list every sub-link in one flat row (a posts panel), so a second-level item stays a link there.
+        $flat = [];
+        foreach ( Layouts::all() as $l ) {
+            if ( (int) $l['posts'] > 0 && 'cards' === $l['postStyle'] ) {
+                $flat[] = $l['id'];
+            }
+        }
+        mm_out( [ 'ids' => Layouts::ids(), 'flat' => $flat ] );
         break;
 
     // ---- one layout --------------------------------------------------------------------------------------------------
@@ -408,6 +419,108 @@ switch ( $aiedMmStep ) {
         $r    = $undo->undoLast( 1, true );
         $now  = mm_raw( $hid );
         mm_out( [ 'offered' => null === $last ? null : $last['summary'], 'result' => $r['result'], 'sha' => sha1( $now ), 'applied' => HeaderEdit::inspect( $now )['hasMega'] ] );
+        break;
+
+    // ---- the menu changed after the mega menu was applied ---------------------------------------------------------------
+    // drift_edit adds three items to the throwaway menu (a link under the heading "Design", a sub-item under "Blog", a new top-level
+    // item); drift_state reads what the Mega menu tab would say; drift_refresh is the "Update the mega menu" button; drift_cleanup
+    // takes the three items away again.
+    case 'drift_edit':
+        mm_admin();
+        $s    = mm_state();
+        $menu = wp_get_nav_menu_object( AIED_MM_MENU_NAME );
+        $find = static function ( string $title, int $parent ) use ( $menu ): int {
+            foreach ( wp_get_nav_menu_items( $menu->term_id ) ?: [] as $it ) {
+                if ( (int) $it->menu_item_parent === $parent && wp_strip_all_tags( (string) $it->title ) === $title ) {
+                    return (int) $it->ID;
+                }
+            }
+
+            return 0;
+        };
+        $services = $find( 'Services', 0 );
+        $design   = $find( 'Design', $services );
+        $blog     = $find( 'Blog', 0 );
+        if ( ! $services || ! $design || ! $blog ) {
+            mm_fail( 'the throwaway menu is not as the setup built it' );
+        }
+        $new = [];
+        foreach ( [ [ 'Fresh leaf', '/services/design/fresh-leaf/', $design ], [ 'Fresh blog link', '/blog/fresh/', $blog ], [ 'Contact', '/contact/', 0 ] ] as [ $title, $path, $parent ] ) {
+            $id = wp_update_nav_menu_item( $menu->term_id, 0, [ 'menu-item-status' => 'publish', 'menu-item-type' => 'custom', 'menu-item-title' => $title, 'menu-item-url' => home_url( $path ), 'menu-item-parent-id' => $parent ] );
+            if ( is_wp_error( $id ) || ! $id ) {
+                mm_fail( 'could not add a menu item' );
+            }
+            $new[] = (int) $id;
+        }
+        $s['item_ids'] = array_merge( $s['item_ids'], $new );
+        $s['drift_ids'] = $new;
+        mm_save_state( $s );
+        mm_out( [ 'added' => $new, 'fresh_leaf_url' => home_url( '/services/design/fresh-leaf/' ), 'fresh_blog_url' => home_url( '/blog/fresh/' ), 'contact_url' => home_url( '/contact/' ) ] );
+        break;
+
+    case 'drift_state':
+        mm_admin();
+        $hid    = mm_header_id();
+        $status = mm_service()->status();
+        $drift  = $status['drift'];
+        $panel  = new \AiEditorDivi5\Pro\Admin\MegaMenuPanel( static fn (): bool => true, mm_service(), static function (): void {}, new \AiEditorDivi5\Pro\MegaMenu\MegaMenuUndo( Batches::log(), Batches::undo() ) );
+        ob_start();
+        $panel->render( 'megamenu' );
+        $html = (string) ob_get_clean();
+        $menuNames = [];
+        foreach ( $drift['items'] ?? [] as $it ) {
+            $menuNames[ $it['title'] ] = [ 'missing' => $it['missing'], 'extra' => $it['extra'] ];
+        }
+        mm_out( [
+            'drifted'       => null !== $drift,
+            'bar_missing'   => $drift['bar']['missing'] ?? [],
+            'items'         => $menuNames,
+            'gone'          => $drift['gone'] ?? [],
+            'notice_shown'  => str_contains( $html, 'no longer matches your menu' ),
+            'button_shown'  => str_contains( $html, 'value="aied_pro_megamenu_update"' ),
+            'sha'           => sha1( mm_raw( $hid ) ),
+            'panels'        => HeaderEdit::panels( mm_raw( $hid ) ),
+        ] );
+        break;
+
+    case 'drift_refresh':
+        mm_admin();
+        $hid = mm_header_id();
+        $pre = mm_raw( $hid );
+        try {
+            $dry   = mm_service()->refresh( true );
+            $mid   = mm_raw( $hid );
+            $r1    = mm_service()->refresh( false );
+            $after = mm_raw( $hid );
+            $r2    = mm_service()->refresh( false );
+        } catch ( \Throwable $e ) {
+            mm_fail( $e->getMessage() );
+        }
+        $status = mm_service()->status();
+        mm_out( [
+            'pre_sha'       => sha1( $pre ),
+            'dry_untouched' => $mid === $pre,
+            'dry_valid'     => $dry['valid'] ?? null,
+            'changed'       => $r1['changed'] ?? null,
+            'again'         => $r2['changed'] ?? null,
+            'sha'           => sha1( $after ),
+            'drift_after'   => null !== $status['drift'],
+            'panels'        => HeaderEdit::panels( $after ),
+            'wrappers'      => substr_count( $after, 'JHMG Mega Menu"' ),
+        ] );
+        break;
+
+    case 'drift_cleanup':
+        mm_admin();
+        $s = mm_state();
+        foreach ( $s['drift_ids'] ?? [] as $id ) {
+            wp_delete_post( (int) $id, true );
+        }
+        $s['item_ids'] = array_values( array_diff( $s['item_ids'], $s['drift_ids'] ?? [] ) );
+        unset( $s['drift_ids'] );
+        mm_save_state( $s );
+        $menu = wp_get_nav_menu_object( AIED_MM_MENU_NAME );
+        mm_out( [ 'items_left' => count( wp_get_nav_menu_items( $menu->term_id ) ?: [] ), 'items_expected' => count( $s['item_ids'] ) ] );
         break;
 
     case 'remove':

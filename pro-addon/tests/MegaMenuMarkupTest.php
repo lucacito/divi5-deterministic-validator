@@ -66,13 +66,29 @@ class MegaMenuMarkupTest extends TestCase
                 $texts[] = $a['content']['innerContent']['desktop']['value']['text'] . '|' . $a['content']['innerContent']['desktop']['value']['linkUrl'];
             }
         }
-        $walk = function ( array $items ) use ( &$walk, $texts, $layout ): void {
+        // A second-level item that has a third level is a label (a Text module), not a link; its title must still be on the panel.
+        $labels = [];
+        preg_match_all( '/<!-- wp:divi\/text (\{.*?\})\s*\/?-->/s', $markup, $texts2 );
+        foreach ( $texts2[1] as $json ) {
+            $a = json_decode( $json, true );
+            if ( is_array( $a ) && is_string( $a['content']['innerContent']['desktop']['value'] ?? null ) ) {
+                $labels[] = html_entity_decode( strip_tags( $a['content']['innerContent']['desktop']['value'] ), ENT_QUOTES | ENT_HTML5 );
+            }
+        }
+        $walk = function ( array $items, int $depth ) use ( &$walk, $texts, $labels, $layout ): void {
             foreach ( $items as $it ) {
-                $this->assertContains( $it['title'] . '|' . $it['url'], $texts, 'link "' . $it['title'] . '" is in the nav for ' . $layout['id'] );
-                $walk( $it['children'] );
+                // The "latest posts" cards layout lists every sub-link flat in its footer (no groups), so there they stay links.
+                $flat = (int) $layout['posts'] > 0 && 'cards' === $layout['postStyle'];
+                if ( 1 === $depth && [] !== $it['children'] && ! $flat ) {
+                    $this->assertContains( $it['title'], $labels, 'label "' . $it['title'] . '" is on the panel for ' . $layout['id'] );
+                    $this->assertNotContains( $it['title'] . '|' . $it['url'], $texts, 'a label is not a link: "' . $it['title'] . '" in ' . $layout['id'] );
+                } else {
+                    $this->assertContains( $it['title'] . '|' . $it['url'], $texts, 'link "' . $it['title'] . '" is in the nav for ' . $layout['id'] );
+                }
+                $walk( $it['children'], $depth + 1 );
             }
         };
-        $walk( $tree );
+        $walk( $tree, 0 );
     }
 
     #[DataProvider( 'cases' )]

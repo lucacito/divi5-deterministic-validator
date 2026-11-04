@@ -49,6 +49,15 @@ Look, shared by all: a faint top-to-bottom panel gradient and a 3px accent top e
 
 Owner decision 2026-11-04: keep the gallery and add an "apply to this item only" choice, and give the owner a way to revert. Built as: an `Apply to` select on each layout card (shown once a mega menu is on), `MegaMenuService::apply( $layoutId, $dry, $itemId )`, the per-panel admin label `JHMG panel <item id> <layout id>` as the record of what each item uses, and `Undo last change` (`MegaMenuUndo`, `BatchUndo`). Details and proof: `docs/megamenu-evidence-5.15.1.md`, round 5.
 
+## Menu changes and a third level (round 6)
+
+Owner request 2026-11-04 (after seeing a header that no longer matched the menu): tell the owner when the header is out of date and let them update it
+in one click; and when a second-level item has a third level, make the second level a non-clickable label. Built as: `MenuDrift` and
+`MegaMenuService::drift/refresh` (see the evidence note), a notice and an "Update the mega menu" button on the tab, labels in `PanelBuilder`, and gate
+scenarios for both. Calls I made: an update keeps each item's layout and gives a new panel the layout most panels have; the flat footer row of
+"Three latest posts" keeps links (a label inside one inline row of links reads wrong); a label's own page is not reachable any more; no automatic
+update when a menu is saved (it would write the header behind the owner's back; the button is the owner's decision).
+
 ## Calls I made (owner can override)
 
 - The Menu module is kept for tablet and phone, not replaced (the logo lives inside it).

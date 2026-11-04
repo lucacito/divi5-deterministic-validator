@@ -100,6 +100,42 @@ A gap in the older checks, found and fixed on the way: the text-contrast check o
 
 Limits: the admin tab's new select and button were tested through the handlers and the rendered HTML, not looked at in a browser; the one-item scenario is checked for one pair of layouts (the others use the same code path); a menu item added later has no label yet and takes the layout of the last whole-menu or one-item apply; layouts applied by an older build have no panel labels, so for them the first one-item apply treats the other items as "not recognised" and rebuilds them with the layout just chosen (the tab says so).
 
+### Round 6 (2026-11-04): the menu changed after the apply, and a third level
+
+**What the owner saw.** The dev site's header showed "My account" and "Checkout" under the first item and "newpage" and "Cart" under the second, while the
+menu now had six and three sub-items. The header stored exactly those two links per panel: the panels are built once, at apply time, and nothing
+connects them to the menu afterwards.
+
+**Out-of-date check.** `MenuDrift::signature` reads every Link, Text and Heading of the stored wrapper, grouped by the panel it sits in;
+`MegaMenuService::drift` builds the wrapper again from the current menu (same code, each item keeps the layout its panel has) and compares the two.
+Post cards (admin label `JHMG post`) are skipped. `status()['drift']` names the items and links; the tab shows a warning and an
+"Update the mega menu" button (`refresh()`), one undoable batch of the same tool. Pure tests: no drift straight after applying any of the 13
+layouts on three menus; a new link, a removed link, a new top-level item, an item that gains sub-items, an order change alone; a posts layout is not
+out of date because newer posts exist.
+
+**Third level.** A second-level item that has a third level is a non-clickable label (a Text module, weight 700, the body font of the links) in the
+columns, the showcase tiles (with the short gradient bar the arrow chip used to be) and the icon cards. Third-level items with their own children
+stay flat links, as before. The flat footer row of "Three latest posts" keeps every sub-link a link. Path added to the proven list:
+`divi/text:...bodyFont.body.font.{bp}.value.weight` (`shape`, measured by this gate on the labels).
+
+Gate additions: labels are found in the panel as bold text and never as a link (every layout, 1280); a "menu changed" scenario adds a link under a
+heading, a link under Blog and a top-level item, checks the notice and the button, checks that the front end still shows the old panels, runs a dry
+update and the update, checks the new links in the panels and in the bar, a second update changing nothing, and two undos back to the header
+before any mega menu, byte for byte. Defects of my own the gate caught on the way: the gate's `listed` variable was out of scope; the "plain" row
+label had the weight of a link (500), so it did not look like a label (now 700); the showcase tiles lost their only gradient with the arrow chip
+(a bar now); an old check read the first link in the icon panel, which is a sub-link now. A finding about the gate itself: when the site's own header
+already carried a mega menu (the owner trying the tab), the gate's baseline contained it and every "back to the baseline" check failed; the setup
+now takes any mega menu out for the run and teardown still restores the original bytes.
+
+| Run | Width 400 | Width 900 | Width 1280 | Setup/scenarios/negatives/teardown | Total |
+|---|---|---|---|---|---|
+| A | 78 PASS, 0 FAIL | 78 PASS, 0 FAIL | 612 PASS, 0 FAIL | 142 PASS, 0 FAIL | 910 PASS, 0 FAIL |
+| B | 78 PASS, 0 FAIL | 78 PASS, 0 FAIL | 612 PASS, 0 FAIL | 142 PASS, 0 FAIL | 910 PASS, 0 FAIL |
+
+Limits: the notice, the Update button and the lines under it were tested through the handlers and the rendered HTML, not looked at in a browser; the
+menu-changed scenario runs on one layout (`showcase-tiles`); a label's own page is no longer reachable from the panel (the owner's choice); the
+comparison sees link text, addresses, labels and descriptions, not a change that alters only markup.
+
 ## Defects the gate found, and what was done
 
 1. **Raw Dropdown settings fatal.** `module.advanced.dropdown` written as a raw object is a PHP fatal on Divi 5.15.1 (HTTP 500 for the whole

@@ -154,4 +154,5 @@ divi/link:module.decoration.spacing.{bp}.value.padding.top  render:gate
 divi/text:content.decoration.bodyFont.body.font.{bp}.value.color  recipe
 divi/text:content.decoration.bodyFont.body.font.{bp}.value.lineHeight  recipe
 divi/text:content.decoration.bodyFont.body.font.{bp}.value.size  recipe
+divi/text:content.decoration.bodyFont.body.font.{bp}.value.weight  shape
 divi/text:content.innerContent.{bp}.value  recipe

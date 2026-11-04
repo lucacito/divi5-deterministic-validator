@@ -192,15 +192,15 @@ final class PanelBuilder
             $headed = null !== $section['heading'];
             if ( $headed ) {
                 $h      = $section['heading'];
+                // A label with the short gradient bar under it (the bar stands where the rule above the first link would be).
                 $inner .= $this->b->group(
-                    [ 'display' => 'flex', 'flexDirection' => 'row', 'justifyContent' => 'space-between', 'alignItems' => 'center', 'columnGap' => '12px' ],
-                    $this->b->link( $h['title'], $h['url'], [ 'size' => '17px', 'weight' => '700', 'color' => $this->t['text'] ], $this->t['accent'], '', [], $h['newTab'] )
-                    . $this->chip( 24, '11px' ),
-                    Blocks::padding( [ 0 === $at ? '0px' : '16px', '0px', '12px', '0px' ] )
+                    [ 'display' => 'flex', 'flexDirection' => 'column', 'rowGap' => '8px', 'alignItems' => 'flex-start' ],
+                    $this->label( $h['title'], [ 'size' => '17px', 'weight' => '700', 'color' => $this->t['text'] ] ) . $this->bar(),
+                    Blocks::padding( [ 0 === $at ? '0px' : '16px', '0px', '4px', '0px' ] )
                 );
             }
             foreach ( $section['links'] as $i => $l ) {
-                $inner .= $this->ruledRow( $l, $headed || $i > 0 );
+                $inner .= $this->ruledRow( $l, $i > 0 );
             }
         }
 
@@ -211,7 +211,7 @@ final class PanelBuilder
         );
     }
 
-    /** A link with a hairline above it (the first row of a headed tile draws the rule under the heading). */
+    /** A link with a hairline above it (not the first row of a tile: the heading's bar or the tile's edge starts it). */
     private function ruledRow( array $it, bool $rule ): string
     {
         $title = $this->b->link( $it['title'], $it['url'], [ 'size' => '15px', 'weight' => '500', 'color' => $this->t['text'] ], $this->t['accent'], '', [], $it['newTab'] );
@@ -304,7 +304,7 @@ final class PanelBuilder
                     $h      = $section['heading'];
                     $inner .= $this->b->group(
                         [ 'display' => 'flex', 'flexDirection' => 'column', 'rowGap' => '8px', 'alignItems' => 'flex-start' ],
-                        $this->b->link( $h['title'], $h['url'], [ 'size' => '14px', 'weight' => '700', 'color' => $this->t['accent'] ], $this->t['text'], '', [], $h['newTab'] )
+                        $this->label( $h['title'], [ 'size' => '14px', 'weight' => '700', 'color' => $this->t['accent'] ] )
                         . $this->bar(),
                         Blocks::padding( [ '0px', '0px', '4px', '0px' ] )
                     );
@@ -317,6 +317,15 @@ final class PanelBuilder
         }
 
         return $this->b->group( [ 'display' => 'flex', 'flexDirection' => 'row', 'columnGap' => '36px', 'alignItems' => 'flex-start' ], implode( '', $cols ) );
+    }
+
+    /**
+     * The title of a section that has links under it (a second-level item with a third level): plain text, not a link, so a
+     * visitor is not sent away from the menu by the heading of a group. A text module, so it takes the same body font as the links.
+     */
+    private function label( string $title, array $font ): string
+    {
+        return $this->b->text( '<p>' . self::esc( $title ) . '</p>', $font );
     }
 
     /** A short gradient bar under a column heading. */
@@ -332,9 +341,13 @@ final class PanelBuilder
     /** One link row in the style of the layout. `$withSub` also writes the item's own sub-links, indented. */
     private function row( array $it, string $style, bool $withSub ): string
     {
-        $title = $this->b->link( $it['title'], $it['url'], [ 'size' => 'cards' === $style ? '16px' : '15px', 'weight' => 'cards' === $style ? '700' : '500', 'color' => $this->t['text'] ], $this->t['accent'], '', [], $it['newTab'] );
+        $font  = [ 'size' => 'cards' === $style ? '16px' : '15px', 'weight' => 'cards' === $style ? '700' : '500', 'color' => $this->t['text'] ];
         $desc  = '' !== $it['description'] ? $this->b->text( '<p>' . self::esc( $it['description'] ) . '</p>', [ 'size' => '13px', 'color' => $this->t['muted'], 'lineHeight' => '1.45em' ] ) : '';
         $sub   = '';
+        // A title that has links of its own under it is a label, not a link (see label()).
+        $title = $withSub && [] !== $it['children']
+            ? $this->label( $it['title'], array_merge( $font, [ 'weight' => '700' ] ) )
+            : $this->b->link( $it['title'], $it['url'], $font, $this->t['accent'], '', [], $it['newTab'] );
         if ( $withSub && [] !== $it['children'] ) {
             $links = '';
             foreach ( ColumnPlan::flatten( $it['children'] ) as $s ) {
@@ -448,7 +461,8 @@ final class PanelBuilder
         return $this->b->group(
             [ 'display' => 'flex', 'flexDirection' => 'column', 'rowGap' => '8px' ],
             $pic . $body,
-            array_merge( $this->surfaceCard( [ '10px', '10px', '10px', '10px' ] ), Blocks::sizing( [ 'size' => [ 'flexGrow' ], 'width' => '210px', 'maxWidth' => '100%' ] ) )
+            array_merge( $this->surfaceCard( [ '10px', '10px', '10px', '10px' ] ), Blocks::sizing( [ 'size' => [ 'flexGrow' ], 'width' => '210px', 'maxWidth' => '100%' ] ) ),
+            Blocks::POST_LABEL
         );
     }
 

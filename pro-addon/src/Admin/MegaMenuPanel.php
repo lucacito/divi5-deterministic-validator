@@ -26,6 +26,7 @@ final class MegaMenuPanel
     public const ACTION_APPLY  = 'aied_pro_megamenu_apply';
     public const ACTION_REMOVE = 'aied_pro_megamenu_remove';
     public const ACTION_UNDO   = 'aied_pro_megamenu_undo';
+    public const ACTION_UPDATE = 'aied_pro_megamenu_update';
 
     /** Short-lived, user-bound transients carrying the words of the last result (the layout name or an error message). */
     private const LAST_KEY  = 'aied_pro_megamenu_last_';
@@ -45,6 +46,7 @@ final class MegaMenuPanel
         add_action( 'admin_post_' . self::ACTION_APPLY, [ $this, 'handleApply' ] );
         add_action( 'admin_post_' . self::ACTION_REMOVE, [ $this, 'handleRemove' ] );
         add_action( 'admin_post_' . self::ACTION_UNDO, [ $this, 'handleUndo' ] );
+        add_action( 'admin_post_' . self::ACTION_UPDATE, [ $this, 'handleUpdate' ] );
     }
 
     /** `jhmg_aied_admin_tabs`: the tab exists only while the add-on is unlocked. */
@@ -82,6 +84,7 @@ final class MegaMenuPanel
             'megamenu_undone'     => [ 'success', sprintf( /* translators: %s: what was undone */ __( 'Undone: %s. Your header is back as it was before.', 'jhmg-ai-editor-for-divi-5-pro' ), $last ) ],
             'megamenu_undo_partly' => [ 'warning', __( 'That change could not be fully undone: the header was changed afterwards (for example in the Divi builder), so nothing newer was overwritten.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
             'megamenu_undo_none'  => [ 'info', __( 'There is no mega menu change left to undo.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
+            'megamenu_updated'    => [ 'success', __( 'The mega menu now matches your menu. Every item kept its layout. "Undo last change" puts the header back as it was.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
             'megamenu_removed'    => [ 'success', __( 'The mega menu was removed. Your header is back to its normal menu.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
             'megamenu_unchanged'  => [ 'info', __( 'Nothing changed: the header already holds exactly that.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
             'megamenu_bad_layout' => [ 'error', __( 'That layout does not exist. Choose one of the layouts below.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
@@ -147,6 +150,25 @@ final class MegaMenuPanel
                         <li><strong><?php echo esc_html( $it['title'] ); ?></strong>: <?php echo null === $it['layoutName'] ? esc_html__( 'its own layout is not recognised', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html( $it['layoutName'] ); ?></li>
                     <?php endforeach; ?>
                 </ul>
+            <?php endif; ?>
+
+            <?php if ( $usable && $status['applied'] && null !== $status['drift'] ) : ?>
+                <div class="notice notice-warning inline aied-mm-drift">
+                    <p><strong><?php esc_html_e( 'The mega menu in your header no longer matches your menu.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></strong></p>
+                    <ul style="list-style:disc;margin-left:20px">
+                        <?php foreach ( $this->driftLines( $status['drift'] ) as $line ) : ?>
+                            <li><?php echo esc_html( $line ); ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                        <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_UPDATE ); ?>">
+                        <?php wp_nonce_field( self::ACTION_UPDATE ); ?>
+                        <p>
+                            <button type="submit" class="button button-primary"><?php esc_html_e( 'Update the mega menu', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
+                            <span class="description"><?php esc_html_e( 'Builds it again from your menu as it is now. Every item keeps its layout, and "Undo last change" steps back.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
+                        </p>
+                    </form>
+                </div>
             <?php endif; ?>
 
             <?php $lastChange = null === $this->undo ? null : $this->undo->last( $me, current_user_can( 'manage_options' ) ); ?>
@@ -247,6 +269,24 @@ final class MegaMenuPanel
         $this->redirectToTab( self::TAB, null === $item ? 'megamenu_applied' : 'megamenu_applied_item' );
     }
 
+    public function handleUpdate(): void
+    {
+        $this->guardPost( self::ACTION_UPDATE, 'edit_theme_options' );
+        if ( ! ( $this->unlocked )() ) {
+            $this->failWith( __( 'The mega menu needs an active Pro licence.', 'jhmg-ai-editor-for-divi-5-pro' ) );
+
+            return;
+        }
+        try {
+            $result = $this->service->refresh( false );
+        } catch ( \InvalidArgumentException | \RuntimeException $e ) {
+            $this->failWith( $e->getMessage() );
+
+            return;
+        }
+        $this->redirectToTab( self::TAB, empty( $result['changed'] ) ? 'megamenu_unchanged' : 'megamenu_updated' );
+    }
+
     public function handleUndo(): void
     {
         $this->guardPost( self::ACTION_UNDO, 'edit_theme_options' );
@@ -282,6 +322,48 @@ final class MegaMenuPanel
             return;
         }
         $this->redirectToTab( self::TAB, empty( $result['changed'] ) ? 'megamenu_unchanged' : 'megamenu_removed' );
+    }
+
+    /**
+     * What differs between the header and the menu, in plain sentences (at most a few names each).
+     *
+     * @param array<string,mixed> $drift MegaMenuService::status()['drift']
+     * @return list<string>
+     */
+    private function driftLines( array $drift ): array
+    {
+        $names = static function ( array $list ): string {
+            $shown = array_slice( array_values( array_unique( $list ) ), 0, 4 );
+            $more  = count( array_unique( $list ) ) - count( $shown );
+
+            return '"' . implode( '", "', $shown ) . '"' . ( $more > 0 ? sprintf( /* translators: %d: how many more names */ __( ' and %d more', 'jhmg-ai-editor-for-divi-5-pro' ), $more ) : '' );
+        };
+        $lines = [];
+        $one   = static function ( string $where, array $d ) use ( $names ): array {
+            $out = [];
+            if ( [] !== $d['missing'] ) {
+                $out[] = sprintf( /* translators: 1: where (menu item or the top bar), 2: names */ __( '%1$s: in your menu but not in the header yet: %2$s.', 'jhmg-ai-editor-for-divi-5-pro' ), $where, $names( $d['missing'] ) );
+            }
+            if ( [] !== $d['extra'] ) {
+                $out[] = sprintf( /* translators: 1: where (menu item or the top bar), 2: names */ __( '%1$s: still in the header but no longer in your menu: %2$s.', 'jhmg-ai-editor-for-divi-5-pro' ), $where, $names( $d['extra'] ) );
+            }
+            if ( [] === $out && ! empty( $d['reordered'] ) ) {
+                $out[] = sprintf( /* translators: %s: where (menu item or the top bar) */ __( '%s: the order of the links changed.', 'jhmg-ai-editor-for-divi-5-pro' ), $where );
+            }
+
+            return $out;
+        };
+        if ( is_array( $drift['bar'] ?? null ) ) {
+            array_push( $lines, ...$one( __( 'Top-level items', 'jhmg-ai-editor-for-divi-5-pro' ), $drift['bar'] ) );
+        }
+        foreach ( $drift['items'] ?? [] as $it ) {
+            array_push( $lines, ...$one( (string) $it['title'], $it ) );
+        }
+        if ( [] !== ( $drift['gone'] ?? [] ) ) {
+            $lines[] = __( 'The header has a panel for an item that no longer exists in your menu.', 'jhmg-ai-editor-for-divi-5-pro' );
+        }
+
+        return $lines;
     }
 
     /** The first reason the header cannot take a mega menu, or null when it can. @param array<string,mixed> $status */

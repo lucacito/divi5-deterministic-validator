@@ -23,6 +23,8 @@ const { devSiteOnly, makeWp, watchConsole } = require(path.join(ROOT, 'scripts',
 
 devSiteOnly(SITE);
 const wp = makeWp(ROOT);
+/** Layouts that list every sub-link in one flat row (filled from the PHP step `list`). */
+const flatLayouts = new Set();
 const only = (process.argv.find((a) => a.startsWith('--layouts=')) || '').replace('--layouts=', '').split(',').filter(Boolean);
 
 /** One PHP step of scripts/verify-pro-megamenu.php: its RESULT JSON, or throws with the ERROR message. */
@@ -268,10 +270,23 @@ async function desktop(browser, layout, setup, ap) {
       await page.waitForTimeout(120);
       check(layout, W, `"${title}" stays open moving from the label into the panel`, await panel.evaluate(SHOWN));
       // Every sub-link of the item, with its href, inside the panel.
-      const leaves = setup.top[i].leaves;
-      const present = await panel.evaluate((p, want) => want.map((l) => [...p.querySelectorAll('a[href]')].some((a) => a.getAttribute('href') === l.url && a.textContent.trim() === l.title)), leaves);
-      const missing = leaves.filter((l, k) => !present[k]).map((l) => l.title);
-      check(layout, W, `"${title}" every sub-link in the panel with its href (${leaves.length})`, missing.length === 0, missing.slice(0, 4).join(', '));
+      // A second-level item that has a third level is a non-clickable label (bold text, no link), except in a flat posts panel.
+      const flat = flatLayouts.has(layout);
+      const leaves = setup.top[i].leaves.map((l) => ({ ...l, label: !!l.label && !flat }));
+      const present = await panel.evaluate((p, want) => want.map((l) => {
+        const link = [...p.querySelectorAll('a[href]')].some((a) => a.getAttribute('href') === l.url && a.textContent.trim() === l.title);
+        if (!l.label) return link ? 'ok' : 'missing';
+        const asLink = [...p.querySelectorAll('a')].some((a) => a.textContent.trim() === l.title);
+        const text = [...p.querySelectorAll('p')].find((e) => e.textContent.trim() === l.title);
+        if (asLink) return 'clickable';
+        if (!text) return 'missing';
+        const cs = getComputedStyle(text);
+        return cs.fontWeight === '700' ? 'ok' : 'weight ' + cs.fontWeight;
+      }), leaves);
+      const missing = leaves.filter((l, k) => present[k] !== 'ok').map((l, k) => l.title);
+      const bad = leaves.map((l, k) => [l, present[k]]).filter(([, r]) => r !== 'ok').map(([l, r]) => `${l.title} (${r})`);
+      const labels = leaves.filter((l) => l.label).length;
+      check(layout, W, `"${title}" every sub-link in the panel with its href (${leaves.length - labels})${labels ? ` and ${labels} non-clickable bold label${labels > 1 ? 's' : ''}` : ''}`, bad.length === 0, bad.slice(0, 4).join(', '));
       // Contrast of the text (4.5:1 against the painted backdrop).
       const cc = await page.evaluate(contrastInPanel, panelSel);
       check(layout, W, `"${title}" text contrast >= 4.5:1 (${cc.count} texts)`, cc.count === 0 || cc.min >= 4.5, cc.count ? `min ${cc.min} at "${cc.worst}"` : 'no text');
@@ -343,7 +358,9 @@ async function desktop(browser, layout, setup, ap) {
         await page.waitForTimeout(300);
         const f = await panel.evaluate((p) => [...p.querySelectorAll('a.et_pb_link')].map((a) => { const t = getComputedStyle(a.querySelector('.et_pb_link_inner') || a); return { size: t.fontSize, weight: t.fontWeight, color: t.color }; }));
         check(layout, W, 'effect divi/link font size in the panel (written sizes 12-16px, plus 17px for a showcase tile heading; 14 or 15 present)', f.every((x) => /^1[2-6]px$/.test(x.size) || (layout.startsWith('showcase-') && x.size === '17px')) && f.some((x) => x.size === '15px' || x.size === '14px'), [...new Set(f.map((x) => x.size))].join('/'));
-        check(layout, W, 'effect divi/link font weight in the panel', f.some((x) => ['500', '600', '700'].includes(x.weight)), [...new Set(f.map((x) => x.weight))].join('/'));
+        // The weights written on links (500/600/700) and on a label's text (700, a Text module); a panel whose only titled items are labels has no heavy link.
+        const lw = await panel.evaluate((p) => [...p.querySelectorAll('div.et_pb_text p')].map((e) => getComputedStyle(e).fontWeight));
+        check(layout, W, 'effect divi/link and divi/text font weight in the panel (links and labels)', f.concat(lw.map((w) => ({ weight: w }))).some((x) => ['500', '600', '700'].includes(x.weight)), [...new Set(f.map((x) => x.weight).concat(lw))].join('/'));
         const tone = (await page.evaluate(() => getComputedStyle(document.body).backgroundColor));
         check(layout, W, 'effect divi/link colour in the panel (palette text or muted)', f.some((x) => /rgb\((27|242), (33|244), (48|248)\)|rgb\((74|180), (84|188), (104|203)\)/.test(x.color)), [...new Set(f.map((x) => x.color))].slice(0, 3).join(' | ') + ' body ' + tone);
         // Hover colour of a panel link.
@@ -397,7 +414,9 @@ async function narrow(browser, layout, width, height, setup) {
 (async () => {
   const setup = step('setup');
   console.log(`setup: menu ${setup.menu_id}, ${setup.items} items, header ${setup.header_id}, baseline in place`);
-  const ids = step('list').ids.filter((id) => only.length === 0 || only.includes(id));
+  const listed = step('list');
+  listed.flat.forEach((id) => flatLayouts.add(id));
+  const ids = listed.ids.filter((id) => only.length === 0 || only.includes(id));
   const browser = await chromium.launch();
   const summary = [];
   let fatal = null;
@@ -470,6 +489,54 @@ async function narrow(browser, layout, width, height, setup) {
       check(L, '-', 'undo last change again: back to the header before any mega menu, byte for byte', u2.result === 'undone' && u2.sha === it.pre_sha && u2.applied === false, `${u2.result} / ${u2.offered}`);
       const u3 = step('undo_last');
       check(L, '-', 'undo last change with nothing left to undo says so and changes nothing', u3.result === 'none' && u3.sha === it.pre_sha, u3.result);
+    }
+    // The menu is edited after the mega menu was applied: the tab says so, the front end still shows the old panels, one update brings
+    // the header up to date (every item keeps its layout), and undo puts the old header back, byte for byte.
+    {
+      const L = 'menu changed';
+      const base = step('state');
+      step('apply', 'showcase-tiles');
+      const ed = step('drift_edit');
+      const ds = step('drift_state');
+      check(L, '-', 'after editing the menu the header is reported as not matching it', ds.drifted === true);
+      check(L, '-', 'the new sub-item under the Design heading and the one under Blog are named, and the new top-level item', (ds.items.Services || {}).missing && ds.items.Services.missing.includes('Fresh leaf') && (ds.items.Blog || {}).missing && ds.items.Blog.missing.includes('Fresh blog link') && ds.bar_missing.includes('Contact'), JSON.stringify(ds.items) + ' ' + JSON.stringify(ds.bar_missing));
+      check(L, '-', 'the Mega menu tab shows the notice and the Update button', ds.notice_shown === true && ds.button_shown === true);
+      const probe = async () => {
+        const { ctx, page, errors, status } = await openPage(browser, 1280, 900, false);
+        try {
+          await page.waitForFunction((n) => document.querySelectorAll('.et_pb_dropdown_initialized').length >= n, setup.panels, { timeout: 10000 }).catch(() => {});
+          const nav = await page.evaluate(tagNav);
+          const out = { status, errors };
+          for (const [name, href] of [['Services', ed.fresh_leaf_url], ['Blog', ed.fresh_blog_url]]) {
+            const i = nav.labels.indexOf(name);
+            await page.mouse.move(5, 880);
+            await page.waitForTimeout(500);
+            await page.locator(`[data-aied-mm="top-${i}"]`).hover();
+            await page.waitForTimeout(1200);
+            out[name] = await page.locator(`[data-aied-mm="panel-${i}"]`).evaluate((p, h) => [...p.querySelectorAll('a[href]')].some((a) => a.getAttribute('href') === h), href);
+          }
+          out.contact = await page.evaluate((u) => [...document.querySelectorAll('[data-aied-mm="outer"] a')].some((a) => a.getAttribute('href') === u), ed.contact_url);
+          out.labels = nav.labels;
+          return out;
+        } finally {
+          await ctx.close();
+        }
+      };
+      const before = await probe();
+      check(L, 1280, 'before the update the front end still has the old panels (no new link, no new top-level item)', before.Services === false && before.Blog === false && before.contact === false, JSON.stringify({ s: before.Services, b: before.Blog, c: before.contact }));
+      const rf = step('drift_refresh');
+      check(L, '-', 'update: a dry run changes nothing and is valid', rf.dry_untouched === true && rf.dry_valid === true);
+      check(L, '-', 'update: saved once, an immediate second update changes nothing, one wrapper', rf.changed === true && rf.again === false && rf.wrappers === 1);
+      check(L, '-', 'update: afterwards nothing is out of date, and every panel kept the layout it had', rf.drift_after === false && Object.values(rf.panels).every((v) => v === 'showcase-tiles'), JSON.stringify(rf.panels));
+      const afterRefresh = await probe();
+      check(L, 1280, 'after the update the new links are in the panels and the new top-level item is in the bar', afterRefresh.Services === true && afterRefresh.Blog === true && afterRefresh.contact === true, JSON.stringify({ s: afterRefresh.Services, b: afterRefresh.Blog, c: afterRefresh.contact }));
+      check(L, 1280, 'no console error from the page before or after', before.errors.length === 0 && afterRefresh.errors.length === 0, before.errors.concat(afterRefresh.errors).slice(0, 2).join(' | '));
+      const u1 = step('undo_last');
+      check(L, '-', 'undo last change puts the header back as it was before the update, byte for byte', u1.result === 'undone' && u1.sha === rf.pre_sha && u1.applied === true, `${u1.result} / ${u1.offered}`);
+      const u2 = step('undo_last');
+      check(L, '-', 'undo again: back to the header before any mega menu, byte for byte', u2.result === 'undone' && u2.sha === base.sha && u2.applied === false, u2.result);
+      const cl = step('drift_cleanup');
+      check(L, '-', 'the three added menu items are gone', cl.items_left === cl.items_expected, `${cl.items_left} of ${cl.items_expected}`);
     }
     // Refusals (no global header, a copy without a Menu module, an editor without the Theme Builder permission).
     const neg = step('negative');

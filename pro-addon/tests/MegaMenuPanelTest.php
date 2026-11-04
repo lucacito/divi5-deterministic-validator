@@ -501,4 +501,191 @@ class MegaMenuPanelTest extends TestCase
         }
         $this->assertSame( $applied, $this->headerContent() );
     }
+
+    // ---- the menu changed after the mega menu was applied -------------------------------------------------------------
+
+    /** The two-panel menu after the owner edited it: Services gained a link, Blog lost one, About is new, Home moved to the end. */
+    private function editedMenu(): array
+    {
+        return MenuTree::build( [
+            self::item( 2, 0, 'Services' ), self::item( 3, 2, 'Design' ), self::item( 4, 2, 'Build' ), self::item( 5, 2, 'Extra' ),
+            self::item( 20, 0, 'Blog' ), self::item( 21, 20, 'News' ),
+            self::item( 30, 0, 'About' ),
+            self::item( 1, 0, 'Home' ),
+        ] );
+    }
+
+    public function testRightAfterApplyingAnyLayoutThereIsNoDrift(): void
+    {
+        foreach ( Layouts::ids() as $id ) {
+            foreach ( [ $this->twoPanelMenu(), MegaMenuFixture::menus()['deep'], MegaMenuFixture::menus()['grouped'] ] as $tree ) {
+                $service = $this->service( $tree );
+                $service->apply( $id );
+                $this->assertNull( $service->status()['drift'], 'no drift straight after applying ' . $id );
+            }
+        }
+    }
+
+    public function testThePostsOfALatestLayoutAreASnapshotNotDrift(): void
+    {
+        $this->service( $this->twoPanelMenu() )->apply( 'latest-cards' );
+        $newer = new class () extends PostSource {
+            public function latest( array $item, int $count = 4 ): array
+            {
+                return [ [ 'title' => 'A post from tomorrow', 'url' => 'https://example.test/tomorrow/', 'image' => '', 'date' => '5 November 2026' ] ];
+            }
+        };
+        $service = new MegaMenuService( new LayoutWriter( $this->log ), new FakeMegaMenus( $this->twoPanelMenu() ), $newer, fn (): array => [ 'layout_id' => 201, 'title' => 'Main header' ], static fn (): string => 'https://example.test/images/' );
+        $this->assertNull( $service->status()['drift'] );
+    }
+
+    public function testAMenuEditedAfterTheApplyIsReportedPerItem(): void
+    {
+        $this->service( $this->twoPanelMenu() )->apply( 'columns-footer' );
+        $drift = $this->service( $this->editedMenu() )->status()['drift'];
+        $this->assertNotNull( $drift );
+
+        $byTitle = [];
+        foreach ( $drift['items'] as $it ) {
+            $byTitle[ $it['title'] ] = $it;
+        }
+        $this->assertSame( [ 'Extra' ], $byTitle['Services']['missing'] );
+        $this->assertSame( [], $byTitle['Services']['extra'] );
+        $this->assertSame( [ 'Guides' ], $byTitle['Blog']['extra'] );
+        $this->assertContains( 'About', $drift['bar']['missing'], 'a new top-level item is missing from the bar' );
+        $this->assertSame( [], $drift['gone'] );
+    }
+
+    public function testAnItemThatGainsSubItemsNeedsAPanel(): void
+    {
+        $this->service( $this->twoPanelMenu() )->apply( 'columns-footer' );
+        $tree = MenuTree::build( [ self::item( 2, 0, 'Services' ), self::item( 3, 2, 'Design' ), self::item( 4, 2, 'Build' ), self::item( 20, 0, 'Blog' ), self::item( 21, 20, 'News' ), self::item( 22, 20, 'Guides' ), self::item( 1, 0, 'Home' ), self::item( 40, 1, 'Welcome' ) ] );
+        $drift = $this->service( $tree )->status()['drift'];
+        $this->assertNotNull( $drift );
+        $home = array_values( array_filter( $drift['items'], static fn ( array $i ): bool => 'Home' === $i['title'] ) );
+        $this->assertNotSame( [], $home, 'Home now has sub-items and no panel' );
+        $this->assertContains( 'Welcome', $home[0]['missing'] );
+    }
+
+    public function testAnOrderChangeAloneIsReported(): void
+    {
+        $this->service( $this->twoPanelMenu() )->apply( 'columns-footer' );
+        // "Build" now comes before "Design" under Services (an explicit menu order; the fixture otherwise orders by id).
+        $flat = [ self::item( 1, 0, 'Home' ), self::item( 2, 0, 'Services' ), self::item( 4, 2, 'Build' ), self::item( 3, 2, 'Design' ), self::item( 20, 0, 'Blog' ), self::item( 21, 20, 'News' ), self::item( 22, 20, 'Guides' ) ];
+        foreach ( $flat as &$f ) {
+            $f['order'] = 4 === $f['id'] ? 1 : ( 3 === $f['id'] ? 2 : $f['id'] + 10 );
+        }
+        unset( $f );
+        $drift = $this->service( MenuTree::build( $flat ) )->status()['drift'];
+        $this->assertNotNull( $drift );
+        $services = array_values( array_filter( $drift['items'], static fn ( array $i ): bool => 'Services' === $i['title'] ) );
+        $this->assertTrue( $services[0]['reordered'] );
+        $this->assertSame( [], $services[0]['missing'] );
+        $this->assertSame( [], $services[0]['extra'] );
+    }
+
+    public function testRefreshBuildsTheCurrentMenuAndKeepsEachItemsLayout(): void
+    {
+        $this->service( $this->twoPanelMenu() )->apply( 'columns-footer' );
+        $this->service( $this->twoPanelMenu() )->apply( 'icons-cards', false, 20 );
+        $before = $this->headerContent();
+
+        $edited = $this->service( $this->editedMenu() );
+        $result = $edited->refresh();
+        $this->assertTrue( $result['changed'] );
+        $this->assertSame( [ 2 => 'columns-footer', 20 => 'icons-cards' ], HeaderEdit::panels( $this->headerContent() ), 'every item kept its layout' );
+        $this->assertStringContainsString( 'Extra', $this->headerContent(), 'the new link is in the header' );
+        $this->assertNull( $edited->status()['drift'], 'nothing left to update' );
+        $this->assertFalse( $edited->refresh()['changed'], 'a second update changes nothing' );
+
+        // One step back puts the header exactly as it was.
+        $undo = new MegaMenuUndo( $this->log, $this->undoEngine() );
+        $this->assertSame( 'undone', $undo->undoLast( 1, true )['result'] );
+        $this->assertSame( $before, $this->headerContent() );
+    }
+
+    public function testAnItemThatGainsAPanelTakesTheLayoutMostPanelsHave(): void
+    {
+        $this->service( $this->twoPanelMenu() )->apply( 'feature-left' );
+        $tree = MenuTree::build( [ self::item( 2, 0, 'Services' ), self::item( 3, 2, 'Design' ), self::item( 20, 0, 'Blog' ), self::item( 21, 20, 'News' ), self::item( 1, 0, 'Home' ), self::item( 40, 1, 'Welcome' ) ] );
+        $this->service( $tree )->refresh();
+        $this->assertSame( [ 1 => 'feature-left', 2 => 'feature-left', 20 => 'feature-left' ], HeaderEdit::panels( $this->headerContent() ) );
+    }
+
+    public function testRefreshWithoutAMegaMenuIsRefused(): void
+    {
+        $before = $this->headerContent();
+        $this->expectException( \InvalidArgumentException::class );
+        $this->expectExceptionMessage( MegaMenuService::NOTHING_TO_UPDATE );
+        try {
+            $this->service( $this->twoPanelMenu() )->refresh();
+        } finally {
+            $this->assertSame( $before, $this->headerContent() );
+        }
+    }
+
+    public function testTheTabShowsTheNoticeAndTheUpdateButtonOnlyWhenTheMenuChanged(): void
+    {
+        $this->service( $this->twoPanelMenu() )->apply( 'columns-footer' );
+        $this->assertStringNotContainsString( 'no longer matches your menu', $this->render( $this->service( $this->twoPanelMenu() ) ) );
+        $this->assertStringNotContainsString( 'value="' . MegaMenuPanel::ACTION_UPDATE . '"', $this->render( $this->service( $this->twoPanelMenu() ) ) );
+
+        $html = $this->render( $this->service( $this->editedMenu() ) );
+        $this->assertStringContainsString( 'no longer matches your menu', $html );
+        $this->assertStringContainsString( 'value="' . MegaMenuPanel::ACTION_UPDATE . '"', $html );
+        $this->assertStringContainsString( 'Update the mega menu', $html );
+        $this->assertStringContainsString( 'Services: in your menu but not in the header yet: &quot;Extra&quot;.', $html );
+        $this->assertStringContainsString( 'Blog: still in the header but no longer in your menu: &quot;Guides&quot;.', $html );
+        $this->assertStringContainsString( 'Top-level items: in your menu but not in the header yet', $html );
+
+        // Nothing applied: nothing to be out of date.
+        $GLOBALS['__wp_posts'][201]->post_content = MegaMenuFixture::header();
+        $this->assertStringNotContainsString( 'no longer matches your menu', $this->render( $this->service( $this->editedMenu() ) ) );
+    }
+
+    public function testTheUpdateHandlerBringsTheHeaderUpToDateOnce(): void
+    {
+        $this->service( $this->twoPanelMenu() )->apply( 'columns-footer' );
+        $service = $this->service( $this->editedMenu() );
+        $this->postAs( MegaMenuPanel::ACTION_UPDATE, [] );
+        $this->panel( $service )->handleUpdate();
+        $this->assertSame( 'megamenu_updated', $this->redirectNotice() );
+        $this->assertNull( $service->status()['drift'] );
+
+        $this->panel( $service )->handleUpdate();
+        $this->assertSame( 'megamenu_unchanged', $this->redirectNotice() );
+
+        $_GET['aied_pro_notice'] = 'megamenu_updated';
+        $this->assertStringContainsString( 'The mega menu now matches your menu.', $this->render( $service ) );
+    }
+
+    public function testTheUpdateHandlerNeedsTheLicenceAndThePermission(): void
+    {
+        $this->service( $this->twoPanelMenu() )->apply( 'columns-footer' );
+        $applied = $this->headerContent();
+        $service = $this->service( $this->editedMenu() );
+
+        $this->unlocked = false;
+        $this->postAs( MegaMenuPanel::ACTION_UPDATE, [] );
+        $this->panel( $service )->handleUpdate();
+        $this->assertSame( 'megamenu_error', $this->redirectNotice() );
+        $this->assertSame( $applied, $this->headerContent() );
+        $this->unlocked = true;
+
+        $GLOBALS['__wp_caps'] = [ 'edit_pages' => true ];
+        $this->postAs( MegaMenuPanel::ACTION_UPDATE, [] );
+        try {
+            $this->panel( $service )->handleUpdate();
+            $this->fail( 'the capability check must stop the handler' );
+        } catch ( \RuntimeException $e ) {
+            $this->assertStringContainsString( 'Unauthorized', $e->getMessage() );
+        }
+        $this->assertSame( $applied, $this->headerContent() );
+    }
+
+    public function testRegisterAlsoHooksTheUpdateAction(): void
+    {
+        $this->panel()->register();
+        $this->assertArrayHasKey( 'admin_post_' . MegaMenuPanel::ACTION_UPDATE, $GLOBALS['__wp_filters'] );
+    }
 }

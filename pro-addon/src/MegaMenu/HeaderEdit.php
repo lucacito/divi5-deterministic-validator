@@ -70,6 +70,14 @@ final class HeaderEdit
         return $out;
     }
 
+    /** The mega menu wrapper block as stored (opening comment to closing comment), or '' when the header has none. */
+    public static function wrapper( string $content ): string
+    {
+        $found = self::findWrapper( $content );
+
+        return null === $found ? '' : substr( $content, $found['start'], $found['end'] - $found['start'] );
+    }
+
     public static function apply( string $content, string $wrapper ): string
     {
         $content = self::stripWrapper( $content );
