@@ -36,6 +36,9 @@ final class PreviewSvg
 
         $shapes = [ self::rect( 0.0, 0.0, 240.0, 150.0, 8.0, self::PAGE ) ];
         $shapes = array_merge( $shapes, self::nav( $t ) );
+        if ( 'showcase' === (string) $layout['family'] ) {
+            return '<svg viewBox="0 0 240 150" role="img" aria-label="' . esc_attr( $name ) . '">' . implode( '', array_merge( $shapes, self::showcase( $layout, $t ) ) ) . '</svg>';
+        }
 
         [ $px, $pw, $cx, $cw ] = self::panelBox( $width, $viewport );
         $shapes[] = self::rect( (float) $px, (float) self::PANEL_Y, (float) $pw, (float) self::PANEL_H, $viewport ? 0.0 : 6.0, $t['bg'], 1.0, $t['line'] );
@@ -80,6 +83,51 @@ final class PreviewSvg
         }
 
         return '<svg viewBox="0 0 240 150" role="img" aria-label="' . esc_attr( $name ) . '">' . implode( '', $shapes ) . '</svg>';
+    }
+
+    /** The showcase family: an optional backdrop, an optional intro panel and ruled link tiles. @return list<string> */
+    private static function showcase( array $layout, array $t ): array
+    {
+        $viewport = 'viewport' === (string) $layout['mode'];
+        $tiles    = 'cards' === (string) $layout['surface'];
+        $dark     = 'dark' === (string) $layout['tone'];
+        [ $px, $pw, $cx, $cw ] = self::panelBox( (int) $layout['width'], $viewport );
+        $backdrop = (string) $layout['backdrop'];
+        $fill     = 'accent' === $backdrop ? ( $dark ? $t['bg'] : $t['accent'] ) : ( 'wash' === $backdrop ? $t['card'] : $t['bg'] );
+        $opacity  = 'accent' === $backdrop && ! $dark ? 0.9 : 1.0;
+        $shapes   = [ self::rect( (float) $px, (float) self::PANEL_Y, (float) $pw, (float) self::PANEL_H, $viewport ? 0.0 : 6.0, $fill, $opacity, 'none' === $backdrop ? $t['line'] : '' ) ];
+
+        $top = self::PANEL_Y + 10;
+        $h   = self::PANEL_H - 20;
+        $x   = (float) $cx;
+        $w   = (float) $cw;
+        if ( (bool) $layout['intro'] ) {
+            $iw       = (float) (int) round( $w * 0.26 );
+            $shapes[] = self::rect( $x, (float) $top, $iw, (float) $h, 5.0, $t['accent'] );
+            $shapes[] = self::bar( $x + 6.0, (float) ( $top + 8 ), $iw - 12.0, $t['onAccent'], 0.95, 6.0 );
+            $shapes[] = self::bar( $x + 6.0, (float) ( $top + 18 ), ( $iw - 12.0 ) * 0.8, $t['onAccent'], 0.6 );
+            $shapes[] = self::bar( $x + 6.0, (float) ( $top + 25 ), ( $iw - 12.0 ) * 0.6, $t['onAccent'], 0.6 );
+            $shapes[] = self::circle( $x + 10.0, (float) ( $top + $h - 12 ), 5.0, $t['onAccent'], 0.95 );
+            $x       += $iw + 6.0;
+            $w       -= $iw + 6.0;
+        }
+        $cols = max( 1, (int) $layout['columns'] );
+        $colW = ( $w - ( $cols - 1 ) * 5 ) / $cols;
+        for ( $c = 0; $c < $cols; $c++ ) {
+            $tx = $x + $c * ( $colW + 5 );
+            if ( $tiles ) {
+                $shapes[] = self::rect( $tx, (float) $top, $colW, (float) $h, 5.0, $t['surface'], 1.0, $t['line'] );
+            }
+            $shapes[] = self::bar( $tx + 6.0, (float) ( $top + 8 ), $colW * 0.5, $t['text'], 0.95, 5.0 );
+            $shapes[] = self::circle( $tx + $colW - 9.0, (float) ( $top + 10 ), 2.5, $t['accent'], 0.9 );
+            for ( $i = 0; $i < 3; $i++ ) {
+                $ry       = $top + 19 + $i * 14;
+                $shapes[] = self::rect( $tx + 6.0, (float) $ry, $colW - 12.0, 1.0, 0.0, $t['line'] );
+                $shapes[] = self::bar( $tx + 6.0, (float) ( $ry + 5 ), ( $colW - 12.0 ) * ( 0.8 - $i * 0.1 ), $t['muted'], 0.85 );
+            }
+        }
+
+        return $shapes;
     }
 
     /** Where the panel and its content sit: [panel x, panel width, content x, content width]. */

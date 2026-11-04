@@ -152,8 +152,8 @@ class MegaMenuPanelTest extends TestCase
     public function testWithAUsableHeaderEveryLayoutHasAnEnabledUseButton(): void
     {
         $html = $this->render();
-        $this->assertSame( 20, substr_count( $html, 'aied-mm-card"' ) );
-        $this->assertSame( 20, substr_count( $html, '>Use this layout</button>' ) );
+        $this->assertSame( 24, substr_count( $html, 'aied-mm-card"' ) );
+        $this->assertSame( 24, substr_count( $html, '>Use this layout</button>' ) );
         $this->assertStringNotContainsString( ' disabled>', $html );
         $this->assertStringContainsString( 'Simple lists', $html );
         $this->assertStringContainsString( 'Latest posts', $html );
@@ -168,7 +168,7 @@ class MegaMenuPanelTest extends TestCase
         $html = $this->render( $this->service( null, false ) );
         $this->assertStringContainsString( 'needs a global header', $html );
         $this->assertStringContainsString( 'page=et_theme_builder', $html );
-        $this->assertSame( 20, substr_count( $html, ' disabled>' ) );
+        $this->assertSame( 24, substr_count( $html, ' disabled>' ) );
         $this->assertStringNotContainsString( 'Remove mega menu', $html );
     }
 
@@ -177,14 +177,14 @@ class MegaMenuPanelTest extends TestCase
         $GLOBALS['__wp_posts'][201]->post_content = self::header();
         $html                                      = $this->render();
         $this->assertStringContainsString( 'no Menu module', $html );
-        $this->assertSame( 20, substr_count( $html, ' disabled>' ) );
+        $this->assertSame( 24, substr_count( $html, ' disabled>' ) );
     }
 
     public function testAMenuWithoutSubItemsDisablesTheButtons(): void
     {
         $html = $this->render( $this->service( [ MenuTree::build( [ self::item( 1, 0, 'Home' ) ] )[0] ] ) );
         $this->assertStringContainsString( 'None of the menu', $html );
-        $this->assertSame( 20, substr_count( $html, ' disabled>' ) );
+        $this->assertSame( 24, substr_count( $html, ' disabled>' ) );
     }
 
     public function testTheMenuNamesAndCountsAreShownEscaped(): void

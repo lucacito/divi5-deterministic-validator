@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * The "Mega menu" tab: shows whether the site can take a mega menu, and lists the 20 layouts. "Use this layout" puts it on
+ * The "Mega menu" tab: shows whether the site can take a mega menu, and lists the 24 layouts. "Use this layout" puts it on
  * the global header through MegaMenuService (the one write path, undoable from Recent Pro changes). No JavaScript.
  */
 final class MegaMenuPanel

@@ -2,7 +2,7 @@
 /*
  * Real-site gate for the Pro mega menu (make verify-pro-megamenu). Dev site only.
  *
- * For each of the 20 layouts, through the real MegaMenuService (scripts/verify-pro-megamenu.php does the PHP side, one step per call):
+ * For each of the 24 layouts, through the real MegaMenuService (scripts/verify-pro-megamenu.php does the PHP side, one step per call):
  *   dry run valid -> apply (saved once, second apply changed:false, Menu module hidden on desktop only) -> the front page in Chromium
  *   at 1280 (desktop, hover), 900 and 400 (touch: Menu module shown, mega wrapper hidden, no horizontal scroll) -> remove (blocks back
  *   to the baseline, second remove changed:false) -> undo of the remove batch (the applied header, byte for byte) -> undo of the apply
@@ -280,7 +280,7 @@ async function desktop(browser, layout, setup, ap) {
         await label.hover();
         await page.waitForTimeout(300);
         const f = await panel.evaluate((p) => [...p.querySelectorAll('a.et_pb_link')].map((a) => { const t = getComputedStyle(a.querySelector('.et_pb_link_inner') || a); return { size: t.fontSize, weight: t.fontWeight, color: t.color }; }));
-        check(layout, W, 'effect divi/link font size in the panel (written sizes 12-16px, plus 18px for the large post of latest-featured; 14 or 15 present)', f.every((x) => /^1[2-6]px$/.test(x.size) || (layout === 'latest-featured' && x.size === '18px')) && f.some((x) => x.size === '15px' || x.size === '14px'), [...new Set(f.map((x) => x.size))].join('/'));
+        check(layout, W, 'effect divi/link font size in the panel (written sizes 12-16px, plus 17px for a showcase tile heading and 18px for the large post of latest-featured; 14 or 15 present)', f.every((x) => /^1[2-6]px$/.test(x.size) || (layout.startsWith('showcase-') && x.size === '17px') || (layout === 'latest-featured' && x.size === '18px')) && f.some((x) => x.size === '15px' || x.size === '14px'), [...new Set(f.map((x) => x.size))].join('/'));
         check(layout, W, 'effect divi/link font weight in the panel', f.some((x) => x.weight === '500' || x.weight === '600'), [...new Set(f.map((x) => x.weight))].join('/'));
         const tone = (await page.evaluate(() => getComputedStyle(document.body).backgroundColor));
         check(layout, W, 'effect divi/link colour in the panel (palette text or muted)', f.some((x) => /rgb\((27|242), (33|244), (48|248)\)|rgb\((74|180), (84|188), (104|203)\)/.test(x.color)), [...new Set(f.map((x) => x.color))].slice(0, 3).join(' | ') + ' body ' + tone);

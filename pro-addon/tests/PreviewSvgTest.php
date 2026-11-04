@@ -19,14 +19,14 @@ class PreviewSvgTest extends TestCase
         return (string) preg_replace( '/ aria-label="[^"]*"/', '', $svg );
     }
 
-    public function testTheTwentyPreviewsDifferInTheirDrawingNotOnlyTheirName(): void
+    public function testTheTwentyFourPreviewsDifferInTheirDrawingNotOnlyTheirName(): void
     {
         $drawings = [];
         foreach ( Layouts::all() as $layout ) {
             $drawings[ $layout['id'] ] = self::drawing( PreviewSvg::for( $layout ) );
         }
-        $this->assertCount( 20, $drawings );
-        $this->assertCount( 20, array_unique( $drawings ), 'two layouts draw the same wireframe' );
+        $this->assertCount( 24, $drawings );
+        $this->assertCount( 24, array_unique( $drawings ), 'two layouts draw the same wireframe' );
 
         $ids = array_keys( $drawings );
         for ( $i = 0; $i < count( $ids ); $i++ ) {

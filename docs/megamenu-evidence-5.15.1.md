@@ -5,7 +5,7 @@ Chromium (Playwright), the real `MegaMenuService` as user 1. Design record: `doc
 
 ## What the gate does
 
-For each of the 20 layouts it applies the layout to the global header through the real service (dry run first, then apply, then a second apply that
+For each of the 24 layouts it applies the layout to the global header through the real service (dry run first, then apply, then a second apply that
 must report `changed:false`), renders the front page at 1280, 900 and 400 px (900 and 400 with touch emulation), and for every top-level item with
 sub-items it:
 
@@ -17,7 +17,7 @@ sub-items it:
   tablet and phone).
 
 Then: remove and undo restore the header byte for byte, the refusals (no global header, no Menu module, unknown layout, non-string input) answer as
-specified, and the teardown leaves no menu, menu item, fixture or user behind. Screenshots: `dist/megamenu/<layout>.png` (20 files, git-ignored).
+specified, and the teardown leaves no menu, menu item, fixture or user behind. Screenshots: `dist/megamenu/<layout>.png` (24 files, git-ignored).
 
 ## Results
 
@@ -28,6 +28,30 @@ specified, and the teardown leaves no menu, menu item, fixture or user behind. S
 | 3 | 120 PASS, 0 FAIL | 120 PASS, 0 FAIL | 760 PASS, 0 FAIL | 190 PASS, 0 FAIL | 1190 PASS, 0 FAIL, exit 0 |
 
 20 of 20 layouts ran in runs 2 and 3. Two consecutive green runs on an unchanged tree.
+
+### After the design review of 2026-11-04 (24 layouts)
+
+A review of a competitor's free Divi 5 mega menu template (Divi Engine; only its layout JSON and instructions were read, nothing was run) and of our own screenshots led to a sixth family, **Showcase**, and four fixes to the first 20.
+
+| Run | Width 400 | Width 900 | Width 1280 | Setup/negatives/teardown | Total |
+|---|---|---|---|---|---|
+| A | 144 PASS, 0 FAIL | 144 PASS, 0 FAIL | 904 PASS, 0 FAIL | 226 PASS, 0 FAIL | 1418 PASS, 0 FAIL, exit 0 |
+| B | 144 PASS, 0 FAIL | 144 PASS, 0 FAIL | 904 PASS, 0 FAIL | 226 PASS, 0 FAIL | 1418 PASS, 0 FAIL, exit 0 |
+
+24 of 24 layouts ran in both. Two consecutive green runs on an unchanged tree.
+
+New: `showcase-intro-cards`, `showcase-tiles`, `showcase-intro-links`, `showcase-tiles-dark` (a coloured intro panel, opaque tiles with an arrow heading and links ruled by a hairline, a translucent backdrop; text only ever sits on an opaque tile, the intro panel or the panel, never on the translucent backdrop). No new attribute path was needed (`MegaMenuMarkupTest` still passes against the same proven-paths list).
+
+Changes to the first 20, found by looking at the screenshots:
+
+1. **Icon cards left an empty slot** (3 groups in a 2-column grid): the grid now picks a column count that fills the last row when one exists (`PanelBuilder::gridColumns`).
+2. **Full-width panels did not line up with the logo**: their content is now 80% of the window, at most 1080 px, which is Divi's default row.
+3. **Section headings were tiny and grey**: 13 px, accent colour.
+4. **The first showcase build ran past the nav's right edge** (tiles ended at x=1208, the nav at x=1152) because each column had a fixed pixel width. Found in the screenshot, not by a check: the gate's clipping test only looks inside the panel. The showcase layouts are now one equal-width grid. Not fixed: the older flex-based multi-column layouts (`columns-3`, `feature-*`, the list and latest families) still use fixed column widths; they sit inside a panel whose width is fixed in pixels, so they do not overflow, but a full-width `columns-4-wide` and `columns-dark` now rely on the 1080 px maximum.
+
+Gate changes: the font-size expectation accepts 17 px for a showcase tile heading; the intro panel's link now has a real hover colour (it was white on hover, so the hover check rightly failed).
+
+Not borrowed: their cascading CSS animation (needs custom CSS, which this project does not write) and their JavaScript/CSS trigger setup. A native entrance animation on panel items is untested.
 
 ## Defects the gate found, and what was done
 

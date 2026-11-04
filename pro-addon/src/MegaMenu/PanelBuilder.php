@@ -41,17 +41,24 @@ final class PanelBuilder
     {
         $this->t = Palette::tone( (string) $layout['tone'] );
         $viewport = 'viewport' === $layout['mode'];
-        $this->avail = (int) $layout['width'] - ( $viewport ? 48 : 40 );
+        $this->avail = (int) $layout['width'] - ( $viewport ? 0 : 40 );
         $inner    = $this->content( $layout, $item, $ctx );
+        // A full-width panel keeps its content as wide as Divi's own row (80% of the window, at most 1080 px), so it lines up
+        // with the logo and the navigation above it.
         $sizing   = $viewport
-            ? [ 'width' => '100%', 'maxWidth' => $layout['width'] . 'px', 'alignment' => 'center' ]
+            ? [ 'width' => '80%', 'maxWidth' => $layout['width'] . 'px', 'alignment' => 'center' ]
             : [ 'width' => $layout['width'] . 'px', 'maxWidth' => '100%' ];
+        $ground   = match ( (string) $layout['backdrop'] ) {
+            'accent' => $this->t['backdrop'],
+            'wash'   => $this->t['wash'],
+            default  => $this->t['bg'],
+        };
         $wrapper  = $this->b->group( [ 'display' => 'flex', 'flexDirection' => 'column', 'rowGap' => '16px' ], $inner, Blocks::sizing( $sizing ) );
 
         $deco = array_merge(
-            Blocks::background( $this->t['bg'] ),
+            Blocks::background( $ground ),
             $viewport
-                ? array_merge( Blocks::padding( [ '32px', '24px', '32px', '24px' ] ), Blocks::border( '0px', [ '1px', $this->t['line'] ] ) )
+                ? array_merge( Blocks::padding( [ '32px', '0px', '32px', '0px' ] ), Blocks::border( '0px', [ '1px', $this->t['line'] ] ) )
                 : array_merge( Blocks::padding( [ '20px', '20px', '20px', '20px' ] ), Blocks::border( '14px', [ '1px', $this->t['line'] ] ) ),
             Blocks::shadow( '12px', '32px', $this->t['shadow'] )
         );
@@ -79,6 +86,7 @@ final class PanelBuilder
             'feature' => $this->featureFamily( $layout, $item, $ctx ),
             'icons'   => $this->iconsFamily( $layout, $item ),
             'latest'  => $this->latestFamily( $layout, $item, $ctx ),
+            'showcase' => $this->showcaseFamily( $layout, $item ),
             default   => throw new \InvalidArgumentException( 'Unknown mega menu family: ' . (string) $layout['family'] ),
         };
     }
@@ -128,7 +136,7 @@ final class PanelBuilder
     {
         if ( 'cards' === $layout['rows'] ) {
             $cards = array_map( fn ( array $c ): string => $this->row( $c, 'cards', true ), $item['children'] );
-            $grid  = $this->b->group( [ 'display' => 'grid', 'gridColumnCount' => (string) $layout['columns'], 'columnGap' => '12px', 'rowGap' => '12px' ], implode( '', $cards ) );
+            $grid  = $this->b->group( [ 'display' => 'grid', 'gridColumnCount' => (string) self::gridColumns( count( $cards ), (int) $layout['columns'] ), 'columnGap' => '12px', 'rowGap' => '12px' ], implode( '', $cards ) );
 
             return $grid . ( $layout['footer'] ? $this->footer( $item ) : '' );
         }
@@ -179,6 +187,107 @@ final class PanelBuilder
         return $this->b->group( [ 'display' => 'flex', 'flexDirection' => 'column', 'rowGap' => '4px' ], $links ) . $this->footer( $item );
     }
 
+    /**
+     * The showcase family: link columns as ruled tiles (or open columns), optionally beside a coloured intro panel. The tiles
+     * are opaque so text never sits on a translucent backdrop.
+     */
+    private function showcaseFamily( array $layout, array $item ): string
+    {
+        $columns = ColumnPlan::from( $item, (int) $layout['columns'] );
+        $tiles   = 'cards' === $layout['surface'];
+        $gap     = $tiles ? '12px' : '36px';
+        $cells   = (bool) $layout['intro'] ? $this->introPanel( $item ) : '';
+        foreach ( $columns as $sections ) {
+            $cells .= $this->tile( $sections, $tiles );
+        }
+
+        // One grid with a track per tile (and one for the intro panel): the tracks share the panel width equally, so nothing
+        // can run past the edge and a menu with fewer groups than the layout's column count leaves no empty slot.
+        $count = count( $columns ) + ( (bool) $layout['intro'] ? 1 : 0 );
+
+        return $this->b->group( [ 'display' => 'grid', 'gridColumnCount' => (string) max( 1, $count ), 'columnGap' => $gap, 'rowGap' => $gap ], $cells );
+    }
+
+    /** One link column of the showcase family. @param list<array<string,mixed>> $sections */
+    private function tile( array $sections, bool $tiles ): string
+    {
+        $inner = '';
+        foreach ( $sections as $at => $section ) {
+            $headed = null !== $section['heading'];
+            if ( $headed ) {
+                $h      = $section['heading'];
+                $inner .= $this->b->group(
+                    [ 'display' => 'flex', 'flexDirection' => 'row', 'justifyContent' => 'space-between', 'alignItems' => 'center', 'columnGap' => '12px' ],
+                    $this->b->link( $h['title'], $h['url'], [ 'size' => '17px', 'weight' => '700', 'color' => $this->t['text'] ], $this->t['accent'], '', [], $h['newTab'] )
+                    . $this->b->icon( self::GLYPH, $this->t['accent'], '14px' ),
+                    Blocks::padding( [ 0 === $at ? '0px' : '16px', '0px', '12px', '0px' ] )
+                );
+            }
+            foreach ( $section['links'] as $i => $l ) {
+                $inner .= $this->ruledRow( $l, $headed || $i > 0 );
+            }
+        }
+
+        return $this->b->group(
+            [ 'display' => 'flex', 'flexDirection' => 'column', 'rowGap' => '0px', 'alignItems' => 'stretch' ],
+            $inner,
+            $tiles
+                ? array_merge( Blocks::background( $this->t['surface'] ), Blocks::padding( [ '18px', '18px', '10px', '18px' ] ), Blocks::border( '12px', [ '1px', $this->t['line'] ] ) )
+                : []
+        );
+    }
+
+    /** A link with a hairline above it (the first row of a headed tile draws the rule under the heading). */
+    private function ruledRow( array $it, bool $rule ): string
+    {
+        $title = $this->b->link( $it['title'], $it['url'], [ 'size' => '15px', 'weight' => '500', 'color' => $this->t['text'] ], $this->t['accent'], '', [], $it['newTab'] );
+        $desc  = '' !== $it['description'] ? $this->b->text( '<p>' . self::esc( $it['description'] ) . '</p>', [ 'size' => '13px', 'color' => $this->t['muted'], 'lineHeight' => '1.45em' ] ) : '';
+
+        return $this->b->group(
+            [ 'display' => 'flex', 'flexDirection' => 'column', 'rowGap' => '2px' ],
+            $title . $desc,
+            array_merge( Blocks::padding( [ '10px', '0px', '10px', '0px' ] ), $rule ? Blocks::topRule( $this->t['line'] ) : [] )
+        );
+    }
+
+    /** The coloured intro panel: the item's title, one line about it, and the way to its page. */
+    private function introPanel( array $item ): string
+    {
+        $text = '' !== $item['description'] ? $item['description'] : 'Everything under ' . $item['title'] . ' in one place.';
+        $link = $this->b->link( self::VIEW_ALL . ' ' . $item['title'], $item['url'], [ 'size' => '15px', 'weight' => '700', 'color' => $this->t['onAccent'] ], $this->t['onAccentHover'] );
+        $chip = $this->b->group(
+            [ 'display' => 'flex', 'flexDirection' => 'column', 'alignItems' => 'center', 'justifyContent' => 'center' ],
+            $this->b->icon( self::GLYPH, $this->t['accent'], '14px' ),
+            array_merge( Blocks::background( $this->t['onAccent'] ), Blocks::border( '999px' ), Blocks::sizing( [ 'width' => '34px', 'height' => '34px' ] ) )
+        );
+
+        return $this->b->group(
+            [ 'display' => 'flex', 'flexDirection' => 'column', 'rowGap' => '14px', 'alignItems' => 'flex-start', 'justifyContent' => 'space-between' ],
+            $this->b->group(
+                [ 'display' => 'flex', 'flexDirection' => 'column', 'rowGap' => '10px' ],
+                $this->b->heading( $item['title'], 'h3', [ 'size' => '28px', 'weight' => '700', 'color' => $this->t['onAccent'], 'lineHeight' => '1.15em' ] )
+                . $this->b->text( '<p>' . self::esc( $text ) . '</p>', [ 'size' => '15px', 'color' => $this->t['onAccent'], 'lineHeight' => '1.5em' ] )
+            )
+            . $this->b->group( [ 'display' => 'flex', 'flexDirection' => 'row', 'columnGap' => '12px', 'alignItems' => 'center' ], $chip . $link ),
+            array_merge( Blocks::background( $this->t['accent'] ), Blocks::padding( [ '24px', '24px', '24px', '24px' ] ), Blocks::border( '12px' ) )
+        );
+    }
+
+    /** Columns for a grid of `$count` cards so the last row is never a single card when a neighbouring count fills it evenly. */
+    private static function gridColumns( int $count, int $wanted ): int
+    {
+        if ( $count <= $wanted || 0 === $count % $wanted ) {
+            return $wanted;
+        }
+        foreach ( [ $wanted + 1, $wanted - 1 ] as $try ) {
+            if ( $try >= 2 && $try <= 4 && 0 === $count % $try ) {
+                return $try;
+            }
+        }
+
+        return $wanted;
+    }
+
     // ---- pieces ----------------------------------------------------------------------------------------------------
 
     /** @param list<list<array<string,mixed>>> $columns */
@@ -193,7 +302,7 @@ final class PanelBuilder
             foreach ( $sections as $section ) {
                 if ( null !== $section['heading'] ) {
                     $h      = $section['heading'];
-                    $inner .= $this->b->link( $h['title'], $h['url'], [ 'size' => '12px', 'weight' => '700', 'color' => $this->t['muted'] ], $this->t['accent'], '', [], $h['newTab'] );
+                    $inner .= $this->b->link( $h['title'], $h['url'], [ 'size' => '13px', 'weight' => '700', 'color' => $this->t['accent'] ], $this->t['text'], '', [], $h['newTab'] );
                 }
                 foreach ( $section['links'] as $l ) {
                     $inner .= $this->row( $l, $rows, false );

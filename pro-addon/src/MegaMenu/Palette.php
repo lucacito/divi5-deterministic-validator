@@ -11,12 +11,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * The colours of the two panel tones. Fixed hex values (no site colour tokens: a token the site does not have leaves a
  * colour undefined), chosen so every text/background pair below is at least 4.5:1 (PaletteTest checks all of them).
+ * `surface` is the colour of a tile that sits on a translucent `backdrop` or `wash` (the two are never a text background:
+ * text only ever sits on an opaque tile, the intro panel or the panel itself).
  */
 final class Palette
 {
     private const TONES = [
-        'light' => [ 'bg' => '#ffffff', 'text' => '#1b2130', 'muted' => '#4a5468', 'line' => '#e3e7ee', 'card' => '#f3f5f9', 'accent' => '#1d4ed8', 'tint' => 'rgba(29, 78, 216, 0.10)', 'onAccent' => '#ffffff', 'shadow' => 'rgba(16, 24, 40, 0.18)' ],
-        'dark'  => [ 'bg' => '#12161f', 'text' => '#f2f4f8', 'muted' => '#b4bccb', 'line' => '#2a3142', 'card' => '#1c2230', 'accent' => '#8fb3ff', 'tint' => 'rgba(143, 179, 255, 0.16)', 'onAccent' => '#0b1020', 'shadow' => 'rgba(0, 0, 0, 0.45)' ],
+        'light' => [ 'bg' => '#ffffff', 'text' => '#1b2130', 'muted' => '#4a5468', 'line' => '#e3e7ee', 'card' => '#f3f5f9', 'accent' => '#1d4ed8', 'tint' => 'rgba(29, 78, 216, 0.10)', 'onAccent' => '#ffffff', 'shadow' => 'rgba(16, 24, 40, 0.18)', 'onAccentHover' => '#dbe6ff', 'surface' => '#ffffff', 'backdrop' => 'rgba(18, 40, 110, 0.90)', 'wash' => 'rgba(238, 241, 247, 0.97)' ],
+        'dark'  => [ 'bg' => '#12161f', 'text' => '#f2f4f8', 'muted' => '#b4bccb', 'line' => '#2a3142', 'card' => '#1c2230', 'accent' => '#8fb3ff', 'tint' => 'rgba(143, 179, 255, 0.16)', 'onAccent' => '#0b1020', 'shadow' => 'rgba(0, 0, 0, 0.45)', 'onAccentHover' => '#1d2a52', 'surface' => '#1c2230', 'backdrop' => 'rgba(6, 9, 16, 0.92)', 'wash' => 'rgba(18, 22, 31, 0.97)' ],
     ];
 
     /** @return array<string,string> */
@@ -29,7 +31,8 @@ final class Palette
     public const TEXT_PAIRS = [
         [ 'text', 'bg' ], [ 'muted', 'bg' ], [ 'accent', 'bg' ],
         [ 'text', 'card' ], [ 'muted', 'card' ], [ 'accent', 'card' ],
-        [ 'onAccent', 'accent' ],
+        [ 'onAccent', 'accent' ], [ 'onAccentHover', 'accent' ],
+        [ 'text', 'surface' ], [ 'muted', 'surface' ], [ 'accent', 'surface' ],
     ];
 
     public static function contrast( string $fg, string $bg ): float
