@@ -48,6 +48,27 @@ class MenuSource
         return [ 'name' => (string) $menu->name, 'menuId' => (int) $menu->term_id, 'tree' => MenuTree::build( $flat ), 'how' => $how ];
     }
 
+    /**
+     * Every menu of the site, for the menu choice on the tab.
+     *
+     * @return list<array{id:int,name:string,items:int}>
+     */
+    public function all(): array
+    {
+        $out = [];
+        foreach ( (array) wp_get_nav_menus() as $m ) {
+            $out[] = [ 'id' => (int) $m->term_id, 'name' => (string) $m->name, 'items' => (int) $m->count ];
+        }
+
+        return $out;
+    }
+
+    /** Whether a menu with this id exists. */
+    public function exists( int $menuId ): bool
+    {
+        return $menuId > 0 && (bool) wp_get_nav_menu_object( $menuId );
+    }
+
     /** @return array{0:?object,1:string} */
     private function pick( ?string $preferredId ): array
     {

@@ -136,4 +136,102 @@ class MegaMenuMarkupTest extends TestCase
         $this->assertSame( [], $unknown, "Attribute paths used by the mega menu but not in fixtures/megamenu-proven-paths.txt (add a path there only with live render evidence):\n" . implode( "\n", $unknown ) );
         $this->assertSame( [], array_values( array_diff( $proven, $used ) ), 'the proven list holds only paths the layouts really use' );
     }
+
+    // ---- the owner's own content --------------------------------------------------------------------------------------
+
+    /** Every block of one name in a wrapper, as decoded attribute arrays. @return list<array<string,mixed>> */
+    private static function blocksOf( string $markup, string $name ): array
+    {
+        preg_match_all( '/<!-- wp:divi\/' . $name . ' (\{.*?\})\s*\/?-->/s', $markup, $all );
+
+        return array_values( array_filter( array_map( static fn ( string $j ) => json_decode( $j, true ), $all[1] ), 'is_array' ) );
+    }
+
+    public static function contentLayouts(): array
+    {
+        $out = [];
+        foreach ( MegaMenuFixture::layouts() as $l ) {
+            if ( ! empty( $l['content'] ) ) {
+                $out[ $l['id'] ] = [ $l ];
+            }
+        }
+
+        return $out;
+    }
+
+    public function testExactlyTheLayoutsWithACardBannerOrIntroTakeContent(): void
+    {
+        $this->assertSame( [ 'feature-right', 'feature-left', 'feature-banner', 'showcase-intro-cards', 'showcase-intro-links' ], array_keys( self::contentLayouts() ) );
+    }
+
+    #[DataProvider( 'contentLayouts' )]
+    public function testTheOwnersHeadlineTextButtonAndPictureReplaceTheDefaults( array $layout ): void
+    {
+        $tree   = MegaMenuFixture::menus()['grouped'];
+        $own    = MegaMenuFixture::ownContent( $tree );
+        $markup = MegaMenuFixture::wrapper( $layout, $tree, '5.14.0', $own );
+        $this->assertNotSame( MegaMenuFixture::wrapper( $layout, $tree ), $markup );
+
+        $headings = array_map( static fn ( array $a ) => $a['title']['innerContent']['desktop']['value'] ?? null, self::blocksOf( $markup, 'heading' ) );
+        $this->assertContains( 'Own headline 2', $headings, 'the headline is the owner\'s' );
+        $texts = array_map( static fn ( array $a ) => (string) ( $a['content']['innerContent']['desktop']['value'] ?? '' ), self::blocksOf( $markup, 'text' ) );
+        $this->assertContains( '<p>Own text -- with a &lt; sign &amp; &quot;quotes&quot;</p>', $texts, 'the text is the owner\'s, escaped' );
+        // The button (card, banner) or the "view all" link (intro panel) carries the owner's label and address.
+        $buttons = array_map( static fn ( array $a ) => $a['button']['innerContent']['desktop']['value'] ?? [], self::blocksOf( $markup, 'button' ) );
+        $links   = array_map( static fn ( array $a ) => $a['content']['innerContent']['desktop']['value'] ?? [], self::blocksOf( $markup, 'link' ) );
+        $labels  = array_merge( array_column( $buttons, 'text' ), array_column( $links, 'text' ) );
+        $this->assertContains( 'Own button', $labels );
+        $urls = array_merge( array_column( $buttons, 'linkUrl' ), array_column( $links, 'linkUrl' ) );
+        $this->assertContains( 'https://example.test/own-2/', $urls );
+        // The picture is an Image module with the Media Library's own alt text.
+        $images = array_map( static fn ( array $a ) => $a['image']['innerContent']['desktop']['value'] ?? [], self::blocksOf( $markup, 'image' ) );
+        $mine   = array_values( array_filter( $images, static fn ( array $v ): bool => 'https://example.test/wp-content/uploads/own-2.jpg' === ( $v['src'] ?? '' ) ) );
+        $this->assertCount( 1, $mine, 'the picture of the item is on its panel once' );
+        $this->assertSame( 'A "quoted" <b>alt</b> & more -- text', $mine[0]['alt'] );
+        // Still valid block comments: nothing in the JSON can end the comment early.
+        preg_match_all( '/<!-- wp:divi\/[a-z0-9-]+ (\{.*?\})\s*\/?-->/s', $markup, $all );
+        foreach ( $all[1] as $json ) {
+            $this->assertStringNotContainsString( '--', $json );
+            $this->assertStringNotContainsString( '<', $json );
+            $this->assertNotNull( json_decode( $json, true ) );
+        }
+    }
+
+    #[DataProvider( 'contentLayouts' )]
+    public function testOwnContentUsesOnlyProvenPaths( array $layout ): void
+    {
+        $proven = array_filter( array_map( 'trim', file( __DIR__ . '/fixtures/megamenu-proven-paths.txt' ) ?: [] ), static fn ( string $l ): bool => '' !== $l && '#' !== $l[0] );
+        $proven = array_map( static fn ( string $l ): string => trim( explode( '  ', $l )[0] ), $proven );
+        $tree   = MegaMenuFixture::menus()['grouped'];
+        $used   = MegaMenuFixture::paths( MegaMenuFixture::wrapper( $layout, $tree, '5.14.0', MegaMenuFixture::ownContent( $tree ) ) );
+        $this->assertSame( [], array_values( array_diff( $used, $proven ) ) );
+    }
+
+    public function testALayoutWithoutAContentSlotIgnoresOwnContent(): void
+    {
+        $tree = MegaMenuFixture::menus()['grouped'];
+        foreach ( MegaMenuFixture::layouts() as $layout ) {
+            if ( empty( $layout['content'] ) ) {
+                $this->assertSame( MegaMenuFixture::wrapper( $layout, $tree ), MegaMenuFixture::wrapper( $layout, $tree, '5.14.0', MegaMenuFixture::ownContent( $tree ) ), $layout['id'] );
+            }
+        }
+    }
+
+    public function testEmptyOrMissingContentChangesNothing(): void
+    {
+        $tree = MegaMenuFixture::menus()['grouped'];
+        foreach ( self::contentLayouts() as [ $layout ] ) {
+            $empty = [ 2 => [ 'title' => '', 'text' => '', 'button' => '', 'url' => '', 'image' => null ] ];
+            $this->assertSame( MegaMenuFixture::wrapper( $layout, $tree ), MegaMenuFixture::wrapper( $layout, $tree, '5.14.0', $empty ), $layout['id'] );
+        }
+    }
+
+    public function testThePlaceholderOfTheBannerGivesWayToTheOwnersPicture(): void
+    {
+        $tree   = MegaMenuFixture::menus()['grouped'];
+        $banner = \AiEditorDivi5\Pro\MegaMenu\Layouts::find( 'feature-banner' );
+        $with   = MegaMenuFixture::wrapper( $banner, $tree, '5.14.0', MegaMenuFixture::ownContent( $tree ) );
+        $this->assertStringNotContainsString( 'card-blue-1.svg', $with );
+        $this->assertStringContainsString( 'card-blue-1.svg', MegaMenuFixture::wrapper( $banner, $tree ) );
+    }
 }

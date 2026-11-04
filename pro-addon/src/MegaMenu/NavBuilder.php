@@ -53,9 +53,10 @@ final class NavBuilder
 
         $links = '';
         foreach ( $tree as $item ) {
+            // `keep`: a panel the owner edited in the builder and chose to keep goes back in exactly as it is.
             $inner = [] === $item['children']
                 ? ''
-                : $this->panels->dropdown( $byItem[ $item['id'] ] ?? $fallback, $item, [ 'look' => $look, 'posts' => $ctx['posts'][ $item['id'] ] ?? [], 'featureImage' => $ctx['featureImage'] ?? '' ] );
+                : ( $ctx['keep'][ $item['id'] ] ?? $this->panels->dropdown( $byItem[ $item['id'] ] ?? $fallback, $item, [ 'look' => $look, 'posts' => $ctx['posts'][ $item['id'] ] ?? [], 'featureImage' => $ctx['featureImage'] ?? '', 'own' => $ctx['content'][ $item['id'] ] ?? null ] ) );
             $links .= $this->b->link(
                 $item['title'],
                 $item['url'],

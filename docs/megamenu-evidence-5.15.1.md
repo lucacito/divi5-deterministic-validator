@@ -170,6 +170,47 @@ header's undo history (the content before each write is stored there, with the s
 Limits: the notice runs a menu comparison once an hour and after any save, not on every page load; it needs the licence unlocked and the
 `edit_theme_options` right; the tab and the notice were looked at in a browser on one header (1280 px wide), not at tablet or phone widths of wp-admin.
 
+### Round 8 (2026-11-04): own content, hand edits, a menu choice, the redesigned screen
+
+Spec `docs/superpowers/specs/2026-11-04-megamenu-content-and-editing-design.md`, built from a mockup the owner approved. What was added and what the
+live gate (real Divi 5.15.1, a real browser, an administrator session) measured:
+
+- **Own content.** Headline, text, button label and link, and a picture from the Media Library, per menu item, on the five layouts that have a card,
+  banner or intro panel. Per layout and width: the headline replaces the item title, the text and the button label and link show, the picture loads
+  (`naturalWidth > 0`) with the Media Library's alt text, and the banner's placeholder picture is gone. Through the real form: the fields hold what was
+  saved, the Media Library window opens, the small preview follows what is typed, "Save and update the header" puts it on the front end,
+  "Reset to the defaults" takes it away.
+- **Hand edits.** A panel changed the way the builder does it (a text edited, the header written with `wp_update_post`) is seen as edited and the
+  item list says so. Through the real buttons: Update stops and asks naming the panel and changes nothing, "Keep my changes" updates the rest and
+  leaves the edited panel byte for byte, "Replace my version" rebuilds it; an item set to "Keep my version" is kept without asking, one set to "Ask me"
+  asks. The comparison treats a re-save with another key order or builder version, or a renamed layer, as no edit (unit tests).
+- **A design flaw the gate found.** The first design kept each panel's fingerprint in an option. After the gate restored an earlier header through
+  Recent Pro changes the option no longer matched the header, and the next update refused to proceed ("you changed the panels of Services and Blog")
+  although nobody had. The fingerprint now lives in the panel's own label, so a restore brings it back with the panel.
+- **The menu choice.** A dropdown on the tab lists the site's menus; choosing one sets the header's Menu module and builds the mega menu from it, and
+  choosing the first menu again brings its panels back (real browser: the select, the notice, the Menu module's setting, the panels and the front end).
+  Unit tests: undo gives the old menu back byte for byte, a menu without sub-items is refused while a mega menu is on, the content for the old
+  menu's items stays stored.
+- **Removed:** the "Undo last change" button (the batch is still recorded for Recent Pro changes).
+- **The screen.** Gallery before a mega menu is on; once on, a list of items with one editor (Content, Layout, Builder); a WordPress notice on every
+  admin screen when the menu changed; "Open in Divi" is the builder address Divi's own Theme Builder builds (`et_tb=1`, `app_window=1`).
+
+Defects of my own the gate caught on the way: a script that looked for `wp.media` before WordPress had printed it (the picture button was disabled);
+the admin page transition that stalls headless Chromium after a redirect (the gate's admin sessions use reduced motion); a gate step list I cut by
+mistake. A mistake on the dev site, now guarded against: a cleanup of mine once deleted three batch rows that were the owner's own changes (they were
+rebuilt from the header's undo history), and a gate run is now careful to save and restore the rows that were there. While the gate runs it
+temporarily points the real header at its throwaway menu; anything saved on the dev site in that time is overwritten when it puts the header back.
+
+| Run | Width 400 | Width 900 | Width 1280 | Setup/scenarios/negatives/teardown | Total |
+|---|---|---|---|---|---|
+| A | 78 PASS, 0 FAIL | 78 PASS, 0 FAIL | 652 PASS, 0 FAIL | 182 PASS, 0 FAIL | 990 PASS, 0 FAIL |
+| B | 78 PASS, 0 FAIL | 78 PASS, 0 FAIL | 652 PASS, 0 FAIL | 182 PASS, 0 FAIL | 990 PASS, 0 FAIL |
+
+Limits: pictures only on those five layouts (none per sub-item); "Open in Divi" opens the header, not the panel, and headless Chromium did not
+finish painting the builder in 12 seconds, so only that the builder container loads is proven; the live preview beside the form is a rough card; a
+header applied before the fingerprints existed has none, so its hand edits are not seen until it is applied once more; only the first Menu module of
+the header and the menu it shows are followed.
+
 ## Defects the gate found, and what was done
 
 1. **Raw Dropdown settings fatal.** `module.advanced.dropdown` written as a raw object is a PHP fatal on Divi 5.15.1 (HTTP 500 for the whole

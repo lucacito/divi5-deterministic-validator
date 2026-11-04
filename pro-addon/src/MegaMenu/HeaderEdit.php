@@ -62,8 +62,50 @@ final class HeaderEdit
             }
             $attrs = json_decode( $m[3], true );
             $label = is_array( $attrs ) ? ( $attrs['module']['meta']['adminLabel']['desktop']['value'] ?? null ) : null;
-            if ( is_string( $label ) && 1 === preg_match( '/^JHMG panel (\d+) ([a-z0-9-]+)$/', $label, $l ) ) {
+            if ( is_string( $label ) && 1 === preg_match( '/^JHMG panel (\d+) ([a-z0-9-]+)(?: [0-9a-f]{10})?$/', $label, $l ) ) {
                 $out[ (int) $l[1] ] = $l[2];
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * The markup of each panel (the Dropdown block with the admin label `JHMG panel <item id> <layout>`, opening comment to closing
+     * comment) inside the mega menu wrapper.
+     *
+     * @return array<int,string> top-level menu item id => the panel's block markup
+     */
+    public static function panelBlocks( string $content ): array
+    {
+        $wrapper = self::wrapper( $content );
+        $out     = [];
+        if ( '' === $wrapper || false === preg_match_all( self::ANY_COMMENT, $wrapper, $comments, PREG_SET_ORDER | PREG_OFFSET_CAPTURE ) ) {
+            return $out;
+        }
+        $open = null; // [item id, start offset, depth when it opened]
+        $depth = 0;
+        foreach ( $comments as $c ) {
+            $closer = '/' === $c[1][0];
+            $self   = '/' === $c[3][0];
+            if ( null === $open && ! $closer && 'divi/dropdown' === $c[2][0] ) {
+                $attrs = [];
+                if ( 1 === preg_match( '/\{.*\}/s', $c[0][0], $j ) ) {
+                    $attrs = json_decode( $j[0], true );
+                }
+                $label = is_array( $attrs ) ? ( $attrs['module']['meta']['adminLabel']['desktop']['value'] ?? null ) : null;
+                if ( is_string( $label ) && 1 === preg_match( '/^JHMG panel (\d+) /', $label, $l ) && ! $self ) {
+                    $open = [ (int) $l[1], $c[0][1], $depth ];
+                }
+            }
+            if ( $closer ) {
+                --$depth;
+            } elseif ( ! $self ) {
+                ++$depth;
+            }
+            if ( null !== $open && $closer && $depth === $open[2] ) {
+                $out[ $open[0] ] = substr( $wrapper, $open[1], $c[0][1] + strlen( $c[0][0] ) - $open[1] );
+                $open            = null;
             }
         }
 
@@ -100,6 +142,31 @@ final class HeaderEdit
         $rewritten = $menu['open'] . Blocks::encode( $obj ) . $menu['close'];
 
         return substr( $content, 0, $menu['start'] ) . $rewritten . $wrapper . substr( $content, $menu['end'] );
+    }
+
+    /**
+     * Points the header's Menu module at another menu (its `Menu` option), changing nothing else in the header.
+     *
+     * @throws \InvalidArgumentException when the header has no Menu module
+     */
+    public static function setMenu( string $content, int $menuId ): string
+    {
+        $menu = self::findMenu( $content );
+        $obj  = null === $menu ? null : json_decode( $menu['json'] );
+        if ( null === $menu || ! $obj instanceof \stdClass ) {
+            throw new \InvalidArgumentException( self::NO_MENU );
+        }
+        $cur = $obj;
+        foreach ( [ 'menu', 'advanced', 'menuId', 'desktop' ] as $key ) {
+            if ( ! isset( $cur->$key ) || ! $cur->$key instanceof \stdClass ) {
+                $cur->$key = new \stdClass();
+            }
+            $cur = $cur->$key;
+        }
+        $cur->value = (string) $menuId;
+        $rewritten  = $menu['open'] . Blocks::encode( $obj ) . $menu['close'];
+
+        return substr( $content, 0, $menu['start'] ) . $rewritten . substr( $content, $menu['end'] );
     }
 
     public static function remove( string $content ): string

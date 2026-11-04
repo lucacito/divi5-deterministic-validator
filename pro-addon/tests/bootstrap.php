@@ -50,6 +50,18 @@ if ( ! function_exists( 'check_admin_referer' ) ) {
         return 1;
     }
 }
+if ( ! function_exists( 'selected' ) ) {
+    function selected( $selected, $current = true, $echo = true ) { $r = (string) $selected === (string) $current ? " selected='selected'" : ''; if ( $echo ) { echo $r; } return $r; }
+}
+if ( ! function_exists( 'esc_textarea' ) ) {
+    function esc_textarea( $text ) { return htmlspecialchars( (string) $text, ENT_QUOTES, 'UTF-8' ); }
+}
+if ( ! function_exists( 'wp_attachment_is_image' ) ) {
+    function wp_attachment_is_image( $id = 0 ) { return isset( $GLOBALS['__wp_attachments'][ (int) $id ] ); }
+}
+if ( ! function_exists( 'wp_get_attachment_image_src' ) ) {
+    function wp_get_attachment_image_src( $id, $size = 'thumbnail' ) { $a = $GLOBALS['__wp_attachments'][ (int) $id ] ?? null; return $a ? [ $a['url'], 100, 100, false ] : false; }
+}
 if ( ! function_exists( 'wp_die' ) ) {
     function wp_die( $message = '' ) { throw new \RuntimeException( 'wp_die: ' . $message ); }
 }

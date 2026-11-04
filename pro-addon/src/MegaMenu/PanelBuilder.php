@@ -28,6 +28,9 @@ final class PanelBuilder
     /** Width in px the panel's content may use (the panel width less its padding); columns share it so long titles wrap. */
     private int $avail = 0;
 
+    /** The owner's own content for the panel being built (headline, text, button, link, picture), or null when the layout takes none. */
+    private ?array $own = null;
+
     /** How many cards of this panel have been given their entrance so far: each starts 70 ms after the one before (at most 5 steps). */
     private int $entered = 0;
 
@@ -44,6 +47,7 @@ final class PanelBuilder
     {
         $this->t       = Palette::tone( (string) $layout['tone'] );
         $this->entered = 0;
+        $this->own     = ! empty( $layout['content'] ) && is_array( $ctx['own'] ?? null ) ? $ctx['own'] : null;
         $viewport = 'viewport' === $layout['mode'];
         $this->avail = (int) $layout['width'] - ( $viewport ? 0 : 40 );
         $inner    = $this->content( $layout, $item, $ctx );
@@ -80,7 +84,12 @@ final class PanelBuilder
             $settings['horizontalMode'] = 'viewport';
         }
 
-        return $this->b->dropdown( $settings, $wrapper, $deco, 'click', Blocks::panelLabel( (int) $item['id'], (string) $layout['id'] ) );
+        // The label ends with the fingerprint of the panel (which ignores the label itself), so the panel is written twice: once to read it.
+        $id    = (int) $item['id'];
+        $lid   = (string) $layout['id'];
+        $plain = $this->b->dropdown( $settings, $wrapper, $deco, 'click', Blocks::panelLabel( $id, $lid ) );
+
+        return $this->b->dropdown( $settings, $wrapper, $deco, 'click', Blocks::panelLabel( $id, $lid, PanelFingerprint::short( $plain ) ) );
     }
 
     // ---- families --------------------------------------------------------------------------------------------------
@@ -227,8 +236,8 @@ final class PanelBuilder
     /** The coloured intro panel: the item's title, one line about it, and the way to its page. */
     private function introPanel( array $item ): string
     {
-        $text = '' !== $item['description'] ? $item['description'] : 'Everything under ' . $item['title'] . ' in one place.';
-        $link = $this->b->link( self::VIEW_ALL . ' ' . $item['title'], $item['url'], [ 'size' => '15px', 'weight' => '700', 'color' => $this->t['onAccent'] ], $this->t['onAccentHover'] );
+        $text = $this->blurb( $item );
+        $link = $this->b->link( $this->buttonLabel( self::VIEW_ALL . ' ' . $item['title'] ), $this->target( $item ), [ 'size' => '15px', 'weight' => '700', 'color' => $this->t['onAccent'] ], $this->t['onAccentHover'] );
         $chip = $this->b->group(
             [ 'display' => 'flex', 'flexDirection' => 'column', 'alignItems' => 'center', 'justifyContent' => 'center' ],
             $this->b->icon( self::GLYPH, $this->t['gradFrom'], '14px' ),
@@ -239,7 +248,8 @@ final class PanelBuilder
             [ 'display' => 'flex', 'flexDirection' => 'column', 'rowGap' => '14px', 'alignItems' => 'flex-start', 'justifyContent' => 'space-between' ],
             $this->b->group(
                 [ 'display' => 'flex', 'flexDirection' => 'column', 'rowGap' => '10px' ],
-                $this->b->heading( $item['title'], 'h3', [ 'size' => '30px', 'weight' => '700', 'color' => $this->t['onAccent'], 'lineHeight' => '1.15em' ] )
+                $this->ownPicture()
+                . $this->b->heading( $this->headline( $item ), 'h3', [ 'size' => '30px', 'weight' => '700', 'color' => $this->t['onAccent'], 'lineHeight' => '1.15em' ] )
                 . $this->b->text( '<p>' . self::esc( $text ) . '</p>', [ 'size' => '15px', 'color' => $this->t['onAccent'], 'lineHeight' => '1.5em' ] )
             )
             . $this->b->group( [ 'display' => 'flex', 'flexDirection' => 'row', 'flexWrap' => 'wrap', 'columnGap' => '12px', 'rowGap' => '10px', 'alignItems' => 'center' ], $chip . $link ),
@@ -400,7 +410,7 @@ final class PanelBuilder
     {
         return $this->b->group(
             [ 'display' => 'flex', 'flexDirection' => 'column', 'rowGap' => '12px', 'alignItems' => 'flex-start', 'justifyContent' => 'center' ],
-            $this->cardBody( $item ),
+            $this->ownPicture() . $this->cardBody( $item ),
             array_merge(
                 Blocks::gradient( $this->t['gradFrom'], $this->t['gradTo'] ),
                 Blocks::padding( [ '26px', '26px', '26px', '26px' ] ),
@@ -415,22 +425,64 @@ final class PanelBuilder
 
     private function cardBody( array $item ): string
     {
-        $text = '' !== $item['description'] ? $item['description'] : 'Everything under ' . $item['title'] . ' in one place.';
-
-        return $this->b->heading( $item['title'], 'h3', [ 'size' => '24px', 'weight' => '700', 'color' => $this->t['onAccent'], 'lineHeight' => '1.2em' ] )
-            . $this->b->text( '<p>' . self::esc( $text ) . '</p>', [ 'size' => '14px', 'color' => $this->t['onAccent'], 'lineHeight' => '1.5em' ] )
+        return $this->b->heading( $this->headline( $item ), 'h3', [ 'size' => '24px', 'weight' => '700', 'color' => $this->t['onAccent'], 'lineHeight' => '1.2em' ] )
+            . $this->b->text( '<p>' . self::esc( $this->blurb( $item ) ) . '</p>', [ 'size' => '14px', 'color' => $this->t['onAccent'], 'lineHeight' => '1.5em' ] )
             . $this->b->button(
-                self::VIEW_ALL,
-                $item['url'],
+                $this->buttonLabel( self::VIEW_ALL ),
+                $this->target( $item ),
                 [ 'size' => '14px', 'weight' => '600' ],
                 Blocks::padding( [ '10px', '22px', '10px', '22px' ] ),
                 [ 'fill' => $this->t['onAccent'], 'label' => $this->t['gradFrom'], 'hoverFill' => $this->t['onAccentHover'], 'hoverLabel' => $this->t['gradFrom'], 'radius' => '999px' ]
             );
     }
 
+    // ---- the owner's own content ---------------------------------------------------------------------------------------
+
+    /** The headline: the owner's, else the menu item's title. */
+    private function headline( array $item ): string
+    {
+        return '' !== (string) ( $this->own['title'] ?? '' ) ? (string) $this->own['title'] : (string) $item['title'];
+    }
+
+    /** The line under the headline: the owner's, else the item's description, else a plain sentence. */
+    private function blurb( array $item ): string
+    {
+        if ( '' !== (string) ( $this->own['text'] ?? '' ) ) {
+            return (string) $this->own['text'];
+        }
+
+        return '' !== $item['description'] ? (string) $item['description'] : 'Everything under ' . $item['title'] . ' in one place.';
+    }
+
+    /** The button's label: the owner's, else `$default`. */
+    private function buttonLabel( string $default ): string
+    {
+        return '' !== (string) ( $this->own['button'] ?? '' ) ? (string) $this->own['button'] : $default;
+    }
+
+    /** Where the button goes: the owner's link, else the item's. */
+    private function target( array $item ): string
+    {
+        return '' !== (string) ( $this->own['url'] ?? '' ) ? (string) $this->own['url'] : (string) $item['url'];
+    }
+
+    /** The owner's picture as an Image module (the alt text is the Media Library's), or '' when there is none. */
+    private function ownPicture(): string
+    {
+        $img = $this->own['image'] ?? null;
+        if ( ! is_array( $img ) || '' === (string) ( $img['url'] ?? '' ) ) {
+            return '';
+        }
+
+        return $this->b->image( (string) $img['url'], (string) ( $img['alt'] ?? '' ), null, array_merge( Blocks::border( '12px' ), Blocks::sizing( [ 'width' => '100%' ] ) ) );
+    }
+
     private function banner( array $item, string $image ): string
     {
-        $pic = '' !== $image ? $this->b->image( $image, '', null, array_merge( Blocks::border( '14px' ), Blocks::sizing( [ 'width' => '100%' ] ) ) ) : '';
+        $pic = $this->ownPicture();
+        if ( '' === $pic && '' !== $image ) {
+            $pic = $this->b->image( $image, '', null, array_merge( Blocks::border( '14px' ), Blocks::sizing( [ 'width' => '100%' ] ) ) );
+        }
 
         return $this->b->group(
             [ 'display' => 'flex', 'flexDirection' => 'row', 'columnGap' => '26px', 'alignItems' => 'center' ],

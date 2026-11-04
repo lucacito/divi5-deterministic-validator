@@ -23,6 +23,9 @@ final class MegaMenuService
 
     private PostSource $posts;
 
+    private MegaMenuContent $content;
+
+
     public const TOOL = 'apply_mega_menu';
 
     public const NO_HEADER = 'This site has no global header. Create one in Divi > Theme Builder (a header on the Default Website Template), then come back.';
@@ -34,6 +37,8 @@ final class MegaMenuService
     public const NO_MEGA_YET = 'Put a layout on the whole menu first, then you can change one item.';
 
     public const NOTHING_TO_UPDATE = 'There is no mega menu on the header to update. Choose a layout first.';
+
+    public const NO_SUCH_MENU = 'That menu does not exist (any more). Choose one from the list.';
 
     public const NO_SUCH_ITEM = 'That menu item has no panel (it has no sub-items), or it is no longer in the menu.';
 
@@ -47,10 +52,18 @@ final class MegaMenuService
         ?PostSource $posts = null,
         private ?\Closure $header = null,
         private ?\Closure $imageBase = null,
-        private ?\Closure $stored = null
+        private ?\Closure $stored = null,
+        ?MegaMenuContent $content = null
     ) {
-        $this->menus = $menus ?? new MenuSource();
-        $this->posts = $posts ?? new PostSource();
+        $this->menus   = $menus ?? new MenuSource();
+        $this->posts   = $posts ?? new PostSource();
+        $this->content = $content ?? new MegaMenuContent();
+    }
+
+    /** The owner's own texts and pictures per menu item (what the panels are built with besides the menu). */
+    public function content(): MegaMenuContent
+    {
+        return $this->content;
     }
 
     /**
@@ -59,28 +72,39 @@ final class MegaMenuService
      * `drift` is null when the mega menu matches the menu (or none is applied), else what differs: `{bar: {missing, extra, reordered}|null, items: list<{id, title, missing, extra, reordered}>, gone: list<int>}`
      * (`gone`: panels of items that no longer have sub-items or are no longer in the menu).
      *
-     * @return array{header:?array{layout_id:int,title:string},menuModule:bool,applied:bool,menu:?array{name:string,items:int,panels:int,how:string},items:list<array{id:int,title:string,layout:?string,layoutName:?string}>,drift:?array<string,mixed>}
+     * @return array{header:?array{layout_id:int,title:string},menuModule:bool,applied:bool,menu:?array{id:int,name:string,items:int,panels:int,how:string},menus:list<array{id:int,name:string,items:int}>,items:list<array{id:int,title:string,layout:?string,layoutName:?string,content:bool,custom:bool,edited:bool,edits:string}>,drift:?array<string,mixed>}
      */
     public function status(): array
     {
         $header = $this->globalHeader();
-        $state  = [ 'header' => $header, 'menuModule' => false, 'applied' => false, 'menu' => null, 'items' => [], 'drift' => null ];
+        $state  = [ 'header' => $header, 'menuModule' => false, 'applied' => false, 'menu' => null, 'items' => [], 'drift' => null, 'menus' => [] ];
         if ( null === $header ) {
             return $state;
         }
         $info                = HeaderEdit::inspect( $this->storedContent( $header['layout_id'] ) );
         $state['menuModule'] = null !== $info['menu'];
+        $state['menus']      = null === $info['menu'] ? [] : $this->menus->all();
         $state['applied']    = $info['hasMega'];
         $look                = null === $info['menu'] ? null : Look::fromMenuAttrs( $info['menu'] );
         $menu                = $this->menus->read( null === $look ? null : $look['menuId'] );
         if ( null !== $menu ) {
-            $state['menu'] = [ 'name' => $menu['name'], 'items' => count( $menu['tree'] ), 'panels' => MenuTree::panelCount( $menu['tree'] ), 'how' => $menu['how'] ];
+            $state['menu'] = [ 'id' => (int) $menu['menuId'], 'name' => $menu['name'], 'items' => count( $menu['tree'] ), 'panels' => MenuTree::panelCount( $menu['tree'] ), 'how' => $menu['how'] ];
             // Every top-level item that has a panel, and (when a mega menu is applied) the layout that panel was built from.
-            $built = $info['hasMega'] ? HeaderEdit::panels( $this->storedContent( $header['layout_id'] ) ) : [];
+            $built  = $info['hasMega'] ? HeaderEdit::panels( $this->storedContent( $header['layout_id'] ) ) : [];
+            $edited = $info['hasMega'] ? $this->editedIds( $this->storedContent( $header['layout_id'] ) ) : [];
             foreach ( $menu['tree'] as $item ) {
                 if ( [] !== $item['children'] ) {
                     $layout           = isset( $built[ $item['id'] ] ) ? Layouts::find( $built[ $item['id'] ] ) : null;
-                    $state['items'][] = [ 'id' => (int) $item['id'], 'title' => (string) $item['title'], 'layout' => null === $layout ? null : (string) $layout['id'], 'layoutName' => null === $layout ? null : (string) $layout['name'] ];
+                    $state['items'][] = [
+                        'id'         => (int) $item['id'],
+                        'title'      => (string) $item['title'],
+                        'layout'     => null === $layout ? null : (string) $layout['id'],
+                        'layoutName' => null === $layout ? null : (string) $layout['name'],
+                        'content'    => null !== $layout && ! empty( $layout['content'] ),
+                        'custom'     => $this->content->hasContent( (int) $item['id'] ),
+                        'edited'     => in_array( (int) $item['id'], $edited, true ),
+                        'edits'      => $this->content->get( (int) $item['id'] )['edits'],
+                    ];
                 }
             }
             if ( $info['hasMega'] ) {
@@ -118,7 +142,13 @@ final class MegaMenuService
                 $snapshots[] = $id;
             }
         }
-        $diff = MenuDrift::compare( MenuDrift::signature( HeaderEdit::wrapper( $stored ) ), MenuDrift::signature( $wrapper ), $snapshots );
+        // A panel the owner edited by hand is theirs now: it is not "out of date", it just differs.
+        $have = MenuDrift::signature( HeaderEdit::wrapper( $stored ) );
+        $want = MenuDrift::signature( $wrapper );
+        foreach ( $this->editedIds( $stored ) as $id ) {
+            unset( $have[ $id ], $want[ $id ] );
+        }
+        $diff = MenuDrift::compare( $have, $want, $snapshots );
         if ( [] === $diff ) {
             return null;
         }
@@ -147,15 +177,14 @@ final class MegaMenuService
      *
      * @return array<string,mixed> the LayoutWriter result (a dry run returns the preview)
      */
-    public function apply( string $layoutId, bool $dry = false, ?int $itemId = null ): array
+    public function apply( string $layoutId, bool $dry = false, ?int $itemId = null, ?string $edited = null ): array
     {
         $layout = Layouts::find( $layoutId );
         if ( null === $layout ) {
             throw new \InvalidArgumentException( 'Unknown mega menu layout "' . $layoutId . '".' );
         }
         $header = $this->requireHeader();
-
-        return $this->writer->apply( $header['layout_id'], self::TOOL, function ( string $stored ) use ( $layout, $itemId ): array {
+        $result = $this->writer->apply( $header['layout_id'], self::TOOL, function ( string $stored ) use ( $layout, $itemId, $edited, $dry ): array {
             [ $info, $look, $menu ] = $this->read( $stored );
             // Which layout each item with a panel gets.
             $byItem = [];
@@ -169,35 +198,82 @@ final class MegaMenuService
                 }
                 $byItem[ $itemId ] = $layout;
             }
+            [ $keep, $replaced ] = $this->guard( $stored, $menu, $itemId, $edited, $dry );
 
             return [
-                'content' => HeaderEdit::apply( $stored, $this->wrapper( $info, $look, $menu, $layout, $byItem ) ),
-                'extra'   => [ 'mega_menu' => [ 'layout' => $layout['id'], 'name' => $layout['name'], 'item' => $itemId, 'menu' => $menu['name'], 'menu_source' => $menu['how'], 'panels' => MenuTree::panelCount( $menu['tree'] ) ] ],
+                'content' => HeaderEdit::apply( $stored, $this->wrapper( $info, $look, $menu, $layout, $byItem, $keep ) ),
+                'extra'   => [ 'mega_menu' => [ 'layout' => $layout['id'], 'name' => $layout['name'], 'item' => $itemId, 'menu' => $menu['name'], 'menu_source' => $menu['how'], 'panels' => MenuTree::panelCount( $menu['tree'] ), 'edited_kept' => array_keys( $keep ), 'edited_replaced' => array_keys( $replaced ) ] ],
             ];
         }, $dry );
+        return $result;
     }
 
     /**
      * Builds the mega menu again from the menu as it is now, keeping the layout each item's panel has (an item that had no
-     * panel before gets the layout most panels have). The answer to "your menu changed".
+     * panel before gets the layout most panels have) and the owner's own content. The answer to "your menu changed".
+     * `$edited` says what to do with panels edited in the builder whose own choice is "ask me": `keep` or `rebuild`.
      *
      * @return array<string,mixed> the LayoutWriter result (a dry run returns the preview)
+     * @throws EditedPanelsException when a panel was edited in the builder and nobody said what to do with it (nothing is changed)
      */
-    public function refresh( bool $dry = false ): array
+    public function refresh( bool $dry = false, ?string $edited = null ): array
     {
         $header = $this->requireHeader();
-
-        return $this->writer->apply( $header['layout_id'], self::TOOL, function ( string $stored ): array {
+        $result = $this->writer->apply( $header['layout_id'], self::TOOL, function ( string $stored ) use ( $edited, $dry ): array {
             [ $info, $look, $menu ] = $this->read( $stored );
             $layout                 = $this->commonLayout( $stored );
             if ( ! $info['hasMega'] || null === $layout ) {
                 throw new \InvalidArgumentException( self::NOTHING_TO_UPDATE );
             }
+            [ $keep, $replaced ] = $this->guard( $stored, $menu, null, $edited, $dry );
 
             return [
-                'content' => HeaderEdit::apply( $stored, $this->wrapper( $info, $look, $menu, $layout, $this->builtLayouts( $stored, $menu ) ) ),
-                'extra'   => [ 'mega_menu' => [ 'layout' => $layout['id'], 'name' => $layout['name'], 'item' => null, 'refresh' => true, 'menu' => $menu['name'], 'menu_source' => $menu['how'], 'panels' => MenuTree::panelCount( $menu['tree'] ) ] ],
+                'content' => HeaderEdit::apply( $stored, $this->wrapper( $info, $look, $menu, $layout, $this->builtLayouts( $stored, $menu ), $keep ) ),
+                'extra'   => [ 'mega_menu' => [ 'layout' => $layout['id'], 'name' => $layout['name'], 'item' => null, 'refresh' => true, 'menu' => $menu['name'], 'menu_source' => $menu['how'], 'panels' => MenuTree::panelCount( $menu['tree'] ), 'edited_kept' => array_keys( $keep ), 'edited_replaced' => array_keys( $replaced ) ] ],
             ];
+        }, $dry );
+        return $result;
+    }
+
+    /**
+     * Makes the header show another menu (its Menu module's `Menu` option, so the phone menu changes too) and, when a mega menu is on,
+     * builds it again from that menu: every panel gets the layout most panels had, the owner's content stays stored for the items it
+     * belongs to. Nothing changes when the menu is already the one shown.
+     *
+     * @return array<string,mixed> the LayoutWriter result (a dry run returns the preview)
+     * @throws \InvalidArgumentException for a menu that does not exist, or (with a mega menu on) one without sub-items; nothing is changed
+     */
+    public function useMenu( int $menuId, bool $dry = false, ?string $edited = null ): array
+    {
+        if ( ! $this->menus->exists( $menuId ) ) {
+            throw new \InvalidArgumentException( self::NO_SUCH_MENU );
+        }
+        $header = $this->requireHeader();
+
+        return $this->writer->apply( $header['layout_id'], self::TOOL, function ( string $stored ) use ( $menuId, $edited, $dry ): array {
+            $info = HeaderEdit::inspect( $stored );
+            if ( null === $info['menu'] ) {
+                throw new \InvalidArgumentException( HeaderEdit::NO_MENU );
+            }
+            $content = HeaderEdit::setMenu( $stored, $menuId );
+            $name    = '';
+            foreach ( $this->menus->all() as $m ) {
+                if ( $m['id'] === $menuId ) {
+                    $name = $m['name'];
+                }
+            }
+            $extra = [ 'menu_id' => $menuId, 'menu' => $name, 'mega_menu_on' => $info['hasMega'] ];
+            if ( $info['hasMega'] ) {
+                [ $info2, $look, $menu ] = $this->read( $content );
+                $layout                  = $this->commonLayout( $stored );
+                if ( null === $layout ) {
+                    throw new \InvalidArgumentException( self::NOTHING_TO_UPDATE );
+                }
+                [ $keep ] = $this->guard( $stored, $menu, null, $edited, $dry );
+                $content  = HeaderEdit::apply( $content, $this->wrapper( $info2, $look, $menu, $layout, $this->builtLayouts( $stored, $menu ), $keep ) );
+            }
+
+            return [ 'content' => $content, 'extra' => [ 'mega_menu' => $extra ] ];
         }, $dry );
     }
 
@@ -206,7 +282,74 @@ final class MegaMenuService
     {
         $header = $this->requireHeader();
 
-        return $this->writer->apply( $header['layout_id'], self::TOOL, static fn ( string $stored ): array => [ 'content' => HeaderEdit::remove( $stored ), 'extra' => [ 'mega_menu' => [ 'layout' => null ] ] ], $dry );
+        $result = $this->writer->apply( $header['layout_id'], self::TOOL, static fn ( string $stored ): array => [ 'content' => HeaderEdit::remove( $stored ), 'extra' => [ 'mega_menu' => [ 'layout' => null ] ] ], $dry );
+        return $result;
+    }
+
+
+    // ---- panels edited by hand ---------------------------------------------------------------------------------------
+
+    /**
+     * Item ids whose panel in the stored header differs from what this add-on wrote (the owner changed it in the Divi builder): the
+     * fingerprint in the panel's own label no longer fits the panel. A panel without a fingerprint (written by an older version) is not
+     * called edited.
+     *
+     * @return list<int>
+     */
+    private function editedIds( string $stored ): array
+    {
+        $out = [];
+        foreach ( HeaderEdit::panelBlocks( $stored ) as $id => $markup ) {
+            if ( PanelFingerprint::edited( $markup ) ) {
+                $out[] = (int) $id;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * What to do with the panels edited in the builder, by each item's own choice (`ask` falls back to `$choice`). The item being given a
+     * new layout on purpose (`$target`) is always rebuilt.
+     *
+     * @return array{0:array<int,string>,1:array<int,string>} the panels to keep (item id => stored markup) and the ones that will be replaced (item id => title)
+     * @throws EditedPanelsException when a panel's choice is "ask" and none was given (never on a dry run: the preview shows the rebuild)
+     */
+    private function guard( string $stored, array $menu, ?int $target, ?string $choice, bool $dry ): array
+    {
+        $keep     = [];
+        $replaced = [];
+        $ask      = [];
+        $markups  = HeaderEdit::panelBlocks( $stored );
+        $titles   = [];
+        foreach ( $menu['tree'] as $item ) {
+            $titles[ (int) $item['id'] ] = (string) $item['title'];
+        }
+        foreach ( $this->editedIds( $stored ) as $id ) {
+            if ( ! isset( $titles[ $id ] ) || ! $this->hasPanel( $menu, $id ) ) {
+                continue; // the item is gone: its panel goes with it
+            }
+            if ( $id === $target ) {
+                $replaced[ $id ] = $titles[ $id ];
+                continue;
+            }
+            $policy = $this->content->get( $id )['edits'];
+            if ( 'ask' === $policy && in_array( $choice, [ 'keep', 'rebuild' ], true ) ) {
+                $policy = $choice;
+            }
+            if ( 'keep' === $policy && isset( $markups[ $id ] ) ) {
+                $keep[ $id ] = $markups[ $id ];
+            } elseif ( 'ask' === $policy && ! $dry ) {
+                $ask[ $id ] = $titles[ $id ];
+            } else {
+                $replaced[ $id ] = $titles[ $id ];
+            }
+        }
+        if ( [] !== $ask ) {
+            throw new EditedPanelsException( $ask );
+        }
+
+        return [ $keep, $replaced ];
     }
 
     // ---- building --------------------------------------------------------------------------------------------------
@@ -236,7 +379,7 @@ final class MegaMenuService
 
     /**
      * The wrapper block markup for the menu. `$byItem` maps a top-level item id to its layout; an item not in it takes
-     * `$layout`. The layouts that show posts get the newest ones.
+     * `$layout`. The layouts that show posts get the newest ones. `$keep` maps an item id to a panel's markup that goes in unchanged.
      *
      * @param array<string,mixed> $info
      * @param array<string,mixed> $look
@@ -244,7 +387,7 @@ final class MegaMenuService
      * @param array<string,mixed> $layout
      * @param array<int,array<string,mixed>> $byItem
      */
-    private function wrapper( array $info, array $look, array $menu, array $layout, array $byItem ): string
+    private function wrapper( array $info, array $look, array $menu, array $layout, array $byItem, array $keep = [] ): string
     {
         $posts = [];
         $image = false;
@@ -264,7 +407,7 @@ final class MegaMenuService
             $byItem,
             $layout,
             $menu['tree'],
-            [ 'look' => $look, 'posts' => $posts, 'featureImage' => $image ? $this->featureImage() : '' ]
+            [ 'look' => $look, 'posts' => $posts, 'featureImage' => $image ? $this->featureImage() : '', 'content' => $this->content->forBuilder(), 'keep' => $keep ]
         );
     }
 

@@ -122,13 +122,27 @@ final class MegaMenuFixture
     }
 
     /** The wrapper for one layout and one menu. */
-    public static function wrapper( array $layout, array $tree, string $version = '5.14.0' ): string
+    /** @param array<int,array<string,mixed>> $content the owner's own content per top-level item id (MegaMenuContent::forBuilder()) */
+    public static function wrapper( array $layout, array $tree, string $version = '5.14.0', array $content = [] ): string
     {
         return ( new NavBuilder( new Blocks( $version ) ) )->build(
             $layout,
             $tree,
-            [ 'look' => self::look(), 'posts' => self::postsFor( $tree ), 'featureImage' => 'https://example.test/wp-content/plugins/free/assets/images/card-blue-1.svg' ]
+            [ 'look' => self::look(), 'posts' => self::postsFor( $tree ), 'featureImage' => 'https://example.test/wp-content/plugins/free/assets/images/card-blue-1.svg', 'content' => $content ]
         );
+    }
+
+    /** Own content for every top-level item that has sub-items: headline, text, button, link and a picture whose alt text has characters that need escaping. @return array<int,array<string,mixed>> */
+    public static function ownContent( array $tree ): array
+    {
+        $out = [];
+        foreach ( $tree as $item ) {
+            if ( [] !== $item['children'] ) {
+                $out[ $item['id'] ] = [ 'title' => 'Own headline ' . $item['id'], 'text' => 'Own text -- with a < sign & "quotes"', 'button' => 'Own button', 'url' => 'https://example.test/own-' . $item['id'] . '/', 'image' => [ 'url' => 'https://example.test/wp-content/uploads/own-' . $item['id'] . '.jpg', 'alt' => 'A "quoted" <b>alt</b> & more -- text' ] ];
+            }
+        }
+
+        return $out;
     }
 
     /** @return array<int,list<array{title:string,url:string,image:string,date:string}>> */

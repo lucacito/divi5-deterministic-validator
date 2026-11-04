@@ -132,12 +132,19 @@ function mm_teardown(): array
     if ( $menu ) {
         wp_delete_nav_menu( (int) $menu->term_id );
     }
-    $menuLeft = wp_get_nav_menu_object( AIED_MM_MENU_NAME ) ? 1 : 0;
+    if ( ! empty( $s['second_menu_id'] ) && wp_get_nav_menu_object( (int) $s['second_menu_id'] ) ) {
+        wp_delete_nav_menu( (int) $s['second_menu_id'] );
+    }
+    $menuLeft = ( wp_get_nav_menu_object( AIED_MM_MENU_NAME ) ? 1 : 0 ) + ( ! empty( $s['second_menu_id'] ) && wp_get_nav_menu_object( (int) $s['second_menu_id'] ) ? 1 : 0 );
 
     foreach ( (array) ( $s['item_ids'] ?? [] ) as $itemId ) {
         if ( get_post( (int) $itemId ) ) {
             wp_delete_post( (int) $itemId, true );
         }
+    }
+    // The throwaway picture (the file goes with it).
+    if ( ! empty( $s['attachment_id'] ) && get_post( (int) $s['attachment_id'] ) ) {
+        wp_delete_attachment( (int) $s['attachment_id'], true );
     }
     $extraLeft = 0;
     if ( ! empty( $s['tb_id'] ) && ! empty( $s['template_id'] ) ) {
@@ -178,6 +185,13 @@ function mm_teardown(): array
             }
         }
     }
+    foreach ( (array) ( $s['options_before'] ?? [] ) as $name => $before ) {
+        if ( '__none__' === $before ) {
+            delete_option( (string) $name );
+        } else {
+            update_option( (string) $name, $before, false );
+        }
+    }
     delete_option( AIED_MM_STATE );
 
     return [
@@ -187,6 +201,7 @@ function mm_teardown(): array
         'same_bytes'  => $sameBytes,
         'fallback'    => $fallback,
         'menu_left'   => $menuLeft,
+        'picture_left' => ! empty( $s['attachment_id'] ) && get_post( (int) $s['attachment_id'] ) ? 1 : 0,
         'extra_left'  => $extraLeft,
         'users_left'  => $usersLeft,
         'header_id'   => $hid,
@@ -283,11 +298,37 @@ switch ( $aiedMmStep ) {
         }
         $oldMenuId = (string) $m[1][0];
         $new       = (string) preg_replace( '/"menuId":\{"desktop":\{"value":"\d*"\}\}/', '"menuId":{"desktop":{"value":"' . $menuId . '"}}', $clean, 1 );
+        // The owner's own content lives in an option: keep what is there and put it back at the end.
+        $optionsBefore = [];
+        foreach ( [ \AiEditorDivi5\Pro\MegaMenu\MegaMenuContent::OPTION ] as $name ) {
+            $optionsBefore[ $name ] = get_option( $name, '__none__' );
+        }
+        // A throwaway picture in the Media Library (deleted with the run) and the owner's content for the item "Services" on it.
+        $own = [ 'title' => 'Gate headline', 'text' => 'Gate text for the card.', 'button' => 'Gate button', 'url' => home_url( '/gate-own-link/' ), 'alt' => 'Gate picture' ];
+        $upload = wp_upload_bits( 'aied-megamenu-gate-' . wp_generate_password( 6, false ) . '.png', null, '' );
+        if ( ! empty( $upload['error'] ) ) {
+            mm_fail( 'could not write the throwaway picture: ' . $upload['error'] );
+        }
+        $img = imagecreatetruecolor( 640, 360 );
+        $bg  = imagecolorallocate( $img, 29, 78, 216 );
+        imagefilledrectangle( $img, 0, 0, 640, 360, $bg );
+        imagefilledellipse( $img, 320, 180, 200, 200, imagecolorallocate( $img, 244, 114, 182 ) );
+        imagepng( $img, $upload['file'] );
+        imagedestroy( $img );
+        $attId = wp_insert_attachment( [ 'post_mime_type' => 'image/png', 'post_title' => 'aied megamenu gate picture', 'post_status' => 'inherit' ], $upload['file'] );
+        if ( is_wp_error( $attId ) || ! $attId ) {
+            mm_fail( 'could not make the throwaway picture an attachment' );
+        }
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+        wp_update_attachment_metadata( (int) $attId, wp_generate_attachment_metadata( (int) $attId, $upload['file'] ) );
+        update_post_meta( (int) $attId, '_wp_attachment_image_alt', $own['alt'] );
+        $own['image'] = (int) $attId;
+        $own['imageUrl'] = (string) ( wp_get_attachment_image_src( (int) $attId, 'large' )[0] ?? '' );
         global $wpdb;
         $batchFloor = BatchTable::exists() ? (int) $wpdb->get_var( 'SELECT COALESCE(MAX(id), 0) FROM ' . BatchTable::name() ) : 0; // phpcs:ignore
         // The table keeps only the newest 20 rows and a run records more than that, so every row that exists now is kept in the state and put back.
         $batchesBefore = BatchTable::exists() ? (array) $wpdb->get_results( 'SELECT * FROM ' . BatchTable::name() . ' ORDER BY id', ARRAY_A ) : []; // phpcs:ignore
-        mm_save_state( [ 'batches_before' => $batchesBefore, 'batch_floor' => $batchFloor, 'header_id' => $hid, 'original' => $orig, 'original_sha' => sha1( $orig ), 'baseline' => $new, 'baseline_sha' => sha1( $new ), 'menu_id' => $menuId, 'item_ids' => $items, 'old_menu_id' => $oldMenuId, 'extra_ids' => [], 'user_ids' => [] ] );
+        mm_save_state( [ 'options_before' => $optionsBefore, 'own' => $own, 'services_id' => $services, 'blog_id' => $blog, 'batches_before' => $batchesBefore, 'batch_floor' => $batchFloor, 'header_id' => $hid, 'original' => $orig, 'original_sha' => sha1( $orig ), 'baseline' => $new, 'baseline_sha' => sha1( $new ), 'menu_id' => $menuId, 'item_ids' => $items, 'old_menu_id' => $oldMenuId, 'extra_ids' => [], 'attachment_id' => (int) $attId, 'user_ids' => [] ] );
         wp_update_post( [ 'ID' => $hid, 'post_content' => wp_slash( $new ) ] );
         clean_post_cache( $hid );
         if ( mm_raw( $hid ) !== $new ) {
@@ -315,7 +356,11 @@ switch ( $aiedMmStep ) {
             $top[] = [ 'title' => wp_strip_all_tags( (string) $t->title ), 'url' => (string) $t->url, 'children' => count( $byParent[ (int) $t->ID ] ?? [] ), 'leaves' => $descendants( (int) $t->ID ) ];
         }
         $postUrls = array_map( static fn ( $pid ): string => (string) get_permalink( (int) $pid ), array_slice( $posts, 0, 5 ) );
+        mm_service()->content()->save( $services, $own );
         mm_out( [
+            'own'          => $own,
+            'services_id'  => $services,
+            'blog_id'      => $blog,
             'top'          => $top,
             'panels'       => count( array_filter( $top, static fn ( array $t ): bool => $t['children'] > 0 ) ),
             'post_urls'    => $postUrls,
@@ -339,7 +384,13 @@ switch ( $aiedMmStep ) {
                 $flat[] = $l['id'];
             }
         }
-        mm_out( [ 'ids' => Layouts::ids(), 'flat' => $flat ] );
+        $content = [];
+        foreach ( Layouts::all() as $l ) {
+            if ( ! empty( $l['content'] ) ) {
+                $content[] = $l['id'];
+            }
+        }
+        mm_out( [ 'ids' => Layouts::ids(), 'flat' => $flat, 'content' => $content ] );
         break;
 
     // ---- one layout --------------------------------------------------------------------------------------------------
@@ -427,22 +478,14 @@ switch ( $aiedMmStep ) {
             'pre_sha'        => sha1( $pre ),
             'after_all_sha'  => sha1( $afterAll ),
             'after_item_sha' => sha1( $now ),
+            'batch_all'      => $r1['batch']['id'] ?? null,
+            'batch_item'     => $r2['batch']['id'] ?? null,
             'item_changed'   => $r2['changed'] ?? null,
             'item_again'     => $r3['changed'] ?? null,
             'panels'         => $byTitle,
             'wrappers'       => substr_count( $now, 'JHMG Mega Menu"' ),
-            'item_label_ok'  => 1 === preg_match( '/"value":"JHMG panel ' . $itemId . ' ' . preg_quote( $item, '/' ) . '"/', $now ),
+            'item_label_ok'  => 1 === preg_match( '/"value":"JHMG panel ' . $itemId . ' ' . preg_quote( $item, '/' ) . '( [0-9a-f]{10})?"/', $now ),
         ] );
-        break;
-
-    case 'undo_last':
-        mm_admin();
-        $hid  = mm_header_id();
-        $undo = new \AiEditorDivi5\Pro\MegaMenu\MegaMenuUndo( Batches::log(), Batches::undo() );
-        $last = $undo->last( 1, true );
-        $r    = $undo->undoLast( 1, true );
-        $now  = mm_raw( $hid );
-        mm_out( [ 'offered' => null === $last ? null : $last['summary'], 'result' => $r['result'], 'sha' => sha1( $now ), 'applied' => HeaderEdit::inspect( $now )['hasMega'] ] );
         break;
 
     // ---- the menu changed after the mega menu was applied ---------------------------------------------------------------
@@ -476,7 +519,7 @@ switch ( $aiedMmStep ) {
             }
             $new[] = (int) $id;
         }
-        $s['item_ids'] = array_merge( $s['item_ids'], $new );
+        $s['item_ids']  = array_merge( $s['item_ids'], $new );
         $s['drift_ids'] = $new;
         mm_save_state( $s );
         mm_out( [ 'added' => $new, 'fresh_leaf_url' => home_url( '/services/design/fresh-leaf/' ), 'fresh_blog_url' => home_url( '/blog/fresh/' ), 'contact_url' => home_url( '/contact/' ) ] );
@@ -487,7 +530,7 @@ switch ( $aiedMmStep ) {
         $hid    = mm_header_id();
         $status = mm_service()->status();
         $drift  = $status['drift'];
-        $panel  = new \AiEditorDivi5\Pro\Admin\MegaMenuPanel( static fn (): bool => true, mm_service(), static function (): void {}, new \AiEditorDivi5\Pro\MegaMenu\MegaMenuUndo( Batches::log(), Batches::undo() ) );
+        $panel  = new \AiEditorDivi5\Pro\Admin\MegaMenuPanel( static fn (): bool => true, mm_service(), static function (): void {} );
         ob_start();
         $panel->render( 'megamenu' );
         $html = (string) ob_get_clean();
@@ -525,6 +568,7 @@ switch ( $aiedMmStep ) {
             'pre_sha'       => sha1( $pre ),
             'dry_untouched' => $mid === $pre,
             'dry_valid'     => $dry['valid'] ?? null,
+            'batch'         => $r1['batch']['id'] ?? null,
             'changed'       => $r1['changed'] ?? null,
             'again'         => $r2['changed'] ?? null,
             'sha'           => sha1( $after ),
@@ -545,6 +589,98 @@ switch ( $aiedMmStep ) {
         mm_save_state( $s );
         $menu = wp_get_nav_menu_object( AIED_MM_MENU_NAME );
         mm_out( [ 'items_left' => count( wp_get_nav_menu_items( $menu->term_id ) ?: [] ), 'items_expected' => count( $s['item_ids'] ) ] );
+        break;
+
+    // ---- another menu on the site, and which menu the header shows ---------------------------------------------------------
+    case 'second_menu':
+        mm_admin();
+        $s  = mm_state();
+        $id = wp_create_nav_menu( 'aied megamenu second' );
+        if ( is_wp_error( $id ) || ! $id ) {
+            mm_fail( 'could not create the second throwaway menu' );
+        }
+        $s['second_menu_id'] = (int) $id;
+        mm_save_state( $s );
+        $mk = static function ( string $title, string $path, int $parent ) use ( $id ): int {
+            $r = wp_update_nav_menu_item( (int) $id, 0, [ 'menu-item-status' => 'publish', 'menu-item-type' => 'custom', 'menu-item-title' => $title, 'menu-item-url' => home_url( $path ), 'menu-item-parent-id' => $parent ] );
+            if ( is_wp_error( $r ) || ! $r ) {
+                mm_fail( 'could not add an item to the second menu' );
+            }
+
+            return (int) $r;
+        };
+        $docs = $mk( 'Docs', '/docs/', 0 );
+        $mk( 'Guide', '/docs/guide/', $docs );
+        $mk( 'FAQ', '/docs/faq/', $docs );
+        $mk( 'Contact', '/contact-second/', 0 );
+        mm_out( [ 'menu_id' => (int) $id, 'docs_id' => $docs, 'guide_url' => home_url( '/docs/guide/' ) ] );
+        break;
+
+    case 'menu_state':
+        mm_admin();
+        $now = mm_raw( mm_header_id() );
+        preg_match( '/"menuId":\{"desktop":\{"value":"(\d*)"/', $now, $m );
+        $st = mm_service()->status();
+        mm_out( [ 'module_menu_id' => (int) ( $m[1] ?? 0 ), 'status_menu' => $st['menu']['name'] ?? null, 'status_menu_id' => $st['menu']['id'] ?? null, 'panel_ids' => array_keys( HeaderEdit::panels( $now ) ), 'layouts' => array_values( array_unique( HeaderEdit::panels( $now ) ) ), 'drift' => null !== $st['drift'], 'sha' => sha1( $now ) ] );
+        break;
+
+    // ---- a panel edited in the Divi builder ------------------------------------------------------------------------------
+    // hand_edit changes one panel the way an edit in the builder does (a text in it) and writes the header with wp_update_post, not
+    // through the add-on; edited_refresh is the "Update" button with an answer ('-' = none was given).
+    case 'hand_edit':
+        mm_admin();
+        $hid   = mm_header_id();
+        $s     = mm_state();
+        $title = (string) ( $args[1] ?? 'Services' );
+        $id    = $title === 'Blog' ? (int) $s['blog_id'] : (int) $s['services_id'];
+        $now   = mm_raw( $hid );
+        $panel = HeaderEdit::panelBlocks( $now )[ $id ] ?? '';
+        if ( '' === $panel ) {
+            mm_fail( 'no panel for ' . $title );
+        }
+        $edited = (string) preg_replace( '/"text":"([^"]+)"/', '"text":"$1 (edited in Divi)"', $panel, 1 );
+        wp_update_post( [ 'ID' => $hid, 'post_content' => wp_slash( str_replace( $panel, $edited, $now ) ) ] );
+        clean_post_cache( $hid );
+        $after = mm_raw( $hid );
+        $items = [];
+        foreach ( mm_service()->status()['items'] as $it ) {
+            $items[ $it['title'] ] = $it['edited'];
+        }
+        mm_out( [ 'changed' => $after !== $now, 'edited' => $items, 'panel_sha' => sha1( HeaderEdit::panelBlocks( $after )[ $id ] ?? '' ), 'sha' => sha1( $after ) ] );
+        break;
+
+    case 'edited_refresh':
+        mm_admin();
+        $hid    = mm_header_id();
+        $s      = mm_state();
+        $choice = (string) ( $args[1] ?? '-' );
+        $pre    = mm_raw( $hid );
+        $out    = [ 'pre_sha' => sha1( $pre ) ];
+        try {
+            $r = mm_service()->refresh( false, '-' === $choice ? null : $choice );
+            $out['asked'] = [];
+            $out['changed'] = $r['changed'] ?? null;
+            $out['kept'] = $r['mega_menu']['edited_kept'] ?? [];
+            $out['replaced'] = $r['mega_menu']['edited_replaced'] ?? [];
+        } catch ( \AiEditorDivi5\Pro\MegaMenu\EditedPanelsException $e ) {
+            $out['asked'] = array_values( $e->panels );
+            $out['message'] = $e->getMessage();
+        } catch ( \Throwable $e ) {
+            mm_fail( $e->getMessage() );
+        }
+        $now = mm_raw( $hid );
+        $out['sha']        = sha1( $now );
+        $out['panel_sha']  = sha1( HeaderEdit::panelBlocks( $now )[ (int) $s['services_id'] ] ?? '' );
+        $out['has_edit']   = str_contains( $now, '(edited in Divi)' );
+        $out['edited']     = array_map( static fn ( array $it ): bool => $it['edited'], array_column( mm_service()->status()['items'], null, 'title' ) );
+        mm_out( $out );
+        break;
+
+    case 'set_edits':
+        mm_admin();
+        $s = mm_state();
+        mm_service()->content()->setEdits( ( (string) ( $args[1] ?? '' ) ) === 'Blog' ? (int) $s['blog_id'] : (int) $s['services_id'], (string) ( $args[2] ?? 'ask' ) );
+        mm_out( [ 'ok' => true ] );
         break;
 
     case 'remove':

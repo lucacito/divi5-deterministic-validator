@@ -25,6 +25,8 @@ devSiteOnly(SITE);
 const wp = makeWp(ROOT);
 /** Layouts that list every sub-link in one flat row (filled from the PHP step `list`). */
 const flatLayouts = new Set();
+/** Layouts that take the owner's own headline, text, button and picture (filled from the PHP step `list`). */
+const contentLayouts = new Set();
 const only = (process.argv.find((a) => a.startsWith('--layouts=')) || '').replace('--layouts=', '').split(',').filter(Boolean);
 
 /** One PHP step of scripts/verify-pro-megamenu.php: its RESULT JSON, or throws with the ERROR message. */
@@ -245,6 +247,7 @@ async function desktop(browser, layout, setup, ap) {
     let shotDone = false;
     for (const i of nav.dropdowns) {
       const title = setup.top[i].title;
+      const ownHere = contentLayouts.has(layout) && title === 'Services';
       const label = page.locator(`[data-aied-mm="top-${i}"]`);
       const panel = page.locator(`[data-aied-mm="panel-${i}"]`);
       const panelSel = `[data-aied-mm="panel-${i}"]`;
@@ -301,7 +304,22 @@ async function desktop(browser, layout, setup, ap) {
       });
       if (imgs.length) {
         check(layout, W, `"${title}" panel images have naturalWidth > 0 (${imgs.length})`, imgs.every((im) => im.nw > 0), JSON.stringify(imgs.filter((im) => !(im.nw > 0)).slice(0, 2)));
-        check(layout, W, `"${title}" panel images carry a pack or post-thumbnail src and no alt text`, imgs.every((im) => (/card-blue-1\.svg$/.test(im.src || '') || /\/uploads\//.test(im.src || '')) && (im.alt === '' || im.alt === null)), JSON.stringify(imgs.slice(0, 1)));
+        check(layout, W, `"${title}" panel images carry a pack or post-thumbnail src and no alt text (the owner's picture has its Media Library alt)`, imgs.every((im) => (/card-blue-1\.svg$/.test(im.src || '') || /\/uploads\//.test(im.src || '')) && (im.alt === '' || im.alt === null || (ownHere && im.alt === setup.own.alt))), JSON.stringify(imgs.slice(0, 1)));
+      }
+      // The owner's own content (set up for "Services" before the run) on the layouts that have a place for it.
+      if (ownHere) {
+        const o = await panel.evaluate((p) => ({
+          headings: [...p.querySelectorAll('h1,h2,h3,h4')].map((e) => e.textContent.trim()),
+          paras: [...p.querySelectorAll('p')].map((e) => e.textContent.trim()),
+          links: [...p.querySelectorAll('a[href]')].map((a) => ({ text: a.textContent.trim(), href: a.getAttribute('href') })),
+          imgs: [...p.querySelectorAll('img')].map((e) => ({ src: e.getAttribute('src') || '', alt: e.getAttribute('alt'), nw: e.naturalWidth })),
+        }));
+        const file = setup.own.imageUrl.split('/').pop();
+        check(layout, W, `"${title}" own headline replaces the item title on the card or panel`, o.headings.includes(setup.own.title), o.headings.join(' | '));
+        check(layout, W, `"${title}" own text is shown`, o.paras.includes(setup.own.text), o.paras.slice(0, 3).join(' | '));
+        check(layout, W, `"${title}" own button label and link`, o.links.some((l) => l.text === setup.own.button && l.href === setup.own.url), JSON.stringify(o.links.filter((l) => /View all|Gate/.test(l.text))));
+        check(layout, W, `"${title}" own picture is shown, loaded, with the Media Library alt text`, o.imgs.some((m) => m.src.endsWith(file) && m.nw > 0 && m.alt === setup.own.alt), JSON.stringify(o.imgs.slice(0, 2)));
+        check(layout, W, `"${title}" the placeholder picture is gone when the owner has their own`, !o.imgs.some((m) => /card-blue-1\.svg/.test(m.src)));
       }
       // The newest posts: the "latest" layouts show the newest posts' permalinks.
       if (ap.layout_posts) {
@@ -312,7 +330,7 @@ async function desktop(browser, layout, setup, ap) {
       // The "View all" button: text, link and font.
       const btn = (await panel.locator('a.et_pb_button').count()) === 0 ? null : await panel.locator('a.et_pb_button').first().evaluate((a) => ({ text: a.textContent.trim(), href: a.getAttribute('href'), size: getComputedStyle(a).fontSize, weight: getComputedStyle(a).fontWeight })).catch(() => null);
       if (btn) {
-        check(layout, W, `"${title}" button text and link (divi/button)`, btn.text === 'View all' && btn.href === setup.top[i].url, `${btn.text} -> ${btn.href}`);
+        check(layout, W, `"${title}" button text and link (divi/button)`, btn.text === (ownHere ? setup.own.button : 'View all') && btn.href === (ownHere ? setup.own.url : setup.top[i].url), `${btn.text} -> ${btn.href}`);
         check(layout, W, `"${title}" button font size and weight (divi/button)`, btn.size === '14px' && btn.weight === '600', `${btn.size} ${btn.weight}`);
       }
       // The look: a gradient is drawn, the panel has its accent top edge, the cards rise, glow and (tiles) take the accent frame on hover,
@@ -411,57 +429,120 @@ async function narrow(browser, layout, width, height, setup) {
   }
 }
 
-/**
- * The admin side in a real browser (an administrator's session): what the Dashboard and the Mega menu tab show. Returns the facts the
- * checks read; `overflow` counts elements that stick out of the box that holds them.
- */
-async function adminView(browser) {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+const TAB = SITE + '/wp-admin/admin.php?page=ai-editor-divi5&tab=megamenu';
+
+/** An administrator's logged-in session in its own browser context. */
+async function adminSession(browser) {
+  // Reduced motion: WordPress then skips its page transition, which in headless Chromium can stall rendering after a redirect.
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: 'reduce' });
   await ctx.addCookies(loginCookies(wp).map(([name, value]) => ({ name, value, url: SITE })));
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
+  return { ctx, page, errors };
+}
+
+/** The WordPress notice of the add-on on a plain admin screen. */
+function readDash(page) {
+  return page.evaluate(() => {
+    const n = document.querySelector('.aied-mm-wpnotice');
+    return { notice: !!n, text: n ? n.innerText.replace(/\s+/g, ' ') : '', button: !!(n && n.querySelector('button[type=submit]')), link: n && n.querySelector('a') ? n.querySelector('a').getAttribute('href') : null };
+  });
+}
+
+/**
+ * Presses a button of an admin form and waits until the add-on has redirected back to the tab with the given notice code (WordPress admin
+ * uses page transitions, which `waitForNavigation` can miss; the notice in the address is also what the press was meant to cause).
+ */
+async function pressAndWait(page, selector, notice) {
+  await Promise.all([
+    page.waitForURL((u) => u.toString().includes('aied_pro_notice=' + notice), { timeout: 40000, waitUntil: 'load' }),
+    page.click(selector),
+  ]);
+}
+
+/** What the Mega menu tab shows right now; `overflow` counts elements that stick out of the box that holds them. */
+function readTab(page) {
+  return page.evaluate(() => {
+    const root = document.querySelector('#megamenu');
+    const txt = (e) => (e ? e.textContent.replace(/\s+/g, ' ').trim() : '');
+    const val = (sel) => { const e = root.querySelector(sel); return e ? e.value : null; };
+    const cur = [...root.querySelectorAll('.aied-mm-card.is-current')];
+    const out = [...root.querySelectorAll('select, .aied-mm-card, .aied-mm-item, .aied-mm-badge, .aied-mm-srow')].filter((e) => e.getBoundingClientRect().right > e.parentElement.getBoundingClientRect().right + 1);
+    const notice = [...root.querySelectorAll('.notice.inline')].find((n) => !n.classList.contains('aied-mm-drift') && !n.classList.contains('aied-mm-pending'));
+    const pending = root.querySelector('.aied-mm-pending');
+    const byText = (sel, t) => [...root.querySelectorAll(sel)].find((e) => txt(e) === t);
+    return {
+      wpNoticeOnTab: !!document.querySelector('.aied-mm-wpnotice'),
+      tabNotice: !!root.querySelector('.aied-mm-drift'),
+      pending: !!pending,
+      pendingText: txt(pending),
+      noticeText: txt(notice),
+      status: txt(root.querySelector('.aied-mm-status')),
+      items: [...root.querySelectorAll('a.aied-mm-item')].map((a) => ({ name: txt(a.querySelector('.aied-mm-iname')), layout: txt(a.querySelector('.aied-mm-isub')).replace(/(Custom content|Edited in Divi|Out of date)/g, '').trim(), pills: [...a.querySelectorAll('.aied-mm-pill')].map(txt), selected: a.classList.contains('is-selected') })),
+      panelTitle: txt(root.querySelector('.aied-mm-ehead h3')),
+      current: cur.map((c) => ({ name: txt(c.querySelector('h4')), badge: txt(c.querySelector('.aied-mm-badge')) })),
+      cards: root.querySelectorAll('.aied-mm-card').length,
+      cardSelects: root.querySelectorAll('.aied-mm-card select').length,
+      overflow: out.length,
+      helpClosed: !!root.querySelector('details.aied-mm-help') && !root.querySelector('details.aied-mm-help').open,
+      textLength: root.innerText.replace(/\s+/g, ' ').length,
+      fields: { title: val('#aied-mm-title'), text: val('#aied-mm-text'), button: val('#aied-mm-button'), url: val('#aied-mm-url'), image: val('#aied-mm-image') },
+      pickerSrc: (root.querySelector('#aied-mm-picked img') || {}).src || null,
+      openHref: (byText('a.button', 'Open in Divi') || {}).href || null,
+      builderPill: txt(root.querySelector('.aied-mm-srow .aied-mm-pill')),
+      menuSelect: root.querySelector('#aied-mm-menu') ? [...root.querySelectorAll('#aied-mm-menu option')].map((o) => ({ value: o.value, label: txt(o), selected: o.selected })) : null,
+      replaceButton: !!byText('button', 'Replace my version'),
+    };
+  });
+}
+
+/** The Dashboard and the Mega menu tab (`query`: extra arguments such as `&item=5&etab=layout`) in a fresh admin session. */
+async function adminView(browser, opts = {}) {
+  const s = await adminSession(browser);
   try {
-    await page.goto(SITE + '/wp-admin/index.php', { waitUntil: 'load' });
-    const dash = await page.evaluate(() => {
-      const n = document.querySelector('.aied-mm-wpnotice');
-      return { notice: !!n, text: n ? n.innerText.replace(/\s+/g, ' ') : '', button: !!(n && n.querySelector('button[type=submit]')), link: n && n.querySelector('a') ? n.querySelector('a').getAttribute('href') : null };
-    });
-    await page.goto(SITE + '/wp-admin/admin.php?page=ai-editor-divi5&tab=megamenu', { waitUntil: 'load' });
-    const tab = await page.evaluate(() => {
-      const root = document.querySelector('#megamenu');
-      const cur = [...root.querySelectorAll('.aied-mm-card.is-current')];
-      const out = [...root.querySelectorAll('select, .aied-mm-card, .aied-mm-items, .aied-mm-badge')].filter((e) => {
-        const box = e.closest('td, .aied-mm-card, #megamenu');
-        const host = box && box !== e ? box : e.parentElement;
-        return e.getBoundingClientRect().right > host.getBoundingClientRect().right + 1;
-      });
-      const bc = cur[0] ? getComputedStyle(cur[0]).borderTopColor : null;
-      return {
-        wpNoticeOnTab: !!document.querySelector('.aied-mm-wpnotice'),
-        tabNotice: !!root.querySelector('.aied-mm-drift'),
-        current: cur.map((c) => ({ name: c.querySelector('h4').textContent.trim(), badge: (c.querySelector('.aied-mm-badge') || {}).textContent || '', border: getComputedStyle(c).boxShadow })),
-        badgeColour: bc,
-        cards: root.querySelectorAll('.aied-mm-card').length,
-        itemRows: root.querySelectorAll('.aied-mm-items tbody tr').length,
-        itemSelects: root.querySelectorAll('.aied-mm-items select').length,
-        cardSelects: root.querySelectorAll('.aied-mm-card select').length,
-        overflow: out.length,
-        helpClosed: !!root.querySelector('details.aied-mm-help') && !root.querySelector('details.aied-mm-help').open,
-        textLength: root.innerText.replace(/\s+/g, ' ').length,
-      };
-    });
-    return { dash, tab, errors };
+    await s.page.goto(SITE + '/wp-admin/index.php', { waitUntil: 'load' });
+    const dash = await readDash(s.page);
+    await s.page.goto(TAB + (opts.query || ''), { waitUntil: 'load' });
+    const tab = await readTab(s.page);
+    return { dash, tab, errors: s.errors };
   } finally {
-    await ctx.close();
+    await s.ctx.close();
   }
 }
 
 (async () => {
   const setup = step('setup');
   console.log(`setup: menu ${setup.menu_id}, ${setup.items} items, header ${setup.header_id}, baseline in place`);
+  /** What the front end shows in the panels of the given top-level items, hovered in a real browser at 1280 px. */
+  const frontPanels = async (browser, names) => {
+    const { ctx, page, errors, status } = await openPage(browser, 1280, 900, false);
+    try {
+      await page.waitForFunction((n) => document.querySelectorAll('.et_pb_dropdown_initialized').length >= n, setup.panels, { timeout: 10000 }).catch(() => {});
+      const nav = await page.evaluate(tagNav);
+      const out = { errors, status, labels: nav.labels };
+      for (const name of names) {
+        const i = nav.labels.indexOf(name);
+        await page.mouse.move(5, 880);
+        await page.waitForTimeout(500);
+        await page.locator(`[data-aied-mm="top-${i}"]`).hover();
+        await page.waitForTimeout(1200);
+        out[name] = await page.locator(`[data-aied-mm="panel-${i}"]`).evaluate((p) => ({
+          text: p.innerText.replace(/\s+/g, ' '),
+          links: [...p.querySelectorAll('a[href]')].map((a) => ({ text: a.textContent.trim(), href: a.getAttribute('href') })),
+          headings: [...p.querySelectorAll('h1,h2,h3,h4')].map((e) => e.textContent.trim()),
+          paras: [...p.querySelectorAll('p')].map((e) => e.textContent.trim()),
+          imgs: [...p.querySelectorAll('img')].map((e) => ({ src: e.getAttribute('src') || '', alt: e.getAttribute('alt'), nw: e.naturalWidth })),
+        }));
+      }
+      return out;
+    } finally {
+      await ctx.close();
+    }
+  };
   const listed = step('list');
   listed.flat.forEach((id) => flatLayouts.add(id));
+  listed.content.forEach((id) => contentLayouts.add(id));
   const ids = listed.ids.filter((id) => only.length === 0 || only.includes(id));
   const browser = await chromium.launch();
   const summary = [];
@@ -529,19 +610,17 @@ async function adminView(browser) {
       } finally {
         await ctx.close();
       }
-      const u1 = step('undo_last');
-      check(L, '-', 'undo last change: offers the item change and puts the header back to the whole-menu layout, byte for byte', u1.result === 'undone' && u1.sha === it.after_all_sha && u1.applied === true, `${u1.result} / ${u1.offered}`);
-      const u2 = step('undo_last');
-      check(L, '-', 'undo last change again: back to the header before any mega menu, byte for byte', u2.result === 'undone' && u2.sha === it.pre_sha && u2.applied === false, `${u2.result} / ${u2.offered}`);
-      const u3 = step('undo_last');
-      check(L, '-', 'undo last change with nothing left to undo says so and changes nothing', u3.result === 'none' && u3.sha === it.pre_sha, u3.result);
+      const u1 = step('undo', String(it.batch_item));
+      check(L, '-', 'undoing the item change (as Recent Pro changes does) puts the header back to the whole-menu layout, byte for byte', u1.result === 'restored' && u1.sha === it.after_all_sha && u1.applied === true, String(u1.result));
+      const u2 = step('undo', String(it.batch_all));
+      check(L, '-', 'undoing the first apply: back to the header before any mega menu, byte for byte', u2.result === 'restored' && u2.sha === it.pre_sha && u2.applied === false, String(u2.result));
     }
     // The menu is edited after the mega menu was applied: the tab says so, the front end still shows the old panels, one update brings
     // the header up to date (every item keeps its layout), and undo puts the old header back, byte for byte.
     {
       const L = 'menu changed';
       const base = step('state');
-      step('apply', 'showcase-tiles');
+      const appliedTiles = step('apply', 'showcase-tiles');
       const ed = step('drift_edit');
       const ds = step('drift_state');
       check(L, '-', 'after editing the menu the header is reported as not matching it', ds.drifted === true);
@@ -568,13 +647,14 @@ async function adminView(browser) {
           await ctx.close();
         }
       };
-      const adminBefore = await adminView(browser);
+      const adminBefore = await adminView(browser, { query: `&item=${setup.services_id}&etab=layout` });
       check(L, '-', 'admin: a WordPress notice with the Update button shows on the Dashboard, linking to the tab', adminBefore.dash.notice && adminBefore.dash.button && /tab=megamenu/.test(adminBefore.dash.link || '') && /out of date/.test(adminBefore.dash.text), adminBefore.dash.text.slice(0, 140));
       check(L, '-', 'admin: the tab itself shows its own notice, not a second WordPress one', adminBefore.tab.tabNotice === true && adminBefore.tab.wpNoticeOnTab === false);
-      check(L, '-', 'admin: the layout in use is highlighted on exactly one card, named "In use"', adminBefore.tab.current.length === 1 && adminBefore.tab.current[0].name === 'Link tiles' && adminBefore.tab.current[0].badge === 'In use' && adminBefore.tab.current[0].border !== 'none', JSON.stringify(adminBefore.tab.current));
-      check(L, '-', 'admin: one row per menu item with its own layout choice, none on the cards', adminBefore.tab.itemRows === setup.panels && adminBefore.tab.itemSelects === setup.panels && adminBefore.tab.cardSelects === 0 && adminBefore.tab.cards === 13, `${adminBefore.tab.itemRows} rows, ${adminBefore.tab.itemSelects} selects, ${adminBefore.tab.cardSelects} on cards`);
+      check(L, '-', 'admin: the item list has one entry per menu item with its layout and says which is out of date', adminBefore.tab.items.length === setup.panels && adminBefore.tab.items.every((x) => x.layout === 'Link tiles') && adminBefore.tab.items.find((x) => x.name === 'Services').pills.includes('Out of date'), JSON.stringify(adminBefore.tab.items));
+      check(L, '-', 'admin: on the Layout tab the layout in use is framed on exactly one card, badge "This item"', adminBefore.tab.current.length === 1 && adminBefore.tab.current[0].name === 'Link tiles' && adminBefore.tab.current[0].badge === 'This item', JSON.stringify(adminBefore.tab.current));
+      check(L, '-', 'admin: no dropdown on the layout cards', adminBefore.tab.cardSelects === 0 && adminBefore.tab.cards === 13, `${adminBefore.tab.cardSelects} selects, ${adminBefore.tab.cards} cards`);
       check(L, '-', 'admin: nothing sticks out of the box that holds it', adminBefore.tab.overflow === 0, String(adminBefore.tab.overflow));
-      check(L, '-', 'admin: the help is folded away and the visible text stays short', adminBefore.tab.helpClosed === true && adminBefore.tab.textLength < 3200, String(adminBefore.tab.textLength));
+      check(L, '-', 'admin: the help is folded away and the visible text stays short', adminBefore.tab.helpClosed === true && adminBefore.tab.textLength < 3600, String(adminBefore.tab.textLength));
       const before = await probe();
       check(L, 1280, 'before the update the front end still has the old panels (no new link, no new top-level item)', before.Services === false && before.Blog === false && before.contact === false, JSON.stringify({ s: before.Services, b: before.Blog, c: before.contact }));
       const rf = step('drift_refresh');
@@ -587,12 +667,131 @@ async function adminView(browser) {
       const afterRefresh = await probe();
       check(L, 1280, 'after the update the new links are in the panels and the new top-level item is in the bar', afterRefresh.Services === true && afterRefresh.Blog === true && afterRefresh.contact === true, JSON.stringify({ s: afterRefresh.Services, b: afterRefresh.Blog, c: afterRefresh.contact }));
       check(L, 1280, 'no console error from the page before or after', before.errors.length === 0 && afterRefresh.errors.length === 0, before.errors.concat(afterRefresh.errors).slice(0, 2).join(' | '));
-      const u1 = step('undo_last');
-      check(L, '-', 'undo last change puts the header back as it was before the update, byte for byte', u1.result === 'undone' && u1.sha === rf.pre_sha && u1.applied === true, `${u1.result} / ${u1.offered}`);
-      const u2 = step('undo_last');
-      check(L, '-', 'undo again: back to the header before any mega menu, byte for byte', u2.result === 'undone' && u2.sha === base.sha && u2.applied === false, u2.result);
+      const u1 = step('undo', String(rf.batch));
+      check(L, '-', 'undoing the update (Recent Pro changes) puts the header back as it was before it, byte for byte', u1.result === 'restored' && u1.sha === rf.pre_sha && u1.applied === true, String(u1.result));
+      const u2 = step('undo', String(appliedTiles.batch));
+      check(L, '-', 'undoing the apply: back to the header before any mega menu, byte for byte', u2.result === 'restored' && u2.sha === base.sha && u2.applied === false, String(u2.result));
       const cl = step('drift_cleanup');
       check(L, '-', 'the three added menu items are gone', cl.items_left === cl.items_expected, `${cl.items_left} of ${cl.items_expected}`);
+    }
+    // The owner's own content through the real form: the fields hold what was saved, the Media Library window opens, a typed headline shows
+    // in the small preview at once, "Save and update the header" puts it on the front end, "Reset to the defaults" takes it away.
+    {
+      const L = 'own content';
+      step('apply', 'feature-right');
+      const s = await adminSession(browser);
+      try {
+        await s.page.goto(`${TAB}&item=${setup.services_id}&etab=content`, { waitUntil: 'load' });
+        let t = await readTab(s.page);
+        check(L, '-', 'content tab: the fields hold what was saved and the picture is shown', t.fields.title === setup.own.title && t.fields.text === setup.own.text && t.fields.button === setup.own.button && t.fields.url === setup.own.url && String(t.fields.image) === String(setup.own.image) && !!t.pickerSrc, JSON.stringify(t.fields));
+        check(L, '-', 'the item list opens Services and marks it "Custom content"', t.items[0].name === 'Services' && t.items[0].selected && t.items[0].pills.includes('Custom content') && t.panelTitle === 'Services panel', JSON.stringify(t.items[0]));
+        await s.page.click('#aied-mm-pick');
+        const modal = await s.page.waitForSelector('.media-modal', { state: 'visible', timeout: 20000 }).then(() => true).catch(() => false);
+        check(L, '-', 'the Media Library window opens from the picture button', modal);
+        if (modal) await s.page.keyboard.press('Escape');
+        await s.page.fill('#aied-mm-title', 'Live preview words');
+        check(L, '-', 'the small preview follows what is typed', (await s.page.textContent('#aied-mm-pv-title')) === 'Live preview words');
+        await s.page.fill('#aied-mm-title', 'Edited by the form');
+        await s.page.fill('#aied-mm-text', 'Text from the form.');
+        await s.page.fill('#aied-mm-button', 'Go now');
+        await pressAndWait(s.page, 'button:has-text("Save and update the header")', 'megamenu_content_saved');
+        t = await readTab(s.page);
+        check(L, '-', 'saving comes back to the same item and tab with the notice', t.noticeText.includes('Saved. The panel in your header is updated.') && new RegExp(`item=${setup.services_id}`).test(s.page.url()) && /etab=content/.test(s.page.url()), t.noticeText);
+        check(L, '-', 'after saving nothing is out of date', t.tabNotice === false && t.items[0].pills.every((x) => x !== 'Out of date'));
+        const f = await frontPanels(browser, ['Services']);
+        check(L, 1280, 'the front end shows the saved headline, text and button label', f.Services.headings.includes('Edited by the form') && f.Services.paras.includes('Text from the form.') && f.Services.links.some((l) => l.text === 'Go now' && l.href === setup.own.url), JSON.stringify(f.Services.headings));
+        check(L, 1280, 'the picture is still there and loads', f.Services.imgs.some((m) => m.src.endsWith(setup.own.imageUrl.split('/').pop()) && m.nw > 0 && m.alt === setup.own.alt), JSON.stringify(f.Services.imgs.slice(0, 2)));
+        await pressAndWait(s.page, 'button:has-text("Reset to the defaults")', 'megamenu_content_reset');
+        t = await readTab(s.page);
+        check(L, '-', 'reset: the notice, empty fields and no "Custom content" mark', t.noticeText.includes('Back to the defaults') && t.fields.title === '' && t.fields.image === '0' && t.items[0].pills.every((x) => x !== 'Custom content'), t.noticeText);
+        const f2 = await frontPanels(browser, ['Services']);
+        check(L, 1280, 'after reset the card shows the menu item\'s own title and no picture', f2.Services.headings.includes('Services') && !f2.Services.headings.includes('Edited by the form') && !f2.Services.imgs.some((m) => /uploads/.test(m.src)), JSON.stringify(f2.Services.headings));
+        check(L, '-', 'no script error on the admin screens and the front end', s.errors.length === 0 && f.errors.length === 0 && f2.errors.length === 0, s.errors.concat(f.errors, f2.errors).slice(0, 2).join(' | '));
+      } finally {
+        await s.ctx.close();
+      }
+      const off = step('remove');
+      check(L, '-', 'removed again for the next scenario', off.applied === false);
+    }
+    // A panel edited in the Divi builder: seen, protected on Update (the tab asks), kept or replaced as the owner answers, through the real buttons.
+    {
+      const L = 'hand edit';
+      step('apply', 'columns-footer');
+      const he = step('hand_edit', 'Services');
+      check(L, '-', 'a panel changed the way the builder does it is seen as edited, the other one is not', he.changed === true && he.edited.Services === true && he.edited.Blog === false, JSON.stringify(he.edited));
+      const a1 = await adminView(browser, { query: `&item=${setup.services_id}&etab=builder` });
+      const row = (name) => a1.tab.items.find((x) => x.name === name);
+      check(L, '-', 'admin: the item list says "Edited in Divi" for Services only', row('Services').pills.includes('Edited in Divi') && !row('Blog').pills.includes('Edited in Divi'), JSON.stringify(a1.tab.items));
+      check(L, '-', 'admin: the Builder tab says Edited in Divi and offers "Replace my version"', a1.tab.builderPill === 'Edited in Divi' && a1.tab.replaceButton === true, a1.tab.builderPill);
+      check(L, '-', 'admin: "Open in Divi" is the builder address of the header (the way Divi\'s own Theme Builder builds it)', /et_fb=1/.test(a1.tab.openHref || '') && /et_tb=1/.test(a1.tab.openHref || '') && /app_window=1/.test(a1.tab.openHref || ''), String(a1.tab.openHref));
+      const f0 = await frontPanels(browser, ['Services']);
+      check(L, 1280, 'the front end shows the hand edit', f0.Services.text.includes('(edited in Divi)'));
+      const ed = step('drift_edit');
+      const s = await adminSession(browser);
+      try {
+        const pre = step('state').sha;
+        await s.page.goto(TAB, { waitUntil: 'load' });
+        await pressAndWait(s.page, 'button:has-text("Update the mega menu")', 'megamenu_edited');
+        let t = await readTab(s.page);
+        check(L, '-', 'admin: Update stops and asks, naming the edited panel', t.pending === true && /the panel of "Services"/.test(t.pendingText), t.pendingText);
+        check(L, '-', 'admin: nothing was changed while it asks', step('state').sha === pre);
+        await pressAndWait(s.page, 'button:has-text("Keep my changes")', 'megamenu_updated');
+        t = await readTab(s.page);
+        check(L, '-', 'admin: after "Keep my changes" the update went through and the question is gone', t.noticeText.includes('The mega menu now matches your menu') && t.pending === false, t.noticeText);
+        const f1 = await frontPanels(browser, ['Services', 'Blog']);
+        check(L, 1280, 'the edited panel is untouched (no new link) and the other panel has its new link', f1.Services.text.includes('(edited in Divi)') && !f1.Services.links.some((l) => l.href === ed.fresh_leaf_url) && f1.Blog.links.some((l) => l.href === ed.fresh_blog_url), `Services new link: ${f1.Services.links.some((l) => l.href === ed.fresh_leaf_url)}, Blog new link: ${f1.Blog.links.some((l) => l.href === ed.fresh_blog_url)}`);
+        check(L, '-', 'admin: Services still says Edited in Divi, and nothing is reported out of date', t.items.find((x) => x.name === 'Services').pills.includes('Edited in Divi') && t.tabNotice === false, JSON.stringify(t.items));
+        await s.page.goto(`${TAB}&item=${setup.services_id}&etab=builder`, { waitUntil: 'load' });
+        await pressAndWait(s.page, 'button:has-text("Replace my version")', 'megamenu_applied_item');
+        t = await readTab(s.page);
+        check(L, '-', 'admin: "Replace my version" rebuilds the panel and says so', /is on "Services" now/.test(t.noticeText) && t.items.find((x) => x.name === 'Services').pills.every((x) => x !== 'Edited in Divi'), t.noticeText);
+        const f2 = await frontPanels(browser, ['Services']);
+        check(L, 1280, 'the panel is the plugin\'s again and now has the new link', !f2.Services.text.includes('(edited in Divi)') && f2.Services.links.some((l) => l.href === ed.fresh_leaf_url));
+        check(L, '-', 'no script error on the admin screens and the front end', s.errors.length === 0 && f0.errors.length === 0 && f1.errors.length === 0 && f2.errors.length === 0, s.errors.concat(f1.errors).slice(0, 2).join(' | '));
+      } finally {
+        await s.ctx.close();
+      }
+      // An item that says "keep my version" keeps it without being asked.
+      step('hand_edit', 'Services');
+      step('set_edits', 'Services', 'keep');
+      const kept = step('edited_refresh', '-');
+      check(L, '-', 'an item set to "Keep my version" is kept without asking', kept.asked.length === 0 && kept.has_edit === true, JSON.stringify(kept.asked));
+      step('set_edits', 'Services', 'ask');
+      const asked = step('edited_refresh', '-');
+      check(L, '-', 'an item set to "Ask me" asks and changes nothing', asked.asked.length === 1 && asked.asked[0] === 'Services' && asked.sha === asked.pre_sha, JSON.stringify(asked.asked));
+      const cl = step('drift_cleanup');
+      check(L, '-', 'the added menu items are gone', cl.items_left === cl.items_expected);
+      const off = step('remove');
+      check(L, '-', 'removed again', off.applied === false);
+    }
+    // Which menu the header shows, chosen on the tab with a real dropdown: the mega menu is built again from the chosen menu and back again.
+    {
+      const L = 'menu picker';
+      step('apply', 'columns-footer');
+      const second = step('second_menu');
+      const s = await adminSession(browser);
+      try {
+        await s.page.goto(TAB, { waitUntil: 'load' });
+        let t = await readTab(s.page);
+        check(L, '-', 'the tab lists the menus of the site and marks the one shown', !!t.menuSelect && t.menuSelect.length >= 2 && t.menuSelect.find((o) => o.selected).value === String(setup.menu_id) && t.menuSelect.some((o) => o.value === String(second.menu_id)), JSON.stringify(t.menuSelect));
+        await s.page.selectOption('#aied-mm-menu', String(second.menu_id));
+        await pressAndWait(s.page, 'button:has-text("Use this menu")', 'megamenu_menu_changed');
+        t = await readTab(s.page);
+        check(L, '-', 'saying so: the header now shows the chosen menu and the mega menu is built from it', t.noticeText.includes('The header now shows the menu "aied megamenu second"') && t.items.length === 1 && t.items[0].name === 'Docs', t.noticeText);
+        const m1 = step('menu_state');
+        check(L, '-', 'the header\'s Menu module points at the chosen menu and only its item with sub-items has a panel', m1.module_menu_id === second.menu_id && m1.status_menu_id === second.menu_id && JSON.stringify(m1.panel_ids) === JSON.stringify([second.docs_id]) && m1.layouts.length === 1 && m1.layouts[0] === 'columns-footer' && m1.drift === false, JSON.stringify(m1));
+        const f = await frontPanels(browser, ['Docs']);
+        check(L, 1280, 'the front end shows the chosen menu in the bar and the panel of "Docs"', f.labels.includes('Docs') && f.labels.includes('Contact') && !f.labels.includes('Services') && f.Docs.links.some((l) => l.href === second.guide_url), JSON.stringify(f.labels));
+        await s.page.selectOption('#aied-mm-menu', String(setup.menu_id));
+        await pressAndWait(s.page, 'button:has-text("Use this menu")', 'megamenu_menu_changed');
+        const m2 = step('menu_state');
+        check(L, '-', 'choosing the first menu again brings its panels back', m2.module_menu_id === setup.menu_id && m2.panel_ids.length === setup.panels && m2.drift === false, JSON.stringify(m2));
+        check(L, '-', 'no script error on the admin screens', s.errors.length === 0, s.errors.slice(0, 2).join(' | '));
+      } finally {
+        await s.ctx.close();
+      }
+      const off = step('remove');
+      check(L, '-', 'removed again', off.applied === false);
     }
     // Refusals (no global header, a copy without a Menu module, an editor without the Theme Builder permission).
     const neg = step('negative');
@@ -615,7 +814,8 @@ async function adminView(browser) {
     check('teardown', '-', 'the header is restored to its original bytes', teardown.same_bytes === true, teardown.fallback ? 'via the database' : '');
     check('teardown', '-', 'no menu, menu item, fixture or user is left', teardown.menu_left === 0 && teardown.extra_left === 0 && teardown.users_left === 0);
     check('teardown', '-', 'the undo batches that existed before the run are back, identical (the table trims to 20 and a run records more)', teardown.batches_back === true);
-    check('teardown', '-', 'none of the undo batches this run recorded is left (the tab would offer them as "Undo last change")', teardown.batches_left === 0, String(teardown.batches_left));
+    check('teardown', '-', 'none of the undo batches this run recorded is left', teardown.batches_left === 0, String(teardown.batches_left));
+    check('teardown', '-', 'the throwaway picture is deleted', teardown.picture_left === 0);
   }
   console.log('');
   console.log(`layouts run: ${summary.length} of ${ids.length}`);

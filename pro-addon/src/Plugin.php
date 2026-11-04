@@ -72,7 +72,7 @@ final class Plugin
         $unlocked = static fn (): bool => Licensing::isPremium();
         ( new ProposalsPanel( $unlocked ) )->register();
         ( new BatchesPanel( $unlocked, Batches::log(), Batches::undo() ) )->register();
-        ( new MegaMenuPanel( $unlocked, new MegaMenu\MegaMenuService( new ThemeBuilder\LayoutWriter( Batches::log() ) ), null, new MegaMenu\MegaMenuUndo( Batches::log(), Batches::undo() ) ) )->register();
+        ( new MegaMenuPanel( $unlocked, new MegaMenu\MegaMenuService( new ThemeBuilder\LayoutWriter( Batches::log() ) ) ) )->register();
 
         add_action( 'init', [ BatchTable::class, 'ensureReady' ] );
         add_filter( 'wpmu_drop_tables', [ BatchTable::class, 'dropTablesFilter' ] );
