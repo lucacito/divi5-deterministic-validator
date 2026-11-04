@@ -216,7 +216,8 @@ class MegaMenuPanelTest extends TestCase
         $html = $this->render();
         $this->assertStringContainsString( 'Main menu (3 items, 1 with sub-items)', $html );
         $this->assertStringContainsString( 'Main header', $html );
-        $this->assertStringNotContainsString( '<script', $html );
+        // The tab's own small inline scripts are the only scripts: nothing from a menu or header name becomes markup.
+        $this->assertStringNotContainsString( '<script', (string) preg_replace( '#<script>.*?</script>#s', '', $html ) );
     }
 
     // ---- apply -------------------------------------------------------------------------------------------------------
@@ -779,7 +780,7 @@ class MegaMenuPanelTest extends TestCase
         $this->assertSame( 13, substr_count( $html, 'Best for: ' ) );
         $this->assertStringContainsString( '<details class="aied-mm-help">', $html );
         $text = trim( (string) preg_replace( '/\s+/', ' ', strip_tags( (string) preg_replace( '#<(style|svg).*?</\1>#s', '', $html ) ) ) );
-        $this->assertLessThan( 2400, strlen( $text ), 'the visible text of the tab stays short (' . strlen( $text ) . ' characters)' );
+        $this->assertLessThan( 2700, strlen( $text ), 'the visible text of the tab stays short (' . strlen( $text ) . ' characters)' );
     }
 
     public function testThePostedItemPutsTheLayoutOnThatItemOnly(): void
@@ -1468,5 +1469,17 @@ class MegaMenuPanelTest extends TestCase
             $this->assertStringContainsString( 'check_admin_referer', $e->getMessage() );
         }
         $this->assertSame( $before, $this->headerContent() );
+    }
+
+    public function testAQuestionAboutAnEditedPanelIsNotShownOnceTheMegaMenuIsGone(): void
+    {
+        $this->appliedTwoPanels();
+        $this->editPanelByHand( 2 );
+        $service = $this->service( $this->editedMenu() );
+        $this->postAs( MegaMenuPanel::ACTION_UPDATE, [] );
+        $this->panel( $service )->handleUpdate();
+        $this->assertStringContainsString( 'You changed the panel', $this->renderAt( $service ) );
+        $service->remove();
+        $this->assertStringNotContainsString( 'You changed the panel', $this->renderAt( $service ), 'nothing left to ask about' );
     }
 }

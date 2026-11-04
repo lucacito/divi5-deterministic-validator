@@ -133,19 +133,22 @@ final class MegaMenuPanel
         $this->styles();
         ?>
         <div class="aied-card aied-pro" id="megamenu">
-            <div class="aied-mm-top">
-                <div>
-                    <h2><?php esc_html_e( 'Mega menu', 'jhmg-ai-editor-for-divi-5-pro' ); ?></h2>
-                    <?php $this->statusLine( $status ); ?>
-                    <?php $this->menuPicker( $status ); ?>
+            <hr class="wp-header-end"><?php // WordPress puts other plugins' notices right after this marker: above our toolbar, not inside it. ?>
+            <div class="aied-mm-bar">
+                <div class="aied-mm-id">
+                    <div class="aied-mm-titlerow">
+                        <h2><?php esc_html_e( 'Mega menu', 'jhmg-ai-editor-for-divi-5-pro' ); ?></h2>
+                        <span class="aied-mm-pill <?php echo $status['applied'] ? 'on' : 'off'; ?>"><?php echo $status['applied'] ? esc_html__( 'On', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html__( 'Off', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
+                    </div>
+                    <?php $this->metaLine( $status ); ?>
                 </div>
                 <?php if ( $status['applied'] ) : ?>
                     <div class="aied-mm-actions">
-                        <a class="button" href="<?php echo esc_url( home_url( '/' ) ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'View on site', 'jhmg-ai-editor-for-divi-5-pro' ); ?></a>
+                        <a class="aied-mm-quiet" href="<?php echo esc_url( home_url( '/' ) ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'View on site', 'jhmg-ai-editor-for-divi-5-pro' ); ?></a>
                         <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                             <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_REMOVE ); ?>">
                             <?php wp_nonce_field( self::ACTION_REMOVE ); ?>
-                            <button type="submit" class="button aied-mm-danger"><?php esc_html_e( 'Remove mega menu', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
+                            <button type="submit" class="aied-mm-quiet aied-mm-danger"><?php esc_html_e( 'Remove mega menu', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
                         </form>
                     </div>
                 <?php endif; ?>
@@ -166,7 +169,7 @@ final class MegaMenuPanel
                 <div class="notice notice-warning inline"><p><?php echo esc_html( $problem ); ?></p></div>
             <?php endif; ?>
 
-            <?php if ( is_array( $pending ) ) : ?>
+            <?php if ( is_array( $pending ) && $status['applied'] ) : ?>
                 <?php $this->pendingNotice( $pending ); ?>
             <?php endif; ?>
 
@@ -192,7 +195,7 @@ final class MegaMenuPanel
                 <summary><?php esc_html_e( 'How it works', 'jhmg-ai-editor-for-divi-5-pro' ); ?></summary>
                 <ul class="aied-mm-list">
                     <li><?php esc_html_e( 'On desktop the mega menu replaces your header\'s menu. Tablet and phone keep the normal menu.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></li>
-                    <li><?php esc_html_e( 'It is built from the menu your header\'s Menu module shows. Other menus are not touched.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></li>
+                    <li><?php esc_html_e( 'It is built from the menu your header\'s Menu module shows. Other menus are not touched. Choosing another menu in the list at the top also changes the menu of your phone header.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></li>
                     <li><?php esc_html_e( 'A sub-item that has links under it becomes a heading (not clickable). Latest-post layouts show a snapshot: update to refresh it.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></li>
                     <li><?php esc_html_e( 'The panels are built when you apply or update them. After you edit your menu, press "Update the mega menu".', 'jhmg-ai-editor-for-divi-5-pro' ); ?></li>
                     <li><?php esc_html_e( 'Every change is saved as a step you can undo under "Recent Pro changes" on the Pro tab.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></li>
@@ -200,53 +203,46 @@ final class MegaMenuPanel
             </details>
         </div>
         <?php
+        $this->menuScript();
     }
 
-    /** @param array<string,mixed> $status */
-    private function statusLine( array $status ): void
+    /**
+     * The facts under the title: the header, and the menu (a dropdown when the site has several, else its name and counts).
+     *
+     * @param array<string,mixed> $status
+     */
+    private function metaLine( array $status ): void
     {
+        $counts = null === $status['menu'] ? '' : sprintf(
+            /* translators: 1: number of top-level items, 2: number of items with sub-items */
+            __( '%1$d items, %2$d with sub-items', 'jhmg-ai-editor-for-divi-5-pro' ),
+            $status['menu']['items'],
+            $status['menu']['panels']
+        );
+        $picker = ! empty( $status['menuModule'] ) && count( $status['menus'] ) > 1;
         ?>
-        <p class="aied-mm-status">
-            <span class="aied-mm-pill <?php echo $status['applied'] ? 'on' : 'off'; ?>"><?php echo $status['applied'] ? esc_html__( 'On', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html__( 'Off', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
-            <span><strong><?php esc_html_e( 'Header:', 'jhmg-ai-editor-for-divi-5-pro' ); ?></strong>
-                <?php echo null === $status['header'] ? esc_html__( 'none', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html( '' !== $status['header']['title'] ? $status['header']['title'] : __( 'Untitled header', 'jhmg-ai-editor-for-divi-5-pro' ) ); ?></span>
-            <?php if ( null !== $status['menu'] ) : ?>
-                <span><strong><?php esc_html_e( 'Menu:', 'jhmg-ai-editor-for-divi-5-pro' ); ?></strong>
-                    <?php
-                    echo esc_html( sprintf(
-                        /* translators: 1: menu name, 2: number of top-level items, 3: number of items with sub-items */
-                        __( '%1$s (%2$d items, %3$d with sub-items)', 'jhmg-ai-editor-for-divi-5-pro' ),
-                        $status['menu']['name'],
-                        $status['menu']['items'],
-                        $status['menu']['panels']
-                    ) );
-                    ?>
-                </span>
+        <div class="aied-mm-meta">
+            <span><span class="aied-mm-k"><?php esc_html_e( 'Header', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span> <?php echo null === $status['header'] ? esc_html__( 'none', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html( '' !== $status['header']['title'] ? $status['header']['title'] : __( 'Untitled header', 'jhmg-ai-editor-for-divi-5-pro' ) ); ?></span>
+            <?php if ( $picker ) : ?>
+                <?php $current = null === $status['menu'] ? 0 : (int) $status['menu']['id']; ?>
+                <form class="aied-mm-menuform" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                    <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_MENU ); ?>">
+                    <?php wp_nonce_field( self::ACTION_MENU ); ?>
+                    <label for="aied-mm-menu" class="aied-mm-k"><?php esc_html_e( 'Menu', 'jhmg-ai-editor-for-divi-5-pro' ); ?></label>
+                    <select id="aied-mm-menu" name="menu" title="<?php echo esc_attr__( 'The menu your header shows. It also changes the menu of your phone header, and the mega menu is built again from it.', 'jhmg-ai-editor-for-divi-5-pro' ); ?>">
+                        <?php foreach ( $status['menus'] as $m ) : ?>
+                            <option value="<?php echo esc_attr( (string) $m['id'] ); ?>"<?php selected( $current, $m['id'] ); ?>><?php echo esc_html( sprintf( /* translators: 1: menu name, 2: number of items */ _n( '%1$s (%2$d item)', '%1$s (%2$d items)', (int) $m['items'], 'jhmg-ai-editor-for-divi-5-pro' ), $m['name'], (int) $m['items'] ) ); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <button type="submit" class="button button-small aied-mm-usemenu"><?php esc_html_e( 'Use this menu', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
+                    <?php if ( '' !== $counts ) : ?>
+                        <span class="aied-mm-faint"><?php echo esc_html( $counts ); ?></span>
+                    <?php endif; ?>
+                </form>
+            <?php elseif ( null !== $status['menu'] ) : ?>
+                <span><span class="aied-mm-k"><?php esc_html_e( 'Menu', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span> <?php echo esc_html( $status['menu']['name'] . ' (' . $counts . ')' ); ?></span>
             <?php endif; ?>
-        </p>
-        <?php
-    }
-
-    /** The menu choice: which of the site's menus the header (and so the mega menu) shows. Only when there is something to choose. @param array<string,mixed> $status */
-    private function menuPicker( array $status ): void
-    {
-        if ( empty( $status['menuModule'] ) || count( $status['menus'] ) < 2 ) {
-            return;
-        }
-        $current = null === $status['menu'] ? 0 : (int) $status['menu']['id'];
-        ?>
-        <form class="aied-mm-menuform" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-            <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_MENU ); ?>">
-            <?php wp_nonce_field( self::ACTION_MENU ); ?>
-            <label for="aied-mm-menu"><?php esc_html_e( 'Menu shown in the header', 'jhmg-ai-editor-for-divi-5-pro' ); ?></label>
-            <select id="aied-mm-menu" name="menu">
-                <?php foreach ( $status['menus'] as $m ) : ?>
-                    <option value="<?php echo esc_attr( (string) $m['id'] ); ?>"<?php selected( $current, $m['id'] ); ?>><?php echo esc_html( sprintf( /* translators: 1: menu name, 2: number of items */ _n( '%1$s (%2$d item)', '%1$s (%2$d items)', (int) $m['items'], 'jhmg-ai-editor-for-divi-5-pro' ), $m['name'], (int) $m['items'] ) ); ?></option>
-                <?php endforeach; ?>
-            </select>
-            <button type="submit" class="button"><?php esc_html_e( 'Use this menu', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
-            <span class="description"><?php esc_html_e( 'Also changes the menu of your phone header. The mega menu is built again from it.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
-        </form>
+        </div>
         <?php
     }
 
@@ -293,13 +289,17 @@ final class MegaMenuPanel
     {
         ?>
         <div class="aied-mm-card<?php echo $o['current'] ? ' is-current' : ''; ?>">
-            <?php if ( '' !== $o['label'] ) : ?>
-                <span class="aied-mm-badge"><?php echo esc_html( $o['label'] ); ?></span>
-            <?php endif; ?>
-            <?php if ( ! empty( $layout['content'] ) ) : ?>
-                <span class="aied-mm-pic" title="<?php echo esc_attr__( 'Takes your own headline, text, button and picture', 'jhmg-ai-editor-for-divi-5-pro' ); ?>"><?php esc_html_e( 'Picture', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
-            <?php endif; ?>
             <div class="aied-mm-preview"><?php echo PreviewSvg::for( $layout ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from constants, the name is escaped inside. ?></div>
+            <?php if ( '' !== $o['label'] || ! empty( $layout['content'] ) ) : ?>
+                <div class="aied-mm-tags">
+                    <?php if ( '' !== $o['label'] ) : ?>
+                        <span class="aied-mm-badge"><?php echo esc_html( $o['label'] ); ?></span>
+                    <?php endif; ?>
+                    <?php if ( ! empty( $layout['content'] ) ) : ?>
+                        <span class="aied-mm-pic" title="<?php echo esc_attr__( 'Takes your own headline, text, button and picture', 'jhmg-ai-editor-for-divi-5-pro' ); ?>"><?php esc_html_e( 'Picture', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
             <h4><?php echo esc_html( (string) $layout['name'] ); ?></h4>
             <p><?php echo esc_html( (string) $layout['hint'] ); ?></p>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
@@ -309,7 +309,7 @@ final class MegaMenuPanel
                     <input type="hidden" name="item" value="<?php echo esc_attr( (string) $o['item'] ); ?>">
                 <?php endif; ?>
                 <?php wp_nonce_field( self::ACTION_APPLY ); ?>
-                <button type="submit" class="button button-primary"<?php echo $o['enabled'] ? '' : ' disabled'; ?>><?php echo esc_html( $o['button'] ); ?></button>
+                <button type="submit" class="button button-small aied-mm-use"<?php echo $o['enabled'] ? '' : ' disabled'; ?>><?php echo esc_html( $o['button'] ); ?></button>
             </form>
         </div>
         <?php
@@ -380,9 +380,9 @@ final class MegaMenuPanel
     {
         if ( null === $layout || empty( $layout['content'] ) ) {
             ?>
-            <div class="aied-mm-note">
+            <div class="aied-mm-empty">
                 <strong><?php esc_html_e( 'This layout shows your links only.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></strong>
-                <?php esc_html_e( 'Your own headline, text, button and picture can go on the layouts marked "Picture", for example "Columns and a card on the right".', 'jhmg-ai-editor-for-divi-5-pro' ); ?>
+                <span><?php esc_html_e( 'Your own headline, text, button and picture can go on the layouts marked "Picture", for example "Columns and a card on the right".', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
             </div>
             <p><a class="button button-primary" href="<?php echo esc_url( $this->tabUrl( [ 'item' => (string) $sel['id'], 'etab' => 'layout' ] ) ); ?>"><?php esc_html_e( 'Choose a layout with a picture', 'jhmg-ai-editor-for-divi-5-pro' ); ?></a></p>
             <?php
@@ -405,10 +405,12 @@ final class MegaMenuPanel
                     <div class="aied-mm-picker">
                         <div class="aied-mm-picked" id="aied-mm-picked"><?php echo null === $picture ? esc_html__( 'No picture', 'jhmg-ai-editor-for-divi-5-pro' ) : '<img src="' . esc_url( $picture['url'] ) . '" alt="">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the URL is escaped ?></div>
                         <input type="hidden" name="image" id="aied-mm-image" value="<?php echo esc_attr( (string) ( null === $picture ? 0 : $c['image'] ) ); ?>">
-                        <button type="button" class="button" id="aied-mm-pick"><?php esc_html_e( 'Choose from the Media Library', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
-                        <button type="button" class="button-link" id="aied-mm-unpick"><?php esc_html_e( 'Remove', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
+                        <div class="aied-mm-picker-actions">
+                            <button type="button" class="button button-small" id="aied-mm-pick"><?php esc_html_e( 'Choose from the Media Library', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
+                            <button type="button" class="button-link aied-mm-quiet" id="aied-mm-unpick"><?php esc_html_e( 'Remove', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
+                        </div>
                     </div>
-                    <span class="description"><?php esc_html_e( 'Shown at the top of the card or panel. A picture at least 480 px wide looks best. The alt text comes from the Media Library.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
+                    <span class="description"><?php esc_html_e( 'At least 480 px wide looks best. The alt text comes from the Media Library.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
                 </div>
                 <?php $this->textField( 'aied-mm-title', 'title', __( 'Headline', 'jhmg-ai-editor-for-divi-5-pro' ), $c['title'], __( 'Empty: the menu item\'s title.', 'jhmg-ai-editor-for-divi-5-pro' ), MegaMenuContent::MAX_TITLE ); ?>
                 <?php $this->textField( 'aied-mm-text', 'text', __( 'Text', 'jhmg-ai-editor-for-divi-5-pro' ), $c['text'], __( 'One or two short lines. Empty: the item\'s description.', 'jhmg-ai-editor-for-divi-5-pro' ), MegaMenuContent::MAX_TEXT, true ); ?>
@@ -416,7 +418,7 @@ final class MegaMenuPanel
                     <?php $this->textField( 'aied-mm-button', 'button', __( 'Button label', 'jhmg-ai-editor-for-divi-5-pro' ), $c['button'], __( 'Empty: "View all".', 'jhmg-ai-editor-for-divi-5-pro' ), MegaMenuContent::MAX_BUTTON ); ?>
                     <?php $this->textField( 'aied-mm-url', 'url', __( 'Button link', 'jhmg-ai-editor-for-divi-5-pro' ), $c['url'], __( 'Empty: the menu item\'s link.', 'jhmg-ai-editor-for-divi-5-pro' ), MegaMenuContent::MAX_URL ); ?>
                 </div>
-                <div class="aied-mm-note"><?php esc_html_e( 'Saved with the menu item. It stays when you press Update, and applies to this item only.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></div>
+                <p class="aied-mm-fine"><?php esc_html_e( 'Saved with this menu item. It stays when you press Update.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></p>
                 <p class="aied-mm-row">
                     <button type="submit" class="button button-primary"><?php esc_html_e( 'Save and update the header', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
                     <?php if ( $sel['custom'] ) : ?>
@@ -450,7 +452,12 @@ final class MegaMenuPanel
     {
         ?>
         <div class="aied-mm-field">
-            <label for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $label ); ?></label>
+            <div class="aied-mm-labelrow">
+                <label for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $label ); ?></label>
+                <?php if ( $max <= 300 && $max > 60 ) : ?>
+                    <span class="aied-mm-count" data-for="<?php echo esc_attr( $id ); ?>" data-max="<?php echo esc_attr( (string) $max ); ?>"></span>
+                <?php endif; ?>
+            </div>
             <?php if ( $area ) : ?>
                 <textarea id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $name ); ?>" rows="3" maxlength="<?php echo esc_attr( (string) $max ); ?>"><?php echo esc_textarea( $value ); ?></textarea>
             <?php else : ?>
@@ -602,79 +609,162 @@ final class MegaMenuPanel
     {
         ?>
         <style>
-            #megamenu .aied-mm-top { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: flex-start; justify-content: space-between; }
-            #megamenu .aied-mm-top h2 { margin-bottom: 4px; }
-            #megamenu .aied-mm-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+            /* One quiet system: ink, muted, two hairlines, a soft ground and a single indigo accent; radius 6 / 10; spacing in steps of 4. */
+            #megamenu { --mm-ink: #1d2327; --mm-muted: #646970; --mm-faint: #8c8f94; --mm-line: #e2e4e7; --mm-line-2: #eceef0; --mm-soft: #f7f8f9; --mm-accent: #4f46e5; --mm-accent-soft: #f1f0fe; --mm-accent-line: #cfcbfb; --mm-warn: #8a5a00; --mm-warn-soft: #fff8e8; --mm-warn-line: #f0d9a3; --mm-bad: #a02222; --mm-bad-soft: #fdeeee; --mm-ok: #1e6b3a; --mm-ok-soft: #e9f6ee; }
+            #megamenu .aied-mm-list { list-style: disc; margin: 4px 0 8px 18px; color: var(--mm-muted); }
+            #megamenu a, #megamenu button { transition: color .15s, background-color .15s, border-color .15s, box-shadow .15s; }
+            @media (prefers-reduced-motion: reduce) { #megamenu a, #megamenu button, #megamenu .aied-mm-card { transition: none; } }
+
+            /* the bar: title and state on the left, two quiet actions on the right */
+            #megamenu hr.wp-header-end { display: none; }
+            #megamenu .aied-mm-bar { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: flex-start; justify-content: space-between; margin: 0 0 16px; }
+            #megamenu .aied-mm-titlerow { display: flex; align-items: center; gap: 10px; }
+            #megamenu .aied-mm-titlerow h2 { margin: 0; padding: 0; font-size: 18px; font-weight: 600; line-height: 1.3; }
+            #megamenu .aied-mm-meta { display: flex; flex-wrap: wrap; gap: 6px 20px; align-items: center; margin-top: 8px; color: var(--mm-ink); font-size: 13px; }
+            #megamenu .aied-mm-k { color: var(--mm-muted); margin-right: 4px; }
+            #megamenu .aied-mm-faint { color: var(--mm-faint); font-size: 12px; }
+            #megamenu .aied-mm-menuform { display: inline-flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; margin: 0; }
+            #megamenu .aied-mm-menuform select { min-height: 28px; font-size: 13px; max-width: 100%; }
+            #megamenu .aied-mm-actions { display: flex; gap: 4px 16px; align-items: center; padding-top: 4px; }
             #megamenu .aied-mm-actions form { margin: 0; }
-            #megamenu .aied-mm-status { display: flex; gap: 6px 16px; flex-wrap: wrap; align-items: center; margin: 4px 0 12px; color: #50575e; }
-            #megamenu .aied-mm-menuform { display: flex; gap: 6px 10px; flex-wrap: wrap; align-items: center; margin: 0 0 12px; }
-            #megamenu .aied-mm-menuform select { max-width: 100%; }
-            #megamenu .aied-mm-pill { display: inline-block; border-radius: 999px; padding: 1px 9px; font-size: 12px; font-weight: 600; background: #f0f0f1; color: #50575e; margin-left: 4px; }
-            #megamenu .aied-mm-status .aied-mm-pill { margin-left: 0; }
-            #megamenu .aied-mm-pill.on { background: #e7f5ec; color: #1e6b3a; }
-            #megamenu .aied-mm-pill.accent { background: #eeedfd; color: #4f46e5; }
-            #megamenu .aied-mm-pill.hand { background: #fff1d6; color: #8a5a00; }
-            #megamenu .aied-mm-pill.warn { background: #fde8e8; color: #a02222; }
-            #megamenu .aied-mm-danger { color: #b32d2e; border-color: #b32d2e; }
-            #megamenu .aied-mm-list { list-style: disc; margin: 4px 0 8px 20px; }
-            #megamenu .aied-mm-help { margin: 20px 0 0; }
-            #megamenu .aied-mm-hero h3 { margin-bottom: 2px; }
-            #megamenu .aied-mm-chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0; }
-            #megamenu .aied-mm-chip { border: 1px solid #c3c4c7; border-radius: 999px; padding: 2px 12px; text-decoration: none; color: #1d2327; background: #fff; }
-            #megamenu .aied-mm-chip.is-on { background: #1d2327; border-color: #1d2327; color: #fff; }
-            #megamenu .aied-mm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin: 8px 0; }
-            #megamenu .aied-mm-card { position: relative; border: 1px solid #dcdcde; border-radius: 6px; padding: 12px; background: #fff; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-            #megamenu .aied-mm-card.is-current { border-color: #4f46e5; box-shadow: 0 0 0 2px #4f46e5; background: #f5f5ff; }
-            #megamenu .aied-mm-badge { align-self: flex-start; background: #4f46e5; color: #fff; border-radius: 999px; padding: 2px 10px; font-size: 12px; font-weight: 600; line-height: 1.6; max-width: 100%; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-            #megamenu .aied-mm-pic { position: absolute; top: 14px; right: 14px; background: rgba(20, 22, 31, .78); color: #fff; border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 600; }
-            #megamenu .aied-mm-card h4 { margin: 4px 0 0; font-size: 14px; }
-            #megamenu .aied-mm-card p { margin: 0; color: #50575e; }
+            #megamenu .aied-mm-quiet { background: none; border: 0; padding: 0; margin: 0; font-size: 13px; color: var(--mm-accent); text-decoration: none; cursor: pointer; }
+            #megamenu .aied-mm-quiet:hover { text-decoration: underline; }
+            #megamenu .aied-mm-quiet.aied-mm-danger { color: var(--mm-bad); }
+
+            /* pills */
+            #megamenu .aied-mm-pill { display: inline-block; border-radius: 999px; padding: 0 8px; font-size: 11px; line-height: 18px; font-weight: 600; background: var(--mm-soft); color: var(--mm-muted); border: 1px solid var(--mm-line); }
+            #megamenu .aied-mm-pill.on { background: var(--mm-ok-soft); color: var(--mm-ok); border-color: #cdeadb; }
+            #megamenu .aied-mm-pill.accent { background: var(--mm-accent-soft); color: var(--mm-accent); border-color: var(--mm-accent-line); }
+            #megamenu .aied-mm-pill.hand { background: var(--mm-warn-soft); color: var(--mm-warn); border-color: var(--mm-warn-line); }
+            #megamenu .aied-mm-pill.warn { background: var(--mm-bad-soft); color: var(--mm-bad); border-color: #f5cfcf; }
+
+            /* our own notices, quieter than WordPress's default blocks */
+            #megamenu .notice.inline { margin: 0 0 12px; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--mm-line); border-left-width: 3px; box-shadow: none; font-size: 13px; }
+            #megamenu .notice.inline p { margin: 0 0 6px; padding: 0; font-size: 13px; }
+            #megamenu .notice.notice-warning.inline { background: var(--mm-warn-soft); border-color: var(--mm-warn-line); border-left-color: #dba617; }
+            #megamenu .notice.notice-success.inline { background: var(--mm-ok-soft); border-color: #cdeadb; border-left-color: #2e9e5b; }
+            #megamenu .notice.notice-info.inline { background: var(--mm-soft); border-color: var(--mm-line); border-left-color: var(--mm-faint); }
+            #megamenu .notice.notice-error.inline { background: var(--mm-bad-soft); border-color: #f5cfcf; border-left-color: #cc1818; }
+            #megamenu .notice .aied-mm-list { margin: 2px 0 8px 18px; }
+            #megamenu .aied-mm-drift form p, #megamenu .aied-mm-pending .aied-mm-row { margin: 4px 0 0; }
+            #megamenu .aied-mm-drift .description { margin-left: 6px; }
+            #megamenu .aied-mm-pending .aied-mm-row { gap: 6px; }
+
+            /* buttons: one accent action at a time, everything else is neutral */
+            #megamenu .button { border-radius: 6px; border-color: var(--mm-line); color: var(--mm-ink); background: #fff; box-shadow: none; }
+            #megamenu .button:hover { border-color: var(--mm-accent); color: var(--mm-accent); background: #fff; }
+            #megamenu .button.button-primary { background: var(--mm-accent); border-color: var(--mm-accent); color: #fff; }
+            #megamenu .button.button-primary:hover { background: #4338ca; border-color: #4338ca; color: #fff; }
+            #megamenu .button.button-small { min-height: 28px; line-height: 26px; padding: 0 10px; font-size: 12px; }
+            #megamenu .button.aied-mm-danger { color: var(--mm-bad); border-color: #e7b9b9; }
+            #megamenu .button.aied-mm-danger:hover { background: var(--mm-bad-soft); border-color: var(--mm-bad); color: var(--mm-bad); }
+            #megamenu .button[disabled] { opacity: .55; }
+
+            /* chips */
+            #megamenu .aied-mm-chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0; }
+            #megamenu .aied-mm-chip { border: 1px solid var(--mm-line); border-radius: 999px; padding: 1px 12px; font-size: 12px; line-height: 22px; text-decoration: none; color: var(--mm-muted); background: #fff; }
+            #megamenu .aied-mm-chip:hover { border-color: var(--mm-accent-line); color: var(--mm-ink); }
+            #megamenu .aied-mm-chip.is-on { background: var(--mm-accent-soft); border-color: var(--mm-accent-line); color: var(--mm-accent); font-weight: 600; }
+            #megamenu .aied-mm-hero h3 { margin: 0 0 2px; font-size: 15px; font-weight: 600; }
+            #megamenu .aied-mm-hero .description { margin: 0; }
+
+            /* cards */
+            #megamenu .aied-mm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(212px, 1fr)); gap: 14px; margin: 8px 0 4px; }
+            #megamenu .aied-mm-card { position: relative; border: 1px solid var(--mm-line); border-radius: 10px; padding: 10px; background: #fff; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+            #megamenu .aied-mm-card:hover { border-color: #cfd3d9; box-shadow: 0 2px 8px rgba(16, 24, 40, .06); }
+            #megamenu .aied-mm-card.is-current { border-color: var(--mm-accent); box-shadow: 0 0 0 1px var(--mm-accent); background: #fff; }
+            #megamenu .aied-mm-preview { border-radius: 6px; overflow: hidden; border: 1px solid var(--mm-line-2); }
             #megamenu .aied-mm-preview svg { display: block; width: 100%; height: auto; }
-            #megamenu .aied-mm-card form { margin-top: auto; padding-top: 6px; }
-            #megamenu .aied-mm-cols { display: grid; grid-template-columns: 300px minmax(0, 1fr); border: 1px solid #dcdcde; border-radius: 8px; overflow: hidden; margin-top: 8px; }
+            #megamenu .aied-mm-tags { display: flex; gap: 6px; flex-wrap: wrap; min-height: 18px; }
+            #megamenu .aied-mm-badge { background: var(--mm-accent-soft); color: var(--mm-accent); border: 1px solid var(--mm-accent-line); border-radius: 999px; padding: 0 8px; font-size: 11px; line-height: 18px; font-weight: 600; }
+            #megamenu .aied-mm-pic { background: #fff; color: var(--mm-muted); border: 1px solid var(--mm-line); border-radius: 999px; padding: 0 8px; font-size: 11px; line-height: 18px; }
+            #megamenu .aied-mm-card h4 { margin: 0; font-size: 13px; font-weight: 600; line-height: 1.35; }
+            #megamenu .aied-mm-card p { margin: 0; color: var(--mm-muted); font-size: 12px; line-height: 1.45; }
+            #megamenu .aied-mm-card form { margin-top: auto; padding-top: 4px; }
+
+            /* the workspace */
+            #megamenu .aied-mm-cols { display: grid; grid-template-columns: 264px minmax(0, 1fr); border: 1px solid var(--mm-line); border-radius: 10px; overflow: hidden; background: #fff; }
             @media (max-width: 960px) { #megamenu .aied-mm-cols { grid-template-columns: 1fr; } }
-            #megamenu .aied-mm-items { background: #f6f7f7; border-right: 1px solid #dcdcde; padding: 12px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-            #megamenu .aied-mm-items h3 { margin: 0; padding: 4px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #646970; }
-            #megamenu .aied-mm-item { display: grid; grid-template-columns: 44px minmax(0, 1fr); column-gap: 10px; align-items: center; border: 1px solid transparent; border-radius: 8px; padding: 8px; text-decoration: none; color: #1d2327; }
-            #megamenu .aied-mm-item:hover { background: #fff; }
-            #megamenu .aied-mm-item.is-selected { background: #fff; border-color: #4f46e5; box-shadow: 0 0 0 1px #4f46e5; }
-            #megamenu .aied-mm-thumb { grid-row: 1 / span 2; width: 44px; border-radius: 4px; overflow: hidden; background: #e6e9f0; }
+            #megamenu .aied-mm-items { background: var(--mm-soft); border-right: 1px solid var(--mm-line); padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+            @media (max-width: 960px) { #megamenu .aied-mm-items { border-right: 0; border-bottom: 1px solid var(--mm-line); } }
+            #megamenu .aied-mm-items h3 { margin: 0; padding: 2px 8px 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--mm-faint); }
+            #megamenu .aied-mm-items > .description { margin: 8px 8px 0; font-size: 12px; color: var(--mm-faint); }
+            #megamenu .aied-mm-item { display: grid; grid-template-columns: 40px minmax(0, 1fr); column-gap: 10px; align-items: center; border: 0; border-radius: 8px; padding: 8px; text-decoration: none; color: var(--mm-ink); }
+            #megamenu .aied-mm-item:hover { background: rgba(255, 255, 255, .7); }
+            #megamenu .aied-mm-item.is-selected { background: #fff; box-shadow: 0 0 0 1px var(--mm-line), inset 3px 0 0 var(--mm-accent); }
+            #megamenu .aied-mm-thumb { grid-row: 1 / span 2; width: 40px; border-radius: 4px; overflow: hidden; border: 1px solid var(--mm-line); background: #fff; }
             #megamenu .aied-mm-thumb svg { display: block; width: 100%; height: auto; }
-            #megamenu .aied-mm-iname { font-weight: 600; overflow-wrap: anywhere; }
-            #megamenu .aied-mm-isub { color: #646970; font-size: 12px; display: flex; flex-wrap: wrap; gap: 2px 4px; align-items: center; }
-            #megamenu .aied-mm-editor { min-width: 0; padding: 14px 18px 18px; }
-            #megamenu .aied-mm-ehead h3 { margin: 0; }
-            #megamenu .aied-mm-tabs { margin: 10px 0 0; padding: 0; }
-            #megamenu .aied-mm-pane { padding-top: 16px; display: flex; flex-direction: column; gap: 14px; }
-            #megamenu .aied-mm-note { border: 1px solid #dcdcde; border-left: 4px solid #4f46e5; border-radius: 4px; background: #f6f7f7; padding: 8px 12px; color: #50575e; }
-            #megamenu .aied-mm-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 300px); gap: 24px; align-items: start; }
+            #megamenu .aied-mm-iname { font-weight: 600; font-size: 13px; overflow-wrap: anywhere; }
+            #megamenu .aied-mm-isub { color: var(--mm-muted); font-size: 12px; display: flex; flex-wrap: wrap; gap: 3px 4px; align-items: center; }
+            #megamenu .aied-mm-editor { min-width: 0; padding: 18px 24px 24px; }
+            #megamenu .aied-mm-ehead h3 { margin: 0; font-size: 15px; font-weight: 600; }
+            #megamenu .aied-mm-ehead .description { margin: 2px 0 0; }
+            #megamenu .aied-mm-tabs { display: flex; gap: 22px; margin: 14px 0 0; padding: 0; border-bottom: 1px solid var(--mm-line); }
+            #megamenu .aied-mm-tabs .nav-tab { background: none; border: 0; border-bottom: 2px solid transparent; margin: 0 0 -1px; padding: 8px 0; font-size: 13px; font-weight: 500; color: var(--mm-muted); }
+            #megamenu .aied-mm-tabs .nav-tab:hover { color: var(--mm-ink); background: none; }
+            #megamenu .aied-mm-tabs .nav-tab-active, #megamenu .aied-mm-tabs .nav-tab-active:hover { background: none; color: var(--mm-ink); border-bottom-color: var(--mm-accent); font-weight: 600; }
+            #megamenu .aied-mm-pane { padding-top: 18px; display: flex; flex-direction: column; gap: 14px; }
+            #megamenu .aied-mm-pane > .description { margin: 0; }
+
+            /* the content form */
+            #megamenu .aied-mm-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 280px); gap: 32px; align-items: start; }
             @media (max-width: 1200px) { #megamenu .aied-mm-form { grid-template-columns: 1fr; } }
-            #megamenu .aied-mm-fields { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-            #megamenu .aied-mm-field { display: flex; flex-direction: column; gap: 4px; }
-            #megamenu .aied-mm-field label, #megamenu .aied-mm-label { font-weight: 600; }
-            #megamenu .aied-mm-field input[type=text], #megamenu .aied-mm-field textarea { width: 100%; max-width: 100%; }
+            #megamenu .aied-mm-fields { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+            #megamenu .aied-mm-field { display: flex; flex-direction: column; gap: 5px; }
+            #megamenu .aied-mm-labelrow { display: flex; justify-content: space-between; align-items: baseline; }
+            #megamenu .aied-mm-field label, #megamenu .aied-mm-label { font-weight: 600; font-size: 13px; }
+            #megamenu .aied-mm-count { font-size: 11px; color: var(--mm-faint); font-variant-numeric: tabular-nums; }
+            #megamenu .aied-mm-field input[type=text], #megamenu .aied-mm-field textarea { width: 100%; max-width: 100%; border-color: var(--mm-line); border-radius: 6px; box-shadow: none; }
+            #megamenu .aied-mm-field input[type=text]:focus, #megamenu .aied-mm-field textarea:focus { border-color: var(--mm-accent); box-shadow: 0 0 0 1px var(--mm-accent); }
+            #megamenu .aied-mm-field .description, #megamenu .description { font-size: 12px; color: var(--mm-faint); margin: 0; }
             #megamenu .aied-mm-two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
             @media (max-width: 700px) { #megamenu .aied-mm-two { grid-template-columns: 1fr; } }
-            #megamenu .aied-mm-picker { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-            #megamenu .aied-mm-picked { width: 120px; height: 80px; border: 1px dashed #c3c4c7; border-radius: 6px; display: grid; place-items: center; color: #646970; font-size: 12px; background: #f6f7f7; overflow: hidden; }
+            #megamenu .aied-mm-picker { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+            #megamenu .aied-mm-picker-actions { display: flex; gap: 12px; align-items: center; }
+            #megamenu .aied-mm-picked { width: 96px; height: 64px; border: 1px dashed #c3c4c7; border-radius: 6px; display: grid; place-items: center; color: var(--mm-faint); font-size: 12px; background: var(--mm-soft); overflow: hidden; }
             #megamenu .aied-mm-picked img { width: 100%; height: 100%; object-fit: cover; display: block; }
-            #megamenu .aied-mm-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 4px 0 0; }
+            #megamenu .aied-mm-fine { margin: 0; font-size: 12px; color: var(--mm-faint); }
+            #megamenu .aied-mm-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 4px 0 0; }
             #megamenu .aied-mm-row form { margin: 0; }
-            #megamenu .aied-mm-live { border: 1px solid #dcdcde; border-radius: 8px; background: #f6f7f7; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+            #megamenu .aied-mm-row .button-link { font-size: 13px; }
+            #megamenu .aied-mm-live { border: 1px solid var(--mm-line); border-radius: 10px; background: var(--mm-soft); padding: 12px; display: flex; flex-direction: column; gap: 8px; position: sticky; top: 40px; }
             #megamenu .aied-mm-card-pv { background: linear-gradient(135deg, #1d4ed8, #6d28d9); color: #fff; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
-            #megamenu .aied-mm-card-pic { width: 100%; max-height: 96px; border-radius: 8px; overflow: hidden; }
+            #megamenu .aied-mm-card-pic { width: 100%; border-radius: 8px; overflow: hidden; }
             #megamenu .aied-mm-card-pic:empty { display: none; }
-            #megamenu .aied-mm-card-pic img { width: 100%; height: 96px; object-fit: cover; display: block; }
-            #megamenu .aied-mm-card-pv b { font-size: 16px; overflow-wrap: anywhere; }
+            #megamenu .aied-mm-card-pic img { width: 100%; height: 88px; object-fit: cover; display: block; }
+            #megamenu .aied-mm-card-pv b { font-size: 15px; overflow-wrap: anywhere; }
             #megamenu .aied-mm-card-pv span { font-size: 12px; opacity: .92; overflow-wrap: anywhere; }
             #megamenu .aied-mm-card-pv i { font-style: normal; background: #fff; color: #1d2327; border-radius: 999px; padding: 2px 12px; font-size: 12px; font-weight: 700; }
-            #megamenu .aied-mm-rows { display: flex; flex-direction: column; gap: 10px; max-width: 820px; }
-            #megamenu .aied-mm-srow { display: flex; gap: 12px 16px; flex-wrap: wrap; align-items: center; justify-content: space-between; border: 1px solid #dcdcde; border-radius: 8px; padding: 10px 14px; margin: 0; }
+            #megamenu .aied-mm-empty { display: flex; flex-direction: column; gap: 2px; border: 1px dashed var(--mm-line); border-radius: 8px; padding: 14px 16px; color: var(--mm-muted); background: var(--mm-soft); }
+            #megamenu .aied-mm-empty strong { color: var(--mm-ink); }
+
+            /* the builder tab */
+            #megamenu .aied-mm-rows { display: flex; flex-direction: column; gap: 10px; max-width: 760px; }
+            #megamenu .aied-mm-srow { display: flex; gap: 10px 16px; flex-wrap: wrap; align-items: center; justify-content: space-between; border: 1px solid var(--mm-line); border-radius: 8px; padding: 12px 14px; margin: 0; background: #fff; }
             #megamenu .aied-mm-grow { flex: 1 1 280px; min-width: 0; }
-            #megamenu .aied-mm-srow h4 { margin: 0 0 2px; }
-            #megamenu .aied-mm-srow select { max-width: 100%; }
-            #megamenu .aied-mm-pending .aied-mm-row, #megamenu .aied-mm-drift form { margin-bottom: 8px; }
+            #megamenu .aied-mm-srow h4 { margin: 0 0 2px; font-size: 13px; font-weight: 600; }
+            #megamenu .aied-mm-srow .description { margin: 0; }
+            #megamenu .aied-mm-srow select { max-width: 100%; margin-top: 6px; }
+
+            #megamenu .aied-mm-help { margin: 20px 0 0; color: var(--mm-muted); font-size: 12px; }
+            #megamenu .aied-mm-help summary { cursor: pointer; }
         </style>
+        <?php
+    }
+
+    /** "Use this menu" stays out of the way until another menu is chosen (without script it simply stays visible). */
+    private function menuScript(): void
+    {
+        ?>
+        <script>
+        (function () {
+            var sel = document.getElementById('aied-mm-menu');
+            if (!sel) { return; }
+            var btn = sel.form.querySelector('.aied-mm-usemenu'), start = sel.value;
+            btn.style.display = 'none';
+            sel.addEventListener('change', function () { btn.style.display = sel.value === start ? 'none' : ''; });
+        })();
+        </script>
         <?php
     }
 
@@ -710,6 +800,12 @@ final class MegaMenuPanel
                 } else if (pick) { pick.disabled = true; }
             }
             if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initMedia); } else { initMedia(); }
+            document.querySelectorAll('.aied-mm-count').forEach(function (c) {
+                var f = $(c.getAttribute('data-for')), max = parseInt(c.getAttribute('data-max'), 10);
+                if (!f) { return; }
+                var paint = function () { c.textContent = f.value.length + ' / ' + max; };
+                f.addEventListener('input', paint); paint();
+            });
             if (unpick) { unpick.addEventListener('click', function () { input.value = '0'; show(''); }); }
             [['aied-mm-title', 'aied-mm-pv-title'], ['aied-mm-text', 'aied-mm-pv-text'], ['aied-mm-button', 'aied-mm-pv-button']].forEach(function (p) {
                 var src = $(p[0]), dst = $(p[1]);

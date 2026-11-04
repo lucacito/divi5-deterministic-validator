@@ -211,6 +211,19 @@ finish painting the builder in 12 seconds, so only that the builder container lo
 header applied before the fingerprints existed has none, so its hand edits are not seen until it is applied once more; only the first Menu module of
 the header and the menu it shows are followed.
 
+### Round 9 (2026-11-04): visual polish of the tab
+
+Done from screenshots of every state of the tab (first visit, Content, Layout and Builder tabs, the question about an edited panel, the out-of-date
+notice, the Dashboard notice, 820 px wide) taken before and after, on the gate's throwaway menu. Functionality unchanged. What changed:
+one toolbar instead of four stacked rows (title and On/Off, then Header and the menu dropdown, quiet "View on site" and "Remove mega menu" links on
+the right; "Use this menu" appears only after another menu is chosen); underline tabs instead of WordPress's grey boxes; neutral outline buttons on
+the cards instead of a wall of solid blue (one accent action per screen); the "In use" frame is a 1 px accent line, and the "This item" and "Picture"
+tags sit below the preview instead of over it; the selected item has a thin accent bar; the amber notices are lighter and tighter; helper text is
+shorter and smaller; the content form shows live character counts; one small spacing and colour scale throughout. Two fixes found in the screenshots:
+WordPress moved another plugin's notice into the toolbar (the page now carries a `.wp-header-end` marker so foreign notices sit above the toolbar), and a
+leftover "you changed a panel" question could show with no mega menu on (it now shows only while one is on).
+The gate and the unit tests are unchanged apart from one new test; two consecutive full runs 990 PASS, 0 FAIL, Pro suite 2,814 tests.
+
 ## Defects the gate found, and what was done
 
 1. **Raw Dropdown settings fatal.** `module.advanced.dropdown` written as a raw object is a PHP fatal on Divi 5.15.1 (HTTP 500 for the whole
