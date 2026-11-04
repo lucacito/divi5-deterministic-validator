@@ -83,6 +83,23 @@ Gate: the panel is measured only after the animation has ended (1100 ms after th
 
 Limits: whether Divi honours `prefers-reduced-motion` for this animation was not tested; on touch (click to open) the animation was not measured; the older flex-based column layouts still use fixed column widths.
 
+### Round 5 (2026-11-04): one item only, and Undo last change
+
+**One item only.** Once a mega menu is on, every layout card on the Mega menu tab gets an "Apply to" choice: all menu items, or only one top-level item that has a panel. The other items keep the layout they have. Each panel is saved with an admin label `JHMG panel <menu item id> <layout id>` (`module.meta.adminLabel` on the Dropdown, tagged `render:gate`), and `HeaderEdit::panels()` reads those labels back, so what each item uses is always read from the header itself, never from a separate setting that could drift when the header is edited in the builder. The tab lists "Services: Link tiles" for every panel item. A panel built from a layout that no longer exists falls back to the layout just chosen. Refusals: one item before any mega menu exists ("put a layout on the whole menu first"), an item with no panel or no longer in the menu.
+
+**Undo last change.** A button on the tab (`MegaMenuUndo`, the same `BatchUndo` as Recent Pro changes, so the same "changed since" rule): it undoes the newest undoable mega menu change, whether an apply, a one-item apply or a remove, one step at a time, and says what it undid. If the header was changed after that change (for example in the Divi builder) it refuses to overwrite anything and says so. The unit tests cover stepping back twice to the original, a header edited since, a missing licence and a missing permission.
+
+Gate additions: the scenario applies `columns-footer` to the whole menu, then `showcase-tiles` to Blog only; checks the panel labels, a second identical apply changing nothing, one wrapper, and in the real browser that Services still has plain columns (0 cards) while Blog shows tiles (3 cards), both readable and unclipped; then three "Undo last change" calls: the whole-menu header back byte for byte, the original header back byte for byte, and "nothing to undo" changing nothing.
+
+A gap in the older checks, found and fixed on the way: the text-contrast check only looked at paragraphs and headings, because Divi keeps link text in nested spans, so link text was never contrast-checked in any layout. It now reads links (colour of the inner span), and the full runs found no new failure.
+
+| Run | Width 400 | Width 900 | Width 1280 | Setup/scenario/negatives/teardown | Total |
+|---|---|---|---|---|---|
+| A | 78 PASS, 0 FAIL | 78 PASS, 0 FAIL | 609 PASS, 0 FAIL | 133 PASS, 0 FAIL | 898 PASS, 0 FAIL |
+| B | 78 PASS, 0 FAIL | 78 PASS, 0 FAIL | 609 PASS, 0 FAIL | 133 PASS, 0 FAIL | 898 PASS, 0 FAIL |
+
+Limits: the admin tab's new select and button were tested through the handlers and the rendered HTML, not looked at in a browser; the one-item scenario is checked for one pair of layouts (the others use the same code path); a menu item added later has no label yet and takes the layout of the last whole-menu or one-item apply; layouts applied by an older build have no panel labels, so for them the first one-item apply treats the other items as "not recognised" and rebuilds them with the layout just chosen (the tab says so).
+
 ## Defects the gate found, and what was done
 
 1. **Raw Dropdown settings fatal.** `module.advanced.dropdown` written as a raw object is a PHP fatal on Divi 5.15.1 (HTTP 500 for the whole

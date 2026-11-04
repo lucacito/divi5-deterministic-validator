@@ -45,6 +45,10 @@ Five families, composed from data (`Layouts`), not hand-written markups. The fir
 
 Look, shared by all: a faint top-to-bottom panel gradient and a 3px accent top edge; an accent gradient (light #1d4ed8 to #6d28d9, dark #8fb3ff to #c4b5fd) on the intro panel, the promo card and banner, the icon chips and a short bar under each column heading; opaque cards (hairline, soft resting shadow) that rise 4px, glow and take the accent frame on hover; a filled pill "View all" button. Every path is already proven on the real Divi (free plugin shape registry) and measured on this menu by the gate.
 
+## One item only and undo (round 5)
+
+Owner decision 2026-11-04: keep the gallery and add an "apply to this item only" choice, and give the owner a way to revert. Built as: an `Apply to` select on each layout card (shown once a mega menu is on), `MegaMenuService::apply( $layoutId, $dry, $itemId )`, the per-panel admin label `JHMG panel <item id> <layout id>` as the record of what each item uses, and `Undo last change` (`MegaMenuUndo`, `BatchUndo`). Details and proof: `docs/megamenu-evidence-5.15.1.md`, round 5.
+
 ## Calls I made (owner can override)
 
 - The Menu module is kept for tablet and phone, not replaced (the logo lives inside it).

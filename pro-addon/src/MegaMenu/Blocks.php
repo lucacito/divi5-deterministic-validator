@@ -21,6 +21,12 @@ final class Blocks
 {
     public const ADMIN_LABEL = 'JHMG Mega Menu';
 
+    /** The admin label of one panel: it says which menu item and which layout it was built from (HeaderEdit::panels reads it back). */
+    public static function panelLabel( int $itemId, string $layoutId ): string
+    {
+        return 'JHMG panel ' . $itemId . ' ' . $layoutId;
+    }
+
     public function __construct( private string $builderVersion = '5.8.0' )
     {
     }
@@ -243,7 +249,7 @@ final class Blocks
      *
      * @param array{showOn?:string,direction?:string,alignment?:string,offset?:string,position?:string,horizontalMode?:string} $settings
      */
-    public function dropdown( array $settings, string $inner, array $deco = [], ?string $tabletPhoneShowOn = null ): string
+    public function dropdown( array $settings, string $inner, array $deco = [], ?string $tabletPhoneShowOn = null, ?string $label = null ): string
     {
         $dropdown = self::resp( $settings );
         if ( null !== $tabletPhoneShowOn ) {
@@ -253,6 +259,9 @@ final class Blocks
         $module = [ 'advanced' => [ 'dropdown' => $dropdown ] ];
         if ( [] !== $deco ) {
             $module['decoration'] = $deco;
+        }
+        if ( null !== $label ) {
+            $module['meta'] = [ 'adminLabel' => self::resp( $label ) ];
         }
 
         return $this->block( 'dropdown', [ 'module' => $module ], $inner );

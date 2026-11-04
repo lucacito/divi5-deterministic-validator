@@ -80,7 +80,7 @@ final class PanelBuilder
             $settings['horizontalMode'] = 'viewport';
         }
 
-        return $this->b->dropdown( $settings, $wrapper, $deco, 'click' );
+        return $this->b->dropdown( $settings, $wrapper, $deco, 'click', Blocks::panelLabel( (int) $item['id'], (string) $layout['id'] ) );
     }
 
     // ---- families --------------------------------------------------------------------------------------------------

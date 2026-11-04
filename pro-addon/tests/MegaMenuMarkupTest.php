@@ -83,7 +83,11 @@ class MegaMenuMarkupTest extends TestCase
         $this->assertSame( $a, MegaMenuFixture::wrapper( $layout, $tree ) );
         $this->assertStringContainsString( '"adminLabel":{"desktop":{"value":"' . Blocks::ADMIN_LABEL . '"}}', $a );
         $this->assertStringContainsString( '"disabledOn":{"tablet":{"value":"on"},"phone":{"value":"on"}}', $a );
-        $this->assertSame( 1, substr_count( $a, '"adminLabel"' ), 'only the wrapper carries the label' );
+        $this->assertSame( 1, substr_count( $a, '"value":"' . Blocks::ADMIN_LABEL . '"' ), 'only the wrapper carries the wrapper label' );
+        // Every panel says which menu item and which layout it was built from; HeaderEdit::panels reads that back.
+        $panels = HeaderEdit::panels( $a );
+        $this->assertCount( substr_count( $a, '<!-- wp:divi/dropdown ' ), $panels );
+        $this->assertSame( [ $layout['id'] ], array_values( array_unique( $panels ) ) );
         // Balanced block comments: the depth never goes below zero and ends at zero.
         preg_match_all( '/<!--\s+(\/?)wp:(divi\/[a-z0-9-]+)(?:\s+\{.*?\})?\s*(\/?)-->/s', $a, $comments, PREG_SET_ORDER );
         $depth = 0;

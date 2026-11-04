@@ -59,6 +59,7 @@ divi/dropdown:module.decoration.spacing.{bp}.value.padding.right  render:spike
 divi/dropdown:module.decoration.spacing.{bp}.value.padding.syncHorizontal  render:spike
 divi/dropdown:module.decoration.spacing.{bp}.value.padding.syncVertical  render:spike
 divi/dropdown:module.decoration.spacing.{bp}.value.padding.top  render:spike
+divi/dropdown:module.meta.adminLabel.{bp}.value  render:gate
 divi/group:module.decoration.animation.{bp}.value.delay  render:gate
 divi/group:module.decoration.animation.{bp}.value.direction  render:gate
 divi/group:module.decoration.animation.{bp}.value.duration  render:gate

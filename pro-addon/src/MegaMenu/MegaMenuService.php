@@ -31,6 +31,10 @@ final class MegaMenuService
 
     public const NO_SUBITEMS = 'None of the menu\'s items has a sub-item, so there is nothing to show in a panel. Add sub-items under at least one item in Appearance > Menus.';
 
+    public const NO_MEGA_YET = 'Put a layout on the whole menu first, then you can change one item.';
+
+    public const NO_SUCH_ITEM = 'That menu item has no panel (it has no sub-items), or it is no longer in the menu.';
+
     /**
      * @param ?\Closure $header returns the global header as [layout_id, title] or null (default: the default Theme Builder template's header)
      * @param ?\Closure $imageBase returns the URL of the built-in image pack folder
@@ -50,12 +54,12 @@ final class MegaMenuService
     /**
      * What the admin screen needs to know, without changing anything.
      *
-     * @return array{header:?array{layout_id:int,title:string},menuModule:bool,applied:bool,menu:?array{name:string,items:int,panels:int,how:string}}
+     * @return array{header:?array{layout_id:int,title:string},menuModule:bool,applied:bool,menu:?array{name:string,items:int,panels:int,how:string},items:list<array{id:int,title:string,layout:?string,layoutName:?string}>}
      */
     public function status(): array
     {
         $header = $this->globalHeader();
-        $state  = [ 'header' => $header, 'menuModule' => false, 'applied' => false, 'menu' => null ];
+        $state  = [ 'header' => $header, 'menuModule' => false, 'applied' => false, 'menu' => null, 'items' => [] ];
         if ( null === $header ) {
             return $state;
         }
@@ -66,13 +70,26 @@ final class MegaMenuService
         $menu                = $this->menus->read( null === $look ? null : $look['menuId'] );
         if ( null !== $menu ) {
             $state['menu'] = [ 'name' => $menu['name'], 'items' => count( $menu['tree'] ), 'panels' => MenuTree::panelCount( $menu['tree'] ), 'how' => $menu['how'] ];
+            // Every top-level item that has a panel, and (when a mega menu is applied) the layout that panel was built from.
+            $built = $info['hasMega'] ? HeaderEdit::panels( $this->storedContent( $header['layout_id'] ) ) : [];
+            foreach ( $menu['tree'] as $item ) {
+                if ( [] !== $item['children'] ) {
+                    $layout           = isset( $built[ $item['id'] ] ) ? Layouts::find( $built[ $item['id'] ] ) : null;
+                    $state['items'][] = [ 'id' => (int) $item['id'], 'title' => (string) $item['title'], 'layout' => null === $layout ? null : (string) $layout['id'], 'layoutName' => null === $layout ? null : (string) $layout['name'] ];
+                }
+            }
         }
 
         return $state;
     }
 
-    /** @return array<string,mixed> the LayoutWriter result (a dry run returns the preview) */
-    public function apply( string $layoutId, bool $dry = false ): array
+    /**
+     * Puts a layout on the header: on every item that has a panel, or (`$itemId`) on that one top-level item only while the
+     * panels of the other items stay exactly as they are (read back from the header's own panel labels).
+     *
+     * @return array<string,mixed> the LayoutWriter result (a dry run returns the preview)
+     */
+    public function apply( string $layoutId, bool $dry = false, ?int $itemId = null ): array
     {
         $layout = Layouts::find( $layoutId );
         if ( null === $layout ) {
@@ -80,7 +97,7 @@ final class MegaMenuService
         }
         $header = $this->requireHeader();
 
-        return $this->writer->apply( $header['layout_id'], self::TOOL, function ( string $stored ) use ( $layout ): array {
+        return $this->writer->apply( $header['layout_id'], self::TOOL, function ( string $stored ) use ( $layout, $itemId ): array {
             $info = HeaderEdit::inspect( $stored );
             if ( null === $info['menu'] ) {
                 throw new \InvalidArgumentException( HeaderEdit::NO_MENU );
@@ -93,24 +110,52 @@ final class MegaMenuService
             if ( 0 === MenuTree::panelCount( $menu['tree'] ) ) {
                 throw new \InvalidArgumentException( self::NO_SUBITEMS );
             }
-            $posts = [];
-            if ( Layouts::needsPosts( $layout ) ) {
+            // Which layout each item with a panel gets.
+            $byItem = [];
+            if ( null !== $itemId ) {
+                if ( ! $info['hasMega'] ) {
+                    throw new \InvalidArgumentException( self::NO_MEGA_YET );
+                }
+                $panelItems = [];
                 foreach ( $menu['tree'] as $item ) {
                     if ( [] !== $item['children'] ) {
-                        $posts[ $item['id'] ] = $this->posts->latest( $item, 4 );
+                        $panelItems[ $item['id'] ] = $item;
                     }
                 }
+                if ( ! isset( $panelItems[ $itemId ] ) ) {
+                    throw new \InvalidArgumentException( self::NO_SUCH_ITEM );
+                }
+                foreach ( HeaderEdit::panels( $stored ) as $id => $built ) {
+                    $found = Layouts::find( $built );
+                    if ( isset( $panelItems[ $id ] ) && null !== $found ) {
+                        $byItem[ $id ] = $found;
+                    }
+                }
+                $byItem[ $itemId ] = $layout;
+            }
+            $posts = [];
+            $image = false;
+            foreach ( $menu['tree'] as $item ) {
+                if ( [] === $item['children'] ) {
+                    continue;
+                }
+                $mine = $byItem[ $item['id'] ] ?? $layout;
+                if ( Layouts::needsPosts( $mine ) ) {
+                    $posts[ $item['id'] ] = $this->posts->latest( $item, 4 );
+                }
+                $image = $image || Layouts::needsFeatureImage( $mine );
             }
             $version = is_string( $info['builderVersion'] ) && version_compare( $info['builderVersion'], '5.8.0', '>=' ) ? $info['builderVersion'] : '5.8.0';
-            $wrapper = ( new NavBuilder( new Blocks( $version ) ) )->build(
+            $wrapper = ( new NavBuilder( new Blocks( $version ) ) )->buildMixed(
+                $byItem,
                 $layout,
                 $menu['tree'],
-                [ 'look' => $look, 'posts' => $posts, 'featureImage' => Layouts::needsFeatureImage( $layout ) ? $this->featureImage() : '' ]
+                [ 'look' => $look, 'posts' => $posts, 'featureImage' => $image ? $this->featureImage() : '' ]
             );
 
             return [
                 'content' => HeaderEdit::apply( $stored, $wrapper ),
-                'extra'   => [ 'mega_menu' => [ 'layout' => $layout['id'], 'name' => $layout['name'], 'menu' => $menu['name'], 'menu_source' => $menu['how'], 'panels' => MenuTree::panelCount( $menu['tree'] ) ] ],
+                'extra'   => [ 'mega_menu' => [ 'layout' => $layout['id'], 'name' => $layout['name'], 'item' => $itemId, 'menu' => $menu['name'], 'menu_source' => $menu['how'], 'panels' => MenuTree::panelCount( $menu['tree'] ) ] ],
             ];
         }, $dry );
     }

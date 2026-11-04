@@ -115,10 +115,12 @@ function contrastInPanel(panelSel) {
   let worst = null;
   let count = 0;
   for (const el of panel.querySelectorAll('a.et_pb_link, a.et_pb_button, .et_pb_text p, .et_pb_heading h1, .et_pb_heading h2, .et_pb_heading h3')) {
-    const own = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join('').trim();
+    // A Divi link keeps its text in nested spans and colours the inner one; everything else holds its text directly.
+    const isLink = el.matches('a.et_pb_link');
+    const own = isLink ? (el.textContent || '').trim() : [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join('').trim();
     const vis = getComputedStyle(el); const vr = el.getBoundingClientRect();
     if (!own || vis.display === 'none' || vis.visibility === 'hidden' || vr.width === 0 || vr.height === 0) continue;
-    const fg0 = parse(getComputedStyle(el).color);
+    const fg0 = parse(getComputedStyle(isLink ? (el.querySelector('.et_pb_link_inner') || el) : el).color);
     if (!fg0) continue;
     const bg = backdrop(el);
     const fg = fg0.a < 1 ? over(fg0, bg) : fg0;
@@ -427,6 +429,47 @@ async function narrow(browser, layout, width, height, setup) {
       check(layout, '-', 'undo of the apply restores the pre-apply header byte for byte', u2.sha === ap.pre_sha && u2.result === 'restored', u2.result);
       summary.push(layout);
       console.log(`done ${layout}`);
+    }
+    // One item only, and "Undo last change": the whole menu gets one layout, Blog gets another, the panels really differ in the browser,
+    // and two undos walk back through the two changes, byte for byte.
+    {
+      const L = 'one item';
+      const it = step('item_apply', 'columns-footer', 'showcase-tiles', 'Blog');
+      check(L, '-', 'one item: Services keeps the whole-menu layout, Blog has its own', it.panels.Services === 'columns-footer' && it.panels.Blog === 'showcase-tiles', JSON.stringify(it.panels));
+      check(L, '-', 'one item: the item change is saved, a second identical apply changes nothing', it.item_changed === true && it.item_again === false);
+      check(L, '-', 'one item: still exactly one wrapper, and the panel label is on the dropdown', it.wrappers === 1 && it.item_label_ok === true);
+      const { ctx, page, errors, status } = await openPage(browser, 1280, 900, false);
+      try {
+        await page.waitForFunction((n) => document.querySelectorAll('.et_pb_dropdown_initialized').length >= n, setup.panels, { timeout: 10000 }).catch(() => {});
+        await pageSanity(page, L, 1280, status, errors);
+        const nav = await page.evaluate(tagNav);
+        const cardsIn = async (name) => {
+          const i = nav.labels.indexOf(name);
+          await page.mouse.move(5, 880);
+          await page.waitForTimeout(500);
+          await page.locator(`[data-aied-mm="top-${i}"]`).hover();
+          await page.waitForTimeout(1200);
+          const sel = `[data-aied-mm="panel-${i}"]`;
+          const info = await page.locator(sel).evaluate((p) => ({ shown: getComputedStyle(p).display !== 'none', cards: [...p.querySelectorAll('div.et_pb_group')].filter((e) => getComputedStyle(e).boxShadow !== 'none' && parseFloat(getComputedStyle(e).borderTopLeftRadius) >= 14).length }));
+          const cc = await page.evaluate(contrastInPanel, sel);
+          const clip = await page.evaluate(clipInPanel, sel);
+          return { ...info, contrast: cc, clip, i };
+        };
+        const a = await cardsIn('Services');
+        const b = await cardsIn('Blog');
+        check(L, 1280, 'one item: both panels open', a.shown && b.shown);
+        check(L, 1280, `one item: Services keeps the plain columns (no cards: ${a.cards}) and Blog shows the tiles (${b.cards} cards)`, a.cards === 0 && b.cards >= 1);
+        check(L, 1280, 'one item: both panels readable and nothing clipped', a.contrast.count > 0 && b.contrast.count > 0 && a.contrast.min >= 4.5 && b.contrast.min >= 4.5 && a.clip.length === 0 && b.clip.length === 0, `texts ${a.contrast.count}/${b.contrast.count}, min ${a.contrast.min}/${b.contrast.min} ${a.clip.concat(b.clip).join('; ')}`);
+        check(L, 1280, 'one item: no console error from the page', errors.length === 0, errors.slice(0, 2).join(' | '));
+      } finally {
+        await ctx.close();
+      }
+      const u1 = step('undo_last');
+      check(L, '-', 'undo last change: offers the item change and puts the header back to the whole-menu layout, byte for byte', u1.result === 'undone' && u1.sha === it.after_all_sha && u1.applied === true, `${u1.result} / ${u1.offered}`);
+      const u2 = step('undo_last');
+      check(L, '-', 'undo last change again: back to the header before any mega menu, byte for byte', u2.result === 'undone' && u2.sha === it.pre_sha && u2.applied === false, `${u2.result} / ${u2.offered}`);
+      const u3 = step('undo_last');
+      check(L, '-', 'undo last change with nothing left to undo says so and changes nothing', u3.result === 'none' && u3.sha === it.pre_sha, u3.result);
     }
     // Refusals (no global header, a copy without a Menu module, an editor without the Theme Builder permission).
     const neg = step('negative');

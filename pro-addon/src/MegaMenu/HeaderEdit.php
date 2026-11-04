@@ -45,6 +45,31 @@ final class HeaderEdit
         ];
     }
 
+    /**
+     * The layout each panel was built from, read back from the panels' admin labels (see Blocks::panelLabel).
+     *
+     * @return array<int,string> top-level menu item id => layout id
+     */
+    public static function panels( string $content ): array
+    {
+        $out = [];
+        if ( false === preg_match_all( self::BLOCK, $content, $all, PREG_SET_ORDER ) ) {
+            return $out;
+        }
+        foreach ( $all as $m ) {
+            if ( 'divi/dropdown' !== $m[2] ) {
+                continue;
+            }
+            $attrs = json_decode( $m[3], true );
+            $label = is_array( $attrs ) ? ( $attrs['module']['meta']['adminLabel']['desktop']['value'] ?? null ) : null;
+            if ( is_string( $label ) && 1 === preg_match( '/^JHMG panel (\d+) ([a-z0-9-]+)$/', $label, $l ) ) {
+                $out[ (int) $l[1] ] = $l[2];
+            }
+        }
+
+        return $out;
+    }
+
     public static function apply( string $content, string $wrapper ): string
     {
         $content = self::stripWrapper( $content );

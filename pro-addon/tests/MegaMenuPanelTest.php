@@ -8,6 +8,7 @@ use AiEditorDivi5\Pro\Admin\MegaMenuPanel;
 use AiEditorDivi5\Pro\MegaMenu\HeaderEdit;
 use AiEditorDivi5\Pro\MegaMenu\Layouts;
 use AiEditorDivi5\Pro\MegaMenu\MegaMenuService;
+use AiEditorDivi5\Pro\MegaMenu\MegaMenuUndo;
 use AiEditorDivi5\Pro\MegaMenu\MenuSource;
 use AiEditorDivi5\Pro\MegaMenu\MenuTree;
 use AiEditorDivi5\Pro\MegaMenu\PostSource;
@@ -87,7 +88,7 @@ class MegaMenuPanelTest extends TestCase
 
     private function panel( ?MegaMenuService $service = null ): MegaMenuPanel
     {
-        return new MegaMenuPanel( fn (): bool => $this->unlocked, $service ?? $this->service(), static function (): void {} );
+        return new MegaMenuPanel( fn (): bool => $this->unlocked, $service ?? $this->service(), static function (): void {}, new MegaMenuUndo( $this->log, $this->undoEngine() ) );
     }
 
     private function render( ?MegaMenuService $service = null, string $tab = MegaMenuPanel::TAB ): string
@@ -319,5 +320,185 @@ class MegaMenuPanelTest extends TestCase
         $this->postAs( MegaMenuPanel::ACTION_REMOVE, [] );
         $this->panel()->handleRemove();
         $this->assertSame( 'megamenu_unchanged', $this->redirectNotice() );
+    }
+
+    // ---- one item only -----------------------------------------------------------------------------------------------
+
+    /** A menu with two top-level items that have a panel: Services (2) and Blog (20). */
+    private function twoPanelMenu(): array
+    {
+        return MenuTree::build( [
+            self::item( 1, 0, 'Home' ),
+            self::item( 2, 0, 'Services' ), self::item( 3, 2, 'Design' ), self::item( 4, 2, 'Build' ),
+            self::item( 20, 0, 'Blog' ), self::item( 21, 20, 'News' ), self::item( 22, 20, 'Guides' ),
+        ] );
+    }
+
+    public function testALayoutCanBePutOnOneItemWhileTheOtherKeepsItsOwn(): void
+    {
+        $service = $this->service( $this->twoPanelMenu() );
+        $service->apply( 'columns-footer' );
+        $this->assertSame( [ 2 => 'columns-footer', 20 => 'columns-footer' ], HeaderEdit::panels( $this->headerContent() ) );
+
+        $service->apply( 'icons-cards', false, 20 );
+        $this->assertSame( [ 2 => 'columns-footer', 20 => 'icons-cards' ], HeaderEdit::panels( $this->headerContent() ), 'Services kept its layout' );
+        $this->assertSame( 1, substr_count( $this->headerContent(), 'JHMG Mega Menu"' ), 'still one wrapper' );
+
+        // The same layout again changes nothing; another item can be changed later without touching Blog.
+        $this->assertFalse( $service->apply( 'icons-cards', false, 20 )['changed'] );
+        $service->apply( 'feature-left', false, 2 );
+        $this->assertSame( [ 2 => 'feature-left', 20 => 'icons-cards' ], HeaderEdit::panels( $this->headerContent() ) );
+
+        // Applying to all items replaces everything again.
+        $service->apply( 'columns-dark' );
+        $this->assertSame( [ 2 => 'columns-dark', 20 => 'columns-dark' ], HeaderEdit::panels( $this->headerContent() ) );
+    }
+
+    public function testOneItemOnlyNeedsAMegaMenuAndAnItemWithAPanel(): void
+    {
+        $service = $this->service( $this->twoPanelMenu() );
+        $before  = $this->headerContent();
+        try {
+            $service->apply( 'icons-cards', false, 20 );
+            $this->fail( 'one item needs a mega menu first' );
+        } catch ( \InvalidArgumentException $e ) {
+            $this->assertSame( MegaMenuService::NO_MEGA_YET, $e->getMessage() );
+        }
+        $this->assertSame( $before, $this->headerContent() );
+
+        $service->apply( 'columns-footer' );
+        $applied = $this->headerContent();
+        foreach ( [ 1, 999, 3 ] as $bad ) { // Home has no sub-items, 999 is not in the menu, 3 is a sub-item
+            try {
+                $service->apply( 'icons-cards', false, $bad );
+                $this->fail( 'item ' . $bad . ' has no panel' );
+            } catch ( \InvalidArgumentException $e ) {
+                $this->assertSame( MegaMenuService::NO_SUCH_ITEM, $e->getMessage() );
+            }
+        }
+        $this->assertSame( $applied, $this->headerContent() );
+    }
+
+    public function testAnUnknownEarlierLayoutOnAnotherItemFallsBackToTheChosenOne(): void
+    {
+        $service = $this->service( $this->twoPanelMenu() );
+        $service->apply( 'columns-footer' );
+        // A header made by an older version: Blog's panel was built from a layout that no longer exists.
+        $GLOBALS['__wp_posts'][201]->post_content = str_replace( 'JHMG panel 20 columns-footer', 'JHMG panel 20 list-plain', $this->headerContent() );
+        $service->apply( 'icons-cards', false, 2 );
+        $this->assertSame( [ 2 => 'icons-cards', 20 => 'icons-cards' ], HeaderEdit::panels( $this->headerContent() ) );
+    }
+
+    public function testTheTabListsTheItemsAndOffersOnlyThisItemOnceAMegaMenuIsOn(): void
+    {
+        $service = $this->service( $this->twoPanelMenu() );
+        $html    = $this->render( $service );
+        $this->assertStringNotContainsString( 'name="item"', $html, 'nothing to limit before a mega menu exists' );
+
+        $service->apply( 'columns-footer' );
+        $service->apply( 'icons-cards', false, 20 );
+        $html = $this->render( $service );
+        $this->assertStringContainsString( '<strong>Services</strong>: Columns with a footer link', $html );
+        $this->assertStringContainsString( '<strong>Blog</strong>: Icon cards', $html );
+        $this->assertSame( 13, substr_count( $html, 'name="item"' ) );
+        $this->assertStringContainsString( '<option value="20">Only &quot;Blog&quot;</option>', $html );
+        $this->assertStringContainsString( 'All menu items', $html );
+    }
+
+    public function testThePostedItemPutsTheLayoutOnThatItemOnly(): void
+    {
+        $service = $this->service( $this->twoPanelMenu() );
+        $service->apply( 'columns-footer' );
+        $this->postAs( MegaMenuPanel::ACTION_APPLY, [ 'layout' => 'icons-cards', 'item' => '20' ] );
+        $this->panel( $service )->handleApply();
+        $this->assertSame( 'megamenu_applied_item', $this->redirectNotice() );
+        $this->assertSame( [ 2 => 'columns-footer', 20 => 'icons-cards' ], HeaderEdit::panels( $this->headerContent() ) );
+
+        $_GET['aied_pro_notice'] = 'megamenu_applied_item';
+        $this->assertStringContainsString( 'The layout &quot;Icon cards&quot; is on &quot;Blog&quot; now. The other items kept theirs.', $this->render( $service ) );
+
+        // "0", a non-string or junk means all items.
+        foreach ( [ '0', 'x', [ '20' ], '-3' ] as $all ) {
+            $GLOBALS['__wp_redirects'] = [];
+            $this->postAs( MegaMenuPanel::ACTION_APPLY, [ 'layout' => 'columns-dark', 'item' => $all ] );
+            $this->panel( $service )->handleApply();
+            $this->assertSame( [ 2 => 'columns-dark', 20 => 'columns-dark' ], HeaderEdit::panels( $this->headerContent() ), var_export( $all, true ) );
+            $service->apply( 'icons-cards', false, 20 );
+        }
+    }
+
+    // ---- undo last change --------------------------------------------------------------------------------------------
+
+    public function testUndoLastChangeStepsBackOneChangeAtATime(): void
+    {
+        $service  = $this->service( $this->twoPanelMenu() );
+        $original = $this->headerContent();
+        $service->apply( 'columns-footer' );
+        $first = $this->headerContent();
+        $service->apply( 'icons-cards', false, 20 );
+        $this->assertNotSame( $first, $this->headerContent() );
+
+        $this->postAs( MegaMenuPanel::ACTION_UNDO, [] );
+        $this->panel( $service )->handleUndo();
+        $this->assertSame( 'megamenu_undone', $this->redirectNotice() );
+        $this->assertSame( $first, $this->headerContent(), 'back to the whole-menu layout, byte for byte' );
+
+        $this->postAs( MegaMenuPanel::ACTION_UNDO, [] );
+        $this->panel( $service )->handleUndo();
+        $this->assertSame( $original, $this->headerContent(), 'and back to the header without a mega menu' );
+
+        $GLOBALS['__wp_redirects'] = [];
+        $this->postAs( MegaMenuPanel::ACTION_UNDO, [] );
+        $this->panel( $service )->handleUndo();
+        $this->assertSame( 'megamenu_undo_none', $this->redirectNotice() );
+        $this->assertSame( $original, $this->headerContent() );
+    }
+
+    public function testUndoRefusesWhenTheHeaderWasChangedSinceAndTouchesNothing(): void
+    {
+        $service = $this->service( $this->twoPanelMenu() );
+        $service->apply( 'columns-footer' );
+        $edited = $this->headerContent() . '<!-- edited in the builder -->';
+        $GLOBALS['__wp_posts'][201]->post_content = $edited;
+
+        $this->postAs( MegaMenuPanel::ACTION_UNDO, [] );
+        $this->panel( $service )->handleUndo();
+        $this->assertContains( $this->redirectNotice(), [ 'megamenu_undo_partly' ] );
+        $this->assertSame( $edited, $this->headerContent(), 'what changed afterwards is never overwritten' );
+    }
+
+    public function testTheUndoButtonShowsOnlyWhileThereIsAChangeToUndo(): void
+    {
+        $service = $this->service( $this->twoPanelMenu() );
+        $this->assertStringNotContainsString( 'value="' . MegaMenuPanel::ACTION_UNDO . '"', $this->render( $service ) );
+        $service->apply( 'columns-footer' );
+        $html = $this->render( $service );
+        $this->assertStringContainsString( '>Undo last change</button>', $html );
+        $this->assertStringContainsString( 'value="' . MegaMenuPanel::ACTION_UNDO . '"', $html );
+        $this->assertStringContainsString( 'Last change:', $html );
+    }
+
+    public function testUndoNeedsTheLicenceAndThePermission(): void
+    {
+        $service = $this->service( $this->twoPanelMenu() );
+        $service->apply( 'columns-footer' );
+        $applied = $this->headerContent();
+
+        $this->unlocked = false;
+        $this->postAs( MegaMenuPanel::ACTION_UNDO, [] );
+        $this->panel( $service )->handleUndo();
+        $this->assertSame( 'megamenu_error', $this->redirectNotice() );
+        $this->assertSame( $applied, $this->headerContent() );
+        $this->unlocked = true;
+
+        $GLOBALS['__wp_caps'] = [ 'edit_pages' => true ];
+        $this->postAs( MegaMenuPanel::ACTION_UNDO, [] );
+        try {
+            $this->panel( $service )->handleUndo();
+            $this->fail( 'the capability check must stop the handler' );
+        } catch ( \RuntimeException $e ) {
+            $this->assertStringContainsString( 'Unauthorized', $e->getMessage() );
+        }
+        $this->assertSame( $applied, $this->headerContent() );
     }
 }

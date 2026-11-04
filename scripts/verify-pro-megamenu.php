@@ -356,6 +356,60 @@ switch ( $aiedMmStep ) {
         ] );
         break;
 
+    // ---- one item only, and undo last change ---------------------------------------------------------------------------
+    case 'item_apply':
+        mm_admin();
+        $all   = (string) ( $args[1] ?? '' );
+        $item  = (string) ( $args[2] ?? '' );
+        $title = (string) ( $args[3] ?? '' );
+        $hid   = mm_header_id();
+        $pre   = mm_raw( $hid );
+        $menu  = wp_get_nav_menu_object( AIED_MM_MENU_NAME );
+        $itemId = 0;
+        foreach ( wp_get_nav_menu_items( $menu->term_id ) ?: [] as $it ) {
+            if ( 0 === (int) $it->menu_item_parent && wp_strip_all_tags( (string) $it->title ) === $title ) {
+                $itemId = (int) $it->ID;
+            }
+        }
+        try {
+            $r1      = mm_service()->apply( $all, false );
+            $afterAll = mm_raw( $hid );
+            $r2      = mm_service()->apply( $item, false, $itemId );
+            $r3      = mm_service()->apply( $item, false, $itemId );
+        } catch ( \Throwable $e ) {
+            mm_fail( $e->getMessage() );
+        }
+        $now    = mm_raw( $hid );
+        $names  = [];
+        foreach ( wp_get_nav_menu_items( $menu->term_id ) ?: [] as $it ) {
+            $names[ (int) $it->ID ] = wp_strip_all_tags( (string) $it->title );
+        }
+        $byTitle = [];
+        foreach ( HeaderEdit::panels( $now ) as $id => $layoutId ) {
+            $byTitle[ $names[ $id ] ?? ( '#' . $id ) ] = $layoutId;
+        }
+        mm_out( [
+            'pre_sha'        => sha1( $pre ),
+            'after_all_sha'  => sha1( $afterAll ),
+            'after_item_sha' => sha1( $now ),
+            'item_changed'   => $r2['changed'] ?? null,
+            'item_again'     => $r3['changed'] ?? null,
+            'panels'         => $byTitle,
+            'wrappers'       => substr_count( $now, 'JHMG Mega Menu"' ),
+            'item_label_ok'  => 1 === preg_match( '/"value":"JHMG panel ' . $itemId . ' ' . preg_quote( $item, '/' ) . '"/', $now ),
+        ] );
+        break;
+
+    case 'undo_last':
+        mm_admin();
+        $hid  = mm_header_id();
+        $undo = new \AiEditorDivi5\Pro\MegaMenu\MegaMenuUndo( Batches::log(), Batches::undo() );
+        $last = $undo->last( 1, true );
+        $r    = $undo->undoLast( 1, true );
+        $now  = mm_raw( $hid );
+        mm_out( [ 'offered' => null === $last ? null : $last['summary'], 'result' => $r['result'], 'sha' => sha1( $now ), 'applied' => HeaderEdit::inspect( $now )['hasMega'] ] );
+        break;
+
     case 'remove':
         mm_admin();
         $hid = mm_header_id();

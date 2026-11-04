@@ -24,11 +24,26 @@ final class NavBuilder
     }
 
     /**
+     * The same layout for every item with sub-items.
+     *
      * @param array<string,mixed>      $layout one entry of Layouts::all()
      * @param list<array<string,mixed>> $tree   MenuTree::build()
      * @param array<string,mixed>      $ctx    `look` (Look::fromMenuAttrs), `posts` (item id => posts), `featureImage`
      */
     public function build( array $layout, array $tree, array $ctx ): string
+    {
+        return $this->buildMixed( [], $layout, $tree, $ctx );
+    }
+
+    /**
+     * A layout per item: `$byItem` maps a top-level item id to its layout, an item not in it takes `$fallback`.
+     *
+     * @param array<int,array<string,mixed>> $byItem   item id => one entry of Layouts::all()
+     * @param array<string,mixed>            $fallback one entry of Layouts::all()
+     * @param list<array<string,mixed>>      $tree     MenuTree::build()
+     * @param array<string,mixed>            $ctx      as for build()
+     */
+    public function buildMixed( array $byItem, array $fallback, array $tree, array $ctx ): string
     {
         if ( [] === $tree ) {
             throw new \InvalidArgumentException( 'The menu has no items.' );
@@ -40,7 +55,7 @@ final class NavBuilder
         foreach ( $tree as $item ) {
             $inner = [] === $item['children']
                 ? ''
-                : $this->panels->dropdown( $layout, $item, [ 'look' => $look, 'posts' => $ctx['posts'][ $item['id'] ] ?? [], 'featureImage' => $ctx['featureImage'] ?? '' ] );
+                : $this->panels->dropdown( $byItem[ $item['id'] ] ?? $fallback, $item, [ 'look' => $look, 'posts' => $ctx['posts'][ $item['id'] ] ?? [], 'featureImage' => $ctx['featureImage'] ?? '' ] );
             $links .= $this->b->link(
                 $item['title'],
                 $item['url'],

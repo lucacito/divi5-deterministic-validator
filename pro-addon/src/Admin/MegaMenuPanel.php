@@ -6,6 +6,7 @@ namespace AiEditorDivi5\Pro\Admin;
 
 use AiEditorDivi5\Pro\MegaMenu\Layouts;
 use AiEditorDivi5\Pro\MegaMenu\MegaMenuService;
+use AiEditorDivi5\Pro\MegaMenu\MegaMenuUndo;
 use AiEditorDivi5\Pro\MegaMenu\PreviewSvg;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -14,7 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * The "Mega menu" tab: shows whether the site can take a mega menu, and lists the 13 layouts. "Use this layout" puts it on
- * the global header through MegaMenuService (the one write path, undoable from Recent Pro changes). No JavaScript.
+ * the global header through MegaMenuService (the one write path); once a mega menu is on, "Use this layout" can be limited to one
+ * top-level item, and "Undo last change" steps back one change (MegaMenuUndo, the same undo as Recent Pro changes). No JavaScript.
  */
 final class MegaMenuPanel
 {
@@ -23,13 +25,15 @@ final class MegaMenuPanel
     public const TAB           = 'megamenu';
     public const ACTION_APPLY  = 'aied_pro_megamenu_apply';
     public const ACTION_REMOVE = 'aied_pro_megamenu_remove';
+    public const ACTION_UNDO   = 'aied_pro_megamenu_undo';
 
     /** Short-lived, user-bound transients carrying the words of the last result (the layout name or an error message). */
     private const LAST_KEY  = 'aied_pro_megamenu_last_';
     private const ERROR_KEY = 'aied_pro_megamenu_error_';
+    private const ITEM_KEY  = 'aied_pro_megamenu_item_';
     private const TTL       = 120;
 
-    public function __construct( private \Closure $unlocked, private MegaMenuService $service, ?\Closure $terminate = null )
+    public function __construct( private \Closure $unlocked, private MegaMenuService $service, ?\Closure $terminate = null, private ?MegaMenuUndo $undo = null )
     {
         $this->initTerminate( $terminate );
     }
@@ -40,6 +44,7 @@ final class MegaMenuPanel
         add_action( 'jhmg_aied_render_admin_tab', [ $this, 'render' ] );
         add_action( 'admin_post_' . self::ACTION_APPLY, [ $this, 'handleApply' ] );
         add_action( 'admin_post_' . self::ACTION_REMOVE, [ $this, 'handleRemove' ] );
+        add_action( 'admin_post_' . self::ACTION_UNDO, [ $this, 'handleUndo' ] );
     }
 
     /** `jhmg_aied_admin_tabs`: the tab exists only while the add-on is unlocked. */
@@ -66,11 +71,17 @@ final class MegaMenuPanel
         $me      = (int) get_current_user_id();
         $last    = (string) get_transient( self::LAST_KEY . $me );
         $error   = (string) get_transient( self::ERROR_KEY . $me );
+        $itemName = (string) get_transient( self::ITEM_KEY . $me );
+        delete_transient( self::ITEM_KEY . $me );
         delete_transient( self::LAST_KEY . $me );
         delete_transient( self::ERROR_KEY . $me );
 
         $notices = [
             'megamenu_applied'    => [ 'success', sprintf( /* translators: %s: layout name */ __( 'The mega menu "%s" is on your header now. Check it on the site.', 'jhmg-ai-editor-for-divi-5-pro' ), $last ) ],
+            'megamenu_applied_item' => [ 'success', sprintf( /* translators: 1: layout name, 2: menu item */ __( 'The layout "%1$s" is on "%2$s" now. The other items kept theirs.', 'jhmg-ai-editor-for-divi-5-pro' ), $last, $itemName ) ],
+            'megamenu_undone'     => [ 'success', sprintf( /* translators: %s: what was undone */ __( 'Undone: %s. Your header is back as it was before.', 'jhmg-ai-editor-for-divi-5-pro' ), $last ) ],
+            'megamenu_undo_partly' => [ 'warning', __( 'That change could not be fully undone: the header was changed afterwards (for example in the Divi builder), so nothing newer was overwritten.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
+            'megamenu_undo_none'  => [ 'info', __( 'There is no mega menu change left to undo.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
             'megamenu_removed'    => [ 'success', __( 'The mega menu was removed. Your header is back to its normal menu.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
             'megamenu_unchanged'  => [ 'info', __( 'Nothing changed: the header already holds exactly that.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
             'megamenu_bad_layout' => [ 'error', __( 'That layout does not exist. Choose one of the layouts below.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
@@ -130,17 +141,38 @@ final class MegaMenuPanel
             <?php endif; ?>
             <p class="description"><?php esc_html_e( 'On desktop the mega menu replaces the normal menu. Tablet and phone keep the normal menu.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></p>
 
-            <?php if ( $status['applied'] ) : ?>
-                <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-                    <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_REMOVE ); ?>">
-                    <?php wp_nonce_field( self::ACTION_REMOVE ); ?>
-                    <button type="submit" class="button"><?php esc_html_e( 'Remove mega menu', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
-                </form>
+            <?php if ( $status['applied'] && [] !== $status['items'] ) : ?>
+                <ul>
+                    <?php foreach ( $status['items'] as $it ) : ?>
+                        <li><strong><?php echo esc_html( $it['title'] ); ?></strong>: <?php echo null === $it['layoutName'] ? esc_html__( 'its own layout is not recognised', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html( $it['layoutName'] ); ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+
+            <?php $lastChange = null === $this->undo ? null : $this->undo->last( $me, current_user_can( 'manage_options' ) ); ?>
+            <?php if ( $status['applied'] || null !== $lastChange ) : ?>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                    <?php if ( null !== $lastChange ) : ?>
+                        <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                            <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_UNDO ); ?>">
+                            <?php wp_nonce_field( self::ACTION_UNDO ); ?>
+                            <button type="submit" class="button button-secondary"><?php esc_html_e( 'Undo last change', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
+                        </form>
+                        <span class="description"><?php echo esc_html( sprintf( /* translators: 1: what the last change was, 2: when (UTC) */ __( 'Last change: %1$s (%2$s UTC)', 'jhmg-ai-editor-for-divi-5-pro' ), (string) $lastChange['summary'], (string) $lastChange['created_at'] ) ); ?></span>
+                    <?php endif; ?>
+                    <?php if ( $status['applied'] ) : ?>
+                        <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                            <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_REMOVE ); ?>">
+                            <?php wp_nonce_field( self::ACTION_REMOVE ); ?>
+                            <button type="submit" class="button"><?php esc_html_e( 'Remove mega menu', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
+                        </form>
+                    <?php endif; ?>
+                </div>
             <?php endif; ?>
 
             <h3><?php esc_html_e( 'Choose a layout', 'jhmg-ai-editor-for-divi-5-pro' ); ?></h3>
             <p class="description">
-                <?php esc_html_e( '"Latest posts" layouts show a snapshot of the newest posts, taken when you apply them. Applying a layout replaces any earlier mega menu. You can undo it from Recent Pro changes on the Pro tab.', 'jhmg-ai-editor-for-divi-5-pro' ); ?>
+                <?php esc_html_e( '"Latest posts" layouts show a snapshot of the newest posts, taken when you apply them. Applying a layout to all items replaces any earlier mega menu; once one is on, you can limit a layout to a single menu item. "Undo last change" steps back one change (it also appears under Recent Pro changes on the Pro tab).', 'jhmg-ai-editor-for-divi-5-pro' ); ?>
             </p>
 
             <?php foreach ( Layouts::FAMILIES as $family => $heading ) : ?>
@@ -155,6 +187,14 @@ final class MegaMenuPanel
                                 <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_APPLY ); ?>">
                                 <input type="hidden" name="layout" value="<?php echo esc_attr( (string) $layout['id'] ); ?>">
                                 <?php wp_nonce_field( self::ACTION_APPLY ); ?>
+                                <?php if ( $usable && $status['applied'] && count( $status['items'] ) > 1 ) : ?>
+                                    <select name="item" aria-label="<?php echo esc_attr__( 'Apply to', 'jhmg-ai-editor-for-divi-5-pro' ); ?>">
+                                        <option value="0"><?php esc_html_e( 'All menu items', 'jhmg-ai-editor-for-divi-5-pro' ); ?></option>
+                                        <?php foreach ( $status['items'] as $it ) : ?>
+                                            <option value="<?php echo esc_attr( (string) $it['id'] ); ?>"><?php echo esc_html( sprintf( /* translators: %s: menu item */ __( 'Only "%s"', 'jhmg-ai-editor-for-divi-5-pro' ), $it['title'] ) ); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                <?php endif; ?>
                                 <button type="submit" class="button button-primary"<?php echo $usable ? '' : ' disabled'; ?>><?php esc_html_e( 'Use this layout', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
                             </form>
                         </div>
@@ -179,8 +219,9 @@ final class MegaMenuPanel
 
             return;
         }
+        $item = $this->postedItem();
         try {
-            $result = $this->service->apply( $id, false );
+            $result = $this->service->apply( $id, false, $item );
         } catch ( \InvalidArgumentException | \RuntimeException $e ) {
             $this->failWith( $e->getMessage() );
 
@@ -192,8 +233,37 @@ final class MegaMenuPanel
             return;
         }
         $layout = Layouts::find( $id );
-        set_transient( self::LAST_KEY . (int) get_current_user_id(), null === $layout ? $id : (string) $layout['name'], self::TTL );
-        $this->redirectToTab( self::TAB, 'megamenu_applied' );
+        $me     = (int) get_current_user_id();
+        set_transient( self::LAST_KEY . $me, null === $layout ? $id : (string) $layout['name'], self::TTL );
+        if ( null !== $item ) {
+            $title = '';
+            foreach ( $this->service->status()['items'] as $it ) {
+                if ( $it['id'] === $item ) {
+                    $title = $it['title'];
+                }
+            }
+            set_transient( self::ITEM_KEY . $me, $title, self::TTL );
+        }
+        $this->redirectToTab( self::TAB, null === $item ? 'megamenu_applied' : 'megamenu_applied_item' );
+    }
+
+    public function handleUndo(): void
+    {
+        $this->guardPost( self::ACTION_UNDO, 'edit_theme_options' );
+        if ( ! ( $this->unlocked )() || null === $this->undo ) {
+            $this->failWith( __( 'The mega menu needs an active Pro licence.', 'jhmg-ai-editor-for-divi-5-pro' ) );
+
+            return;
+        }
+        $me     = (int) get_current_user_id();
+        $result = $this->undo->undoLast( $me, current_user_can( 'manage_options' ) );
+        if ( 'none' === $result['result'] ) {
+            $this->redirectToTab( self::TAB, 'megamenu_undo_none' );
+
+            return;
+        }
+        set_transient( self::LAST_KEY . $me, $result['summary'], self::TTL );
+        $this->redirectToTab( self::TAB, 'undone' === $result['result'] ? 'megamenu_undone' : 'megamenu_undo_partly' );
     }
 
     public function handleRemove(): void
@@ -244,6 +314,18 @@ final class MegaMenuPanel
         $id = sanitize_key( wp_unslash( $raw ) );
 
         return in_array( $id, Layouts::ids(), true ) ? $id : null;
+    }
+
+    /** The posted menu item id (a digit string above 0), or null for "all items". A bad value is also null: the service refuses an item that has no panel. */
+    private function postedItem(): ?int
+    {
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in guardPost().
+        $raw = $_POST['item'] ?? null;
+        if ( ! is_string( $raw ) || ! ctype_digit( $raw ) || (int) $raw <= 0 ) {
+            return null;
+        }
+
+        return (int) $raw;
     }
 
     /** Remember an error message for the next render of this user's tab, then go back to it. */
