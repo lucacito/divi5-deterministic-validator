@@ -3,10 +3,11 @@
 # and when a listed path is no longer used. Add or promote a path ONLY with live render evidence.
 #   render:spike  rendered on the real Divi 5.15.1 in the 2026-11-03 spike (docs/superpowers/specs/2026-11-03-pro-megamenu-design.md)
 #   recipe        the same shape is written by a shipped, render-verified recipe or a real builder export
-#   pending       not yet proven by a render: make verify-pro-megamenu measures its effect and promotes it
-divi/button:button.decoration.font.font.{bp}.value.size  pending
-divi/button:button.decoration.font.font.{bp}.value.weight  pending
-divi/button:button.innerContent.{bp}.value.linkUrl  pending
+#   render:gate  its EFFECT was measured in the real Divi by `make verify-pro-megamenu` (computed style / attribute of the rendered page, docs/megamenu-evidence-5.15.1.md)
+#   pending       written and rendered without error, but its own effect is not measured separately yet
+divi/button:button.decoration.font.font.{bp}.value.size  render:gate
+divi/button:button.decoration.font.font.{bp}.value.weight  render:gate
+divi/button:button.innerContent.{bp}.value.linkUrl  render:gate
 divi/button:button.innerContent.{bp}.value.text  recipe
 divi/dropdown:module.advanced.dropdown.{bp}.value.alignment  render:spike
 divi/dropdown:module.advanced.dropdown.{bp}.value.direction  render:spike
@@ -79,20 +80,20 @@ divi/icon:icon.advanced.size.{bp}.value  recipe
 divi/icon:icon.innerContent.{bp}.value.type  recipe
 divi/icon:icon.innerContent.{bp}.value.unicode  recipe
 divi/icon:icon.innerContent.{bp}.value.weight  recipe
-divi/image:image.innerContent.{bp}.value.alt  pending
+divi/image:image.innerContent.{bp}.value.alt  render:gate
 divi/image:image.innerContent.{bp}.value.id  pending
-divi/image:image.innerContent.{bp}.value.linkUrl  pending
-divi/image:image.innerContent.{bp}.value.src  pending
-divi/image:image.innerContent.{bp}.value.titleText  pending
+divi/image:image.innerContent.{bp}.value.linkUrl  render:gate
+divi/image:image.innerContent.{bp}.value.src  render:gate
+divi/image:image.innerContent.{bp}.value.titleText  render:gate
 divi/image:module.decoration.border.{bp}.value.radius.bottomLeft  recipe
 divi/image:module.decoration.border.{bp}.value.radius.bottomRight  recipe
 divi/image:module.decoration.border.{bp}.value.radius.topLeft  recipe
 divi/image:module.decoration.border.{bp}.value.radius.topRight  recipe
 divi/image:module.decoration.sizing.{bp}.value.width  recipe
-divi/link:content.decoration.font.font.{bp}.hover.color  pending
-divi/link:content.decoration.font.font.{bp}.value.color  pending
-divi/link:content.decoration.font.font.{bp}.value.size  pending
-divi/link:content.decoration.font.font.{bp}.value.weight  pending
+divi/link:content.decoration.font.font.{bp}.hover.color  render:gate
+divi/link:content.decoration.font.font.{bp}.value.color  render:gate
+divi/link:content.decoration.font.font.{bp}.value.size  render:gate
+divi/link:content.decoration.font.font.{bp}.value.weight  render:gate
 divi/link:content.innerContent.{bp}.value.linkUrl  render:spike
 divi/link:content.innerContent.{bp}.value.text  render:spike
 divi/link:module.decoration.spacing.{bp}.value.padding.bottom  pending
@@ -100,7 +101,7 @@ divi/link:module.decoration.spacing.{bp}.value.padding.left  pending
 divi/link:module.decoration.spacing.{bp}.value.padding.right  pending
 divi/link:module.decoration.spacing.{bp}.value.padding.syncHorizontal  pending
 divi/link:module.decoration.spacing.{bp}.value.padding.syncVertical  pending
-divi/link:module.decoration.spacing.{bp}.value.padding.top  pending
+divi/link:module.decoration.spacing.{bp}.value.padding.top  render:gate
 divi/text:content.decoration.bodyFont.body.font.{bp}.value.color  recipe
 divi/text:content.decoration.bodyFont.body.font.{bp}.value.lineHeight  recipe
 divi/text:content.decoration.bodyFont.body.font.{bp}.value.size  recipe

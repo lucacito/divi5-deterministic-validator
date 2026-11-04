@@ -25,6 +25,9 @@ final class PanelBuilder
     /** @var array<string,string> */
     private array $t = [];
 
+    /** Width in px the panel's content may use (the panel width less its padding); columns share it so long titles wrap. */
+    private int $avail = 0;
+
     public function __construct( private Blocks $b )
     {
     }
@@ -38,6 +41,7 @@ final class PanelBuilder
     {
         $this->t = Palette::tone( (string) $layout['tone'] );
         $viewport = 'viewport' === $layout['mode'];
+        $this->avail = (int) $layout['width'] - ( $viewport ? 48 : 40 );
         $inner    = $this->content( $layout, $item, $ctx );
         $sizing   = $viewport
             ? [ 'width' => '100%', 'maxWidth' => $layout['width'] . 'px', 'alignment' => 'center' ]
@@ -54,7 +58,7 @@ final class PanelBuilder
         $settings = [
             'showOn'    => 'hover',
             'direction' => 'below',
-            'alignment' => $viewport || (int) $layout['width'] >= 500 ? 'center' : 'start',
+            'alignment' => $viewport ? 'center' : 'end',
             'offset'    => $viewport ? '24px' : '14px',
             'position'  => 'floating',
         ];
@@ -101,7 +105,13 @@ final class PanelBuilder
 
     private function featureFamily( array $layout, array $item, array $ctx ): string
     {
+        // A side card (240 px) and the gap beside it take room from the columns.
+        $saved = $this->avail;
+        if ( in_array( $layout['feature'], [ 'right', 'left' ], true ) ) {
+            $this->avail -= 272;
+        }
         $cols = $this->columns( ColumnPlan::from( $item, (int) $layout['columns'] ), (string) $layout['rows'] );
+        $this->avail = $saved;
         switch ( $layout['feature'] ) {
             case 'right':
                 return $this->b->group( [ 'display' => 'flex', 'flexDirection' => 'row', 'columnGap' => '32px', 'alignItems' => 'stretch' ], $cols . $this->card( $item ) );
@@ -174,6 +184,9 @@ final class PanelBuilder
     /** @param list<list<array<string,mixed>>> $columns */
     private function columns( array $columns, string $rows ): string
     {
+        // Each column gets an explicit width: a flex column that grows from its longest title would push past the panel.
+        $n      = max( 1, count( $columns ) );
+        $colPx  = max( 120, intdiv( $this->avail - 36 * ( $n - 1 ), $n ) );
         $cols = [];
         foreach ( $columns as $sections ) {
             $inner = '';
@@ -186,7 +199,7 @@ final class PanelBuilder
                     $inner .= $this->row( $l, $rows, false );
                 }
             }
-            $cols[] = $this->b->group( [ 'display' => 'flex', 'flexDirection' => 'column', 'rowGap' => '6px', 'alignItems' => 'flex-start' ], $inner, Blocks::sizing( [ 'size' => [ 'flexGrow' ] ] ) );
+            $cols[] = $this->b->group( [ 'display' => 'flex', 'flexDirection' => 'column', 'rowGap' => '6px', 'alignItems' => 'flex-start' ], $inner, Blocks::sizing( [ 'width' => $colPx . 'px', 'maxWidth' => '100%', 'size' => [ 'flexGrow' ] ] ) );
         }
 
         return $this->b->group( [ 'display' => 'flex', 'flexDirection' => 'row', 'columnGap' => '36px', 'alignItems' => 'flex-start' ], implode( '', $cols ) );
