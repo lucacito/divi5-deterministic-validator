@@ -419,7 +419,7 @@ switch ( $aiedMmStep ) {
 
         // 1. no global header: the service refuses, nothing is read
         try {
-            mm_service( static fn () => null )->apply( 'list-plain', true );
+            mm_service( static fn () => null )->apply( 'columns-footer', true );
             $out['no_header'] = 'no error';
         } catch ( \InvalidArgumentException $e ) {
             $out['no_header'] = $e->getMessage();
@@ -462,14 +462,14 @@ switch ( $aiedMmStep ) {
         add_post_meta( $tb, '_et_template', (int) $tpl );
 
         try {
-            mm_service( static fn () => [ 'layout_id' => (int) $copy, 'title' => 'copy' ] )->apply( 'list-plain', true );
+            mm_service( static fn () => [ 'layout_id' => (int) $copy, 'title' => 'copy' ] )->apply( 'columns-footer', true );
             $out['no_menu'] = 'no error';
         } catch ( \InvalidArgumentException $e ) {
             $out['no_menu'] = $e->getMessage();
         }
         $out['no_menu_is_no_menu_error'] = $out['no_menu'] === HeaderEdit::NO_MENU;
         try {
-            mm_service( static fn () => [ 'layout_id' => (int) $copy, 'title' => 'copy' ] )->apply( 'list-plain', false );
+            mm_service( static fn () => [ 'layout_id' => (int) $copy, 'title' => 'copy' ] )->apply( 'columns-footer', false );
             $out['no_menu_real'] = 'no error';
         } catch ( \InvalidArgumentException $e ) {
             $out['no_menu_real'] = $e->getMessage();
@@ -486,13 +486,13 @@ switch ( $aiedMmStep ) {
         mm_save_state( $s );
         wp_set_current_user( (int) $uid );
         try {
-            mm_service()->apply( 'list-plain', true );
+            mm_service()->apply( 'columns-footer', true );
             $out['editor_dry'] = 'no error';
         } catch ( \InvalidArgumentException $e ) {
             $out['editor_dry'] = $e->getMessage();
         }
         try {
-            mm_service()->apply( 'list-plain', false );
+            mm_service()->apply( 'columns-footer', false );
             $out['editor_real'] = 'no error';
         } catch ( \InvalidArgumentException $e ) {
             $out['editor_real'] = $e->getMessage();

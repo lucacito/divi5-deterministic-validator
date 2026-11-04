@@ -40,13 +40,13 @@ final class Blocks
         return str_replace( [ '--', '<', '>', '&' ], [ $bs . 'u002d' . $bs . 'u002d', $bs . 'u003c', $bs . 'u003e', $bs . 'u0026' ], $json );
     }
 
-    /** One block. `$inner` null writes a self-closing block. */
+    /** One block. `$inner` null or empty writes a self-closing block (the form WordPress itself saves an empty block in). */
     public function block( string $name, array $attrs, ?string $inner = null ): string
     {
         $attrs['builderVersion'] = $this->builderVersion;
         $json                    = self::encode( $attrs );
 
-        return null === $inner
+        return null === $inner || '' === $inner
             ? "<!-- wp:divi/{$name} {$json} /-->"
             : "<!-- wp:divi/{$name} {$json} -->{$inner}<!-- /wp:divi/{$name} -->";
     }
@@ -56,6 +56,23 @@ final class Blocks
     public static function background( string $color ): array
     {
         return [ 'background' => self::resp( [ 'color' => $color ] ) ];
+    }
+
+    /**
+     * A two-stop linear gradient. The solid `color` is written as well: it is what the page shows if the gradient is not drawn,
+     * and what a contrast check reads, so it is always the stop the text is most at risk on.
+     */
+    public static function gradient( string $from, string $to, string $angle = '135deg' ): array
+    {
+        return [ 'background' => self::resp( [
+            'color'    => $from,
+            'gradient' => [
+                'enabled'   => 'on',
+                'type'      => 'linear',
+                'direction' => $angle,
+                'stops'     => [ [ 'position' => '0', 'color' => $from ], [ 'position' => '100', 'color' => $to ] ],
+            ],
+        ] ) ];
     }
 
     /** @param array{0:string,1:string,2:string,3:string} $trbl top, right, bottom, left (CSS lengths) */
@@ -80,15 +97,31 @@ final class Blocks
         return [ 'spacing' => self::resp( $value ) ];
     }
 
-    /** Rounded corners, optionally a frame (`$frame` = [width, colour]). */
-    public static function border( string $radius, ?array $frame = null ): array
+    /**
+     * Rounded corners, optionally a frame (`$frame` = [width, colour]), a thicker top edge in another colour (`$top` = [width, colour])
+     * and the frame colour on hover (`$hoverFrame`).
+     */
+    public static function border( string $radius, ?array $frame = null, ?array $top = null, ?string $hoverFrame = null ): array
     {
         $value = [ 'radius' => [ 'topLeft' => $radius, 'topRight' => $radius, 'bottomRight' => $radius, 'bottomLeft' => $radius ] ];
         if ( null !== $frame ) {
             $value['styles'] = [ 'all' => [ 'width' => $frame[0], 'color' => $frame[1], 'style' => 'solid' ] ];
         }
+        if ( null !== $top ) {
+            $value['styles']['top'] = [ 'width' => $top[0], 'color' => $top[1], 'style' => 'solid' ];
+        }
+        $border = [ 'desktop' => [ 'value' => $value ] ];
+        if ( null !== $hoverFrame ) {
+            $border['desktop']['hover'] = [ 'styles' => [ 'all' => [ 'color' => $hoverFrame ] ] ];
+        }
 
-        return [ 'border' => self::resp( $value ) ];
+        return [ 'border' => $border ];
+    }
+
+    /** The module rises 4px on hover (the shape the style kits write for a lifted card). */
+    public static function lift(): array
+    {
+        return [ 'transform' => [ 'desktop' => [ 'hover' => [ 'translate' => [ 'y' => '-4px' ] ] ] ] ];
     }
 
     /** A 1px rule along the top edge only (the shape the kit rules use: `all.width` 0px plus a `top` edge). */
@@ -97,9 +130,15 @@ final class Blocks
         return [ 'border' => self::resp( [ 'styles' => [ 'all' => [ 'width' => '0px' ], 'top' => [ 'width' => '1px', 'color' => $color, 'style' => 'solid' ] ] ] ) ];
     }
 
-    public static function shadow( string $vertical, string $blur, string $color ): array
+    /** An outer shadow; `$hover` = [vertical, blur, colour] is the shadow while the pointer is on the module. */
+    public static function shadow( string $vertical, string $blur, string $color, ?array $hover = null ): array
     {
-        return [ 'boxShadow' => self::resp( [ 'horizontal' => '0px', 'vertical' => $vertical, 'blur' => $blur, 'position' => 'outer', 'color' => $color, 'style' => 'preset3' ] ) ];
+        $shadow = [ 'desktop' => [ 'value' => [ 'horizontal' => '0px', 'vertical' => $vertical, 'blur' => $blur, 'position' => 'outer', 'color' => $color, 'style' => 'preset3' ] ] ];
+        if ( null !== $hover ) {
+            $shadow['desktop']['hover'] = [ 'style' => 'preset3', 'vertical' => $hover[0], 'blur' => $hover[1], 'color' => $hover[2] ];
+        }
+
+        return [ 'boxShadow' => $shadow ];
     }
 
     public static function sizing( array $value ): array
@@ -231,12 +270,26 @@ final class Blocks
         return $this->block( 'image', $attrs );
     }
 
-    /** A button. */
-    public function button( string $text, string $url, array $font = [], array $deco = [] ): string
+    /**
+     * A button. `$pill` = {fill, label, hoverFill, hoverLabel, radius} paints it: a solid fill, its label colour and the two
+     * hover colours, no border; the padding goes on the module (on a button only `module.decoration.spacing` is live).
+     */
+    public function button( string $text, string $url, array $font = [], array $deco = [], ?array $pill = null ): string
     {
         $attrs = [ 'button' => [ 'innerContent' => self::resp( [ 'text' => $text, 'linkUrl' => $url ] ) ] ];
-        if ( [] !== $font ) {
-            $attrs['button']['decoration'] = [ 'font' => [ 'font' => self::resp( $font ) ] ];
+        if ( [] !== $font || null !== $pill ) {
+            $attrs['button']['decoration'] = [ 'font' => [ 'font' => [ 'desktop' => [ 'value' => $font ] ] ] ];
+        }
+        if ( null !== $pill ) {
+            $r = $pill['radius'];
+            $attrs['button']['decoration']['button']     = self::resp( [ 'enable' => 'on' ] );
+            $attrs['button']['decoration']['background'] = [ 'desktop' => [ 'value' => [ 'color' => $pill['fill'] ], 'hover' => [ 'color' => $pill['hoverFill'] ] ] ];
+            $attrs['button']['decoration']['font']['font']['desktop']['value']['color'] = $pill['label'];
+            $attrs['button']['decoration']['font']['font']['desktop']['hover']          = [ 'color' => $pill['hoverLabel'] ];
+            $attrs['button']['decoration']['border']     = self::resp( [
+                'radius' => [ 'topLeft' => $r, 'topRight' => $r, 'bottomRight' => $r, 'bottomLeft' => $r ],
+                'styles' => [ 'all' => [ 'width' => '0px' ] ],
+            ] );
         }
         if ( [] !== $deco ) {
             $attrs['module'] = [ 'decoration' => $deco ];

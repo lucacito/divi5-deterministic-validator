@@ -2,7 +2,7 @@
 /*
  * Real-site gate for the Pro mega menu (make verify-pro-megamenu). Dev site only.
  *
- * For each of the 24 layouts, through the real MegaMenuService (scripts/verify-pro-megamenu.php does the PHP side, one step per call):
+ * For each of the 13 layouts, through the real MegaMenuService (scripts/verify-pro-megamenu.php does the PHP side, one step per call):
  *   dry run valid -> apply (saved once, second apply changed:false, Menu module hidden on desktop only) -> the front page in Chromium
  *   at 1280 (desktop, hover), 900 and 400 (touch: Menu module shown, mega wrapper hidden, no horizontal scroll) -> remove (blocks back
  *   to the baseline, second remove changed:false) -> undo of the remove batch (the applied header, byte for byte) -> undo of the apply
@@ -114,7 +114,7 @@ function contrastInPanel(panelSel) {
   let min = Infinity;
   let worst = null;
   let count = 0;
-  for (const el of panel.querySelectorAll('a.et_pb_link, .et_pb_text p, .et_pb_heading h1, .et_pb_heading h2, .et_pb_heading h3')) {
+  for (const el of panel.querySelectorAll('a.et_pb_link, a.et_pb_button, .et_pb_text p, .et_pb_heading h1, .et_pb_heading h2, .et_pb_heading h3')) {
     const own = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join('').trim();
     const vis = getComputedStyle(el); const vr = el.getBoundingClientRect();
     if (!own || vis.display === 'none' || vis.visibility === 'hidden' || vr.width === 0 || vr.height === 0) continue;
@@ -270,18 +270,55 @@ async function desktop(browser, layout, setup, ap) {
         check(layout, W, `"${title}" the ${ap.layout_posts} newest posts are in the panel`, has.every(Boolean), `${has.filter(Boolean).length} of ${want.length}`);
       }
       // The "View all" button: text, link and font.
-      const btn = await panel.locator('a.et_pb_button').first().evaluate((a) => ({ text: a.textContent.trim(), href: a.getAttribute('href'), size: getComputedStyle(a).fontSize, weight: getComputedStyle(a).fontWeight })).catch(() => null);
+      const btn = (await panel.locator('a.et_pb_button').count()) === 0 ? null : await panel.locator('a.et_pb_button').first().evaluate((a) => ({ text: a.textContent.trim(), href: a.getAttribute('href'), size: getComputedStyle(a).fontSize, weight: getComputedStyle(a).fontWeight })).catch(() => null);
       if (btn) {
         check(layout, W, `"${title}" button text and link (divi/button)`, btn.text === 'View all' && btn.href === setup.top[i].url, `${btn.text} -> ${btn.href}`);
         check(layout, W, `"${title}" button font size and weight (divi/button)`, btn.size === '14px' && btn.weight === '600', `${btn.size} ${btn.weight}`);
+      }
+      // The look: a gradient is drawn, the panel has its accent top edge, the cards rise, glow and (tiles) take the accent frame on hover,
+      // and the promo/banner button is a filled pill.
+      if (!shotDone) {
+        const look = await panel.evaluate((p) => {
+          const grads = [p, ...p.querySelectorAll('div')].filter((e) => /linear-gradient/.test(getComputedStyle(e).backgroundImage));
+          const edge = [p, ...p.querySelectorAll(':scope > div')].map((e) => getComputedStyle(e)).find((cs) => parseFloat(cs.borderTopWidth) >= 3);
+          const cards = [...p.querySelectorAll('div.et_pb_group')].filter((e) => getComputedStyle(e).boxShadow !== 'none' && parseFloat(getComputedStyle(e).borderTopLeftRadius) >= 14);
+          const pill = [...p.querySelectorAll('a.et_pb_button')].map((a) => getComputedStyle(a)).find(() => true);
+          return { gradients: grads.length, edge: edge ? edge.borderTopWidth + ' ' + edge.borderTopColor : null, cards: cards.length, pill: pill ? { bg: pill.backgroundColor, radius: pill.borderTopLeftRadius, border: pill.borderTopWidth } : null };
+        });
+        check(layout, W, `"${title}" a gradient is drawn in the panel (${look.gradients})`, look.gradients >= 1);
+        check(layout, W, `"${title}" the panel has a 3px accent top edge`, look.edge !== null, String(look.edge));
+        if (ap.layout_cards) {
+          check(layout, W, `"${title}" cards with a radius and a resting shadow are present (${look.cards})`, look.cards >= 1);
+          const lift = await panel.evaluate(async (p) => {
+            const all = [...p.querySelectorAll('div.et_pb_group')].filter((e) => getComputedStyle(e).boxShadow !== 'none' && parseFloat(getComputedStyle(e).borderTopLeftRadius) >= 14 && e.getBoundingClientRect().height > 40);
+            const card = all.find((e) => parseFloat(getComputedStyle(e).borderTopWidth) >= 1) || all[0];
+            if (!card) return null;
+            card.setAttribute('data-aied-card', '1');
+            const r = card.getBoundingClientRect();
+            return { x: r.x + r.width / 2, y: r.y + r.height / 2, top: r.top, shadow: getComputedStyle(card).boxShadow, frame: getComputedStyle(card).borderTopColor, framed: parseFloat(getComputedStyle(card).borderTopWidth) >= 1 };
+          });
+          if (lift) {
+            await page.mouse.move(lift.x, lift.y, { steps: 6 });
+            await page.waitForTimeout(550);
+            const after = await panel.evaluate((p) => { const c = p.querySelector('[data-aied-card="1"]'); if (!c) return null; const cs = getComputedStyle(c); return { top: c.getBoundingClientRect().top, shadow: cs.boxShadow, frame: cs.borderTopColor, transform: cs.transform }; });
+            check(layout, W, `"${title}" a card rises 4px on hover`, !!after && Math.abs((lift.top - after.top) - 4) <= 1.2, after ? `moved ${(lift.top - after.top).toFixed(1)}px, ${after.transform}` : 'card gone');
+            check(layout, W, `"${title}" a card's shadow changes on hover`, !!after && after.shadow !== lift.shadow, after ? after.shadow.slice(0, 60) : '');
+            if (lift.framed) check(layout, W, `"${title}" a tile's frame takes the accent on hover`, !!after && after.frame !== lift.frame, after ? `${lift.frame} -> ${after.frame}` : '');
+            await label.hover();
+            await page.waitForTimeout(250);
+          }
+        }
+        if (ap.layout_pill && look.pill) {
+          check(layout, W, `"${title}" the button is a filled pill (fill ${look.pill.bg}, radius ${look.pill.radius})`, parseFloat(look.pill.radius) >= 20 && look.pill.border === '0px' && /^rgb\((255, 255, 255|11, 16, 32)\)$/.test(look.pill.bg));
+        }
       }
       // Panel link font (the rows), once.
       if (!shotDone) {
         await label.hover();
         await page.waitForTimeout(300);
         const f = await panel.evaluate((p) => [...p.querySelectorAll('a.et_pb_link')].map((a) => { const t = getComputedStyle(a.querySelector('.et_pb_link_inner') || a); return { size: t.fontSize, weight: t.fontWeight, color: t.color }; }));
-        check(layout, W, 'effect divi/link font size in the panel (written sizes 12-16px, plus 17px for a showcase tile heading and 18px for the large post of latest-featured; 14 or 15 present)', f.every((x) => /^1[2-6]px$/.test(x.size) || (layout.startsWith('showcase-') && x.size === '17px') || (layout === 'latest-featured' && x.size === '18px')) && f.some((x) => x.size === '15px' || x.size === '14px'), [...new Set(f.map((x) => x.size))].join('/'));
-        check(layout, W, 'effect divi/link font weight in the panel', f.some((x) => x.weight === '500' || x.weight === '600'), [...new Set(f.map((x) => x.weight))].join('/'));
+        check(layout, W, 'effect divi/link font size in the panel (written sizes 12-16px, plus 17px for a showcase tile heading; 14 or 15 present)', f.every((x) => /^1[2-6]px$/.test(x.size) || (layout.startsWith('showcase-') && x.size === '17px')) && f.some((x) => x.size === '15px' || x.size === '14px'), [...new Set(f.map((x) => x.size))].join('/'));
+        check(layout, W, 'effect divi/link font weight in the panel', f.some((x) => ['500', '600', '700'].includes(x.weight)), [...new Set(f.map((x) => x.weight))].join('/'));
         const tone = (await page.evaluate(() => getComputedStyle(document.body).backgroundColor));
         check(layout, W, 'effect divi/link colour in the panel (palette text or muted)', f.some((x) => /rgb\((27|242), (33|244), (48|248)\)|rgb\((74|180), (84|188), (104|203)\)/.test(x.color)), [...new Set(f.map((x) => x.color))].slice(0, 3).join(' | ') + ' body ' + tone);
         // Hover colour of a panel link.
@@ -349,8 +386,10 @@ async function narrow(browser, layout, width, height, setup) {
       check(layout, '-', 'apply saves once and is undoable', ap.first_changed === true && typeof ap.batch === 'number' && ap.undoable === true);
       check(layout, '-', 'second apply reports changed:false', ap.second_changed === false);
       check(layout, '-', 'header carries one mega wrapper and the Menu module hides on desktop only', ap.applied === true && ap.wrappers === 1 && JSON.stringify(ap.menu_disabled_on) === JSON.stringify({ desktop: { value: 'on' }, tablet: { value: 'off' }, phone: { value: 'off' } }));
-      const layoutDef = { posts: ['latest-cards', 'latest-links-cards', 'latest-featured', 'latest-compact'].includes(layout) ? ({ 'latest-cards': 3, 'latest-links-cards': 2, 'latest-featured': 4, 'latest-compact': 4 })[layout] : 0 };
+      const layoutDef = { posts: ({ 'latest-cards': 3, 'latest-links-cards': 2 })[layout] || 0 };
       ap.layout_posts = layoutDef.posts;
+      ap.layout_cards = /^(showcase-tiles|showcase-intro-cards|showcase-tiles-dark|icons-|latest-|feature-)/.test(layout);
+      ap.layout_pill = /^feature-/.test(layout);
 
       await desktop(browser, layout, setup, ap);
       await narrow(browser, layout, 900, 900, setup);

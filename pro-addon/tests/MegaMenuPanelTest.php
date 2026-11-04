@@ -152,12 +152,12 @@ class MegaMenuPanelTest extends TestCase
     public function testWithAUsableHeaderEveryLayoutHasAnEnabledUseButton(): void
     {
         $html = $this->render();
-        $this->assertSame( 24, substr_count( $html, 'aied-mm-card"' ) );
-        $this->assertSame( 24, substr_count( $html, '>Use this layout</button>' ) );
+        $this->assertSame( 13, substr_count( $html, 'aied-mm-card"' ) );
+        $this->assertSame( 13, substr_count( $html, '>Use this layout</button>' ) );
         $this->assertStringNotContainsString( ' disabled>', $html );
-        $this->assertStringContainsString( 'Simple lists', $html );
+        $this->assertStringContainsString( 'Link columns', $html );
         $this->assertStringContainsString( 'Latest posts', $html );
-        $this->assertStringContainsString( 'value="list-plain"', $html );
+        $this->assertStringContainsString( 'value="columns-footer"', $html );
         $this->assertStringContainsString( 'value="' . MegaMenuPanel::ACTION_APPLY . '"', $html );
         $this->assertStringContainsString( 'nonce-for-' . MegaMenuPanel::ACTION_APPLY, $html );
         $this->assertStringContainsString( 'Tablet and phone keep the normal menu', $html );
@@ -168,7 +168,7 @@ class MegaMenuPanelTest extends TestCase
         $html = $this->render( $this->service( null, false ) );
         $this->assertStringContainsString( 'needs a global header', $html );
         $this->assertStringContainsString( 'page=et_theme_builder', $html );
-        $this->assertSame( 24, substr_count( $html, ' disabled>' ) );
+        $this->assertSame( 13, substr_count( $html, ' disabled>' ) );
         $this->assertStringNotContainsString( 'Remove mega menu', $html );
     }
 
@@ -177,14 +177,14 @@ class MegaMenuPanelTest extends TestCase
         $GLOBALS['__wp_posts'][201]->post_content = self::header();
         $html                                      = $this->render();
         $this->assertStringContainsString( 'no Menu module', $html );
-        $this->assertSame( 24, substr_count( $html, ' disabled>' ) );
+        $this->assertSame( 13, substr_count( $html, ' disabled>' ) );
     }
 
     public function testAMenuWithoutSubItemsDisablesTheButtons(): void
     {
         $html = $this->render( $this->service( [ MenuTree::build( [ self::item( 1, 0, 'Home' ) ] )[0] ] ) );
         $this->assertStringContainsString( 'None of the menu', $html );
-        $this->assertSame( 24, substr_count( $html, ' disabled>' ) );
+        $this->assertSame( 13, substr_count( $html, ' disabled>' ) );
     }
 
     public function testTheMenuNamesAndCountsAreShownEscaped(): void
@@ -200,7 +200,7 @@ class MegaMenuPanelTest extends TestCase
     public function testApplyWithoutAValidNonceIsRefusedAndNothingChanges(): void
     {
         $before = $this->headerContent();
-        $this->postAs( MegaMenuPanel::ACTION_APPLY, [ 'layout' => 'list-plain' ] );
+        $this->postAs( MegaMenuPanel::ACTION_APPLY, [ 'layout' => 'columns-footer' ] );
         $_REQUEST['_wpnonce'] = 'wrong';
         try {
             $this->panel()->handleApply();
@@ -215,7 +215,7 @@ class MegaMenuPanelTest extends TestCase
     {
         $before               = $this->headerContent();
         $GLOBALS['__wp_caps'] = [ 'edit_pages' => true ];
-        $this->postAs( MegaMenuPanel::ACTION_APPLY, [ 'layout' => 'list-plain' ] );
+        $this->postAs( MegaMenuPanel::ACTION_APPLY, [ 'layout' => 'columns-footer' ] );
         try {
             $this->panel()->handleApply();
             $this->fail( 'the capability check must stop the handler' );
@@ -228,7 +228,7 @@ class MegaMenuPanelTest extends TestCase
     public function testApplyOnlyAcceptsAPostRequest(): void
     {
         $before = $this->headerContent();
-        $this->postAs( MegaMenuPanel::ACTION_APPLY, [ 'layout' => 'list-plain' ] );
+        $this->postAs( MegaMenuPanel::ACTION_APPLY, [ 'layout' => 'columns-footer' ] );
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $this->expectException( \RuntimeException::class );
         try {
@@ -241,7 +241,7 @@ class MegaMenuPanelTest extends TestCase
     public function testANonStringOrUnknownLayoutIsRefusedWithANotice(): void
     {
         $before = $this->headerContent();
-        foreach ( [ [ 'list-plain' ], 12, 'nope', '', '../../etc' ] as $bad ) {
+        foreach ( [ [ 'columns-footer' ], 12, 'nope', '', '../../etc' ] as $bad ) {
             $GLOBALS['__wp_redirects'] = [];
             $this->postAs( MegaMenuPanel::ACTION_APPLY, [ 'layout' => $bad ] );
             $this->panel()->handleApply();
@@ -253,7 +253,7 @@ class MegaMenuPanelTest extends TestCase
     public function testASuccessfulApplyChangesTheHeaderAndRedirectsWithTheName(): void
     {
         $before = $this->headerContent();
-        $this->postAs( MegaMenuPanel::ACTION_APPLY, [ 'layout' => 'columns-3' ] );
+        $this->postAs( MegaMenuPanel::ACTION_APPLY, [ 'layout' => 'columns-footer' ] );
         $this->panel()->handleApply();
 
         $this->assertNotSame( $before, $this->headerContent() );
@@ -263,16 +263,16 @@ class MegaMenuPanelTest extends TestCase
 
         $_GET['aied_pro_notice'] = 'megamenu_applied';
         $html                    = $this->render();
-        $this->assertStringContainsString( 'The mega menu &quot;Three columns&quot; is on your header now', $html );
+        $this->assertStringContainsString( 'The mega menu &quot;Columns with a footer link&quot; is on your header now', $html );
         $this->assertStringContainsString( 'Remove mega menu', $html );
     }
 
     public function testAChangedNothingApplyRedirectsAsUnchanged(): void
     {
-        $this->postAs( MegaMenuPanel::ACTION_APPLY, [ 'layout' => 'columns-3' ] );
+        $this->postAs( MegaMenuPanel::ACTION_APPLY, [ 'layout' => 'columns-footer' ] );
         $this->panel()->handleApply();
         $GLOBALS['__wp_redirects'] = [];
-        $this->postAs( MegaMenuPanel::ACTION_APPLY, [ 'layout' => 'columns-3' ] );
+        $this->postAs( MegaMenuPanel::ACTION_APPLY, [ 'layout' => 'columns-footer' ] );
         $this->panel()->handleApply();
         $this->assertSame( 'megamenu_unchanged', $this->redirectNotice() );
     }
@@ -287,7 +287,7 @@ class MegaMenuPanelTest extends TestCase
             fn (): ?array => [ 'layout_id' => 201, 'title' => 'Main header' ]
         );
         $before = $this->headerContent();
-        $this->postAs( MegaMenuPanel::ACTION_APPLY, [ 'layout' => 'list-plain' ] );
+        $this->postAs( MegaMenuPanel::ACTION_APPLY, [ 'layout' => 'columns-footer' ] );
         $this->panel( $service )->handleApply();
 
         $this->assertSame( 'megamenu_error', $this->redirectNotice() );
@@ -304,7 +304,7 @@ class MegaMenuPanelTest extends TestCase
     public function testRemoveTakesTheMegaMenuAwayAgain(): void
     {
         $original = $this->headerContent();
-        $this->postAs( MegaMenuPanel::ACTION_APPLY, [ 'layout' => 'list-plain' ] );
+        $this->postAs( MegaMenuPanel::ACTION_APPLY, [ 'layout' => 'columns-footer' ] );
         $this->panel()->handleApply();
         $this->assertTrue( HeaderEdit::inspect( $this->headerContent() )['hasMega'] );
 

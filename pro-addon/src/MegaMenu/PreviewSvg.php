@@ -55,11 +55,6 @@ final class PreviewSvg
             $shapes[] = self::rect( (float) $cx, (float) ( $bottom - 18 ), (float) $cw, 1.0, 0.0, $t['line'] );
             $shapes[] = self::bar( (float) $cx, (float) ( $bottom - 11 ), 40.0, $t['accent'], 1.0 );
         }
-        if ( 'cta' === $feature ) {
-            $end      = $bottom - 20;
-            $shapes[] = self::rect( (float) $cx, (float) ( $bottom - 14 ), (float) $cw, 14.0, 4.0, $t['accent'] );
-            $shapes[] = self::bar( (float) ( $cx + 8 ), (float) ( $bottom - 9 ), (float) $cw * 0.4, $t['onAccent'], 0.9 );
-        }
         if ( 'top' === $feature ) {
             $shapes[] = self::rect( (float) $cx, (float) $top, (float) $cw, 24.0, 4.0, $t['accent'], 0.3 );
             $shapes[] = self::bar( (float) ( $cx + 8 ), (float) ( $top + 7 ), (float) $cw * 0.45, $t['text'], 0.9, 5.0 );
@@ -172,7 +167,6 @@ final class PreviewSvg
         $rows     = (string) $layout['rows'];
         $headings = in_array( $family, [ 'columns', 'feature' ], true );
         $per      = match ( $family ) {
-            'list'  => 1 === $cols ? 4 : 3,
             'icons' => 'icons' === $rows ? 3 : 2,
             default => 3,
         };

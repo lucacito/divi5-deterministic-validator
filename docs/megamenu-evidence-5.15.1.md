@@ -5,7 +5,7 @@ Chromium (Playwright), the real `MegaMenuService` as user 1. Design record: `doc
 
 ## What the gate does
 
-For each of the 24 layouts it applies the layout to the global header through the real service (dry run first, then apply, then a second apply that
+For each of the 13 layouts it applies the layout to the global header through the real service (dry run first, then apply, then a second apply that
 must report `changed:false`), renders the front page at 1280, 900 and 400 px (900 and 400 with touch emulation), and for every top-level item with
 sub-items it:
 
@@ -17,7 +17,7 @@ sub-items it:
   tablet and phone).
 
 Then: remove and undo restore the header byte for byte, the refusals (no global header, no Menu module, unknown layout, non-string input) answer as
-specified, and the teardown leaves no menu, menu item, fixture or user behind. Screenshots: `dist/megamenu/<layout>.png` (24 files, git-ignored).
+specified, and the teardown leaves no menu, menu item, fixture or user behind. Screenshots: `dist/megamenu/<layout>.png` (13 files, git-ignored).
 
 ## Results
 
@@ -52,6 +52,23 @@ Changes to the first 20, found by looking at the screenshots:
 Gate changes: the font-size expectation accepts 17 px for a showcase tile heading; the intro panel's link now has a real hover colour (it was white on hover, so the hover check rightly failed).
 
 Not borrowed: their cascading CSS animation (needs custom CSS, which this project does not write) and their JavaScript/CSS trigger setup. A native entrance animation on panel items is untested.
+
+### Round 3 (2026-11-04): 13 layouts, a fancier look
+
+The owner deleted the screenshots of 11 layouts; those were removed (list family, columns-3, columns-4-wide, feature-cta, icons-links-3, icons-2x2, latest-featured, latest-compact) and the 13 left were restyled: accent gradients (intro panel, promo card, banner, icon chips, a bar under column headings), a faint panel gradient with a 3px accent top edge, opaque cards that rise 4px, glow and take the accent frame on hover, and a filled pill button. No new attribute family: the paths are tagged `shape` (same path measured by the free plugin's effect probe, `fixtures/shapes/verified-shapes.json`).
+
+New gate checks (desktop, first dropdown of each layout): a gradient is drawn in the panel, the panel has a 3px accent top edge, a card rises exactly 4px on a real hover and its shadow changes, a tile's frame turns to the accent, the button is a filled pill (fill, radius, no border), and button labels are in the contrast check. The `Menu`-style `a.et_pb_button` lookup no longer waits 30 s on a layout without a button.
+
+| Run | Width 400 | Width 900 | Width 1280 | Setup/negatives/teardown | Total |
+|---|---|---|---|---|---|
+| A | 78 PASS, 0 FAIL | 78 PASS, 0 FAIL | 562 PASS, 0 FAIL | 127 PASS, 0 FAIL | 845 PASS, 0 FAIL |
+| B | 78 PASS, 0 FAIL | 78 PASS, 0 FAIL | 562 PASS, 0 FAIL | 127 PASS, 0 FAIL | 845 PASS, 0 FAIL |
+
+13 of 13 layouts, two consecutive runs. After them one cosmetic change (the intro panel's arrow chip stayed round by letting its row wrap) was re-run on the two intro layouts: 132 PASS, 0 FAIL.
+
+Defects found by the first runs of this round and fixed: an empty block (the heading bar) was written as `<!-- wp:divi/group ... --><!-- /wp:divi/group -->` while WordPress saves it self-closing, so a second apply reported a change and the undo points broke (`Blocks::block` now writes an empty block self-closing); the banner had no hover lift (added); the weight check did not accept the bold card titles.
+
+Not done: a native entrance animation (still untested whether Divi replays it when a hidden dropdown opens); the older flex-based column layouts still use fixed column widths.
 
 ## Defects the gate found, and what was done
 

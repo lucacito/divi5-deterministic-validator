@@ -19,14 +19,14 @@ class PreviewSvgTest extends TestCase
         return (string) preg_replace( '/ aria-label="[^"]*"/', '', $svg );
     }
 
-    public function testTheTwentyFourPreviewsDifferInTheirDrawingNotOnlyTheirName(): void
+    public function testTheThirteenPreviewsDifferInTheirDrawingNotOnlyTheirName(): void
     {
         $drawings = [];
         foreach ( Layouts::all() as $layout ) {
             $drawings[ $layout['id'] ] = self::drawing( PreviewSvg::for( $layout ) );
         }
-        $this->assertCount( 24, $drawings );
-        $this->assertCount( 24, array_unique( $drawings ), 'two layouts draw the same wireframe' );
+        $this->assertCount( 13, $drawings );
+        $this->assertCount( 13, array_unique( $drawings ), 'two layouts draw the same wireframe' );
 
         $ids = array_keys( $drawings );
         for ( $i = 0; $i < count( $ids ); $i++ ) {
@@ -73,13 +73,13 @@ class PreviewSvgTest extends TestCase
         $dark  = Palette::tone( 'dark' )['bg'];
         $light = Palette::tone( 'light' )['bg'];
         $this->assertStringContainsString( 'fill="' . $dark . '"', PreviewSvg::for( Layouts::find( 'columns-dark' ) ) );
-        $this->assertStringNotContainsString( $dark, PreviewSvg::for( Layouts::find( 'list-plain' ) ) );
-        $this->assertStringContainsString( 'fill="' . $light . '"', PreviewSvg::for( Layouts::find( 'list-plain' ) ) );
+        $this->assertStringNotContainsString( $dark, PreviewSvg::for( Layouts::find( 'columns-footer' ) ) );
+        $this->assertStringContainsString( 'fill="' . $light . '"', PreviewSvg::for( Layouts::find( 'columns-footer' ) ) );
     }
 
     public function testTheNameIsEscapedInTheLabel(): void
     {
-        $layout         = Layouts::find( 'list-plain' );
+        $layout         = Layouts::find( 'columns-footer' );
         $layout['name'] = 'Q "one" & <two>';
         $svg            = PreviewSvg::for( $layout );
         $this->assertStringContainsString( 'aria-label="Q &quot;one&quot; &amp; &lt;two&gt;"', $svg );

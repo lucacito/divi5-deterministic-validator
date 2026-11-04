@@ -4,11 +4,28 @@
 #   render:spike  rendered on the real Divi 5.15.1 in the 2026-11-03 spike (docs/superpowers/specs/2026-11-03-pro-megamenu-design.md)
 #   recipe        the same shape is written by a shipped, render-verified recipe or a real builder export
 #   render:gate  its EFFECT was measured in the real Divi by `make verify-pro-megamenu` (computed style / attribute of the rendered page, docs/megamenu-evidence-5.15.1.md)
+#   shape         the same path was measured by the free plugin's effect probe or comes from a real export (fixtures/shapes/verified-shapes.json, docs/shape-evidence-5.15.1.md), and its effect on THIS menu is measured by `make verify-pro-megamenu`
 #   pending       written and rendered without error, but its own effect is not measured separately yet
+divi/button:button.decoration.background.{bp}.hover.color  shape
+divi/button:button.decoration.background.{bp}.value.color  shape
+divi/button:button.decoration.border.{bp}.value.radius.bottomLeft  shape
+divi/button:button.decoration.border.{bp}.value.radius.bottomRight  shape
+divi/button:button.decoration.border.{bp}.value.radius.topLeft  shape
+divi/button:button.decoration.border.{bp}.value.radius.topRight  shape
+divi/button:button.decoration.border.{bp}.value.styles.all.width  shape
+divi/button:button.decoration.button.{bp}.value.enable  shape
+divi/button:button.decoration.font.font.{bp}.hover.color  shape
+divi/button:button.decoration.font.font.{bp}.value.color  shape
 divi/button:button.decoration.font.font.{bp}.value.size  render:gate
 divi/button:button.decoration.font.font.{bp}.value.weight  render:gate
 divi/button:button.innerContent.{bp}.value.linkUrl  render:gate
 divi/button:button.innerContent.{bp}.value.text  recipe
+divi/button:module.decoration.spacing.{bp}.value.padding.bottom  shape
+divi/button:module.decoration.spacing.{bp}.value.padding.left  shape
+divi/button:module.decoration.spacing.{bp}.value.padding.right  shape
+divi/button:module.decoration.spacing.{bp}.value.padding.syncHorizontal  shape
+divi/button:module.decoration.spacing.{bp}.value.padding.syncVertical  shape
+divi/button:module.decoration.spacing.{bp}.value.padding.top  shape
 divi/dropdown:module.advanced.dropdown.{bp}.value.alignment  render:spike
 divi/dropdown:module.advanced.dropdown.{bp}.value.direction  render:spike
 divi/dropdown:module.advanced.dropdown.{bp}.value.horizontalMode  render:spike
@@ -16,6 +33,10 @@ divi/dropdown:module.advanced.dropdown.{bp}.value.offset  render:spike
 divi/dropdown:module.advanced.dropdown.{bp}.value.position  render:spike
 divi/dropdown:module.advanced.dropdown.{bp}.value.showOn  render:spike
 divi/dropdown:module.decoration.background.{bp}.value.color  render:spike
+divi/dropdown:module.decoration.background.{bp}.value.gradient.direction  shape
+divi/dropdown:module.decoration.background.{bp}.value.gradient.enabled  shape
+divi/dropdown:module.decoration.background.{bp}.value.gradient.stops  shape
+divi/dropdown:module.decoration.background.{bp}.value.gradient.type  shape
 divi/dropdown:module.decoration.border.{bp}.value.radius.bottomLeft  recipe
 divi/dropdown:module.decoration.border.{bp}.value.radius.bottomRight  recipe
 divi/dropdown:module.decoration.border.{bp}.value.radius.topLeft  recipe
@@ -23,6 +44,9 @@ divi/dropdown:module.decoration.border.{bp}.value.radius.topRight  recipe
 divi/dropdown:module.decoration.border.{bp}.value.styles.all.color  recipe
 divi/dropdown:module.decoration.border.{bp}.value.styles.all.style  recipe
 divi/dropdown:module.decoration.border.{bp}.value.styles.all.width  recipe
+divi/dropdown:module.decoration.border.{bp}.value.styles.top.color  shape
+divi/dropdown:module.decoration.border.{bp}.value.styles.top.style  shape
+divi/dropdown:module.decoration.border.{bp}.value.styles.top.width  shape
 divi/dropdown:module.decoration.boxShadow.{bp}.value.blur  render:spike
 divi/dropdown:module.decoration.boxShadow.{bp}.value.color  render:spike
 divi/dropdown:module.decoration.boxShadow.{bp}.value.horizontal  render:spike
@@ -36,6 +60,11 @@ divi/dropdown:module.decoration.spacing.{bp}.value.padding.syncHorizontal  rende
 divi/dropdown:module.decoration.spacing.{bp}.value.padding.syncVertical  render:spike
 divi/dropdown:module.decoration.spacing.{bp}.value.padding.top  render:spike
 divi/group:module.decoration.background.{bp}.value.color  recipe
+divi/group:module.decoration.background.{bp}.value.gradient.direction  shape
+divi/group:module.decoration.background.{bp}.value.gradient.enabled  shape
+divi/group:module.decoration.background.{bp}.value.gradient.stops  shape
+divi/group:module.decoration.background.{bp}.value.gradient.type  shape
+divi/group:module.decoration.border.{bp}.hover.styles.all.color  shape
 divi/group:module.decoration.border.{bp}.value.radius.bottomLeft  recipe
 divi/group:module.decoration.border.{bp}.value.radius.bottomRight  recipe
 divi/group:module.decoration.border.{bp}.value.radius.topLeft  recipe
@@ -46,6 +75,16 @@ divi/group:module.decoration.border.{bp}.value.styles.all.width  recipe
 divi/group:module.decoration.border.{bp}.value.styles.top.color  recipe
 divi/group:module.decoration.border.{bp}.value.styles.top.style  recipe
 divi/group:module.decoration.border.{bp}.value.styles.top.width  recipe
+divi/group:module.decoration.boxShadow.{bp}.hover.blur  shape
+divi/group:module.decoration.boxShadow.{bp}.hover.color  shape
+divi/group:module.decoration.boxShadow.{bp}.hover.style  shape
+divi/group:module.decoration.boxShadow.{bp}.hover.vertical  shape
+divi/group:module.decoration.boxShadow.{bp}.value.blur  shape
+divi/group:module.decoration.boxShadow.{bp}.value.color  shape
+divi/group:module.decoration.boxShadow.{bp}.value.horizontal  shape
+divi/group:module.decoration.boxShadow.{bp}.value.position  shape
+divi/group:module.decoration.boxShadow.{bp}.value.style  shape
+divi/group:module.decoration.boxShadow.{bp}.value.vertical  shape
 divi/group:module.decoration.disabledOn.{bp}.value  recipe
 divi/group:module.decoration.layout.{bp}.value.alignItems  recipe
 divi/group:module.decoration.layout.{bp}.value.columnGap  recipe
@@ -66,6 +105,7 @@ divi/group:module.decoration.spacing.{bp}.value.padding.right  recipe
 divi/group:module.decoration.spacing.{bp}.value.padding.syncHorizontal  recipe
 divi/group:module.decoration.spacing.{bp}.value.padding.syncVertical  recipe
 divi/group:module.decoration.spacing.{bp}.value.padding.top  recipe
+divi/group:module.decoration.transform.{bp}.hover.translate.y  shape
 divi/group:module.decoration.zIndex.{bp}.value  recipe
 divi/group:module.meta.adminLabel.{bp}.value  recipe
 divi/heading:title.decoration.font.font.{bp}.value.color  recipe

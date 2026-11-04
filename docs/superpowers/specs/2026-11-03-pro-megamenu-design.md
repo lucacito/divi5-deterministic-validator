@@ -1,6 +1,6 @@
 # Pro mega menu: design
 
-Status: built on branch `feat/pro-megamenu`, NOT released (no version bump, no zip). Owner asked on 2026-11-03: "a Megamenu section in the admin, a choice of 20 layouts, they click one and it appears on their header template, a notice that they need a global header; one layout like the divi5lab dropdown; build everything on the local Docker, I will check later with feedback."
+Status: built on branch `feat/pro-megamenu`, NOT released (no version bump, no zip). Owner asked on 2026-11-03: "a Megamenu section in the admin, a choice of 20 layouts (now 13, see below), they click one and it appears on their header template, a notice that they need a global header; one layout like the divi5lab dropdown; build everything on the local Docker, I will check later with feedback."
 
 ## Intent
 
@@ -31,18 +31,19 @@ Anti-goals: a layout that renders as a PHP fatal (a wrongly shaped Dropdown take
 4. `MegaMenuService` hands the edit to the existing `LayoutWriter::apply` (permissions: `edit_theme_options` + Divi Theme Builder, `LayoutGate`, `HistoryService` snapshot, Divi cache clear, one undoable batch). Dry run first; the admin shows the preview and asks for a confirmation.
 5. `Admin/MegaMenuPanel` is a "Mega menu" tab of the free plugin's admin page (added by the Pro add-on through `jhmg_aied_admin_tabs`): the notice, the gallery of 20 layouts with generated SVG previews, Apply and Remove buttons.
 
-## The 24 layouts
+## The 13 layouts
 
-Six families times four variants, composed from data (`Layouts`), not hand-written markups. The first 20 (five families) were the original request; the sixth family, Showcase, was added on 2026-11-04 after a review of a competitor's free layout (see the evidence note).
+Five families, composed from data (`Layouts`), not hand-written markups. The first 20 (five families) were the original request, a sixth family (Showcase) was added on 2026-11-04 after a review of a competitor's free layout, and the same day the owner deleted the screenshots of 11 layouts they did not like; those 11 were removed from the catalog (the whole list family, columns-3, columns-4-wide, feature-cta, icons-links-3, icons-2x2, latest-featured, latest-compact). The 13 left were then restyled (see the evidence note, round 3).
 
 | Family | Variants |
 |---|---|
-| List | plain list, list with one-line descriptions, list with icons, two-column list |
-| Columns | 3 columns, 4 columns full width, 3 columns on dark, 2 columns plus a footer link bar |
-| Feature | columns plus a card on the right, card on the left, banner card across the top, columns plus a CTA bar (the divi5lab "Free layouts" panel) |
-| Icon grid | 2-column cards with chips and footer links (the divi5lab "Plugins" panel), 3 icon links, 2x2 icon plus description, dark icon grid |
-| Latest | 3 post cards, 4 compact cards, one large plus three small, cards under a heading bar |
-| Showcase | intro panel plus link cards on a tinted backdrop, link tiles on a pale backdrop, intro panel plus ruled link columns, dark link tiles (each tile: an arrow heading, then links ruled by a hairline; one equal-width grid, panel content as wide as Divi's own row so it lines up with the logo) |
+| Columns | 3 columns on dark (full width), 3 columns plus a footer link |
+| Feature | columns plus a gradient card on the right, on the left, a banner card across the top |
+| Icon grid | 3 icon cards with a footer link (the divi5lab "Plugins" panel), the same on a dark panel |
+| Latest | 3 post cards, links in a tinted card beside 2 post cards |
+| Showcase | intro panel plus link cards on a tinted gradient backdrop, link tiles on a pale backdrop, intro panel plus ruled link columns, dark link tiles |
+
+Look, shared by all: a faint top-to-bottom panel gradient and a 3px accent top edge; an accent gradient (light #1d4ed8 to #6d28d9, dark #8fb3ff to #c4b5fd) on the intro panel, the promo card and banner, the icon chips and a short bar under each column heading; opaque cards (hairline, soft resting shadow) that rise 4px, glow and take the accent frame on hover; a filled pill "View all" button. Every path is already proven on the real Divi (free plugin shape registry) and measured on this menu by the gate.
 
 ## Calls I made (owner can override)
 

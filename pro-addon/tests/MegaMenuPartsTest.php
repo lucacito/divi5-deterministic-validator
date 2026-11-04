@@ -19,16 +19,14 @@ class MegaMenuPartsTest extends TestCase
 {
     // ---- catalog ---------------------------------------------------------------------------------------------------
 
-    public function testThereAreTwentyFourLayoutsInSixFamiliesOfFour(): void
+    public function testThereAreThirteenLayoutsInFiveFamilies(): void
     {
         $all = Layouts::all();
-        $this->assertCount( 24, $all );
-        $this->assertSame( 24, count( array_unique( Layouts::ids() ) ), 'ids are unique' );
+        $this->assertCount( 13, $all );
+        $this->assertSame( 13, count( array_unique( Layouts::ids() ) ), 'ids are unique' );
         $perFamily = array_count_values( array_map( static fn ( array $l ): string => $l['family'], $all ) );
         $this->assertSame( array_keys( Layouts::FAMILIES ), array_keys( $perFamily ) );
-        foreach ( $perFamily as $family => $n ) {
-            $this->assertSame( 4, $n, $family );
-        }
+        $this->assertSame( [ 'columns' => 2, 'feature' => 3, 'icons' => 2, 'latest' => 2, 'showcase' => 4 ], $perFamily );
     }
 
     public function testEveryLayoutIsWellFormedAndNamesAreDistinct(): void
@@ -38,11 +36,11 @@ class MegaMenuPartsTest extends TestCase
             $this->assertMatchesRegularExpression( '/^[a-z0-9-]+$/', $l['id'] );
             $this->assertContains( $l['tone'], [ 'light', 'dark' ] );
             $this->assertContains( $l['mode'], [ 'auto', 'row', 'viewport' ] );
-            $this->assertContains( $l['feature'], [ 'none', 'right', 'left', 'top', 'cta' ] );
+            $this->assertContains( $l['feature'], [ 'none', 'right', 'left', 'top' ] );
             $this->assertIsBool( $l['intro'] );
             $this->assertContains( $l['surface'], [ 'open', 'cards' ] );
             $this->assertContains( $l['backdrop'], [ 'none', 'accent', 'wash' ] );
-            $this->assertContains( $l['rows'], [ 'plain', 'desc', 'icons', 'cards', 'hairline' ] );
+            $this->assertContains( $l['rows'], [ 'plain', 'cards', 'hairline' ] );
             $this->assertGreaterThanOrEqual( 200, $l['width'] );
             $this->assertLessThanOrEqual( 1200, $l['width'] );
             $this->assertGreaterThanOrEqual( 1, $l['columns'] );
@@ -54,9 +52,9 @@ class MegaMenuPartsTest extends TestCase
         $this->assertSame( $names, array_values( array_unique( $names ) ) );
     }
 
-    public function testTheTwoDivi5labPanelsAreInTheCatalog(): void
+    public function testTheDivi5labIconCardPanelAndThePromoCardsAreInTheCatalog(): void
     {
-        $this->assertSame( 'cta', Layouts::find( 'feature-cta' )['feature'], 'three icon-link columns and a call-to-action bar' );
+        $this->assertSame( 'left', Layouts::find( 'feature-left' )['feature'], 'a promo card on the left of the columns' );
         $this->assertSame( 'cards', Layouts::find( 'icons-cards' )['rows'], 'a grid of icon cards with a footer link' );
         $this->assertNull( Layouts::find( 'nope' ) );
     }
@@ -155,7 +153,7 @@ class MegaMenuPartsTest extends TestCase
 
     // ---- header edit -----------------------------------------------------------------------------------------------
 
-    private function wrapper( string $layout = 'columns-3' ): string
+    private function wrapper( string $layout = 'columns-footer' ): string
     {
         return MegaMenuFixture::wrapper( Layouts::find( $layout ), MegaMenuFixture::menus()['grouped'] );
     }
@@ -175,8 +173,8 @@ class MegaMenuPartsTest extends TestCase
     public function testApplyTwiceReplacesTheWrapperAndIsIdempotent(): void
     {
         $header = MegaMenuFixture::header();
-        $once   = HeaderEdit::apply( $header, $this->wrapper( 'columns-3' ) );
-        $twice  = HeaderEdit::apply( $once, $this->wrapper( 'columns-3' ) );
+        $once   = HeaderEdit::apply( $header, $this->wrapper( 'columns-footer' ) );
+        $twice  = HeaderEdit::apply( $once, $this->wrapper( 'columns-footer' ) );
         $this->assertSame( $once, $twice );
         $other = HeaderEdit::apply( $once, $this->wrapper( 'icons-dark' ) );
         $this->assertSame( 1, substr_count( $other, Blocks::ADMIN_LABEL ), 'one wrapper only' );
