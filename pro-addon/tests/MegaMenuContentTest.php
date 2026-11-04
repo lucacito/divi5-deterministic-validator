@@ -32,7 +32,7 @@ final class MegaMenuContentTest extends TestCase
     public function testNothingStoredMeansDefaultsAndNothingForTheBuilder(): void
     {
         $c = $this->content();
-        $this->assertSame( [ 'title' => '', 'text' => '', 'button' => '', 'url' => '', 'image' => 0, 'edits' => 'ask' ], $c->get( 5 ) );
+        $this->assertSame( [ 'title' => '', 'text' => '', 'button' => '', 'url' => '', 'image' => 0, 'icon' => '', 'edits' => 'ask' ], $c->get( 5 ) );
         $this->assertFalse( $c->hasContent( 5 ) );
         $this->assertSame( [], $c->forBuilder() );
     }
@@ -68,7 +68,7 @@ final class MegaMenuContentTest extends TestCase
     public function testNonStringsAreEmptyNotCast(): void
     {
         $e = MegaMenuContent::normalise( [ 'title' => [ 'x' ], 'text' => 5, 'button' => null, 'url' => [], 'image' => 'abc', 'edits' => 'maybe' ] );
-        $this->assertSame( [ 'title' => '', 'text' => '', 'button' => '', 'url' => '', 'image' => 0, 'edits' => 'ask' ], $e );
+        $this->assertSame( [ 'title' => '', 'text' => '', 'button' => '', 'url' => '', 'image' => 0, 'icon' => '', 'edits' => 'ask' ], $e );
     }
 
     public function testAPictureThatIsNotAnImageIsNeverStored(): void
@@ -93,7 +93,7 @@ final class MegaMenuContentTest extends TestCase
         $c->save( 5, [ 'title' => 'T' ] );
         $this->assertSame( 'keep', $c->get( 5 )['edits'] );
         $c->reset( 5 );
-        $this->assertSame( [ 'title' => '', 'text' => '', 'button' => '', 'url' => '', 'image' => 0, 'edits' => 'keep' ], $c->get( 5 ) );
+        $this->assertSame( [ 'title' => '', 'text' => '', 'button' => '', 'url' => '', 'image' => 0, 'icon' => '', 'edits' => 'keep' ], $c->get( 5 ) );
         $this->assertFalse( $c->hasContent( 5 ), 'a choice alone is not content' );
         $this->assertSame( [], $c->forBuilder() );
         $c->setEdits( 5, 'ask' );
@@ -140,5 +140,45 @@ final class MegaMenuContentTest extends TestCase
         $this->assertSame( [], $c->all() );
         $c = new MegaMenuContent( static fn (): array => [ 'x' => [ 'title' => 'a' ], 0 => [ 'title' => 'b' ], 5 => 'string', 6 => [ 'title' => 'ok' ] ], static function (): void {} );
         $this->assertSame( [ 6 ], array_keys( $c->all() ) );
+    }
+
+    public function testAnIconIsStoredPerItemAndOnlyFromTheSet(): void
+    {
+        $c = $this->content();
+        $c->setIcon( 5, 'rocket' );
+        $c->setIcon( 6, 'home' );
+        $this->assertSame( 'rocket', $c->get( 5 )['icon'] );
+        $this->assertTrue( $c->hasContent( 5 ), 'an icon is content of its own' );
+        $this->assertSame( [ 5, 6 ], array_keys( $c->forBuilder() ) );
+        $this->assertSame( '&#xf135;', $c->forBuilder()[5]['icon'] );
+        $this->assertNull( $c->forBuilder()[5]['image'] );
+
+        $c->setIcon( 5, '' );
+        $this->assertArrayNotHasKey( 5, $this->store, 'clearing the only thing set removes the entry' );
+        try {
+            $c->setIcon( 5, 'not-an-icon' );
+            $this->fail( 'must refuse' );
+        } catch ( \InvalidArgumentException $e ) {
+            $this->assertStringContainsString( 'Unknown icon', $e->getMessage() );
+        }
+        $this->assertArrayNotHasKey( 5, $this->store );
+    }
+
+    public function testTheIconSurvivesSavingTextsAndResettingThem(): void
+    {
+        $c = $this->content();
+        $c->setIcon( 5, 'star' );
+        $c->save( 5, [ 'title' => 'T' ] );
+        $this->assertSame( 'star', $c->get( 5 )['icon'] );
+        $c->reset( 5 );
+        $this->assertSame( 'star', $c->get( 5 )['icon'], 'reset takes texts and picture away, not the icon' );
+        $this->assertSame( '', $c->get( 5 )['title'] );
+    }
+
+    public function testAnUnknownIconInTheOptionIsIgnored(): void
+    {
+        $this->assertSame( '', MegaMenuContent::normalise( [ 'icon' => 'evil"><script>' ] )['icon'] );
+        $this->assertSame( '', MegaMenuContent::normalise( [ 'icon' => [ 'star' ] ] )['icon'] );
+        $this->assertSame( 'star', MegaMenuContent::normalise( [ 'icon' => 'star' ] )['icon'] );
     }
 }

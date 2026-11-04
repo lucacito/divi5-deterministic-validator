@@ -72,7 +72,7 @@ final class MegaMenuService
      * `drift` is null when the mega menu matches the menu (or none is applied), else what differs: `{bar: {missing, extra, reordered}|null, items: list<{id, title, missing, extra, reordered}>, gone: list<int>}`
      * (`gone`: panels of items that no longer have sub-items or are no longer in the menu).
      *
-     * @return array{header:?array{layout_id:int,title:string},menuModule:bool,applied:bool,menu:?array{id:int,name:string,items:int,panels:int,how:string},menus:list<array{id:int,name:string,items:int}>,items:list<array{id:int,title:string,layout:?string,layoutName:?string,content:bool,custom:bool,edited:bool,edits:string}>,drift:?array<string,mixed>}
+     * @return array{header:?array{layout_id:int,title:string},menuModule:bool,applied:bool,menu:?array{id:int,name:string,items:int,panels:int,how:string},menus:list<array{id:int,name:string,items:int}>,items:list<array{id:int,title:string,layout:?string,layoutName:?string,content:bool,icons:bool,icon:string,children:list<array{id:int,title:string,icon:string}>,custom:bool,edited:bool,edits:string}>,drift:?array<string,mixed>}
      */
     public function status(): array
     {
@@ -101,6 +101,9 @@ final class MegaMenuService
                         'layout'     => null === $layout ? null : (string) $layout['id'],
                         'layoutName' => null === $layout ? null : (string) $layout['name'],
                         'content'    => null !== $layout && ! empty( $layout['content'] ),
+                        'icons'      => null !== $layout && ! empty( $layout['icons'] ),
+                        'icon'       => $this->content->get( (int) $item['id'] )['icon'],
+                        'children'   => array_map( fn ( array $c ): array => [ 'id' => (int) $c['id'], 'title' => (string) $c['title'], 'icon' => $this->content->get( (int) $c['id'] )['icon'] ], $item['children'] ),
                         'custom'     => $this->content->hasContent( (int) $item['id'] ),
                         'edited'     => in_array( (int) $item['id'], $edited, true ),
                         'edits'      => $this->content->get( (int) $item['id'] )['edits'],

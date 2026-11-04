@@ -15,6 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  *   title, text, button, url   replace the item's title, its description, "View all" and the item's own link on the card, banner or intro panel
  *   image                      an attachment id (an image the Media Library holds); resolved to a URL and alt text when the panel is built
+ *   icon                       an id of MegaIcons: on a top-level item the icon of every card of its panel, on a sub-item the icon of that card
  *   edits                      `ask` | `keep` | `rebuild`: what an update does with a panel that was changed in the builder
  *
  * Every value is cleaned on the way in; nothing here writes to the header.
@@ -50,7 +51,7 @@ final class MegaMenuContent
         $this->attachment = $attachment ?? self::attachmentFromLibrary( ... );
     }
 
-    /** @return array<int,array{title:string,text:string,button:string,url:string,image:int,edits:string}> every stored entry, item id => entry */
+    /** @return array<int,array{title:string,text:string,button:string,url:string,image:int,icon:string,edits:string}> every stored entry, item id => entry */
     public function all(): array
     {
         $raw = ( $this->read )();
@@ -67,25 +68,25 @@ final class MegaMenuContent
         return $out;
     }
 
-    /** @return array{title:string,text:string,button:string,url:string,image:int,edits:string} */
+    /** @return array{title:string,text:string,button:string,url:string,image:int,icon:string,edits:string} */
     public function get( int $itemId ): array
     {
         return $this->all()[ $itemId ] ?? self::normalise( [] );
     }
 
-    /** Whether the owner has put any text or picture of their own on this item (the `edits` choice alone does not count). */
+    /** Whether the owner has put any text, picture or icon of their own on this item (the `edits` choice alone does not count). */
     public function hasContent( int $itemId ): bool
     {
         $e = $this->get( $itemId );
 
-        return '' !== $e['title'] . $e['text'] . $e['button'] . $e['url'] || $e['image'] > 0;
+        return '' !== $e['title'] . $e['text'] . $e['button'] . $e['url'] . $e['icon'] || $e['image'] > 0;
     }
 
     /**
      * Stores the texts and the picture of one item (what is not given is emptied) and keeps its `edits` choice.
      *
      * @param array<string,mixed> $in title, text, button, url, image
-     * @return array{title:string,text:string,button:string,url:string,image:int,edits:string} what was stored
+     * @return array{title:string,text:string,button:string,url:string,image:int,icon:string,edits:string} what was stored
      */
     public function save( int $itemId, array $in ): array
     {
@@ -96,6 +97,7 @@ final class MegaMenuContent
             'button' => $in['button'] ?? '',
             'url'    => $in['url'] ?? '',
             'image'  => $in['image'] ?? 0,
+            'icon'   => $now['icon'],
             'edits'  => $now['edits'],
         ] );
         if ( $new['image'] > 0 && null === ( $this->attachment )( $new['image'] ) ) {
@@ -105,11 +107,22 @@ final class MegaMenuContent
         return $this->put( $itemId, $new );
     }
 
-    /** Takes the owner's texts and picture of this item away (the `edits` choice stays). */
+    /** Takes the owner's texts and picture of this item away (the `edits` choice and the icon stay). */
     public function reset( int $itemId ): void
     {
         $now = $this->get( $itemId );
-        $this->put( $itemId, self::normalise( [ 'edits' => $now['edits'] ] ) );
+        $this->put( $itemId, self::normalise( [ 'edits' => $now['edits'], 'icon' => $now['icon'] ] ) );
+    }
+
+    /** Sets (or, with an empty id, clears) the icon of one item. An id that is not in the set is refused. */
+    public function setIcon( int $itemId, string $iconId ): void
+    {
+        if ( '' !== $iconId && ! MegaIcons::exists( $iconId ) ) {
+            throw new \InvalidArgumentException( 'Unknown icon: "' . $iconId . '".' );
+        }
+        $now         = $this->get( $itemId );
+        $now['icon'] = $iconId;
+        $this->put( $itemId, $now );
     }
 
     /** What an update does with this item's panel when it was edited in the builder. An unknown value is refused. */
@@ -127,17 +140,18 @@ final class MegaMenuContent
      * What the panel builder reads: for each item with something of its own, the non-empty texts, the link, and the picture as
      * {url, alt}. A picture that cannot be resolved any more is dropped.
      *
-     * @return array<int,array{title:string,text:string,button:string,url:string,image:?array{url:string,alt:string}}>
+     * @return array<int,array{title:string,text:string,button:string,url:string,image:?array{url:string,alt:string},icon:?string}>
      */
     public function forBuilder(): array
     {
         $out = [];
         foreach ( $this->all() as $id => $e ) {
             $image = $e['image'] > 0 ? ( $this->attachment )( $e['image'] ) : null;
-            if ( '' === $e['title'] . $e['text'] . $e['button'] . $e['url'] && null === $image ) {
+            $icon  = '' === $e['icon'] ? null : MegaIcons::unicode( $e['icon'] );
+            if ( '' === $e['title'] . $e['text'] . $e['button'] . $e['url'] && null === $image && null === $icon ) {
                 continue;
             }
-            $out[ $id ] = [ 'title' => $e['title'], 'text' => $e['text'], 'button' => $e['button'], 'url' => $e['url'], 'image' => $image ];
+            $out[ $id ] = [ 'title' => $e['title'], 'text' => $e['text'], 'button' => $e['button'], 'url' => $e['url'], 'image' => $image, 'icon' => $icon ];
         }
 
         return $out;
@@ -147,12 +161,13 @@ final class MegaMenuContent
 
     /**
      * @param array<string,mixed> $e
-     * @return array{title:string,text:string,button:string,url:string,image:int,edits:string}
+     * @return array{title:string,text:string,button:string,url:string,image:int,icon:string,edits:string}
      */
     public static function normalise( array $e ): array
     {
         $edits = $e['edits'] ?? 'ask';
         $image = $e['image'] ?? 0;
+        $icon  = $e['icon'] ?? '';
 
         return [
             'title'  => self::line( $e['title'] ?? '', self::MAX_TITLE ),
@@ -160,6 +175,7 @@ final class MegaMenuContent
             'button' => self::line( $e['button'] ?? '', self::MAX_BUTTON ),
             'url'    => self::url( $e['url'] ?? '' ),
             'image'  => is_numeric( $image ) && (int) $image > 0 ? (int) $image : 0,
+            'icon'   => is_string( $icon ) && MegaIcons::exists( $icon ) ? $icon : '',
             'edits'  => is_string( $edits ) && in_array( $edits, self::EDITS, true ) ? $edits : 'ask',
         ];
     }
@@ -194,13 +210,13 @@ final class MegaMenuContent
     }
 
     /**
-     * @param array{title:string,text:string,button:string,url:string,image:int,edits:string} $entry
-     * @return array{title:string,text:string,button:string,url:string,image:int,edits:string}
+     * @param array{title:string,text:string,button:string,url:string,image:int,icon:string,edits:string} $entry
+     * @return array{title:string,text:string,button:string,url:string,image:int,icon:string,edits:string}
      */
     private function put( int $itemId, array $entry ): array
     {
         $all = $this->all();
-        if ( '' === $entry['title'] . $entry['text'] . $entry['button'] . $entry['url'] && 0 === $entry['image'] && 'ask' === $entry['edits'] ) {
+        if ( '' === $entry['title'] . $entry['text'] . $entry['button'] . $entry['url'] . $entry['icon'] && 0 === $entry['image'] && 'ask' === $entry['edits'] ) {
             unset( $all[ $itemId ] );
         } else {
             $all[ $itemId ] = $entry;

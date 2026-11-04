@@ -27,6 +27,17 @@ const wp = makeWp(ROOT);
 const flatLayouts = new Set();
 /** Layouts that take the owner's own headline, text, button and picture (filled from the PHP step `list`). */
 const contentLayouts = new Set();
+/** Layouts whose cards have an icon the owner can choose (filled from the PHP step `list`). */
+const iconLayouts = new Set();
+
+/** In the browser: the Font Awesome code (hex) of every Icon module in an element, and whether it is drawn with Font Awesome at weight 900. */
+const iconCodes = (p) => [...p.querySelectorAll('.et-pb-icon')].map((e) => {
+  const t = (e.textContent || '').trim();
+  const b = getComputedStyle(e, '::before').content.replace(/^["']|["']$/g, '');
+  const ch = t || b;
+  const cs = getComputedStyle(e);
+  return { code: ch ? ch.codePointAt(0).toString(16) : '', fa: /Font ?Awesome/i.test(cs.fontFamily), weight: cs.fontWeight, w: e.getBoundingClientRect().width };
+});
 const only = (process.argv.find((a) => a.startsWith('--layouts=')) || '').replace('--layouts=', '').split(',').filter(Boolean);
 
 /** One PHP step of scripts/verify-pro-megamenu.php: its RESULT JSON, or throws with the ERROR message. */
@@ -248,6 +259,7 @@ async function desktop(browser, layout, setup, ap) {
     for (const i of nav.dropdowns) {
       const title = setup.top[i].title;
       const ownHere = contentLayouts.has(layout) && title === 'Services';
+      const iconsHere = iconLayouts.has(layout) && title === 'Services';
       const label = page.locator(`[data-aied-mm="top-${i}"]`);
       const panel = page.locator(`[data-aied-mm="panel-${i}"]`);
       const panelSel = `[data-aied-mm="panel-${i}"]`;
@@ -320,6 +332,13 @@ async function desktop(browser, layout, setup, ap) {
         check(layout, W, `"${title}" own button label and link`, o.links.some((l) => l.text === setup.own.button && l.href === setup.own.url), JSON.stringify(o.links.filter((l) => /View all|Gate/.test(l.text))));
         check(layout, W, `"${title}" own picture is shown, loaded, with the Media Library alt text`, o.imgs.some((m) => m.src.endsWith(file) && m.nw > 0 && m.alt === setup.own.alt), JSON.stringify(o.imgs.slice(0, 2)));
         check(layout, W, `"${title}" the placeholder picture is gone when the owner has their own`, !o.imgs.some((m) => /card-blue-1\.svg/.test(m.src)));
+      }
+      // The icons the owner chose (a rocket for the panel, a house for the card "Build"), drawn with Font Awesome in the chips; the footer arrow stays.
+      if (iconsHere) {
+        const ic = await panel.evaluate(iconCodes);
+        const want = ['f135', 'f015', 'f135'].concat(layout === 'icons-cards' ? ['f061'] : []);
+        check(layout, W, `"${title}" the cards show the chosen icons (rocket, house for "Build", rocket) and the footer arrow stays`, JSON.stringify(ic.map((x) => x.code)) === JSON.stringify(want), JSON.stringify(ic.map((x) => x.code)));
+        check(layout, W, `"${title}" every icon is drawn with Font Awesome at weight 900 and has a width`, ic.length > 0 && ic.every((x) => x.fa && x.weight === '900' && x.w > 0), JSON.stringify(ic.filter((x) => !(x.fa && x.weight === '900' && x.w > 0))));
       }
       // The newest posts: the "latest" layouts show the newest posts' permalinks.
       if (ap.layout_posts) {
@@ -534,6 +553,7 @@ async function adminView(browser, opts = {}) {
           paras: [...p.querySelectorAll('p')].map((e) => e.textContent.trim()),
           imgs: [...p.querySelectorAll('img')].map((e) => ({ src: e.getAttribute('src') || '', alt: e.getAttribute('alt'), nw: e.naturalWidth })),
         }));
+        out[name].icons = await page.locator(`[data-aied-mm="panel-${i}"]`).evaluate(iconCodes);
       }
       return out;
     } finally {
@@ -543,7 +563,10 @@ async function adminView(browser, opts = {}) {
   const listed = step('list');
   listed.flat.forEach((id) => flatLayouts.add(id));
   listed.content.forEach((id) => contentLayouts.add(id));
+  listed.icons.forEach((id) => iconLayouts.add(id));
   const ids = listed.ids.filter((id) => only.length === 0 || only.includes(id));
+  const ifont = step('icon_font');
+  check('icons', '-', `every icon offered (${ifont.icons}) is a glyph, under the same name, of the Font Awesome file Divi ships (${ifont.font_glyphs} glyphs)`, ifont.missing.length === 0 && ifont.renamed.length === 0, JSON.stringify(ifont.missing.concat(ifont.renamed)));
   const browser = await chromium.launch();
   const summary = [];
   let fatal = null;
@@ -703,7 +726,7 @@ async function adminView(browser, opts = {}) {
         check(L, 1280, 'the picture is still there and loads', f.Services.imgs.some((m) => m.src.endsWith(setup.own.imageUrl.split('/').pop()) && m.nw > 0 && m.alt === setup.own.alt), JSON.stringify(f.Services.imgs.slice(0, 2)));
         await pressAndWait(s.page, 'button:has-text("Reset to the defaults")', 'megamenu_content_reset');
         t = await readTab(s.page);
-        check(L, '-', 'reset: the notice, empty fields and no "Custom content" mark', t.noticeText.includes('Back to the defaults') && t.fields.title === '' && t.fields.image === '0' && t.items[0].pills.every((x) => x !== 'Custom content'), t.noticeText);
+        check(L, '-', 'reset: the notice and empty fields (the icons chosen for the icon layouts stay)', t.noticeText.includes('Back to the defaults') && t.fields.title === '' && t.fields.text === '' && t.fields.image === '0', t.noticeText);
         const f2 = await frontPanels(browser, ['Services']);
         check(L, 1280, 'after reset the card shows the menu item\'s own title and no picture', f2.Services.headings.includes('Services') && !f2.Services.headings.includes('Edited by the form') && !f2.Services.imgs.some((m) => /uploads/.test(m.src)), JSON.stringify(f2.Services.headings));
         check(L, '-', 'no script error on the admin screens and the front end', s.errors.length === 0 && f.errors.length === 0 && f2.errors.length === 0, s.errors.concat(f.errors, f2.errors).slice(0, 2).join(' | '));
@@ -712,6 +735,50 @@ async function adminView(browser, opts = {}) {
       }
       const off = step('remove');
       check(L, '-', 'removed again for the next scenario', off.applied === false);
+    }
+    // The icons of the icon layouts through the real form: the tiles are drawn with Divi's own Font Awesome file, a chosen icon (one for the
+    // panel, one for a single card) reaches the front end, and the reset goes back to the arrow.
+    {
+      const L = 'icon picker';
+      step('apply', 'icons-cards');
+      const s = await adminSession(browser);
+      try {
+        await s.page.goto(`${TAB}&item=${setup.services_id}&etab=content`, { waitUntil: 'load' });
+        const tiles = await s.page.evaluate(async () => {
+          await document.fonts.load("900 16px AiedFA").catch(() => {});
+          const g = [...document.querySelectorAll('.aied-mm-icongrid .aied-mm-glyph')];
+          return {
+            count: g.length,
+            font: document.fonts.check('900 16px AiedFA'),
+            drawn: g.every((e) => getComputedStyle(e).fontFamily.includes('AiedFA') && e.getBoundingClientRect().width > 0 && (e.textContent || '').trim().length === 1),
+            checked: (document.querySelector('.aied-mm-icongrid input:checked') || {}).value,
+            cards: [...document.querySelectorAll('.aied-mm-cardicon select')].map((x) => ({ name: x.getAttribute('name'), value: x.value })),
+          };
+        });
+        check(L, '-', 'the picker offers every icon as a tile drawn with the real font, and shows the panel\'s rocket as chosen', tiles.count === ifont.icons && tiles.font === true && tiles.drawn === true && tiles.checked === 'rocket', JSON.stringify({ count: tiles.count, font: tiles.font, drawn: tiles.drawn, checked: tiles.checked }));
+        check(L, '-', 'one choice per card of the panel, and the card "Build" shows its house', tiles.cards.length === 3 && tiles.cards.find((c) => c.name === `sub[${setup.build_id}]`).value === 'home', JSON.stringify(tiles.cards));
+        await s.page.click('label.aied-mm-ic[title="Heart"]');
+        const firstCard = tiles.cards.find((c) => c.name !== `sub[${setup.build_id}]`).name;
+        await s.page.selectOption(`select[name="${firstCard}"]`, 'star');
+        const preview = await s.page.evaluate((n) => { const sel = document.querySelector(`select[name="${n}"]`); const g = document.querySelector(`.aied-mm-glyph[data-for="${sel.id}"]`); return g ? g.textContent.codePointAt(0).toString(16) : null; }, firstCard);
+        check(L, '-', 'choosing an icon for a card shows it next to the choice at once', preview === 'f005', String(preview));
+        await pressAndWait(s.page, 'button:has-text("Save icons and update the header")', 'megamenu_icons_saved');
+        let t = await readTab(s.page);
+        check(L, '-', 'saving comes back to the item with the notice and marks it "Custom content"', t.noticeText.includes('Saved. The icons in your header are updated.') && t.items[0].pills.includes('Custom content'), t.noticeText);
+        const f = await frontPanels(browser, ['Services']);
+        check(L, 1280, 'the front end shows a star on the first card, the house on "Build" and the panel\'s heart on the last card', JSON.stringify(f.Services.icons.map((x) => x.code)) === JSON.stringify(['f005', 'f015', 'f004', 'f061']), JSON.stringify(f.Services.icons.map((x) => x.code)));
+        check(L, 1280, 'every icon is drawn with Font Awesome at weight 900', f.Services.icons.every((x) => x.fa && x.weight === '900' && x.w > 0));
+        await pressAndWait(s.page, 'button:has-text("Reset to the arrow")', 'megamenu_icons_saved');
+        t = await readTab(s.page);
+        const f2 = await frontPanels(browser, ['Services']);
+        check(L, 1280, 'after the reset every card has the arrow again', f2.Services.icons.every((x) => x.code === 'f061') && f2.Services.icons.length === 4, JSON.stringify(f2.Services.icons.map((x) => x.code)));
+        check(L, '-', 'after the reset the item is not marked "Custom content" any more (its texts were reset earlier)', t.items[0].pills.every((x) => x !== 'Custom content'), JSON.stringify(t.items[0].pills));
+        check(L, '-', 'no script error on the admin screens and the front end', s.errors.length === 0 && f.errors.length === 0 && f2.errors.length === 0, s.errors.concat(f.errors).slice(0, 2).join(' | '));
+      } finally {
+        await s.ctx.close();
+      }
+      const off = step('remove');
+      check(L, '-', 'removed again', off.applied === false);
     }
     // A panel edited in the Divi builder: seen, protected on Update (the tab asks), kept or replaced as the owner answers, through the real buttons.
     {
@@ -816,6 +883,7 @@ async function adminView(browser, opts = {}) {
     check('teardown', '-', 'the undo batches that existed before the run are back, identical (the table trims to 20 and a run records more)', teardown.batches_back === true);
     check('teardown', '-', 'none of the undo batches this run recorded is left', teardown.batches_left === 0, String(teardown.batches_left));
     check('teardown', '-', 'the throwaway picture is deleted', teardown.picture_left === 0);
+    check('teardown', '-', 'the revisions WordPress made of the header during the run are removed again (they pile up and fill PHP memory)', teardown.revisions_left === 0, String(teardown.revisions_left));
   }
   console.log('');
   console.log(`layouts run: ${summary.length} of ${ids.length}`);

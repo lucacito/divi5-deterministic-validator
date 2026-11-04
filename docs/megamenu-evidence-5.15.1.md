@@ -224,6 +224,36 @@ WordPress moved another plugin's notice into the toolbar (the page now carries a
 leftover "you changed a panel" question could show with no mega menu on (it now shows only while one is on).
 The gate and the unit tests are unchanged apart from one new test; two consecutive full runs 990 PASS, 0 FAIL, Pro suite 2,814 tests.
 
+### Round 10 (2026-11-04): a choice of icons for the icon layouts
+
+The owner asked to choose the icon on the layouts that have icons ("Icon cards" and "Icon cards, dark"; every card had the same neutral arrow).
+
+- **What it does.** On the Content tab of those two layouts: one icon for every card of the panel (a grid of 49 tiles) and, if wanted, another for single
+  cards (a dropdown per card, with the glyph shown beside it at once). The tiles are the real glyphs, drawn with the Font Awesome file Divi ships
+  (`core/admin/fonts/fontawesome/fa-solid-900.woff2`, loaded by the tab's own `@font-face`; without that file the tiles fall back to text labels). The choice is
+  stored per menu item (`MegaMenuContent` field `icon`; on a top-level item it is the panel's icon, on a sub-item that card's), survives Update and
+  "Reset to the defaults" of the texts, and "Reset to the arrow" clears it. Choosing the arrow for the panel clears the choice; for one card it is a choice.
+  A choice made while another layout is on is kept and shows when an icon layout is used. Layouts without icons ignore it.
+- **The set.** `MegaIcons`: 49 general-purpose Font Awesome 5 solid icons (Arrow, Star, Heart, Home, Team, Cart, Email, Phone, Location, Code, Settings,
+  Launch, Growth, Design and more). Proven by the gate against Divi's own font file: every one is a glyph of that file under the same name (1,001 glyphs
+  in it). The icon is written the same way the arrow always was (`divi/icon`, `type: fa`, `weight: 900`), so no new attribute path.
+- **Measured live on the throwaway menu.** On both icon layouts the Services panel shows a rocket on two cards and a house on "Build" (chosen), the footer
+  arrow stays, every icon is drawn with FontAwesome at weight 900 and has a width. Through the real form: the picker shows every tile drawn with the real font
+  and the rocket as chosen; choosing a heart for the panel and a star for one card shows the star next to the choice at once, and "Save icons and update the
+  header" puts star, house and heart on the cards; "Reset to the arrow" brings the arrow back on every card.
+- **A defect the gate found in the dev site, not in the code.** A save request ran out of PHP memory (128 MB) on the second full run of the day. The plugin's
+  own use was about 1.6 MB; the header layout had 2,258 saved WordPress revisions, almost all made by earlier gate runs (every write of the header makes one,
+  and WordPress loads a post's revisions into memory when it saves another). Those revisions were deleted (the four older ones, the owner's, stay) and the
+  gate now removes the revisions it makes. A real site would need thousands of writes of its header to see this.
+
+| Run | Width 400 | Width 900 | Width 1280 | Setup/scenarios/negatives/teardown | Total |
+|---|---|---|---|---|---|
+| A | 78 PASS, 0 FAIL | 78 PASS, 0 FAIL | 659 PASS, 0 FAIL | 191 PASS, 0 FAIL | 1,006 PASS, 0 FAIL |
+| B | 78 PASS, 0 FAIL | 78 PASS, 0 FAIL | 659 PASS, 0 FAIL | 191 PASS, 0 FAIL | 1,006 PASS, 0 FAIL |
+
+Pro suite 2,833 tests. Limits: 49 icons only (no search, no custom icon); the tiles need Divi's font file on the site (without it they show labels); an
+icon is per panel or per card, not per layout.
+
 ## Defects the gate found, and what was done
 
 1. **Raw Dropdown settings fatal.** `module.advanced.dropdown` written as a raw object is a PHP fatal on Divi 5.15.1 (HTTP 500 for the whole

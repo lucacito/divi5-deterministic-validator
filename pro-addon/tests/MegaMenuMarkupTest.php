@@ -234,4 +234,47 @@ class MegaMenuMarkupTest extends TestCase
         $this->assertStringNotContainsString( 'card-blue-1.svg', $with );
         $this->assertStringContainsString( 'card-blue-1.svg', MegaMenuFixture::wrapper( $banner, $tree ) );
     }
+
+    // ---- the icons of the icon layouts --------------------------------------------------------------------------------
+
+    /** The icon characters of every Icon module in a wrapper, in order. @return list<string> */
+    private static function iconCodes( string $markup ): array
+    {
+        return array_values( array_map( static fn ( array $a ): string => (string) ( $a['icon']['innerContent']['desktop']['value']['unicode'] ?? '' ), self::blocksOf( $markup, 'icon' ) ) );
+    }
+
+    public function testTheIconLayoutsTakeAnIconPerPanelAndPerCard(): void
+    {
+        $tree   = MegaMenuFixture::menus()['grouped'];
+        $layout = \AiEditorDivi5\Pro\MegaMenu\Layouts::find( 'icons-cards' );
+        $plain  = self::iconCodes( MegaMenuFixture::wrapper( $layout, $tree ) );
+        $arrow  = \AiEditorDivi5\Pro\MegaMenu\PanelBuilder::GLYPH;
+        $this->assertSame( [ $arrow, $arrow, $arrow, $arrow, $arrow ], $plain, 'four cards and the footer arrow, as before an icon could be chosen' );
+
+        $empty = [ 'title' => '', 'text' => '', 'button' => '', 'url' => '', 'image' => null ];
+        // The whole panel gets a rocket; the card "Build" (id 6) gets a house; the footer arrow stays an arrow.
+        $content = [ 2 => $empty + [ 'icon' => '&#xf135;' ], 6 => $empty + [ 'icon' => '&#xf015;' ] ];
+        $this->assertSame( [ '&#xf135;', '&#xf015;', '&#xf135;', '&#xf135;', $arrow ], self::iconCodes( MegaMenuFixture::wrapper( $layout, $tree, '5.14.0', $content ) ) );
+
+        // A card's own icon works without a choice for the panel.
+        $this->assertSame( [ $arrow, '&#xf015;', $arrow, $arrow, $arrow ], self::iconCodes( MegaMenuFixture::wrapper( $layout, $tree, '5.14.0', [ 6 => $empty + [ 'icon' => '&#xf015;' ] ] ) ) );
+        $dark = \AiEditorDivi5\Pro\MegaMenu\Layouts::find( 'icons-dark' );
+        $this->assertSame( [ '&#xf135;', '&#xf135;', '&#xf135;', '&#xf135;' ], self::iconCodes( MegaMenuFixture::wrapper( $dark, $tree, '5.14.0', [ 2 => $empty + [ 'icon' => '&#xf135;' ] ] ) ), 'icons-dark has no footer' );
+    }
+
+    public function testOtherLayoutsIgnoreTheIconChoice(): void
+    {
+        $tree  = MegaMenuFixture::menus()['grouped'];
+        $empty = [ 'title' => '', 'text' => '', 'button' => '', 'url' => '', 'image' => null ];
+        foreach ( MegaMenuFixture::layouts() as $layout ) {
+            if ( empty( $layout['icons'] ) ) {
+                $this->assertSame( MegaMenuFixture::wrapper( $layout, $tree ), MegaMenuFixture::wrapper( $layout, $tree, '5.14.0', [ 2 => $empty + [ 'icon' => '&#xf135;' ], 6 => $empty + [ 'icon' => '&#xf015;' ] ] ), $layout['id'] );
+            }
+        }
+    }
+
+    public function testOnlyTheTwoIconLayoutsCarryTheIconsFlag(): void
+    {
+        $this->assertSame( [ 'icons-cards', 'icons-dark' ], array_values( array_map( static fn ( array $l ): string => $l['id'], array_filter( MegaMenuFixture::layouts(), static fn ( array $l ): bool => ! empty( $l['icons'] ) ) ) ) );
+    }
 }

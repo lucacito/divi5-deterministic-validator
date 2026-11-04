@@ -168,6 +168,15 @@ function mm_teardown(): array
             $usersLeft++;
         }
     }
+    // Every write of the header makes a WordPress revision, and WordPress loads a post's revisions into memory when it saves another: a run
+    // writes it hundreds of times, so the revisions made during the run are removed again (the owner's own, older ones are not touched).
+    $revisionsLeft = 0;
+    if ( isset( $s['rev_floor'] ) ) {
+        foreach ( (array) $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'revision' AND post_parent = %d AND ID > %d", $hid, (int) $s['rev_floor'] ) ) as $revId ) { // phpcs:ignore
+            wp_delete_post_revision( (int) $revId );
+        }
+        $revisionsLeft = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = 'revision' AND post_parent = %d AND ID > %d", $hid, (int) $s['rev_floor'] ) ); // phpcs:ignore
+    }
     // The undo batches this run recorded (an apply, a remove, an undo each write one) must not stay behind: the tab offers the newest one
     // as "Undo last change". The tool filter keeps anything else a person did meanwhile.
     $batchesLeft = 0;
@@ -196,6 +205,7 @@ function mm_teardown(): array
 
     return [
         'batches_left' => $batchesLeft,
+        'revisions_left' => $revisionsLeft,
         'batches_back' => $batchesBack,
         'restored'    => true,
         'same_bytes'  => $sameBytes,
@@ -269,6 +279,7 @@ switch ( $aiedMmStep ) {
         };
         $custom = static fn ( string $title, string $url, string $desc = '' ): array => [ 'menu-item-type' => 'custom', 'menu-item-title' => $title, 'menu-item-url' => $url, 'menu-item-description' => $desc ];
 
+        $headIds = [];
         $add( $custom( 'Home', home_url( '/' ) ), 0 );
         $services = $add( $custom( 'Services', home_url( '/services/' ) ), 0 );
         foreach ( [
@@ -277,6 +288,7 @@ switch ( $aiedMmStep ) {
             'Grow'    => [ [ 'SEO', '' ], [ 'Ads', '' ], [ 'Email newsletters', 'One message a month, written well' ], [ 'Analytics', '' ] ],
         ] as $heading => $leaves ) {
             $head = $add( $custom( $heading, home_url( '/services/' . strtolower( $heading ) . '/' ) ), $services );
+            $headIds[ $heading ] = $head;
             foreach ( $leaves as [ $title, $desc ] ) {
                 $add( $custom( $title, home_url( '/services/' . strtolower( $heading ) . '/' . sanitize_title( $title ) . '/' ), $desc ), $head );
             }
@@ -328,7 +340,8 @@ switch ( $aiedMmStep ) {
         $batchFloor = BatchTable::exists() ? (int) $wpdb->get_var( 'SELECT COALESCE(MAX(id), 0) FROM ' . BatchTable::name() ) : 0; // phpcs:ignore
         // The table keeps only the newest 20 rows and a run records more than that, so every row that exists now is kept in the state and put back.
         $batchesBefore = BatchTable::exists() ? (array) $wpdb->get_results( 'SELECT * FROM ' . BatchTable::name() . ' ORDER BY id', ARRAY_A ) : []; // phpcs:ignore
-        mm_save_state( [ 'options_before' => $optionsBefore, 'own' => $own, 'services_id' => $services, 'blog_id' => $blog, 'batches_before' => $batchesBefore, 'batch_floor' => $batchFloor, 'header_id' => $hid, 'original' => $orig, 'original_sha' => sha1( $orig ), 'baseline' => $new, 'baseline_sha' => sha1( $new ), 'menu_id' => $menuId, 'item_ids' => $items, 'old_menu_id' => $oldMenuId, 'extra_ids' => [], 'attachment_id' => (int) $attId, 'user_ids' => [] ] );
+        $revFloor = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COALESCE(MAX(ID), 0) FROM {$wpdb->posts} WHERE post_type = 'revision' AND post_parent = %d", $hid ) ); // phpcs:ignore
+        mm_save_state( [ 'rev_floor' => $revFloor, 'options_before' => $optionsBefore, 'own' => $own, 'services_id' => $services, 'blog_id' => $blog, 'batches_before' => $batchesBefore, 'batch_floor' => $batchFloor, 'header_id' => $hid, 'original' => $orig, 'original_sha' => sha1( $orig ), 'baseline' => $new, 'baseline_sha' => sha1( $new ), 'menu_id' => $menuId, 'item_ids' => $items, 'old_menu_id' => $oldMenuId, 'extra_ids' => [], 'attachment_id' => (int) $attId, 'user_ids' => [] ] );
         wp_update_post( [ 'ID' => $hid, 'post_content' => wp_slash( $new ) ] );
         clean_post_cache( $hid );
         if ( mm_raw( $hid ) !== $new ) {
@@ -357,9 +370,13 @@ switch ( $aiedMmStep ) {
         }
         $postUrls = array_map( static fn ( $pid ): string => (string) get_permalink( (int) $pid ), array_slice( $posts, 0, 5 ) );
         mm_service()->content()->save( $services, $own );
+        // Icons for the icon layouts: a rocket for every card of "Services", a house for its card "Build".
+        mm_service()->content()->setIcon( $services, 'rocket' );
+        mm_service()->content()->setIcon( (int) $headIds['Build'], 'home' );
         mm_out( [
             'own'          => $own,
             'services_id'  => $services,
+            'build_id'     => (int) $headIds['Build'],
             'blog_id'      => $blog,
             'top'          => $top,
             'panels'       => count( array_filter( $top, static fn ( array $t ): bool => $t['children'] > 0 ) ),
@@ -390,7 +407,13 @@ switch ( $aiedMmStep ) {
                 $content[] = $l['id'];
             }
         }
-        mm_out( [ 'ids' => Layouts::ids(), 'flat' => $flat, 'content' => $content ] );
+        $icons = [];
+        foreach ( Layouts::all() as $l ) {
+            if ( ! empty( $l['icons'] ) ) {
+                $icons[] = $l['id'];
+            }
+        }
+        mm_out( [ 'ids' => Layouts::ids(), 'flat' => $flat, 'content' => $content, 'icons' => $icons ] );
         break;
 
     // ---- one layout --------------------------------------------------------------------------------------------------
@@ -589,6 +612,30 @@ switch ( $aiedMmStep ) {
         mm_save_state( $s );
         $menu = wp_get_nav_menu_object( AIED_MM_MENU_NAME );
         mm_out( [ 'items_left' => count( wp_get_nav_menu_items( $menu->term_id ) ?: [] ), 'items_expected' => count( $s['item_ids'] ) ] );
+        break;
+
+    // ---- the icons offered for the icon layouts: every one must be a glyph of the font file Divi ships ----------------------------------
+    case 'icon_font':
+        $svg = rtrim( (string) get_template_directory(), '/' ) . '/core/admin/fonts/fontawesome/fa-solid-900.svg';
+        if ( ! is_readable( $svg ) ) {
+            mm_fail( 'Divi\'s Font Awesome file is not there: ' . $svg );
+        }
+        $text = (string) file_get_contents( $svg );
+        preg_match_all( '/<glyph[^>]*glyph-name="([^"]+)"[^>]*unicode="&#x([0-9a-f]+);"/i', $text, $m, PREG_SET_ORDER );
+        $font = [];
+        foreach ( $m as $g ) {
+            $font[ strtolower( $g[2] ) ] = $g[1];
+        }
+        $missing = [];
+        $names   = [];
+        foreach ( \AiEditorDivi5\Pro\MegaMenu\MegaIcons::all() as $i ) {
+            if ( ! isset( $font[ $i['code'] ] ) ) {
+                $missing[] = $i['id'] . ' (' . $i['code'] . ')';
+            } elseif ( $font[ $i['code'] ] !== $i['id'] ) {
+                $names[] = $i['id'] . ' is called ' . $font[ $i['code'] ] . ' in the font';
+            }
+        }
+        mm_out( [ 'font_glyphs' => count( $font ), 'icons' => count( \AiEditorDivi5\Pro\MegaMenu\MegaIcons::all() ), 'missing' => $missing, 'renamed' => $names ] );
         break;
 
     // ---- another menu on the site, and which menu the header shows ---------------------------------------------------------

@@ -31,6 +31,12 @@ final class PanelBuilder
     /** The owner's own content for the panel being built (headline, text, button, link, picture), or null when the layout takes none. */
     private ?array $own = null;
 
+    /** The icon every card of this panel gets unless it has its own (a character reference like `&#xf015;`), and the cards that have their own: sub-item id => code. */
+    private ?string $iconDefault = null;
+
+    /** @var array<int,string> */
+    private array $iconBy = [];
+
     /** How many cards of this panel have been given their entrance so far: each starts 70 ms after the one before (at most 5 steps). */
     private int $entered = 0;
 
@@ -48,6 +54,17 @@ final class PanelBuilder
         $this->t       = Palette::tone( (string) $layout['tone'] );
         $this->entered = 0;
         $this->own     = ! empty( $layout['content'] ) && is_array( $ctx['own'] ?? null ) ? $ctx['own'] : null;
+        // The icons the owner chose, for the layouts whose cards have one (a choice on the panel, then one per card).
+        $this->iconDefault = null;
+        $this->iconBy      = [];
+        if ( ! empty( $layout['icons'] ) ) {
+            $this->iconDefault = is_array( $ctx['own'] ?? null ) && is_string( $ctx['own']['icon'] ?? null ) ? $ctx['own']['icon'] : null;
+            foreach ( (array) ( $ctx['all'] ?? [] ) as $id => $entry ) {
+                if ( is_array( $entry ) && is_string( $entry['icon'] ?? null ) ) {
+                    $this->iconBy[ (int) $id ] = $entry['icon'];
+                }
+            }
+        }
         $viewport = 'viewport' === $layout['mode'];
         $this->avail = (int) $layout['width'] - ( $viewport ? 0 : 40 );
         $inner    = $this->content( $layout, $item, $ctx );
@@ -369,7 +386,7 @@ final class PanelBuilder
         if ( 'cards' === $style ) {
             return $this->b->group(
                 [ 'display' => 'flex', 'flexDirection' => 'column', 'rowGap' => '10px', 'alignItems' => 'flex-start' ],
-                $this->chip( 40, '15px' ) . $title . $desc . $sub,
+                $this->chip( 40, '15px', $this->iconBy[ (int) $it['id'] ] ?? $this->iconDefault ?? self::GLYPH ) . $title . $desc . $sub,
                 $this->surfaceCard( [ '18px', '18px', '18px', '18px' ] )
             );
         }
@@ -378,11 +395,11 @@ final class PanelBuilder
     }
 
     /** The round gradient chip with an arrow. */
-    private function chip( int $size = 34, string $glyph = '14px' ): string
+    private function chip( int $size = 34, string $glyph = '14px', string $code = self::GLYPH ): string
     {
         return $this->b->group(
             [ 'display' => 'flex', 'flexDirection' => 'column', 'alignItems' => 'center', 'justifyContent' => 'center' ],
-            $this->b->icon( self::GLYPH, $this->t['onAccent'], $glyph ),
+            $this->b->icon( $code, $this->t['onAccent'], $glyph ),
             array_merge( Blocks::gradient( $this->t['gradFrom'], $this->t['gradTo'] ), Blocks::border( '999px' ), Blocks::sizing( [ 'width' => $size . 'px', 'height' => $size . 'px' ] ) )
         );
     }
