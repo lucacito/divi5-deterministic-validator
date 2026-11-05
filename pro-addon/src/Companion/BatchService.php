@@ -26,7 +26,7 @@ final class BatchService
     public static function listBatches(): array
     {
         $since = gmdate( 'Y-m-d\TH:i:s\Z', time() - self::DAYS * DAY_IN_SECONDS );
-        $rows  = HistoryStore::rowsSince( $since, 1000 );
+        $rows  = AgentBatches::onlyPages( HistoryStore::rowsSince( $since, 1000 ), static fn ( int $id ): ?string => get_post_type( $id ) ?: null, EditTarget::ALLOWED_TYPES );
         $all   = AgentBatches::group( $rows, AgentSessions::all() );
         if ( current_user_can( 'manage_options' ) ) {
             return $all;
@@ -53,7 +53,7 @@ final class BatchService
         if ( null === $batch ) {
             return new \WP_Error( 'jhmg_batch_not_found', 'No such batch (batches are kept from the last ' . self::DAYS . ' days, and you see your own).', [ 'status' => 404 ] );
         }
-        $rowsAfter = HistoryStore::rowsSince( (string) $batch['started'], 2000 );
+        $rowsAfter = AgentBatches::onlyPages( HistoryStore::rowsSince( (string) $batch['started'], 2000 ), static fn ( int $id ): ?string => get_post_type( $id ) ?: null, EditTarget::ALLOWED_TYPES );
         $plan      = AgentBatchUndo::plan(
             $batch,
             static function ( int $pageId ): ?array {

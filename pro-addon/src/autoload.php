@@ -38,6 +38,7 @@ require_once __DIR__ . '/Settings/MenuBuilder.php';
 require_once __DIR__ . '/Kinds/MenuKind.php';
 require_once __DIR__ . '/Batch/Batches.php';
 require_once __DIR__ . '/Tools/SetFrontPage.php';
+require_once __DIR__ . '/Tools/ManageMegaMenu.php';
 require_once __DIR__ . '/Companion/AgentBatches.php';
 require_once __DIR__ . '/Companion/AgentBatchUndo.php';
 require_once __DIR__ . '/Companion/AgentSessions.php';

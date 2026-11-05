@@ -104,6 +104,31 @@ final class AgentBatches
         return $batches;
     }
 
+    /**
+     * Keeps only the rows of pages and Divi Projects. The history table also holds snapshots of Theme Builder header and footer
+     * layouts (written by the Pro layout tools and the mega menu): those are recorded batches with their own undo (undo_batch), and
+     * an agent batch must never list a layout it cannot restore.
+     *
+     * @param list<array<string,mixed>> $rows
+     * @param callable(int):?string $postType the post type of a post id, null when it does not exist
+     * @param list<string> $allowed
+     * @return list<array<string,mixed>>
+     */
+    public static function onlyPages( array $rows, callable $postType, array $allowed ): array
+    {
+        $cache = [];
+        $keep  = [];
+        foreach ( $rows as $r ) {
+            $id          = (int) $r['page_id'];
+            $cache[ $id ] = array_key_exists( $id, $cache ) ? $cache[ $id ] : $postType( $id );
+            if ( null !== $cache[ $id ] && in_array( $cache[ $id ], $allowed, true ) ) {
+                $keep[] = $r;
+            }
+        }
+
+        return $keep;
+    }
+
     /** The grouping key of one row's source. @param array<string,mixed> $r */
     public static function sourceKey( array $r ): string
     {

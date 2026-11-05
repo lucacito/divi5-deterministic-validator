@@ -18,10 +18,10 @@ class CompanionAbilitiesTest extends TestCase
 {
     private const RESERVED = [ 'divi', 'divi-ai', 'divi-mcp', 'et', 'et-builder', 'elegant-themes', 'core', 'mcp-adapter' ];
 
-    public function testSevenAbilitiesInTheProCategoryOutsideEveryReservedNamespace(): void
+    public function testNineAbilitiesInTheProCategoryOutsideEveryReservedNamespace(): void
     {
         $defs = ProAbilities::definitions();
-        $this->assertSame( [ 'audit-site', 'design-review-site', 'find-replace-site', 'list-batches', 'start-batch', 'end-batch', 'undo-batch' ], array_column( $defs, 'name' ) );
+        $this->assertSame( [ 'audit-site', 'design-review-site', 'find-replace-site', 'list-batches', 'start-batch', 'end-batch', 'get-mega-menu', 'set-mega-menu', 'undo-batch' ], array_column( $defs, 'name' ) );
         $this->assertSame( 'jhmg-ai-editor-pro', ProAbilities::CATEGORY );
         foreach ( $defs as $d ) {
             $full = ProAbilities::NAMESPACE . '/' . $d['name'];
@@ -31,13 +31,13 @@ class CompanionAbilitiesTest extends TestCase
             }
             $this->assertStringStartsWith( 'Call ', $d['description'] );
             $this->assertStringNotContainsString( "\u{2014}", $d['description'] . $d['label'] );
-            $this->assertSame( 'edit_pages', $d['capability'], 'the capability the matching Pro tool needs' );
+            $this->assertSame( str_contains( $d['name'], 'mega-menu' ) ? 'edit_theme_options' : 'edit_pages', $d['capability'], 'the capability the matching Pro tool needs' );
             $this->assertSame( 'object', $d['input']['type'] );
             $this->assertIsArray( $d['input']['properties'] );
         }
     }
 
-    public function testTheTwentyTwoExistingProToolsAreExactlyAsBefore(): void
+    public function testTheTwentyTwoEarlierProToolsAreExactlyAsBeforeAndTheMegaMenuToolIsTheTwentyThird(): void
     {
         $names = array_map( static fn ( $t ) => $t->name(), Tools::all() );
         sort( $names );
@@ -45,8 +45,9 @@ class CompanionAbilitiesTest extends TestCase
             'audit_site', 'build_site', 'bulk_adjust_prices', 'create_product', 'edit_theme_layout', 'find_replace_site', 'list_batches', 'list_theme_layouts',
             'manage_global_colors', 'manage_global_presets', 'manage_global_variables', 'manage_theme_template', 'propose_php_snippet', 'publish_page',
             'set_custom_css', 'set_custom_fields', 'set_front_page', 'set_primary_menu', 'switch_design', 'undo_batch', 'update_products', 'update_theme_layout',
-        ], $names );
-        $this->assertCount( 22, $names );
+        ], array_values( array_diff( $names, [ 'manage_mega_menu' ] ) ) );
+        $this->assertContains( 'manage_mega_menu', $names );
+        $this->assertCount( 23, $names );
     }
 
     public function testNoAbilityNeedsANewToolRouteOrOpenApiOperation(): void

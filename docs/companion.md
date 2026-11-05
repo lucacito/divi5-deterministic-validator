@@ -24,7 +24,10 @@ depend on it (capture works on any version, abilities do not).
 | Read and write pages (still validated) | `list-divi-pages`, `get-page-layout`, `update-page-layout`, `edit-page-content`, `create-page` |
 
 Pro adds, in the `jhmg-ai-editor-pro` category (needs the free plugin 4.17.0; an older one shows an admin notice asking you to update): `audit-site`, `design-review-site`, `find-replace-site`, `list-batches`,
-`start-batch`, `end-batch`, `undo-batch`.
+`start-batch`, `end-batch`, `undo-batch`, and for the header mega menu `get-mega-menu` (read-only) and `set-mega-menu` (apply, update or
+remove, with `dry_run`; the same change as the Mega menu tab and the `manage_mega_menu` tool, one undoable batch; it needs the
+Theme Builder permission). `list-batches` and `undo-batch` cover pages and Divi Projects; a header or footer edit is a recorded Pro
+batch and is undone with its recorded batch id.
 
 All abilities are private to signed-in users: they need the same permission as the plugin's tools (edit pages, plus edit
 permission on the page for anything that names one). Over REST they are at `/wp-json/wp-abilities/v1/abilities`; read-only ones

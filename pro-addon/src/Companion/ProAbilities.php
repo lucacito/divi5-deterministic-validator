@@ -10,6 +10,7 @@ use AiEditorDivi5\Pro\ToolRunner;
 use AiEditorDivi5\Pro\Tools\AuditSite;
 use AiEditorDivi5\Pro\Tools\FindReplaceSite;
 use AiEditorDivi5\Pro\Tools\ListBatches;
+use AiEditorDivi5\Pro\Tools\ManageMegaMenu;
 use AiEditorDivi5\Pro\Tools\UndoBatch;
 use AiEditorDivi5\WP\Abilities;
 use AiEditorDivi5\WP\DesignCheck;
@@ -133,6 +134,18 @@ final class ProAbilities
             [ 'name' => 'end-batch', 'label' => 'End the current batch', 'capability' => 'edit_pages', 'annotations' => self::WRITE, 'page_arg' => null,
               'description' => 'Call when a start-batch series of edits is finished.',
               'input' => $object( [] ) ],
+            [ 'name' => 'get-mega-menu', 'label' => 'Look at the header mega menu', 'capability' => 'edit_theme_options', 'annotations' => self::READ, 'page_arg' => null,
+              'description' => 'Call to see the state of the global header\'s mega menu: the 14 layouts to choose from, which menu items have a panel, which layout each uses, whether panels were changed in the Divi builder, and whether the menu has changed since. Read-only; needs the Theme Builder permission.',
+              'input' => $object( [] ) ],
+            [ 'name' => 'set-mega-menu', 'label' => 'Change the header mega menu', 'capability' => 'edit_theme_options', 'annotations' => self::WRITE, 'page_arg' => null,
+              'description' => 'Call to turn the global header\'s menu into a mega menu (apply, with a layout from get-mega-menu, for every item or for one with item_id), rebuild its panels from the menu as it is now (update), or put the plain menu back (remove). The header layout is checked, keeps an undo point and the change is one batch for undo-batch. Use dry_run to preview.',
+              'input' => $object( [
+                  'action'  => [ 'type' => 'string', 'enum' => [ 'apply', 'update', 'remove' ], 'description' => 'apply, update or remove' ],
+                  'layout'  => [ 'type' => 'string', 'enum' => \AiEditorDivi5\Pro\MegaMenu\Layouts::ids(), 'description' => 'Layout id for apply' ],
+                  'item_id' => [ 'type' => 'integer', 'description' => 'apply only: one menu item (a mega menu must already be applied)' ],
+                  'edited'  => [ 'type' => 'string', 'enum' => ManageMegaMenu::EDITED, 'description' => 'When a panel was changed in the Divi builder: keep or rebuild' ],
+                  'dry_run' => [ 'type' => 'boolean', 'description' => 'Preview only' ],
+              ], [ 'action' ] ) ],
             [ 'name' => 'undo-batch', 'label' => 'Undo a batch of changes', 'capability' => 'edit_pages', 'annotations' => self::WRITE, 'page_arg' => null,
               'description' => 'Call to put every page of a batch back as it was before, whichever tool changed it (use the id from list-batches). A page changed after the batch is skipped with the reason and a newer change is never overwritten. No page is deleted, and the undo can itself be undone. Use dry_run to preview.',
               'input' => $object( [ 'batch_id' => [ 'type' => [ 'integer', 'string' ], 'description' => 'The id from list-batches' ], 'dry_run' => [ 'type' => 'boolean', 'description' => 'Preview only' ], 'force' => [ 'type' => 'boolean', 'description' => 'Recorded batches only: restore items even if they changed since' ] ], [ 'batch_id' ] ) ],
@@ -150,6 +163,8 @@ final class ProAbilities
                 'list-batches'       => $this->listBatches( $args ),
                 'start-batch'        => $this->startBatch( $args ),
                 'end-batch'          => $this->endBatch(),
+                'get-mega-menu'      => $this->viaTool( self::tool( ManageMegaMenu::class ), [ 'action' => 'status' ] ),
+                'set-mega-menu'      => $this->viaTool( self::tool( ManageMegaMenu::class ), $args ),
                 'undo-batch'         => $this->undoBatch( $args ),
                 default              => new \WP_Error( 'jhmg_unknown_ability', 'Unknown ability.', [ 'status' => 404 ] ),
             };

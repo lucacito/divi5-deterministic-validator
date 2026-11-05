@@ -1,0 +1,59 @@
+{
+    "name": "manage_mega_menu",
+    "description": "Make the global header's menu a mega menu built from Divi modules. status (read-only) lists 14 layouts and menu items; apply sets a layout (item_id: one item); update rebuilds from the menu; remove restores it. Checked, undoable with undo_batch; dry_run previews. Needs the Theme Builder permission.",
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "action": {
+                "type": "string",
+                "enum": [
+                    "status",
+                    "apply",
+                    "update",
+                    "remove"
+                ],
+                "description": "status, apply, update or remove"
+            },
+            "layout": {
+                "type": "string",
+                "enum": [
+                    "columns-dark",
+                    "columns-footer",
+                    "feature-right",
+                    "feature-left",
+                    "feature-banner",
+                    "icons-cards",
+                    "icons-dark",
+                    "latest-cards",
+                    "latest-links-cards",
+                    "showcase-intro-cards",
+                    "showcase-tiles",
+                    "showcase-intro-links",
+                    "showcase-tiles-dark",
+                    "directory-counts"
+                ],
+                "description": "Layout id for apply (see status.layouts)"
+            },
+            "item_id": {
+                "type": "integer",
+                "description": "apply only: the menu item id to give this layout (a mega menu must already be applied)"
+            },
+            "edited": {
+                "type": "string",
+                "enum": [
+                    "keep",
+                    "rebuild"
+                ],
+                "description": "When a panel was changed in the Divi builder: keep your changes or rebuild it. Without it a real run stops and asks."
+            },
+            "dry_run": {
+                "type": "boolean",
+                "description": "Preview only; nothing is changed"
+            }
+        },
+        "required": [
+            "action"
+        ]
+    },
+    "capability": "edit_theme_options"
+}

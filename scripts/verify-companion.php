@@ -99,7 +99,7 @@ if ( 'pro' === $stage ) {
         update_option( 'aied_pro_premium_unlocked', 1, false );
 
         $mine = array_filter( wp_get_abilities(), static fn ( $a ) => str_starts_with( $a->get_name(), 'jhmg-ai-editor-pro/' ) );
-        $check( 7 === count( $mine ), '7 Pro abilities are registered (' . count( $mine ) . ')' );
+        $check( 9 === count( $mine ), '9 Pro abilities are registered (' . count( $mine ) . ')' );
         $check( wp_has_ability_category( 'jhmg-ai-editor-pro' ), 'the jhmg-ai-editor-pro category exists' );
 
         // licence and capability
@@ -150,7 +150,7 @@ if ( 'pro' === $stage ) {
         $check( ! is_wp_error( $end ) && true === $end['closed'], 'end-batch closes it' );
         $list = $call( 'list-batches' );
         $found = ! is_wp_error( $list ) ? array_values( array_filter( $list['agent_batches'], static fn ( $b ) => $b['id'] === $start['batch_id'] ) ) : [];
-        $check( 1 === count( $found ) && 2 === $found[0]['page_count'], 'list-batches shows the session with both pages ' . wp_json_encode( [ count( $found ), $found[0]['page_count'] ?? null, wp_json_encode( $found[0]['pages'] ?? null ), $pA, $pB, $pBad ] ) );
+        $check( 1 === count( $found ) && 2 === $found[0]['page_count'], 'list-batches shows the session with both pages' );
         $dry = $call( 'undo-batch', [ 'batch_id' => $start['batch_id'], 'dry_run' => true ] );
         $check( ! is_wp_error( $dry ) && 2 === count( $dry['would_restore'] ) && $newContent( 'pa' ) === get_post( $pA )->post_content, 'a dry run plans both restores and changes nothing' );
         $undo = $call( 'undo-batch', [ 'batch_id' => $start['batch_id'] ] );
@@ -179,6 +179,50 @@ if ( 'pro' === $stage ) {
         $list = $call( 'list-batches' );
         $inf = ! is_wp_error( $list ) ? array_values( array_filter( $list['agent_batches'], static fn ( $b ) => 'inferred' === $b['kind'] && in_array( $pC, array_column( $b['pages'], 'page_id' ), true ) ) ) : [];
         $check( [] !== $inf && $inf[0]['changes'] >= 2, 'without start-batch the changes are still grouped by source and time' );
+
+        // the mega menu tool and its abilities: the same write path as the Mega menu tab, one recorded batch, undone by undo_batch
+        $mm = $call( 'get-mega-menu' );
+        $check( ! is_wp_error( $mm ) && isset( $mm['layouts'] ) && 14 === count( $mm['layouts'] ), 'get-mega-menu lists the 14 layouts' );
+        $headerBefore = null;
+        $headerId     = 0;
+        if ( ! is_wp_error( $mm ) && $mm['header_found'] && $mm['has_menu_module'] && [] !== $mm['items'] ) {
+            $countBatches = static fn (): int => count( (array) ( $call( 'list-batches', [ 'limit' => 20 ] )['recorded_batches']['batches'] ?? [] ) );
+            $batchesBefore = $countBatches();
+            $dry           = $call( 'set-mega-menu', [ 'action' => 'apply', 'layout' => 'columns-dark', 'dry_run' => true ] );
+            $check( ! is_wp_error( $dry ) && true === ( $dry['dry_run'] ?? null ) && true === ( $dry['valid'] ?? null ), 'set-mega-menu dry_run previews a valid layout' );
+            $headerId     = (int) ( $dry['layout']['layout_id'] ?? 0 );
+            $headerBefore = (string) get_post( $headerId )->post_content;
+            $check( $batchesBefore === $countBatches(), 'and records no batch' );
+            $check( $headerBefore === (string) get_post( $headerId )->post_content, 'and leaves the header as it was' );
+            try {
+                $apply = $call( 'set-mega-menu', [ 'action' => 'apply', 'layout' => 'columns-dark', 'edited' => 'rebuild' ] );
+                $check( ! is_wp_error( $apply ) && true === ( $apply['changed'] ?? false ) && true === ( $apply['batch']['undoable'] ?? false ), 'set-mega-menu apply changes the header and records an undoable batch' );
+                $check( $headerBefore !== (string) get_post( $headerId )->post_content, 'the global header layout changed' );
+                $list = $call( 'list-batches' );
+                $listed = ! is_wp_error( $list ) ? array_merge( ...array_map( static fn ( $b ) => array_column( $b['pages'], 'page_id' ), $list['agent_batches'] ) ) : [ $headerId ];
+                $check( ! in_array( $headerId, $listed, true ), 'the header edit is NOT listed as an agent batch (agent batches are pages and Projects)' );
+                $recorded = ! is_wp_error( $list ) ? array_column( (array) ( $list['recorded_batches']['batches'] ?? [] ), 'id' ) : [];
+                $check( in_array( (int) ( $apply['batch']['id'] ?? 0 ), array_map( 'intval', $recorded ), true ), 'it is a recorded Pro batch' );
+                $undone = $call( 'undo-batch', [ 'batch_id' => (int) ( $apply['batch']['id'] ?? 0 ) ] );
+                $check( ! is_wp_error( $undone ) && true === ( $undone['fully_undone'] ?? false ), 'the existing undo_batch undoes it' );
+                $check( $headerBefore === (string) get_post( $headerId )->post_content, 'and the header is back byte for byte' );
+            } finally {
+                if ( $headerId > 0 && $headerBefore !== null && $headerBefore !== (string) get_post( $headerId )->post_content ) {
+                    $check( false, 'the gate had to restore the header by hand' );
+                    wp_update_post( wp_slash( [ 'ID' => $headerId, 'post_content' => $headerBefore ] ) );
+                    \AiEditorDivi5\Pro\ThemeBuilder\LayoutCaches::clear();
+                }
+            }
+        } else {
+            WP_CLI::log( 'INFO  this site has no global header with a Menu module and menu items: the mega menu write checks were skipped' );
+        }
+        $r = wp_get_ability( 'jhmg-ai-editor-pro/set-mega-menu' )->execute( [ 'action' => 'status' ] );
+        $check( is_wp_error( $r ), 'set-mega-menu refuses the read-only action (core validates the input against its schema)' );
+        $authorId2 = wp_insert_user( [ 'user_login' => 'aied_gate_pro_author2', 'user_pass' => wp_generate_password(), 'role' => 'editor' ] );
+        $created[] = static fn () => wp_delete_user( $authorId2 );
+        wp_set_current_user( $authorId2 );
+        $check( true !== wp_get_ability( 'jhmg-ai-editor-pro/get-mega-menu' )->check_permissions( [] ), 'an editor (no edit_theme_options) is refused the mega menu abilities' );
+        wp_set_current_user( 1 );
 
         // strict validation: flags after the save, blocks nothing
         update_option( \AiEditorDivi5\Pro\Companion\StrictMode::OPTION, '1', false );

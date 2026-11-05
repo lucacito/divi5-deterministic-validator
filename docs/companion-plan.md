@@ -298,3 +298,10 @@ Things that differ from the plan:
   no snapshot, such as the builder when it is switched off). History times have one-second resolution.
 * The companion Pro features need free 4.17.0. They are guarded at run time and not listed in `Compat::REQUIRED_CLASSES`, so a
   Pro add-on running beside an older free plugin keeps every existing tool.
+
+## Mega menu (approved 2026-11-05)
+
+The mega menu branch (`feat/pro-megamenu`) was already part of this branch's history, so there was nothing to merge. Added on top:
+`manage_mega_menu` as the 23rd Pro tool (MCP and REST only; OpenAPI stays at 16 free + 14 Pro = 30), the abilities `get-mega-menu` and
+`set-mega-menu`, goldens for the new surface (`pro-addon/tests/golden/`), a fix so agent batches list only page and Project rows (a
+header edit is a recorded batch undone by `undo_batch`), and an uninstall fix for the mega menu's option and transients.
