@@ -70,6 +70,7 @@ class ThemeBuilderGuardTest extends TestCase
         $found  = [];
         $design = [];
         $switch = [];
+        $companion = [];
         foreach ( new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( self::root(), \FilesystemIterator::SKIP_DOTS ) ) as $file ) {
             if ( 'php' !== $file->getExtension() ) {
                 continue;
@@ -78,8 +79,11 @@ class ThemeBuilderGuardTest extends TestCase
             if ( preg_match_all( '/AiEditorDivi5\\\\WP\\\\([A-Za-z0-9_]+)/', $code, $m ) ) {
                 $isDesign = str_contains( str_replace( '\\', '/', $file->getPath() ), '/src/Design' );
                 $isSwitch = 'SwitchDesign.php' === $file->getFilename();
+                $isCompanion = str_contains( str_replace( '\\', '/', $file->getPath() ), '/src/Companion' ) || 'StrictModePanel.php' === $file->getFilename();
                 foreach ( $m[1] as $name ) {
-                    if ( $isSwitch ) {
+                    if ( $isCompanion ) {
+                        $companion[ 'AiEditorDivi5\\WP\\' . $name ] = $file->getFilename();
+                    } elseif ( $isSwitch ) {
                         $switch[ 'AiEditorDivi5\\WP\\' . $name ] = $file->getFilename();
                     } elseif ( $isDesign ) {
                         $design[ 'AiEditorDivi5\\WP\\' . $name ] = $file->getFilename();
@@ -107,6 +111,13 @@ class ThemeBuilderGuardTest extends TestCase
 
         // The switch_design tool (Task 8) is the run-time guard for those classes: every free class it or the engine uses is
         // either in Compat::REQUIRED_CLASSES (every Pro tool needs it) or in SwitchDesign::REQUIRED_FREE (only this tool needs it).
+        // The companion features (src/Companion, StrictModePanel) need free classes that arrived in 4.17.0, so they are guarded at run
+        // time by ProAbilities::freeSupportsCompanion() and listed in ProAbilities::REQUIRED_FREE, never in Compat::REQUIRED_CLASSES.
+        $this->assertNotSame( [], $companion, 'the scan found the companion files' );
+        foreach ( $companion as $class => $where ) {
+            $this->assertContains( $class, [ ...\AiEditorDivi5\Pro\Compat::REQUIRED_CLASSES, ...\AiEditorDivi5\Pro\Companion\ProAbilities::REQUIRED_FREE ], "{$where} references {$class}, which neither Compat::REQUIRED_CLASSES nor ProAbilities::REQUIRED_FREE lists" );
+        }
+
         $this->assertNotSame( [], $switch, 'the scan found the switch tool' );
         $guarded = [ ...\AiEditorDivi5\Pro\Compat::REQUIRED_CLASSES, ...\AiEditorDivi5\Pro\Tools\SwitchDesign::REQUIRED_FREE ];
         foreach ( [ ...$switch, ...$design ] as $class => $where ) {

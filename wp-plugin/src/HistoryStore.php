@@ -181,6 +181,50 @@ final class HistoryStore
         return $out;
     }
 
+    /**
+     * Every snapshot saved at or after `$sinceIso` (UTC, "Y-m-d\TH:i:s\Z"), across all pages, newest first, without any snapshot
+     * content. Lets an add-on group changes into batches by who made them and when.
+     *
+     * @return list<array{page_id:int, version_id:int, saved_at:string, tool:string, actor:int, label:?string}>
+     */
+    public static function rowsSince( string $sinceIso, int $limit = 500 ): array
+    {
+        global $wpdb;
+
+        if ( ! HistoryTable::hasTable() || 1 !== preg_match( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/', $sinceIso ) ) {
+            return [];
+        }
+        $table = HistoryTable::name();
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $rows = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT page_id, version_id, saved_at, tool, actor, label
+                 FROM {$table}
+                 WHERE saved_at >= %s
+                 ORDER BY saved_at DESC, page_id DESC, version_id DESC
+                 LIMIT %d",
+                $sinceIso,
+                max( 0, min( 2000, $limit ) )
+            ),
+            ARRAY_A
+        );
+        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+
+        $out = [];
+        foreach ( is_array( $rows ) ? $rows : [] as $row ) {
+            $out[] = [
+                'page_id'    => (int) $row['page_id'],
+                'version_id' => (int) $row['version_id'],
+                'saved_at'   => (string) $row['saved_at'],
+                'tool'       => (string) $row['tool'],
+                'actor'      => (int) $row['actor'],
+                'label'      => isset( $row['label'] ) ? (string) $row['label'] : null,
+            ];
+        }
+
+        return $out;
+    }
+
     /** `delete_post` action: permanently deleting a page removes its history (trashing does not). */
     public static function deleteForPage( int $pageId ): void
     {

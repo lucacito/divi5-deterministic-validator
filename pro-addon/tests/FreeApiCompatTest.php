@@ -52,6 +52,13 @@ class FreeApiCompatTest extends TestCase
             [ $w . 'BlockAttrs', 'decode', [ 'json' => 'string' ], '?stdClass' ],
             [ $w . 'KitResolver', 'leftovers', [ 'markup' => 'string' ], 'array' ],
             [ $w . 'LanguageResolver', 'leftovers', [ 'markup' => 'string' ], 'array' ],
+            // The companion abilities (free 4.17.0; Companion\*): registered only when ProAbilities::freeSupportsCompanion() says these exist.
+            [ $w . 'Abilities', 'args', [ 'def' => 'array', 'category' => 'string', 'permission' => 'callable', 'execute' => 'callable' ], 'array' ],
+            [ $w . 'Abilities', 'permit', [ 'def' => 'array', 'input' => 'mixed', 'capability' => 'string' ], 'bool' ],
+            [ $w . 'DesignCheck', 'run', [ 'content' => 'string', 'known' => '?array', 'moduleHasPreset' => '?callable' ], 'array' ],
+            [ $w . 'HistoryStore', 'rowsSince', [ 'sinceIso' => 'string', 'limit' => 'int' ], 'array' ],
+            [ $w . 'HistoryCapture', 'currentSource', [], 'array' ],
+            [ $w . 'HistoryCapture', 'isSuspended', [], 'bool' ],
         ];
     }
 

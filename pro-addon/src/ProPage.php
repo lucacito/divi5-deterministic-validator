@@ -88,6 +88,14 @@ final class ProPage
         $notice = isset( $_GET['aied_pro_notice'] ) ? sanitize_key( wp_unslash( (string) $_GET['aied_pro_notice'] ) ) : '';
         ?>
         <div class="aied-card aied-pro">
+            <h2><?php esc_html_e( 'The design and safety layer for Divi MCP', 'jhmg-ai-editor-for-divi-5-pro' ); ?></h2>
+            <p><?php esc_html_e( 'Build with Divi\'s own MCP or any other tool. Pro adds what keeps a whole site good: a site-wide design review that returns one prioritised fix list, audits of every page, header and footer, undo for a whole batch of changes whichever tool made them, and launch control for the front page and the menu.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></p>
+            <ul class="ul-disc">
+                <li><?php esc_html_e( 'Ask your assistant to call design-review-site after it builds, and to wrap a long job in start-batch and end-batch so you can undo all of it in one step.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></li>
+                <li><?php esc_html_e( 'These abilities need WordPress 6.9 or later. Every Pro tool also keeps working over MCP and REST as before.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></li>
+            </ul>
+        </div>
+        <div class="aied-card aied-pro">
             <h2><?php esc_html_e( 'Pro licence', 'jhmg-ai-editor-for-divi-5-pro' ); ?></h2>
             <?php if ( isset( $notices[ $notice ] ) ) : ?>
                 <div class="notice notice-<?php echo esc_attr( $notices[ $notice ][0] ); ?> inline"><p><?php echo esc_html( $notices[ $notice ][1] ); ?></p></div>

@@ -50,6 +50,22 @@ final class HistoryCapture
         }
     }
 
+    /** True while this plugin's own write path (which snapshots and validates for itself) is saving. */
+    public static function isSuspended(): bool
+    {
+        return self::$suspended > 0;
+    }
+
+    /**
+     * Where the save that is happening right now came from, by the same rules that label a snapshot.
+     *
+     * @return array{type:string, label:?string}
+     */
+    public static function currentSource(): array
+    {
+        return HistorySources::classify( self::requestContext() );
+    }
+
     public static function reset(): void
     {
         self::$suspended = 0;

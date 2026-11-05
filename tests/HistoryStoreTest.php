@@ -141,6 +141,20 @@ class HistoryStoreTest extends TestCase
         $this->assertSame( [], HistoryStore::recent( 0 ) );
     }
 
+    public function testRowsSinceListsEverySnapshotFromATimeOnWithoutContent(): void
+    {
+        HistoryStore::save( 5, [ 'next' => 3, 'items' => [ $this->item( 2, 'a2', '2026-01-02T00:00:00Z' ), $this->item( 1, 'a1', '2026-01-01T00:00:00Z' ) ] ] );
+        HistoryStore::save( 6, [ 'next' => 2, 'items' => [ $this->item( 1, 'b1', '2026-03-01T00:00:00Z' ) ] ] );
+
+        $rows = HistoryStore::rowsSince( '2026-01-02T00:00:00Z' );
+        $this->assertSame( [ 6, 5 ], array_column( $rows, 'page_id' ), 'newest first, the older version of page 5 is before the cut' );
+        $this->assertSame( [ 'page_id', 'version_id', 'saved_at', 'tool', 'actor', 'label' ], array_keys( $rows[0] ) );
+        $this->assertCount( 3, HistoryStore::rowsSince( '2025-01-01T00:00:00Z' ) );
+        $this->assertCount( 1, HistoryStore::rowsSince( '2025-01-01T00:00:00Z', 1 ) );
+        $this->assertSame( [], HistoryStore::rowsSince( '2027-01-01T00:00:00Z' ) );
+        $this->assertSame( [], HistoryStore::rowsSince( "2026-01-01' OR 1=1 --" ), 'a malformed time is refused before it reaches SQL' );
+    }
+
     public function testAFailedReadIsReportedAndDoesNotLookLikeAnEmptyHistory(): void
     {
         HistoryStore::save( 5, [ 'next' => 2, 'items' => [ $this->item( 1, 'a' ) ] ] );
