@@ -31,10 +31,7 @@ final class PanelBuilder
     /** The owner's own content for the panel being built (headline, text, button, link, picture), or null when the layout takes none. */
     private ?array $own = null;
 
-    /** The icon every card of this panel gets unless it has its own (a character reference like `&#xf015;`), and the cards that have their own: sub-item id => code. */
-    private ?string $iconDefault = null;
-
-    /** @var array<int,string> */
+    /** The icons the owner chose, per link or card: sub-item id => a character reference like `&#xf015;`. Anything without a choice gets the arrow. @var array<int,string> */
     private array $iconBy = [];
 
     /** How many cards of this panel have been given their entrance so far: each starts 70 ms after the one before (at most 5 steps). */
@@ -54,11 +51,9 @@ final class PanelBuilder
         $this->t       = Palette::tone( (string) $layout['tone'] );
         $this->entered = 0;
         $this->own     = ! empty( $layout['content'] ) && is_array( $ctx['own'] ?? null ) ? $ctx['own'] : null;
-        // The icons the owner chose, for the layouts whose cards have one (a choice on the panel, then one per card).
-        $this->iconDefault = null;
-        $this->iconBy      = [];
+        // The icons the owner chose, for the layouts whose cards or rows have one (one per link or card).
+        $this->iconBy = [];
         if ( ! empty( $layout['icons'] ) ) {
-            $this->iconDefault = is_array( $ctx['own'] ?? null ) && is_string( $ctx['own']['icon'] ?? null ) ? $ctx['own']['icon'] : null;
             foreach ( (array) ( $ctx['all'] ?? [] ) as $id => $entry ) {
                 if ( is_array( $entry ) && is_string( $entry['icon'] ?? null ) ) {
                     $this->iconBy[ (int) $id ] = $entry['icon'];
@@ -287,7 +282,7 @@ final class PanelBuilder
     /** An icon, the link and (when known) the post count at the far end; the whole row takes a soft tint while the pointer is on it. */
     private function directoryRow( array $it ): string
     {
-        $code  = $this->iconBy[ (int) $it['id'] ] ?? $this->iconDefault ?? self::GLYPH;
+        $code  = $this->iconBy[ (int) $it['id'] ] ?? self::GLYPH;
         $icon  = $this->b->group(
             [ 'display' => 'flex', 'flexDirection' => 'column', 'alignItems' => 'center', 'justifyContent' => 'center' ],
             $this->b->icon( $code, $this->t['muted'], '15px' ),
@@ -506,7 +501,7 @@ final class PanelBuilder
         if ( 'cards' === $style ) {
             return $this->b->group(
                 [ 'display' => 'flex', 'flexDirection' => 'column', 'rowGap' => '10px', 'alignItems' => 'flex-start' ],
-                $this->chip( 40, '15px', $this->iconBy[ (int) $it['id'] ] ?? $this->iconDefault ?? self::GLYPH ) . $title . $desc . $sub,
+                $this->chip( 40, '15px', $this->iconBy[ (int) $it['id'] ] ?? self::GLYPH ) . $title . $desc . $sub,
                 $this->surfaceCard( [ '18px', '18px', '18px', '18px' ] )
             );
         }

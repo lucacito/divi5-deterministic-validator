@@ -739,7 +739,7 @@ class MegaMenuPanelTest extends TestCase
             [ MegaMenuPanel::ACTION_CONTENT_RESET, 'handleContentReset', [ 'item' => '2' ] ],
             [ MegaMenuPanel::ACTION_EDITS, 'handleEdits', [ 'item' => '2', 'edits' => 'keep' ] ],
             [ MegaMenuPanel::ACTION_RESOLVE, 'handleResolve', [ 'choice' => 'keep' ] ],
-            [ MegaMenuPanel::ACTION_ICONS, 'handleIcons', [ 'item' => '2', 'icon' => 'rocket' ] ],
+            [ MegaMenuPanel::ACTION_ICONS, 'handleIcons', [ 'item' => '2', 'sub' => [ '3' => 'rocket' ] ] ],
         ];
         foreach ( $cases as [ $action, $method, $fields ] ) {
             $this->unlocked = false;
@@ -1494,17 +1494,19 @@ class MegaMenuPanelTest extends TestCase
         return $service;
     }
 
-    public function testTheContentTabOfAnIconLayoutIsAnIconPickerWithOneChoicePerCard(): void
+    public function testTheContentTabOfAnIconLayoutHasOneIconChoicePerCardAndNoneForThePanel(): void
     {
         $service = $this->appliedWithIcons();
         $html    = $this->renderAt( $service, [ 'item' => '2', 'etab' => 'content' ] );
         $this->assertStringContainsString( 'value="' . MegaMenuPanel::ACTION_ICONS . '"', $html );
-        $this->assertSame( count( \AiEditorDivi5\Pro\MegaMenu\MegaIcons::all() ), preg_match_all( '/type="radio" name="icon"/', $html ) );
-        $this->assertStringContainsString( 'value="arrow-right" checked', $html, 'no choice yet: the arrow is the one shown as chosen' );
+        $this->assertSame( 0, preg_match_all( '/type="radio" name="icon"/', $html ), 'no icon for the whole panel any more' );
+        $this->assertStringNotContainsString( 'Icon for the cards of this panel', $html );
+        $this->assertStringContainsString( 'Icon of each card', $html );
         $this->assertStringContainsString( 'name="sub[3]"', $html );
         $this->assertStringContainsString( 'name="sub[4]"', $html );
         $this->assertStringNotContainsString( 'name="sub[21]"', $html, 'only the cards of this panel' );
-        $this->assertSame( 2 * ( 1 + count( \AiEditorDivi5\Pro\MegaMenu\MegaIcons::all() ) ), preg_match_all( '/<option value="[a-z-]*"( data-glyph="[0-9a-f]{4}")?/', $html ), 'every card choice offers "same as the panel" and every icon' );
+        $this->assertSame( 2 * count( \AiEditorDivi5\Pro\MegaMenu\MegaIcons::all() ), preg_match_all( '/<option value="[a-z-]*"( data-glyph="[0-9a-f]{4}")?/', $html ), 'every card offers the arrow (as its default) and every other icon' );
+        $this->assertSame( 2, substr_count( $html, '>Arrow (default)</option>' ) );
         $this->assertStringContainsString( 'Save icons and update the header', $html );
         $this->assertStringNotContainsString( 'Reset to the arrow', $html, 'nothing to reset yet' );
         $this->assertStringNotContainsString( 'Headline', $html, 'icon layouts have no headline or picture' );
@@ -1516,8 +1518,8 @@ class MegaMenuPanelTest extends TestCase
         $service = $this->service( MegaMenuFixture::menus()['directory'] );
         $service->apply( 'directory-counts' );
         $html = $this->renderAt( $service, [ 'item' => '1', 'etab' => 'content' ] );
-        $this->assertStringContainsString( 'Icon for the links of this panel', $html );
-        $this->assertStringContainsString( 'Icon of one link', $html );
+        $this->assertStringContainsString( 'Icon of each link', $html );
+        $this->assertStringNotContainsString( 'Icon for the links of this panel', $html );
         foreach ( [ 3, 4, 5, 7, 8, 10, 11 ] as $row ) {
             $this->assertStringContainsString( 'name="sub[' . $row . ']"', $html, 'row ' . $row );
         }
@@ -1531,52 +1533,64 @@ class MegaMenuPanelTest extends TestCase
     {
         $service = $this->appliedWithIcons();
         $before  = $this->headerContent();
-        $this->postAs( MegaMenuPanel::ACTION_ICONS, [ 'item' => '2', 'icon' => 'rocket', 'sub' => [ '3' => '', '4' => 'home', '999' => 'star' ] ] );
+        $this->postAs( MegaMenuPanel::ACTION_ICONS, [ 'item' => '2', 'sub' => [ '3' => 'rocket', '4' => 'home', '999' => 'star' ] ] );
         $this->panel( $service )->handleIcons();
         $this->assertSame( 'megamenu_icons_saved', $this->redirectNotice() );
         $this->assertSame( '2', $this->redirectArgs()['item'] );
         $this->assertSame( 'content', $this->redirectArgs()['etab'] );
         $panel = HeaderEdit::panelBlocks( $this->headerContent() );
         $this->assertSame( 1, substr_count( $panel[2], 'u0026#xf015;' ), 'Build got the house' );
-        $this->assertSame( 1, substr_count( $panel[2], 'u0026#xf135;' ), 'Design got the panel\'s rocket' );
+        $this->assertSame( 1, substr_count( $panel[2], 'u0026#xf135;' ), 'Design got the rocket' );
         $this->assertSame( 0, substr_count( $panel[20], 'u0026#xf135;' ), 'the other panel is untouched' );
         $this->assertNotSame( $before, $this->headerContent() );
         $this->assertNull( $service->status()['drift'] );
-        $this->assertSame( [], array_diff_key( $service->content()->all(), [ 2 => 1, 4 => 1 ] ), 'an id that is not a card of this panel is ignored' );
+        $this->assertSame( [], array_diff_key( $service->content()->all(), [ 3 => 1, 4 => 1 ] ), 'an id that is not a card of this panel is ignored' );
 
         $html = $this->renderAt( $service, [ 'item' => '2', 'etab' => 'content' ] );
-        $this->assertStringContainsString( 'value="rocket" checked', $html );
         $this->assertMatchesRegularExpression( '#<option value="home" data-glyph="f015" selected=\'selected\'>Home#', $html );
+        $this->assertMatchesRegularExpression( '#<option value="rocket" data-glyph="f135" selected=\'selected\'>Launch#', $html );
         $this->assertStringContainsString( 'Reset to the arrow', $html );
         $this->assertStringContainsString( '>Custom content</span>', $html );
     }
 
-    public function testResettingGoesBackToTheArrowAndChoosingTheArrowForThePanelClearsTheChoice(): void
+    public function testSavingClearsAChoiceForTheWholePanelAnEarlierBuildStored(): void
     {
         $service = $this->appliedWithIcons();
         $service->content()->setIcon( 2, 'rocket' );
         $service->content()->setIcon( 3, 'star' );
         $service->refresh();
-        $this->assertStringContainsString( 'u0026#xf135;', $this->headerContent() );
-
-        $this->postAs( MegaMenuPanel::ACTION_ICONS, [ 'item' => '2', 'icon' => 'arrow-right', 'sub' => [ '3' => 'star' ] ] );
-        $this->panel( $service )->handleIcons();
-        $this->assertSame( '', $service->content()->get( 2 )['icon'] );
-        $this->assertSame( 'star', $service->content()->get( 3 )['icon'] );
-        $this->assertStringNotContainsString( 'u0026#xf135;', $this->headerContent() );
+        $this->assertStringNotContainsString( 'u0026#xf135;', $this->headerContent(), 'a panel-wide icon is not written any more' );
         $this->assertStringContainsString( 'u0026#xf005;', $this->headerContent() );
 
-        $this->postAs( MegaMenuPanel::ACTION_ICONS, [ 'item' => '2', 'reset' => '1' ] );
+        $this->postAs( MegaMenuPanel::ACTION_ICONS, [ 'item' => '2', 'icon' => 'rocket', 'sub' => [ '3' => 'star' ] ] );
         $this->panel( $service )->handleIcons();
-        $this->assertSame( [], $service->content()->all() );
-        $this->assertStringNotContainsString( 'u0026#xf005;', $this->headerContent() );
+        $this->assertSame( '', $service->content()->get( 2 )['icon'], 'the panel-wide value is cleared and a posted one is ignored' );
+        $this->assertSame( 'star', $service->content()->get( 3 )['icon'] );
+        $this->assertStringNotContainsString( 'u0026#xf135;', $this->headerContent() );
     }
 
-    public function testAnUnknownIconOrItemIsRefusedAndNothingIsStored(): void
+    public function testResettingGoesBackToTheArrowAndChoosingTheArrowForACardClearsItsChoice(): void
+    {
+        $service = $this->appliedWithIcons();
+        $service->content()->setIcon( 3, 'star' );
+        $service->refresh();
+        $this->postAs( MegaMenuPanel::ACTION_ICONS, [ 'item' => '2', 'sub' => [ '3' => '', '4' => 'home' ] ] );
+        $this->panel( $service )->handleIcons();
+        $this->assertSame( '', $service->content()->get( 3 )['icon'] );
+        $this->assertStringNotContainsString( 'u0026#xf005;', $this->headerContent() );
+        $this->assertStringContainsString( 'u0026#xf015;', $this->headerContent() );
+
+        $this->postAs( MegaMenuPanel::ACTION_ICONS, [ 'item' => '2', 'sub' => [ '4' => 'arrow-right' ], 'reset' => '1' ] );
+        $this->panel( $service )->handleIcons();
+        $this->assertSame( [], $service->content()->all() );
+        $this->assertStringNotContainsString( 'u0026#xf015;', $this->headerContent() );
+    }
+
+    public function testAnUnknownItemIsRefusedAndNothingIsStored(): void
     {
         $service = $this->appliedWithIcons();
         $before  = $this->headerContent();
-        foreach ( [ [ 'item' => '2', 'icon' => 'not-an-icon' ], [ 'item' => '2', 'icon' => [ 'rocket' ] ], [ 'item' => '1', 'icon' => 'rocket' ], [ 'icon' => 'rocket' ] ] as $bad ) {
+        foreach ( [ [ 'item' => '1', 'sub' => [ '3' => 'star' ] ], [ 'item' => '999', 'sub' => [ '3' => 'star' ] ], [ 'sub' => [ '3' => 'star' ] ] ] as $bad ) {
             $this->postAs( MegaMenuPanel::ACTION_ICONS, $bad );
             $this->panel( $service )->handleIcons();
             $this->assertSame( 'megamenu_error', $this->redirectNotice() );
@@ -1585,16 +1599,24 @@ class MegaMenuPanelTest extends TestCase
         $this->assertSame( $before, $this->headerContent() );
     }
 
+    public function testAnIconNotInTheSetIsNotStored(): void
+    {
+        $service = $this->appliedWithIcons();
+        $this->postAs( MegaMenuPanel::ACTION_ICONS, [ 'item' => '2', 'sub' => [ '3' => 'not-an-icon', '4' => [ 'star' ] ] ] );
+        $this->panel( $service )->handleIcons();
+        $this->assertSame( [], $service->content()->all() );
+    }
+
     public function testAnIconChoiceForALayoutWithoutIconsIsKeptAndTheHeaderIsLeftAlone(): void
     {
         $service = $this->service( $this->twoPanelMenu() );
         $service->apply( 'columns-footer' );
         $before = $this->headerContent();
-        $this->postAs( MegaMenuPanel::ACTION_ICONS, [ 'item' => '2', 'icon' => 'rocket' ] );
+        $this->postAs( MegaMenuPanel::ACTION_ICONS, [ 'item' => '2', 'sub' => [ '3' => 'rocket' ] ] );
         $this->panel( $service )->handleIcons();
         $this->assertSame( 'megamenu_icons_noslot', $this->redirectNotice() );
         $this->assertSame( $before, $this->headerContent() );
-        $this->assertSame( 'rocket', $service->content()->get( 2 )['icon'], 'kept for when the layout has icons' );
+        $this->assertSame( 'rocket', $service->content()->get( 3 )['icon'], 'kept for when the layout has icons' );
         $service->apply( 'icons-cards' );
         $this->assertStringContainsString( 'u0026#xf135;', $this->headerContent() );
     }
@@ -1606,6 +1628,6 @@ class MegaMenuPanelTest extends TestCase
         $item = $service->status()['items'][0];
         $this->assertTrue( $item['icons'] );
         $this->assertSame( [ [ 'id' => 3, 'title' => 'Design', 'icon' => '' ], [ 'id' => 4, 'title' => 'Build', 'icon' => 'home' ] ], $item['children'] );
-        $this->assertSame( '', $item['icon'] );
+        $this->assertArrayNotHasKey( 'icon', $item, 'an icon belongs to a link or card, not to the panel' );
     }
 }

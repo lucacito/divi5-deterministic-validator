@@ -461,47 +461,35 @@ final class MegaMenuPanel
     }
 
     /**
-     * The icons of the icon layouts: one for the whole panel and, if wanted, another for single cards. The tiles show the real glyphs, drawn
-     * with the Font Awesome file Divi ships (see styles()), so what is chosen here is what the card gets.
+     * The icons of the icon layouts: one choice per link or card (the arrow unless chosen). The small preview beside each choice shows the real
+     * glyph, drawn with the Font Awesome file Divi ships (see styles()), so what is chosen here is what the card gets.
      *
      * @param array<string,mixed> $sel
      */
     private function iconsTab( array $sel ): void
     {
         $fontOk = '' !== $this->fontUrl();
-        $mine   = (string) $sel['icon'];
         ?>
         <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="aied-mm-iconsform">
             <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_ICONS ); ?>">
             <input type="hidden" name="item" value="<?php echo esc_attr( (string) $sel['id'] ); ?>">
             <?php wp_nonce_field( self::ACTION_ICONS ); ?>
-            <div class="aied-mm-field">
-                <span class="aied-mm-label" id="aied-mm-iconlabel"><?php 'link' === ( $sel['iconUnit'] ?? 'card' ) ? esc_html_e( 'Icon for the links of this panel', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html_e( 'Icon for the cards of this panel', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
-                <div class="aied-mm-icongrid<?php echo $fontOk ? '' : ' is-text'; ?>" role="radiogroup" aria-labelledby="aied-mm-iconlabel">
-                    <?php foreach ( MegaIcons::all() as $i ) : ?>
-                        <label class="aied-mm-ic" title="<?php echo esc_attr( $i['label'] ); ?>">
-                            <input type="radio" name="icon" value="<?php echo esc_attr( $i['id'] ); ?>"<?php echo ( '' === $mine ? MegaIcons::DEFAULT === $i['id'] : $mine === $i['id'] ) ? ' checked' : ''; ?>>
-                            <span class="aied-mm-glyph" aria-hidden="true"><?php echo esc_html( $fontOk ? html_entity_decode( '&#x' . $i['code'] . ';', ENT_HTML5, 'UTF-8' ) : $i['label'] ); ?></span>
-                            <span class="screen-reader-text"><?php echo esc_html( $i['label'] ); ?></span>
-                        </label>
-                    <?php endforeach; ?>
-                </div>
-                <span class="description"><?php 'link' === ( $sel['iconUnit'] ?? 'card' ) ? esc_html_e( 'Every link of this panel gets this icon, unless you choose another one below.', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html_e( 'Every card of this panel gets this icon, unless you choose another one below.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
-            </div>
             <?php if ( [] !== $sel['children'] ) : ?>
                 <div class="aied-mm-field">
-                    <span class="aied-mm-label"><?php 'link' === ( $sel['iconUnit'] ?? 'card' ) ? esc_html_e( 'Icon of one link', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html_e( 'Icon of one card', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
+                    <span class="aied-mm-label"><?php 'link' === ( $sel['iconUnit'] ?? 'card' ) ? esc_html_e( 'Icon of each link', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html_e( 'Icon of each card', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
                     <div class="aied-mm-cardicons">
                         <?php foreach ( $sel['children'] as $c ) : ?>
                             <div class="aied-mm-cardicon">
                                 <label for="aied-mm-sub-<?php echo esc_attr( (string) $c['id'] ); ?>"><?php echo esc_html( $c['title'] ); ?></label>
                                 <?php if ( $fontOk ) : ?>
-                                    <span class="aied-mm-glyph aied-mm-glyph-sm" data-for="aied-mm-sub-<?php echo esc_attr( (string) $c['id'] ); ?>" aria-hidden="true"><?php echo '' === $c['icon'] ? '' : esc_html( html_entity_decode( (string) MegaIcons::unicode( $c['icon'] ), ENT_HTML5, 'UTF-8' ) ); ?></span>
+                                    <span class="aied-mm-glyph aied-mm-glyph-sm" data-for="aied-mm-sub-<?php echo esc_attr( (string) $c['id'] ); ?>" aria-hidden="true"><?php echo esc_html( html_entity_decode( (string) MegaIcons::unicode( '' === $c['icon'] ? MegaIcons::DEFAULT : $c['icon'] ), ENT_HTML5, 'UTF-8' ) ); ?></span>
                                 <?php endif; ?>
                                 <select id="aied-mm-sub-<?php echo esc_attr( (string) $c['id'] ); ?>" name="sub[<?php echo esc_attr( (string) $c['id'] ); ?>]">
-                                    <option value=""><?php esc_html_e( 'Same as the panel', 'jhmg-ai-editor-for-divi-5-pro' ); ?></option>
+                                    <option value="" data-glyph="<?php echo esc_attr( (string) preg_replace( '/[^0-9a-f]/', '', (string) MegaIcons::unicode( MegaIcons::DEFAULT ) ) ); ?>"><?php esc_html_e( 'Arrow (default)', 'jhmg-ai-editor-for-divi-5-pro' ); ?></option>
                                     <?php foreach ( MegaIcons::all() as $i ) : ?>
-                                        <option value="<?php echo esc_attr( $i['id'] ); ?>" data-glyph="<?php echo esc_attr( $i['code'] ); ?>"<?php selected( $c['icon'], $i['id'] ); ?>><?php echo esc_html( $i['label'] ); ?></option>
+                                        <?php if ( MegaIcons::DEFAULT !== $i['id'] ) : ?>
+                                            <option value="<?php echo esc_attr( $i['id'] ); ?>" data-glyph="<?php echo esc_attr( $i['code'] ); ?>"<?php selected( $c['icon'], $i['id'] ); ?>><?php echo esc_html( $i['label'] ); ?></option>
+                                        <?php endif; ?>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -848,15 +836,7 @@ final class MegaMenuPanel
             #megamenu .aied-mm-srow select { max-width: 100%; margin-top: 6px; }
 
             /* the icon picker */
-            #megamenu .aied-mm-icongrid { display: grid; grid-template-columns: repeat(auto-fill, 40px); gap: 6px; max-width: 640px; }
-            #megamenu .aied-mm-icongrid.is-text { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
-            #megamenu .aied-mm-ic { position: relative; display: block; margin: 0; cursor: pointer; }
-            #megamenu .aied-mm-ic input { position: absolute; opacity: 0; width: 1px; height: 1px; }
             #megamenu .aied-mm-glyph { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--mm-line); border-radius: 8px; background: #fff; color: var(--mm-muted); font-family: 'AiedFA', sans-serif; font-weight: 900; font-style: normal; font-size: 16px; line-height: 1; }
-            #megamenu .aied-mm-icongrid.is-text .aied-mm-glyph { width: auto; height: auto; padding: 6px 8px; font-family: inherit; font-weight: 400; font-size: 12px; line-height: 1.3; }
-            #megamenu .aied-mm-ic:hover .aied-mm-glyph { border-color: var(--mm-accent-line); color: var(--mm-ink); }
-            #megamenu .aied-mm-ic input:checked + .aied-mm-glyph { background: var(--mm-accent-soft); border-color: var(--mm-accent); color: var(--mm-accent); box-shadow: 0 0 0 1px var(--mm-accent); }
-            #megamenu .aied-mm-ic input:focus-visible + .aied-mm-glyph { outline: 2px solid var(--mm-accent); outline-offset: 2px; }
             #megamenu .aied-mm-cardicons { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px 20px; max-width: 760px; }
             #megamenu .aied-mm-cardicon { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 150px); gap: 8px; align-items: center; }
             #megamenu .aied-mm-cardicon label { font-size: 13px; overflow-wrap: anywhere; }
@@ -1080,30 +1060,16 @@ final class MegaMenuPanel
         }
         // phpcs:disable WordPress.Security.NonceVerification.Missing -- nonce verified in prepare().
         $reset = isset( $_POST['reset'] ) && '1' === $_POST['reset'];
-        $raw   = $_POST['icon'] ?? '';
-        $icon  = is_string( $raw ) ? sanitize_key( wp_unslash( $raw ) ) : null;
         $subs  = isset( $_POST['sub'] ) && is_array( $_POST['sub'] ) ? $_POST['sub'] : [];
         // phpcs:enable
         $content = $this->service->content();
         $allowed = array_map( static fn ( array $c ): int => (int) $c['id'], $at['children'] );
-        if ( $reset ) {
-            $content->setIcon( $item, '' );
-            foreach ( $allowed as $id ) {
-                $content->setIcon( $id, '' );
-            }
-        } else {
-            // The arrow is what a panel without a choice has, so choosing it for the panel clears the choice; for one card it is a choice of its own.
-            if ( null === $icon || ( '' !== $icon && ! MegaIcons::exists( $icon ) ) ) {
-                $this->fail( __( 'That icon is not available.', 'jhmg-ai-editor-for-divi-5-pro' ) );
-
-                return;
-            }
-            $content->setIcon( $item, MegaIcons::DEFAULT === $icon ? '' : $icon );
-            foreach ( $allowed as $id ) {
-                $mine = $subs[ (string) $id ] ?? '';
-                $mine = is_string( $mine ) ? sanitize_key( wp_unslash( $mine ) ) : '';
-                $content->setIcon( $id, MegaIcons::exists( $mine ) ? $mine : '' );
-            }
+        // A choice for the whole panel no longer exists (an icon is chosen per link or card); one stored by an earlier build is cleared here.
+        $content->setIcon( $item, '' );
+        foreach ( $allowed as $id ) {
+            $mine = $reset ? '' : ( $subs[ (string) $id ] ?? '' );
+            $mine = is_string( $mine ) ? sanitize_key( wp_unslash( $mine ) ) : '';
+            $content->setIcon( $id, MegaIcons::exists( $mine ) && MegaIcons::DEFAULT !== $mine ? $mine : '' );
         }
         $args = [ 'item' => (string) $item, 'etab' => 'content' ];
         if ( empty( $at['icons'] ) ) {

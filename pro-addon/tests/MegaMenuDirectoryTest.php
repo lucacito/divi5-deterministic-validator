@@ -94,14 +94,14 @@ final class MegaMenuDirectoryTest extends TestCase
         $this->assertSame( 5, substr_count( $markup, '"hover":{"color":"#eef2ff"}' ) );
     }
 
-    public function testTheIconsAreTheOwnersPerRowThenThePanelsThenTheArrow(): void
+    public function testTheIconsAreTheOwnersPerRowThenTheArrow(): void
     {
         $tree   = MegaMenuFixture::menus()['directory'];
         $markup = $this->build( $tree, [ 1 => [ 'icon' => '&#xf135;' ], 4 => [ 'icon' => '&#xf015;' ] ] );
         $this->assertSame( 1, substr_count( $markup, 'u0026#xf015;' ), 'Pricing tables got the house' );
-        $this->assertSame( 6, substr_count( $markup, 'u0026#xf135;' ), 'the other six rows got the panel icon' );
-        // The cards keep their arrow.
-        $this->assertSame( 2, substr_count( $markup, 'u0026#xf061;' ) );
+        $this->assertSame( 0, substr_count( $markup, 'u0026#xf135;' ), 'an icon for the whole panel is not drawn' );
+        // The six other rows and the two cards keep the arrow.
+        $this->assertSame( 8, substr_count( $markup, 'u0026#xf061;' ) );
     }
 
     public function testTheRowsTheOwnerChoosesIconsForAreThoseOfThePanel(): void

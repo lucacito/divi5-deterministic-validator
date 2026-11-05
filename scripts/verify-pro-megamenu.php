@@ -292,6 +292,7 @@ switch ( $aiedMmStep ) {
         $custom = static fn ( string $title, string $url, string $desc = '' ): array => [ 'menu-item-type' => 'custom', 'menu-item-title' => $title, 'menu-item-url' => $url, 'menu-item-description' => $desc ];
 
         $headIds = [];
+        $leafIds = [];
         $add( $custom( 'Home', home_url( '/' ) ), 0 );
         $services = $add( $custom( 'Services', home_url( '/services/' ) ), 0 );
         foreach ( [
@@ -302,7 +303,7 @@ switch ( $aiedMmStep ) {
             $head = $add( $custom( $heading, home_url( '/services/' . strtolower( $heading ) . '/' ) ), $services );
             $headIds[ $heading ] = $head;
             foreach ( $leaves as [ $title, $desc ] ) {
-                $add( $custom( $title, home_url( '/services/' . strtolower( $heading ) . '/' . sanitize_title( $title ) . '/' ), $desc ), $head );
+                $leafIds[ $title ] = $add( $custom( $title, home_url( '/services/' . strtolower( $heading ) . '/' . sanitize_title( $title ) . '/' ), $desc ), $head );
             }
         }
         $blog = $add( $custom( 'Blog', home_url( '/blog/' ) ), 0 );
@@ -382,13 +383,17 @@ switch ( $aiedMmStep ) {
         }
         $postUrls = array_map( static fn ( $pid ): string => (string) get_permalink( (int) $pid ), array_slice( $posts, 0, 5 ) );
         mm_service()->content()->save( $services, $own );
-        // Icons for the icon layouts: a rocket for every card of "Services", a house for its card "Build".
-        mm_service()->content()->setIcon( $services, 'rocket' );
+        // Icons for the icon layouts, one per card of "Services" (a rocket for "Design" and "Grow", a house for "Build"), and a star for the link "Branding" (the first row of the grouped list).
+        mm_service()->content()->setIcon( (int) $headIds['Design'], 'rocket' );
         mm_service()->content()->setIcon( (int) $headIds['Build'], 'home' );
+        mm_service()->content()->setIcon( (int) $headIds['Grow'], 'rocket' );
+        mm_service()->content()->setIcon( (int) $leafIds['Branding'], 'star' );
         mm_out( [
             'own'          => $own,
             'services_id'  => $services,
             'build_id'     => (int) $headIds['Build'],
+            'design_id'    => (int) $headIds['Design'],
+            'grow_id'      => (int) $headIds['Grow'],
             'blog_id'      => $blog,
             'top'          => $top,
             'panels'       => count( array_filter( $top, static fn ( array $t ): bool => $t['children'] > 0 ) ),

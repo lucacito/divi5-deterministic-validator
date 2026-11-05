@@ -334,21 +334,21 @@ async function desktop(browser, layout, setup, ap) {
         check(layout, W, `"${title}" own picture is shown, loaded, with the Media Library alt text`, o.imgs.some((m) => m.src.endsWith(file) && m.nw > 0 && m.alt === setup.own.alt), JSON.stringify(o.imgs.slice(0, 2)));
         check(layout, W, `"${title}" the placeholder picture is gone when the owner has their own`, !o.imgs.some((m) => /card-blue-1\.svg/.test(m.src)));
       }
-      // The icons the owner chose (a rocket for the panel, a house for the card "Build"), drawn with Font Awesome in the chips; the footer arrow stays.
+      // The icons the owner chose (a rocket for "Design" and "Grow", a house for "Build"), drawn with Font Awesome in the chips; the footer arrow stays.
       if (iconsHere) {
         const ic = await panel.evaluate(iconCodes);
         const want = ['f135', 'f015', 'f135'].concat(layout === 'icons-cards' ? ['f061'] : []);
-        check(layout, W, `"${title}" the cards show the chosen icons (rocket, house for "Build", rocket) and the footer arrow stays`, JSON.stringify(ic.map((x) => x.code)) === JSON.stringify(want), JSON.stringify(ic.map((x) => x.code)));
+        check(layout, W, `"${title}" the cards show the chosen icons (rocket for "Design", house for "Build", rocket for "Grow") and the footer arrow stays`, JSON.stringify(ic.map((x) => x.code)) === JSON.stringify(want), JSON.stringify(ic.map((x) => x.code)));
         check(layout, W, `"${title}" every icon is drawn with Font Awesome at weight 900 and has a width`, ic.length > 0 && ic.every((x) => x.fa && x.weight === '900' && x.w > 0), JSON.stringify(ic.filter((x) => !(x.fa && x.weight === '900' && x.w > 0))));
       }
-      // The grouped list: the panel's icon (a rocket) on every row, the three group names as small capitalised labels, no pill (custom links have no count).
+      // The grouped list: the owner's star on the first row and the arrow on the others, the three group names as small capitalised labels, no pill (custom links have no count).
       if (directoryHere) {
         const dh = await panel.evaluate((p) => ({
           icons: [...p.querySelectorAll('.et-pb-icon')].map((e) => (e.textContent || '').trim().codePointAt(0)),
           heads: ['Design', 'Build', 'Grow'].map((t) => { const e = [...p.querySelectorAll('p')].find((x) => x.textContent.trim() === t); const cs = e && getComputedStyle(e); return e ? { t, up: cs.textTransform, ls: cs.letterSpacing, fs: cs.fontSize } : { t, up: 'missing' }; }),
           rowLinks: [...p.querySelectorAll('a[href]')].length,
         }));
-        check(layout, W, `"${title}" every row has the panel's icon (a rocket, ${dh.icons.length} rows)`, dh.icons.length === 10 && dh.icons.every((c) => c === 0xf135), JSON.stringify(dh.icons));
+        check(layout, W, `"${title}" ten rows: the star the owner chose for "Branding" first, the arrow on the other nine`, dh.icons.length === 10 && dh.icons[0] === 0xf005 && dh.icons.slice(1).every((c) => c === 0xf061), JSON.stringify(dh.icons));
         check(layout, W, `"${title}" the group names are small capitalised labels with letter spacing`, dh.heads.every((h) => h.up === 'uppercase' && h.ls === '1px' && h.fs === '12px'), JSON.stringify(dh.heads));
       }
       // The newest posts: the "latest" layouts show the newest posts' permalinks.
@@ -757,27 +757,26 @@ async function adminView(browser, opts = {}) {
         await s.page.goto(`${TAB}&item=${setup.services_id}&etab=content`, { waitUntil: 'load' });
         const tiles = await s.page.evaluate(async () => {
           await document.fonts.load("900 16px AiedFA").catch(() => {});
-          const g = [...document.querySelectorAll('.aied-mm-icongrid .aied-mm-glyph')];
+          const g = [...document.querySelectorAll('.aied-mm-cardicon .aied-mm-glyph')];
           return {
-            count: g.length,
+            grid: document.querySelectorAll('.aied-mm-icongrid, input[name="icon"]').length,
+            previews: g.length,
             font: document.fonts.check('900 16px AiedFA'),
             drawn: g.every((e) => getComputedStyle(e).fontFamily.includes('AiedFA') && e.getBoundingClientRect().width > 0 && (e.textContent || '').trim().length === 1),
-            checked: (document.querySelector('.aied-mm-icongrid input:checked') || {}).value,
-            cards: [...document.querySelectorAll('.aied-mm-cardicon select')].map((x) => ({ name: x.getAttribute('name'), value: x.value })),
+            cards: [...document.querySelectorAll('.aied-mm-cardicon select')].map((x) => ({ name: x.getAttribute('name'), value: x.value, options: x.options.length, first: x.options[0].textContent.trim() })),
           };
         });
-        check(L, '-', 'the picker offers every icon as a tile drawn with the real font, and shows the panel\'s rocket as chosen', tiles.count === ifont.icons && tiles.font === true && tiles.drawn === true && tiles.checked === 'rocket', JSON.stringify({ count: tiles.count, font: tiles.font, drawn: tiles.drawn, checked: tiles.checked }));
-        check(L, '-', 'one choice per card of the panel, and the card "Build" shows its house', tiles.cards.length === 3 && tiles.cards.find((c) => c.name === `sub[${setup.build_id}]`).value === 'home', JSON.stringify(tiles.cards));
-        await s.page.click('label.aied-mm-ic[title="Heart"]');
-        const firstCard = tiles.cards.find((c) => c.name !== `sub[${setup.build_id}]`).name;
-        await s.page.selectOption(`select[name="${firstCard}"]`, 'star');
-        const preview = await s.page.evaluate((n) => { const sel = document.querySelector(`select[name="${n}"]`); const g = document.querySelector(`.aied-mm-glyph[data-for="${sel.id}"]`); return g ? g.textContent.codePointAt(0).toString(16) : null; }, firstCard);
+        check(L, '-', 'there is no icon for the whole panel any more: only a choice per card, each offering the arrow as its default and every other icon', tiles.grid === 0 && tiles.cards.length === 3 && tiles.cards.every((c) => c.options === ifont.icons && c.first === 'Arrow (default)'), JSON.stringify({ grid: tiles.grid, cards: tiles.cards }));
+        check(L, '-', 'each card shows its own icon beside the choice, drawn with the real font: rocket for "Design" and "Grow", house for "Build"', tiles.font === true && tiles.drawn === true && tiles.previews === 3 && tiles.cards.find((c) => c.name === `sub[${setup.design_id}]`).value === 'rocket' && tiles.cards.find((c) => c.name === `sub[${setup.build_id}]`).value === 'home' && tiles.cards.find((c) => c.name === `sub[${setup.grow_id}]`).value === 'rocket', JSON.stringify({ font: tiles.font, drawn: tiles.drawn, cards: tiles.cards }));
+        await s.page.selectOption(`select[name="sub[${setup.design_id}]"]`, 'star');
+        await s.page.selectOption(`select[name="sub[${setup.grow_id}]"]`, 'heart');
+        const preview = await s.page.evaluate((n) => { const sel = document.querySelector(`select[name="${n}"]`); const g = document.querySelector(`.aied-mm-glyph[data-for="${sel.id}"]`); return g ? g.textContent.codePointAt(0).toString(16) : null; }, `sub[${setup.design_id}]`);
         check(L, '-', 'choosing an icon for a card shows it next to the choice at once', preview === 'f005', String(preview));
         await pressAndWait(s.page, 'button:has-text("Save icons and update the header")', 'megamenu_icons_saved');
         let t = await readTab(s.page);
         check(L, '-', 'saving comes back to the item with the notice and marks it "Custom content"', t.noticeText.includes('Saved. The icons in your header are updated.') && t.items[0].pills.includes('Custom content'), t.noticeText);
         const f = await frontPanels(browser, ['Services']);
-        check(L, 1280, 'the front end shows a star on the first card, the house on "Build" and the panel\'s heart on the last card', JSON.stringify(f.Services.icons.map((x) => x.code)) === JSON.stringify(['f005', 'f015', 'f004', 'f061']), JSON.stringify(f.Services.icons.map((x) => x.code)));
+        check(L, 1280, 'the front end shows a star on the first card, the house on "Build" and a heart on the last card', JSON.stringify(f.Services.icons.map((x) => x.code)) === JSON.stringify(['f005', 'f015', 'f004', 'f061']), JSON.stringify(f.Services.icons.map((x) => x.code)));
         check(L, 1280, 'every icon is drawn with Font Awesome at weight 900', f.Services.icons.every((x) => x.fa && x.weight === '900' && x.w > 0));
         await pressAndWait(s.page, 'button:has-text("Reset to the arrow")', 'megamenu_icons_saved');
         t = await readTab(s.page);

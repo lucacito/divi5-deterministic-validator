@@ -95,6 +95,8 @@ final class MegaMenuService
             foreach ( $menu['tree'] as $item ) {
                 if ( [] !== $item['children'] ) {
                     $layout           = isset( $built[ $item['id'] ] ) ? Layouts::find( $built[ $item['id'] ] ) : null;
+                    // The links or cards that take an icon of their own (the rows of a grouped list, else the second-level items).
+                    $kids             = null !== $layout && ! empty( $layout['iconRows'] ) ? PanelBuilder::directoryRows( $item ) : $item['children'];
                     $state['items'][] = [
                         'id'         => (int) $item['id'],
                         'title'      => (string) $item['title'],
@@ -102,10 +104,9 @@ final class MegaMenuService
                         'layoutName' => null === $layout ? null : (string) $layout['name'],
                         'content'    => null !== $layout && ! empty( $layout['content'] ),
                         'icons'      => null !== $layout && ! empty( $layout['icons'] ),
-                        'icon'       => $this->content->get( (int) $item['id'] )['icon'],
                         'iconUnit'   => null !== $layout && ! empty( $layout['iconRows'] ) ? 'link' : 'card',
-                        'children'   => array_map( fn ( array $c ): array => [ 'id' => (int) $c['id'], 'title' => (string) $c['title'], 'icon' => $this->content->get( (int) $c['id'] )['icon'] ], null !== $layout && ! empty( $layout['iconRows'] ) ? PanelBuilder::directoryRows( $item ) : $item['children'] ),
-                        'custom'     => $this->content->hasContent( (int) $item['id'] ),
+                        'children'   => array_map( fn ( array $c ): array => [ 'id' => (int) $c['id'], 'title' => (string) $c['title'], 'icon' => $this->content->get( (int) $c['id'] )['icon'] ], $kids ),
+                        'custom'     => $this->content->hasContent( (int) $item['id'] ) || ( null !== $layout && ! empty( $layout['icons'] ) && [] !== array_filter( $kids, fn ( array $c ): bool => $this->content->hasContent( (int) $c['id'] ) ) ),
                         'edited'     => in_array( (int) $item['id'], $edited, true ),
                         'edits'      => $this->content->get( (int) $item['id'] )['edits'],
                     ];
