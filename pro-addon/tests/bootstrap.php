@@ -53,6 +53,9 @@ if ( ! function_exists( 'check_admin_referer' ) ) {
 if ( ! function_exists( 'selected' ) ) {
     function selected( $selected, $current = true, $echo = true ) { $r = (string) $selected === (string) $current ? " selected='selected'" : ''; if ( $echo ) { echo $r; } return $r; }
 }
+if ( ! function_exists( 'checked' ) ) {
+    function checked( $checked, $current = true, $echo = true ) { $r = (string) $checked === (string) $current ? " checked='checked'" : ''; if ( $echo ) { echo $r; } return $r; }
+}
 if ( ! function_exists( 'esc_textarea' ) ) {
     function esc_textarea( $text ) { return htmlspecialchars( (string) $text, ENT_QUOTES, 'UTF-8' ); }
 }

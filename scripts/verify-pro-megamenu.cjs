@@ -509,7 +509,7 @@ function readTab(page) {
       pendingText: txt(pending),
       noticeText: txt(notice),
       status: txt(root.querySelector('.aied-mm-status')),
-      items: [...root.querySelectorAll('a.aied-mm-item')].map((a) => ({ name: txt(a.querySelector('.aied-mm-iname')), layout: txt(a.querySelector('.aied-mm-isub')).replace(/(Custom content|Edited in Divi|Out of date)/g, '').trim(), pills: [...a.querySelectorAll('.aied-mm-pill')].map(txt), selected: a.classList.contains('is-selected') })),
+      items: [...root.querySelectorAll('a.aied-mm-item')].map((a) => ({ name: txt(a.querySelector('.aied-mm-iname')), layout: txt(a.querySelector('.aied-mm-isub')).replace(/(Customised|Edited in Divi|Out of date)/g, '').trim(), pills: [...a.querySelectorAll('.aied-mm-pill')].map(txt), selected: a.classList.contains('is-selected') })),
       panelTitle: txt(root.querySelector('.aied-mm-ehead h3')),
       current: cur.map((c) => ({ name: txt(c.querySelector('h4')), badge: txt(c.querySelector('.aied-mm-badge')) })),
       cards: root.querySelectorAll('.aied-mm-card').length,
@@ -685,7 +685,7 @@ async function adminView(browser, opts = {}) {
       check(L, '-', 'admin: a WordPress notice with the Update button shows on the Dashboard, linking to the tab', adminBefore.dash.notice && adminBefore.dash.button && /tab=megamenu/.test(adminBefore.dash.link || '') && /out of date/.test(adminBefore.dash.text), adminBefore.dash.text.slice(0, 140));
       check(L, '-', 'admin: the tab itself shows its own notice, not a second WordPress one', adminBefore.tab.tabNotice === true && adminBefore.tab.wpNoticeOnTab === false);
       check(L, '-', 'admin: the item list has one entry per menu item with its layout and says which is out of date', adminBefore.tab.items.length === setup.panels && adminBefore.tab.items.every((x) => x.layout === 'Link tiles') && adminBefore.tab.items.find((x) => x.name === 'Services').pills.includes('Out of date'), JSON.stringify(adminBefore.tab.items));
-      check(L, '-', 'admin: on the Layout tab the layout in use is framed on exactly one card, badge "This item"', adminBefore.tab.current.length === 1 && adminBefore.tab.current[0].name === 'Link tiles' && adminBefore.tab.current[0].badge === 'This item', JSON.stringify(adminBefore.tab.current));
+      check(L, '-', 'admin: on the Layout tab the layout in use is framed on exactly one card, badge "Used here"', adminBefore.tab.current.length === 1 && adminBefore.tab.current[0].name === 'Link tiles' && adminBefore.tab.current[0].badge === 'Used here', JSON.stringify(adminBefore.tab.current));
       check(L, '-', 'admin: no dropdown on the layout cards', adminBefore.tab.cardSelects === 0 && adminBefore.tab.cards === 14, `${adminBefore.tab.cardSelects} selects, ${adminBefore.tab.cards} cards`);
       check(L, '-', 'admin: nothing sticks out of the box that holds it', adminBefore.tab.overflow === 0, String(adminBefore.tab.overflow));
       check(L, '-', 'admin: the help is folded away and the visible text stays short', adminBefore.tab.helpClosed === true && adminBefore.tab.textLength < 3600, String(adminBefore.tab.textLength));
@@ -709,7 +709,7 @@ async function adminView(browser, opts = {}) {
       check(L, '-', 'the three added menu items are gone', cl.items_left === cl.items_expected, `${cl.items_left} of ${cl.items_expected}`);
     }
     // The owner's own content through the real form: the fields hold what was saved, the Media Library window opens, a typed headline shows
-    // in the small preview at once, "Save and update the header" puts it on the front end, "Reset to the defaults" takes it away.
+    // in the small preview at once, "Save changes" puts it on the front end, "Reset to the defaults" takes it away.
     {
       const L = 'own content';
       step('apply', 'feature-right');
@@ -718,7 +718,7 @@ async function adminView(browser, opts = {}) {
         await s.page.goto(`${TAB}&item=${setup.services_id}&etab=content`, { waitUntil: 'load' });
         let t = await readTab(s.page);
         check(L, '-', 'content tab: the fields hold what was saved and the picture is shown', t.fields.title === setup.own.title && t.fields.text === setup.own.text && t.fields.button === setup.own.button && t.fields.url === setup.own.url && String(t.fields.image) === String(setup.own.image) && !!t.pickerSrc, JSON.stringify(t.fields));
-        check(L, '-', 'the item list opens Services and marks it "Custom content"', t.items[0].name === 'Services' && t.items[0].selected && t.items[0].pills.includes('Custom content') && t.panelTitle === 'Services panel', JSON.stringify(t.items[0]));
+        check(L, '-', 'the item list opens Services and marks it "Customised"', t.items[0].name === 'Services' && t.items[0].selected && t.items[0].pills.includes('Customised') && t.panelTitle === 'Services panel', JSON.stringify(t.items[0]));
         await s.page.click('#aied-mm-pick');
         const modal = await s.page.waitForSelector('.media-modal', { state: 'visible', timeout: 20000 }).then(() => true).catch(() => false);
         check(L, '-', 'the Media Library window opens from the picture button', modal);
@@ -728,7 +728,7 @@ async function adminView(browser, opts = {}) {
         await s.page.fill('#aied-mm-title', 'Edited by the form');
         await s.page.fill('#aied-mm-text', 'Text from the form.');
         await s.page.fill('#aied-mm-button', 'Go now');
-        await pressAndWait(s.page, 'button:has-text("Save and update the header")', 'megamenu_content_saved');
+        await pressAndWait(s.page, 'button:has-text("Save changes")', 'megamenu_content_saved');
         t = await readTab(s.page);
         check(L, '-', 'saving comes back to the same item and tab with the notice', t.noticeText.includes('Saved. The panel in your header is updated.') && new RegExp(`item=${setup.services_id}`).test(s.page.url()) && /etab=content/.test(s.page.url()), t.noticeText);
         check(L, '-', 'after saving nothing is out of date', t.tabNotice === false && t.items[0].pills.every((x) => x !== 'Out of date'));
@@ -772,9 +772,9 @@ async function adminView(browser, opts = {}) {
         await s.page.selectOption(`select[name="sub[${setup.grow_id}]"]`, 'heart');
         const preview = await s.page.evaluate((n) => { const sel = document.querySelector(`select[name="${n}"]`); const g = document.querySelector(`.aied-mm-glyph[data-for="${sel.id}"]`); return g ? g.textContent.codePointAt(0).toString(16) : null; }, `sub[${setup.design_id}]`);
         check(L, '-', 'choosing an icon for a card shows it next to the choice at once', preview === 'f005', String(preview));
-        await pressAndWait(s.page, 'button:has-text("Save icons and update the header")', 'megamenu_icons_saved');
+        await pressAndWait(s.page, 'button:has-text("Save icons")', 'megamenu_icons_saved');
         let t = await readTab(s.page);
-        check(L, '-', 'saving comes back to the item with the notice and marks it "Custom content"', t.noticeText.includes('Saved. The icons in your header are updated.') && t.items[0].pills.includes('Custom content'), t.noticeText);
+        check(L, '-', 'saving comes back to the item with the notice and marks it "Customised"', t.noticeText.includes('Saved. The icons in your header are updated.') && t.items[0].pills.includes('Customised'), t.noticeText);
         const f = await frontPanels(browser, ['Services']);
         check(L, 1280, 'the front end shows a star on the first card, the house on "Build" and a heart on the last card', JSON.stringify(f.Services.icons.map((x) => x.code)) === JSON.stringify(['f005', 'f015', 'f004', 'f061']), JSON.stringify(f.Services.icons.map((x) => x.code)));
         check(L, 1280, 'every icon is drawn with Font Awesome at weight 900', f.Services.icons.every((x) => x.fa && x.weight === '900' && x.w > 0));
@@ -782,7 +782,7 @@ async function adminView(browser, opts = {}) {
         t = await readTab(s.page);
         const f2 = await frontPanels(browser, ['Services']);
         check(L, 1280, 'after the reset every card has the arrow again', f2.Services.icons.every((x) => x.code === 'f061') && f2.Services.icons.length === 4, JSON.stringify(f2.Services.icons.map((x) => x.code)));
-        check(L, '-', 'after the reset the item is not marked "Custom content" any more (its texts were reset earlier)', t.items[0].pills.every((x) => x !== 'Custom content'), JSON.stringify(t.items[0].pills));
+        check(L, '-', 'after the reset the item is not marked "Customised" any more (its texts were reset earlier)', t.items[0].pills.every((x) => x !== 'Customised'), JSON.stringify(t.items[0].pills));
         check(L, '-', 'no script error on the admin screens and the front end', s.errors.length === 0 && f.errors.length === 0 && f2.errors.length === 0, s.errors.concat(f.errors).slice(0, 2).join(' | '));
       } finally {
         await s.ctx.close();

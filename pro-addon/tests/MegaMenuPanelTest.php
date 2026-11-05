@@ -474,7 +474,7 @@ class MegaMenuPanelTest extends TestCase
         $this->assertStringNotContainsString( 'Undo last change', $html );
         $this->assertStringContainsString( 'Content</a>', $html );
         $this->assertStringContainsString( 'Layout</a>', $html );
-        $this->assertStringContainsString( 'Builder</a>', $html );
+        $this->assertStringContainsString( 'Edit in Divi</a>', $html );
 
         $blog = $this->renderAt( $service, [ 'item' => '20', 'etab' => 'content' ] );
         $this->assertStringContainsString( 'Blog panel', $blog );
@@ -490,7 +490,7 @@ class MegaMenuPanelTest extends TestCase
         $this->assertStringContainsString( '>Out of date</span>', $this->renderAt( $service ), 'saved but not yet in the header' );
         $service->refresh();
         $html = $this->renderAt( $service );
-        $this->assertStringContainsString( '>Custom content</span>', $html );
+        $this->assertStringContainsString( '>Customised</span>', $html );
         $this->assertStringNotContainsString( '>Edited in Divi</span>', $html );
         $this->assertStringNotContainsString( '>Out of date</span>', $html );
 
@@ -518,7 +518,7 @@ class MegaMenuPanelTest extends TestCase
         $this->assertStringContainsString( 'src="https://example.test/uploads/team.jpg"', $html );
         $this->assertStringContainsString( 'id="aied-mm-pick"', $html );
         $this->assertStringContainsString( 'Reset to the defaults', $html );
-        $this->assertStringContainsString( 'Save and update the header', $html );
+        $this->assertStringContainsString( 'Save changes', $html );
         $this->assertStringContainsString( 'wp.media', $html, 'the Media Library script is on the page' );
         $this->assertStringNotContainsString( 'wp.media', $this->renderAt( $service, [ 'item' => '2', 'etab' => 'layout' ] ), 'and only on this tab' );
     }
@@ -527,8 +527,8 @@ class MegaMenuPanelTest extends TestCase
     {
         $html = $this->renderAt( $this->appliedWithASlot(), [ 'item' => '2', 'etab' => 'layout' ] );
         $this->assertSame( 2, substr_count( $html, 'aied-mm-card is-current' ), 'this item\'s layout and the other item\'s' );
-        $this->assertStringContainsString( '>This item</span>', $html );
-        $this->assertStringContainsString( '>Another item</span>', $html );
+        $this->assertStringContainsString( '>Used here</span>', $html );
+        $this->assertStringContainsString( '>Used by another item</span>', $html );
         $this->assertStringContainsString( 'Rebuild this item</button>', $html );
         $this->assertSame( 13, substr_count( $html, 'Use for this item</button>' ) );
         $this->assertSame( 14, substr_count( $html, 'name="item" value="2"' ), 'every card posts the item' );
@@ -545,14 +545,16 @@ class MegaMenuPanelTest extends TestCase
         $this->assertMatchesRegularExpression( '#href="[^"]*page=et_theme_builder&(?:\#038;|amp;)?et_tb_layout_id=201&(?:\#038;|amp;)?et_tb_layout_type=header&(?:\#038;|amp;)?et_tb_layout_global=1"#', $html, 'the header opens in the Theme Builder screen' );
         $this->assertStringNotContainsString( 'app_window', $html, 'the pop-up\'s inner address is a blank page on its own and is never linked' );
         $this->assertStringNotContainsString( 'et_fb=1', $html );
-        $this->assertMatchesRegularExpression( '#<option value="ask" selected=\'selected\'>Ask me#', $html );
+        $this->assertMatchesRegularExpression( '#<input type="radio" name="edits" value="ask" checked=\'checked\'>#', $html );
+        $this->assertStringContainsString( 'Ask me first', $html );
+        $this->assertStringContainsString( 'How to edit this panel in Divi', $html );
 
         $service->content()->setEdits( 2, 'keep' );
         $this->editPanelByHand( 2 );
         $html = $this->renderAt( $service, [ 'item' => '2', 'etab' => 'builder' ] );
         $this->assertStringContainsString( '>Edited in Divi</span>', $html );
         $this->assertStringContainsString( 'Replace my version', $html );
-        $this->assertMatchesRegularExpression( '#<option value="keep" selected=\'selected\'>Keep my version#', $html );
+        $this->assertMatchesRegularExpression( '#<input type="radio" name="edits" value="keep" checked=\'checked\'>#', $html );
         $this->assertStringNotContainsString( '>Automatic</span>', $html );
     }
 
@@ -783,7 +785,7 @@ class MegaMenuPanelTest extends TestCase
         $this->assertSame( 14, substr_count( $html, 'Best for: ' ) );
         $this->assertStringContainsString( '<details class="aied-mm-help">', $html );
         $text = trim( (string) preg_replace( '/\s+/', ' ', strip_tags( (string) preg_replace( '#<(style|svg).*?</\1>#s', '', $html ) ) ) );
-        $this->assertLessThan( 2700, strlen( $text ), 'the visible text of the tab stays short (' . strlen( $text ) . ' characters)' );
+        $this->assertLessThan( 2800, strlen( $text ), 'the visible text of the tab stays short (' . strlen( $text ) . ' characters)' );
     }
 
     public function testThePostedItemPutsTheLayoutOnThatItemOnly(): void
@@ -1509,10 +1511,10 @@ class MegaMenuPanelTest extends TestCase
         $this->assertStringNotContainsString( 'name="sub[21]"', $html, 'only the cards of this panel' );
         $this->assertSame( 2 * count( \AiEditorDivi5\Pro\MegaMenu\MegaIcons::all() ), preg_match_all( '/<option value="[a-z-]*"( data-glyph="[0-9a-f]{4}")?/', $html ), 'every card offers the arrow (as its default) and every other icon' );
         $this->assertSame( 2, substr_count( $html, '>Arrow (default)</option>' ) );
-        $this->assertStringContainsString( 'Save icons and update the header', $html );
+        $this->assertStringContainsString( 'Save icons', $html );
         $this->assertStringNotContainsString( 'Reset to the arrow', $html, 'nothing to reset yet' );
         $this->assertStringNotContainsString( 'Headline', $html, 'icon layouts have no headline or picture' );
-        $this->assertStringContainsString( '>Icons</span>', $this->renderAt( $service, [ 'item' => '2', 'etab' => 'layout' ] ), 'the layout cards say which layouts have icons' );
+        $this->assertStringContainsString( '>Your icons</span>', $this->renderAt( $service, [ 'item' => '2', 'etab' => 'layout' ] ), 'the layout cards say which layouts have icons' );
     }
 
     public function testTheIconsTabOfTheGroupedListOffersTheLinksNotTheGroupsOrTheCards(): void
@@ -1552,7 +1554,7 @@ class MegaMenuPanelTest extends TestCase
         $this->assertMatchesRegularExpression( '#<option value="home" data-glyph="f015" selected=\'selected\'>Home#', $html );
         $this->assertMatchesRegularExpression( '#<option value="rocket" data-glyph="f135" selected=\'selected\'>Launch#', $html );
         $this->assertStringContainsString( 'Reset to the arrow', $html );
-        $this->assertStringContainsString( '>Custom content</span>', $html );
+        $this->assertStringContainsString( '>Customised</span>', $html );
     }
 
     public function testSavingClearsAChoiceForTheWholePanelAnEarlierBuildStored(): void

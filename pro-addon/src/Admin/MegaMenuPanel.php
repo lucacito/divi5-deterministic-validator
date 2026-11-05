@@ -226,13 +226,13 @@ final class MegaMenuPanel
         $picker = ! empty( $status['menuModule'] ) && count( $status['menus'] ) > 1;
         ?>
         <div class="aied-mm-meta">
-            <span><span class="aied-mm-k"><?php esc_html_e( 'Header', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span> <?php echo null === $status['header'] ? esc_html__( 'none', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html( '' !== $status['header']['title'] ? $status['header']['title'] : __( 'Untitled header', 'jhmg-ai-editor-for-divi-5-pro' ) ); ?></span>
+            <span><span class="aied-mm-k"><?php esc_html_e( 'Your header', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span> <?php echo null === $status['header'] ? esc_html__( 'none', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html( '' !== $status['header']['title'] ? $status['header']['title'] : __( 'Untitled header', 'jhmg-ai-editor-for-divi-5-pro' ) ); ?></span>
             <?php if ( $picker ) : ?>
                 <?php $current = null === $status['menu'] ? 0 : (int) $status['menu']['id']; ?>
                 <form class="aied-mm-menuform" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                     <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_MENU ); ?>">
                     <?php wp_nonce_field( self::ACTION_MENU ); ?>
-                    <label for="aied-mm-menu" class="aied-mm-k"><?php esc_html_e( 'Menu', 'jhmg-ai-editor-for-divi-5-pro' ); ?></label>
+                    <label for="aied-mm-menu" class="aied-mm-k"><?php esc_html_e( 'Your menu', 'jhmg-ai-editor-for-divi-5-pro' ); ?></label>
                     <select id="aied-mm-menu" name="menu" title="<?php echo esc_attr__( 'The menu your header shows. It also changes the menu of your phone header, and the mega menu is built again from it.', 'jhmg-ai-editor-for-divi-5-pro' ); ?>">
                         <?php foreach ( $status['menus'] as $m ) : ?>
                             <option value="<?php echo esc_attr( (string) $m['id'] ); ?>"<?php selected( $current, $m['id'] ); ?>><?php echo esc_html( sprintf( /* translators: 1: menu name, 2: number of items */ _n( '%1$s (%2$d item)', '%1$s (%2$d items)', (int) $m['items'], 'jhmg-ai-editor-for-divi-5-pro' ), $m['name'], (int) $m['items'] ) ); ?></option>
@@ -244,7 +244,7 @@ final class MegaMenuPanel
                     <?php endif; ?>
                 </form>
             <?php elseif ( null !== $status['menu'] ) : ?>
-                <span><span class="aied-mm-k"><?php esc_html_e( 'Menu', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span> <?php echo esc_html( $status['menu']['name'] . ' (' . $counts . ')' ); ?></span>
+                <span><span class="aied-mm-k"><?php esc_html_e( 'Your menu', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span> <?php echo esc_html( $status['menu']['name'] . ' (' . $counts . ')' ); ?></span>
             <?php endif; ?>
         </div>
         <?php
@@ -300,10 +300,10 @@ final class MegaMenuPanel
                         <span class="aied-mm-badge"><?php echo esc_html( $o['label'] ); ?></span>
                     <?php endif; ?>
                     <?php if ( ! empty( $layout['icons'] ) ) : ?>
-                        <span class="aied-mm-pic aied-mm-icons-tag" title="<?php echo ! empty( $layout['iconRows'] ) ? esc_attr__( 'You can choose the icon of every link', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_attr__( 'You can choose the icon of every card', 'jhmg-ai-editor-for-divi-5-pro' ); ?>"><?php esc_html_e( 'Icons', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
+                        <span class="aied-mm-pic aied-mm-icons-tag" title="<?php echo ! empty( $layout['iconRows'] ) ? esc_attr__( 'You can choose the icon of every link', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_attr__( 'You can choose the icon of every card', 'jhmg-ai-editor-for-divi-5-pro' ); ?>"><?php esc_html_e( 'Your icons', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
                     <?php endif; ?>
                     <?php if ( ! empty( $layout['content'] ) ) : ?>
-                        <span class="aied-mm-pic" title="<?php echo esc_attr__( 'Takes your own headline, text, button and picture', 'jhmg-ai-editor-for-divi-5-pro' ); ?>"><?php esc_html_e( 'Picture', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
+                        <span class="aied-mm-pic" title="<?php echo esc_attr__( 'Takes your own headline, text, button and picture', 'jhmg-ai-editor-for-divi-5-pro' ); ?>"><?php esc_html_e( 'Your picture', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
@@ -335,7 +335,7 @@ final class MegaMenuPanel
         ?>
         <div class="aied-mm-cols">
             <nav class="aied-mm-items" aria-label="<?php echo esc_attr__( 'Menu items', 'jhmg-ai-editor-for-divi-5-pro' ); ?>">
-                <h3><?php esc_html_e( 'Menu items', 'jhmg-ai-editor-for-divi-5-pro' ); ?></h3>
+                <h3><?php esc_html_e( 'Your menu items', 'jhmg-ai-editor-for-divi-5-pro' ); ?></h3>
                 <?php foreach ( $status['items'] as $it ) : ?>
                     <?php $stale = $this->itemIsStale( $status, (int) $it['id'] ); ?>
                     <a class="aied-mm-item<?php echo null !== $sel && $sel['id'] === $it['id'] ? ' is-selected' : ''; ?>" href="<?php echo esc_url( $this->tabUrl( [ 'item' => (string) $it['id'] ] ) ); ?>"<?php echo null !== $sel && $sel['id'] === $it['id'] ? ' aria-current="true"' : ''; ?>>
@@ -343,7 +343,7 @@ final class MegaMenuPanel
                         <span class="aied-mm-iname"><?php echo esc_html( $it['title'] ); ?></span>
                         <span class="aied-mm-isub">
                             <?php echo null === $it['layoutName'] ? esc_html__( 'Layout not recognised', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html( $it['layoutName'] ); ?>
-                            <?php if ( $it['custom'] ) : ?><span class="aied-mm-pill accent"><?php esc_html_e( 'Custom content', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span><?php endif; ?>
+                            <?php if ( $it['custom'] ) : ?><span class="aied-mm-pill accent"><?php esc_html_e( 'Customised', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span><?php endif; ?>
                             <?php if ( $it['edited'] ) : ?><span class="aied-mm-pill hand"><?php esc_html_e( 'Edited in Divi', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span><?php endif; ?>
                             <?php if ( $stale ) : ?><span class="aied-mm-pill warn"><?php esc_html_e( 'Out of date', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span><?php endif; ?>
                         </span>
@@ -361,7 +361,7 @@ final class MegaMenuPanel
                         <p class="description"><?php echo null === $layout ? esc_html__( 'Layout not recognised: choose a layout.', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html( sprintf( /* translators: %s: layout name */ __( 'Layout: %s', 'jhmg-ai-editor-for-divi-5-pro' ), $layout['name'] ) ); ?></p>
                     </div>
                     <h2 class="nav-tab-wrapper aied-mm-tabs">
-                        <?php foreach ( [ 'content' => __( 'Content', 'jhmg-ai-editor-for-divi-5-pro' ), 'layout' => __( 'Layout', 'jhmg-ai-editor-for-divi-5-pro' ), 'builder' => __( 'Builder', 'jhmg-ai-editor-for-divi-5-pro' ) ] as $key => $name ) : ?>
+                        <?php foreach ( [ 'content' => __( 'Content', 'jhmg-ai-editor-for-divi-5-pro' ), 'layout' => __( 'Layout', 'jhmg-ai-editor-for-divi-5-pro' ), 'builder' => __( 'Edit in Divi', 'jhmg-ai-editor-for-divi-5-pro' ) ] as $key => $name ) : ?>
                             <a class="nav-tab<?php echo $etab === $key ? ' nav-tab-active' : ''; ?>" href="<?php echo esc_url( $this->tabUrl( [ 'item' => (string) $sel['id'], 'etab' => $key ] ) ); ?>"><?php echo esc_html( $name ); ?></a>
                         <?php endforeach; ?>
                     </h2>
@@ -379,6 +379,9 @@ final class MegaMenuPanel
                 <?php endif; ?>
             </div>
         </div>
+        <?php if ( 'layout' !== $etab ) : ?>
+            <p class="aied-mm-safe"><?php esc_html_e( 'Nothing here is permanent. Every change can be undone: open the Pro tab and look under "Recent Pro changes".', 'jhmg-ai-editor-for-divi-5-pro' ); ?></p>
+        <?php endif; ?>
         <?php
     }
 
@@ -407,6 +410,7 @@ final class MegaMenuPanel
         $c       = $this->service->content()->get( (int) $sel['id'] );
         $picture = $c['image'] > 0 ? MegaMenuContent::attachmentFromLibrary( $c['image'] ) : null;
         ?>
+        <p class="aied-mm-lead"><?php esc_html_e( 'Add your own headline, text, button and picture. Leave a box empty and the panel uses your menu item\'s own words. Your header updates as soon as you save.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></p>
         <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="aied-mm-form">
             <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_CONTENT ); ?>">
             <input type="hidden" name="item" value="<?php echo esc_attr( (string) $sel['id'] ); ?>">
@@ -432,7 +436,7 @@ final class MegaMenuPanel
                 </div>
                 <p class="aied-mm-fine"><?php esc_html_e( 'Saved with this menu item. It stays when you press Update.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></p>
                 <p class="aied-mm-row">
-                    <button type="submit" class="button button-primary"><?php esc_html_e( 'Save and update the header', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
+                    <button type="submit" class="button button-primary"><?php esc_html_e( 'Save changes', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
                     <?php if ( $sel['custom'] ) : ?>
                         <button type="submit" class="button-link" form="aied-mm-reset"><?php esc_html_e( 'Reset to the defaults', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
                     <?php endif; ?>
@@ -470,6 +474,7 @@ final class MegaMenuPanel
     {
         $fontOk = '' !== $this->fontUrl();
         ?>
+        <p class="aied-mm-lead"><?php 'link' === ( $sel['iconUnit'] ?? 'card' ) ? esc_html_e( 'Pick an icon for each link in this panel. Your header updates as soon as you save.', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html_e( 'Pick an icon for each card in this panel. Your header updates as soon as you save.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></p>
         <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="aied-mm-iconsform">
             <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_ICONS ); ?>">
             <input type="hidden" name="item" value="<?php echo esc_attr( (string) $sel['id'] ); ?>">
@@ -499,7 +504,7 @@ final class MegaMenuPanel
             <?php endif; ?>
             <p class="aied-mm-fine"><?php esc_html_e( 'Saved with this menu item. It stays when you press Update.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></p>
             <p class="aied-mm-row">
-                <button type="submit" class="button button-primary"><?php esc_html_e( 'Save icons and update the header', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
+                <button type="submit" class="button button-primary"><?php esc_html_e( 'Save icons', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
                 <?php if ( $sel['custom'] ) : ?>
                     <button type="submit" name="reset" value="1" class="button-link"><?php esc_html_e( 'Reset to the arrow', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
                 <?php endif; ?>
@@ -578,7 +583,7 @@ final class MegaMenuPanel
                 $other = ! $here && [] !== array_diff( $usedBy[ $l['id'] ] ?? [], [ (int) $sel['id'] ] );
                 $this->card( $l, [
                     'current' => $here || $other,
-                    'label'   => $here ? __( 'This item', 'jhmg-ai-editor-for-divi-5-pro' ) : ( $other ? __( 'Another item', 'jhmg-ai-editor-for-divi-5-pro' ) : '' ),
+                    'label'   => $here ? __( 'Used here', 'jhmg-ai-editor-for-divi-5-pro' ) : ( $other ? __( 'Used by another item', 'jhmg-ai-editor-for-divi-5-pro' ) : '' ),
                     'button'  => $here ? __( 'Rebuild this item', 'jhmg-ai-editor-for-divi-5-pro' ) : __( 'Use for this item', 'jhmg-ai-editor-for-divi-5-pro' ),
                     'item'    => (int) $sel['id'],
                     'enabled' => $usable,
@@ -603,19 +608,23 @@ final class MegaMenuPanel
         $open  = $this->builderUrl();
         $edits = $this->service->content()->get( (int) $sel['id'] )['edits'];
         ?>
-        <p class="description"><?php esc_html_e( 'Want full control? Edit this panel in the Divi builder.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></p>
+        <p class="aied-mm-lead"><?php esc_html_e( 'Want to change colours, fonts or spacing, or add something of your own? You can fine-tune this panel in Divi. The plugin will not overwrite your changes unless you tell it to.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></p>
         <div class="aied-mm-rows">
-            <div class="aied-mm-srow">
+            <div class="aied-mm-srow aied-mm-steps-row">
                 <div class="aied-mm-grow">
-                    <h4><?php esc_html_e( 'Edit in the Divi builder', 'jhmg-ai-editor-for-divi-5-pro' ); ?></h4>
-                    <p class="description"><?php echo esc_html( sprintf( /* translators: %s: menu item */ __( 'Opens your header in the Divi Theme Builder. Select the group named "JHMG Mega Menu", then the panel of %s. Change colours, fonts, spacing or add modules.', 'jhmg-ai-editor-for-divi-5-pro' ), $sel['title'] ) ); ?></p>
+                    <h4><?php esc_html_e( 'How to edit this panel in Divi', 'jhmg-ai-editor-for-divi-5-pro' ); ?></h4>
+                    <ol class="aied-mm-steps">
+                        <li><?php esc_html_e( 'Click "Open in Divi". Your header opens in the Divi Theme Builder.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></li>
+                        <li><?php echo esc_html( sprintf( /* translators: %s: menu item */ __( 'Find the group named "JHMG Mega Menu", then the panel of %s inside it (the layers button on the left shows them).', 'jhmg-ai-editor-for-divi-5-pro' ), $sel['title'] ) ); ?></li>
+                        <li><?php esc_html_e( 'Change what you like, then press Save in Divi.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></li>
+                    </ol>
                 </div>
-                <a class="button button-primary" href="<?php echo esc_url( $open ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Open in Divi', 'jhmg-ai-editor-for-divi-5-pro' ); ?></a>
+                <a class="button button-primary aied-mm-big" href="<?php echo esc_url( $open ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Open in Divi', 'jhmg-ai-editor-for-divi-5-pro' ); ?></a>
             </div>
             <div class="aied-mm-srow">
                 <div class="aied-mm-grow">
-                    <h4><?php esc_html_e( 'This panel is', 'jhmg-ai-editor-for-divi-5-pro' ); ?></h4>
-                    <p class="description"><?php echo $sel['edited'] ? esc_html__( 'You changed it in the builder. The plugin does not touch it unless you say so below.', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html__( 'Built by the plugin from your menu and your content, and kept in step when you press Update.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></p>
+                    <h4><?php esc_html_e( 'Who looks after this panel', 'jhmg-ai-editor-for-divi-5-pro' ); ?></h4>
+                    <p class="description"><?php echo $sel['edited'] ? esc_html__( 'You changed this panel in Divi, so the plugin leaves it as you made it.', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html__( 'The plugin builds this panel from your menu and keeps it in step when you press Update.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></p>
                 </div>
                 <?php if ( $sel['edited'] ) : ?>
                     <span class="aied-mm-pill hand"><?php esc_html_e( 'Edited in Divi', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
@@ -623,17 +632,24 @@ final class MegaMenuPanel
                     <span class="aied-mm-pill on"><?php esc_html_e( 'Automatic', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
                 <?php endif; ?>
             </div>
-            <form class="aied-mm-srow" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+            <form class="aied-mm-srow aied-mm-choices" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                 <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_EDITS ); ?>">
                 <input type="hidden" name="item" value="<?php echo esc_attr( (string) $sel['id'] ); ?>">
                 <?php wp_nonce_field( self::ACTION_EDITS ); ?>
                 <div class="aied-mm-grow">
-                    <label for="aied-mm-edits"><h4><?php esc_html_e( 'When you press Update and this panel was edited in Divi', 'jhmg-ai-editor-for-divi-5-pro' ); ?></h4></label>
-                    <select id="aied-mm-edits" name="edits">
-                        <option value="ask"<?php selected( $edits, 'ask' ); ?>><?php esc_html_e( 'Ask me', 'jhmg-ai-editor-for-divi-5-pro' ); ?></option>
-                        <option value="keep"<?php selected( $edits, 'keep' ); ?>><?php esc_html_e( 'Keep my version', 'jhmg-ai-editor-for-divi-5-pro' ); ?></option>
-                        <option value="rebuild"<?php selected( $edits, 'rebuild' ); ?>><?php esc_html_e( 'Replace it with the plugin\'s version', 'jhmg-ai-editor-for-divi-5-pro' ); ?></option>
-                    </select>
+                    <h4><?php esc_html_e( 'If you change this panel in Divi, and later press Update', 'jhmg-ai-editor-for-divi-5-pro' ); ?></h4>
+                    <?php
+                    foreach ( [
+                        'ask'     => [ __( 'Ask me first', 'jhmg-ai-editor-for-divi-5-pro' ), __( 'Recommended. Update stops and asks what to do with your changes.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
+                        'keep'    => [ __( 'Keep my changes', 'jhmg-ai-editor-for-divi-5-pro' ), __( 'Update never touches this panel.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
+                        'rebuild' => [ __( 'Use the plugin\'s fresh version', 'jhmg-ai-editor-for-divi-5-pro' ), __( 'Update replaces your changes with a new panel.', 'jhmg-ai-editor-for-divi-5-pro' ) ],
+                    ] as $value => [ $label, $help ] ) :
+                        ?>
+                        <label class="aied-mm-choice">
+                            <input type="radio" name="edits" value="<?php echo esc_attr( $value ); ?>"<?php checked( $edits, $value ); ?>>
+                            <span><b><?php echo esc_html( $label ); ?></b><span class="description"><?php echo esc_html( $help ); ?></span></span>
+                        </label>
+                    <?php endforeach; ?>
                 </div>
                 <button type="submit" class="button"><?php esc_html_e( 'Save', 'jhmg-ai-editor-for-divi-5-pro' ); ?></button>
             </form>
@@ -834,6 +850,18 @@ final class MegaMenuPanel
             #megamenu .aied-mm-srow h4 { margin: 0 0 2px; font-size: 13px; font-weight: 600; }
             #megamenu .aied-mm-srow .description { margin: 0; }
             #megamenu .aied-mm-srow select { max-width: 100%; margin-top: 6px; }
+            #megamenu .aied-mm-lead { margin: 0 0 14px; max-width: 640px; color: var(--mm-muted); font-size: 13px; line-height: 1.55; }
+            #megamenu .aied-mm-steps { margin: 8px 0 0 18px; padding: 0; color: var(--mm-ink); font-size: 13px; line-height: 1.55; }
+            #megamenu .aied-mm-steps li { margin: 0 0 4px; padding-left: 4px; }
+            #megamenu .aied-mm-steps-row { align-items: flex-start; }
+            #megamenu .aied-mm-big { min-height: 36px; padding: 0 18px; font-size: 14px; line-height: 34px; }
+            #megamenu .aied-mm-choices { align-items: flex-start; }
+            #megamenu .aied-mm-choice { display: flex; gap: 10px; align-items: flex-start; margin: 8px 0 0; padding: 8px 10px; border: 1px solid var(--mm-line-2); border-radius: 8px; cursor: pointer; }
+            #megamenu .aied-mm-choice:hover { border-color: var(--mm-accent-line); background: var(--mm-soft); }
+            #megamenu .aied-mm-choice input { margin-top: 3px; }
+            #megamenu .aied-mm-choice b { display: block; font-size: 13px; font-weight: 600; }
+            #megamenu .aied-mm-choice .description { display: block; margin: 1px 0 0; }
+            #megamenu .aied-mm-safe { margin: 12px 2px 0; color: var(--mm-muted); font-size: 12px; }
 
             /* the icon picker */
             #megamenu .aied-mm-glyph { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--mm-line); border-radius: 8px; background: #fff; color: var(--mm-muted); font-family: 'AiedFA', sans-serif; font-weight: 900; font-style: normal; font-size: 16px; line-height: 1; }
