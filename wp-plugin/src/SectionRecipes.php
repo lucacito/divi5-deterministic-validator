@@ -223,6 +223,68 @@ final class SectionRecipes
         return substr( (string) preg_replace( $strip, '', trim( $value ) ), 0, 40 );
     }
 
+    /**
+     * The recipes that match the filters, as plain rows without markup, for callers that want data rather than the markdown
+     * catalog (the get-section-recipes ability). $density is airy, balanced or dense; $stage is matched as a case-insensitive
+     * part of the recipe's persuasion stage ("Hero / Final CTA" matches "hero" and "final cta"). Unknown role, layout, mood or
+     * density values give null, with the valid values in $problems.
+     *
+     * @param list<string> $problems filled when null is returned
+     * @return list<array<string,mixed>>|null
+     */
+    public static function summaries( ?string $role, ?string $layout, ?string $mood, ?string $density, ?string $stage, array &$problems = [] ): ?array
+    {
+        $role    = self::cleanFilter( $role );
+        $layout  = self::cleanFilter( $layout );
+        $mood    = self::cleanFilter( $mood );
+        $density = self::cleanFilter( $density );
+        $stage   = null === $stage ? null : strtolower( self::plain( $stage, '/[^A-Za-z0-9 \/_-]/' ) );
+        $stage   = '' === $stage ? null : $stage;
+
+        $problems = [];
+        if ( null !== $role && ! in_array( $role, self::ROLES, true ) ) {
+            $problems[] = sprintf( 'Unknown role "%s". Valid roles: %s.', $role, implode( ', ', self::ROLES ) );
+        }
+        if ( null !== $layout && ! in_array( $layout, self::LAYOUTS, true ) ) {
+            $problems[] = sprintf( 'Unknown layout "%s". Valid layouts: %s.', $layout, implode( ', ', self::LAYOUTS ) );
+        }
+        if ( null !== $mood && ! in_array( $mood, self::moods(), true ) ) {
+            $problems[] = sprintf( 'Unknown mood "%s". Valid moods: %s.', $mood, implode( ', ', self::moods() ) );
+        }
+        if ( null !== $density && ! in_array( $density, [ 'airy', 'balanced', 'dense' ], true ) ) {
+            $problems[] = sprintf( 'Unknown density "%s". Valid densities: airy, balanced, dense.', $density );
+        }
+        if ( [] !== $problems ) {
+            return null;
+        }
+
+        $out = [];
+        foreach ( self::matchingRows( $role, $layout, $mood ) as $r ) {
+            $tags = isset( $r['tags'] ) && is_array( $r['tags'] ) ? $r['tags'] : [];
+            if ( null !== $density && ( $tags['density'] ?? null ) !== $density ) {
+                continue;
+            }
+            if ( null !== $stage && ! str_contains( strtolower( (string) ( $r['stage'] ?? '' ) ), $stage ) ) {
+                continue;
+            }
+            $out[] = [
+                'name'         => $r['name'],
+                'title'        => $r['title'],
+                'description'  => $r['description'],
+                'when'         => $r['when'],
+                'stage'        => (string) ( $r['stage'] ?? '' ),
+                'role'         => $tags['role'] ?? null,
+                'layout'       => $tags['layout'] ?? null,
+                'mood'         => $tags['mood'] ?? [],
+                'density'      => $tags['density'] ?? null,
+                'background'   => $tags['background'] ?? null,
+                'needs_images' => (bool) ( $tags['needs_images'] ?? false ),
+            ];
+        }
+
+        return $out;
+    }
+
     /** Trim and lower-case a filter value, keeping it short and plain; empty means no filter. */
     private static function cleanFilter( ?string $value ): ?string
     {

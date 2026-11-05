@@ -133,6 +133,40 @@ final class McpHandler
         return $this->rpcResult($id, ['tools' => $tools]);
     }
 
+    /**
+     * Runs one of the free tools in-process and returns its answer as a plain array, for callers that are not JSON-RPC (the
+     * WordPress abilities). It runs the very same tool method `tools/call` runs, so approval mode, dry run, history, the
+     * validator gate and every capability check behave identically. Only the tools of ToolCatalog are reachable: an
+     * add-on's tool is never run through here.
+     *
+     * @param array<string,mixed> $arguments
+     * @return array{ok:bool, text:string, data:?array<mixed>, code:?int, message:string}
+     *         ok=false for a protocol error (code, message) or a tool that answered isError (text and data hold its answer).
+     */
+    public function callTool(string $name, array $arguments): array
+    {
+        if (null === ToolCatalog::get($name)) {
+            return ['ok' => false, 'text' => '', 'data' => null, 'code' => -32602, 'message' => 'Unknown tool.'];
+        }
+        $body = (array) $this->onToolsCall(null, ['name' => $name, 'arguments' => $arguments])->get_data();
+        if (isset($body['error'])) {
+            $error = (array) $body['error'];
+            return ['ok' => false, 'text' => '', 'data' => null, 'code' => (int) ($error['code'] ?? -32603), 'message' => (string) ($error['message'] ?? 'Error')];
+        }
+        $result = (array) ($body['result'] ?? []);
+        $first  = (array) (((array) ($result['content'] ?? []))[0] ?? []);
+        $text   = (string) ($first['text'] ?? '');
+        $data   = json_decode($text, true);
+
+        return [
+            'ok'      => empty($result['isError']),
+            'text'    => $text,
+            'data'    => is_array($data) ? $data : null,
+            'code'    => null,
+            'message' => '',
+        ];
+    }
+
     private function onToolsCall(mixed $id, array $params): WP_REST_Response
     {
         $name = PageAccess::stringArg($params, 'name');
