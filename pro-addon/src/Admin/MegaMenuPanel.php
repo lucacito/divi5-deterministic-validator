@@ -837,8 +837,8 @@ final class MegaMenuPanel
 
             /* the icon picker */
             #megamenu .aied-mm-glyph { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--mm-line); border-radius: 8px; background: #fff; color: var(--mm-muted); font-family: 'AiedFA', sans-serif; font-weight: 900; font-style: normal; font-size: 16px; line-height: 1; }
-            #megamenu .aied-mm-cardicons { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px 20px; max-width: 760px; }
-            #megamenu .aied-mm-cardicon { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 150px); gap: 8px; align-items: center; }
+            #megamenu .aied-mm-cardicons { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; max-width: 460px; }
+            #megamenu .aied-mm-cardicon { display: grid; grid-template-columns: minmax(0, 1fr) auto 190px; gap: 10px; align-items: center; }
             #megamenu .aied-mm-cardicon label { font-size: 13px; overflow-wrap: anywhere; }
             #megamenu .aied-mm-cardicon select { min-height: 28px; font-size: 12px; max-width: 100%; }
             #megamenu .aied-mm-glyph-sm { width: 28px; height: 28px; font-size: 13px; border-radius: 6px; }
