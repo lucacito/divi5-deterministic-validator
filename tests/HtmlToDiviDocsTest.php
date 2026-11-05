@@ -20,6 +20,7 @@ final class HtmlToDiviDocsTest extends TestCase
         'CLAUDE.md',
         'docs/html-to-divi-workflow.md',
         'wp-plugin/src/McpHandler.php',
+        'wp-plugin/src/ToolCatalog.php',
         'wp-plugin/src/SiteGuide.php',
         'wp-plugin/src/HtmlToDivi.php',
     ];

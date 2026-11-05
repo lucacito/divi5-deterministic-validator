@@ -31,6 +31,7 @@ require_once __DIR__ . '/OAuthRuntime.php';
 require_once __DIR__ . '/OAuthRoutes.php';
 require_once __DIR__ . '/OAuthAuthorizeHandler.php';
 require_once __DIR__ . '/OAuthAdmin.php';
+require_once __DIR__ . '/ToolCatalog.php';
 require_once __DIR__ . '/StyleGuide.php';
 require_once __DIR__ . '/ImagePack.php';
 require_once __DIR__ . '/ImageTokens.php';

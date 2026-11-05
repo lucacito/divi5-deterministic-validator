@@ -92,7 +92,7 @@ class CustomFieldsLockstepTest extends TestCase
 
     public function testMcpDeclaresAndDispatchesTheTool(): void
     {
-        $mcp = $this->src( 'McpHandler.php' );
+        $mcp = $this->src( 'McpHandler.php' ) . $this->src( 'ToolCatalog.php' );
         $this->assertStringContainsString( "'name'        => 'get_custom_fields'", $mcp );
         $this->assertMatchesRegularExpression( "/'get_custom_fields'\s*=>\s*\\\$this->toolGetCustomFields/", $mcp );
     }

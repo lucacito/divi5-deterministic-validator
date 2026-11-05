@@ -57,7 +57,7 @@ class DryRunLockstepTest extends TestCase
 
     public function testMcpDeclaresDryRunAsABooleanOnBothWriteTools(): void
     {
-        $mcp = $this->src( 'McpHandler.php' );
+        $mcp = $this->src( 'McpHandler.php' ) . $this->src( 'ToolCatalog.php' );
         $this->assertSame( 2, substr_count( $mcp, "'dry_run' => ['type' => 'boolean'" ) );
         $this->assertStringContainsString( 'dry_run=true', $mcp, 'the tool descriptions explain dry_run' );
     }

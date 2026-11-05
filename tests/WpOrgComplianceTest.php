@@ -374,7 +374,7 @@ class WpOrgComplianceTest extends TestCase
 
     public function testCreatePageIsFreeAndTheMcpToolListIsExactlyTheFreeTools(): void
     {
-        $mcp  = (string) file_get_contents(self::ROOT . '/src/McpHandler.php');
+        $mcp  = (string) file_get_contents(self::ROOT . '/src/McpHandler.php') . (string) file_get_contents(self::ROOT . '/src/ToolCatalog.php');
         $rest = (string) file_get_contents(self::ROOT . '/src/RestController.php');
         $this->assertStringNotContainsString('upgrade_url', $mcp);
         $this->assertStringNotContainsString('upgrade_url', $rest);

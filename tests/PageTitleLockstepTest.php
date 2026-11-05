@@ -112,7 +112,7 @@ class PageTitleLockstepTest extends TestCase
 
     public function testTheUpdateHandlersParseThePlanAndWriteTheTitleAndTheEditHandlersNeverDo(): void
     {
-        $mcp  = $this->src( 'McpHandler.php' );
+        $mcp  = $this->src( 'McpHandler.php' ) . $this->src( 'ToolCatalog.php' );
         $rest = $this->src( 'RestController.php' );
 
         $updates = [

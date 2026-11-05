@@ -1,0 +1,1459 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "JHMG AI Editor for Divi 5",
+        "description": "Let your AI assistant read and edit Divi 5 pages with natural language. Every change is validated before saving, so a broken layout is never saved.",
+        "version": "9.9.9"
+    },
+    "servers": [
+        {
+            "url": "https://acme.example/wp-json/ai-editor-divi5/v1"
+        }
+    ],
+    "security": [
+        {
+            "ApiKey": []
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "ApiKey": {
+                "type": "http",
+                "scheme": "bearer",
+                "description": "API key from WordPress admin → AI Editor → Settings (JHMG AI Editor for Divi 5)"
+            }
+        },
+        "schemas": {
+            "Violation": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "description": "Machine-readable violation code"
+                    },
+                    "message": {
+                        "type": "string",
+                        "description": "Human-readable description"
+                    },
+                    "path": {
+                        "type": "string",
+                        "description": "Path to the offending block"
+                    }
+                }
+            },
+            "PageSummary": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "post_type": {
+                        "type": "string",
+                        "description": "page or project"
+                    },
+                    "link": {
+                        "type": "string"
+                    },
+                    "edit_link": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ValidationResult": {
+                "type": "object",
+                "properties": {
+                    "valid": {
+                        "type": "boolean"
+                    },
+                    "violations": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Violation"
+                        }
+                    },
+                    "advisories": {
+                        "$ref": "#/components/schemas/Advisories"
+                    }
+                }
+            },
+            "StyleRefCount": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "The id the layout cites"
+                    },
+                    "count": {
+                        "type": "integer",
+                        "description": "How many times the layout cites it"
+                    }
+                }
+            },
+            "StyleAdvisory": {
+                "type": "object",
+                "properties": {
+                    "unknown_presets": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/StyleRefCount"
+                        },
+                        "description": "Preset ids that do not exist on this site (at most 20)"
+                    },
+                    "unknown_colors": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/StyleRefCount"
+                        },
+                        "description": "Global color ids that do not exist on this site (at most 20)"
+                    },
+                    "unknown_variables": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/StyleRefCount"
+                        },
+                        "description": "Global variable ids (gvid-...) that do not exist on this site (at most 20); Divi silently drops a value that cites one"
+                    },
+                    "unknown_custom_fields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/StyleRefCount"
+                        },
+                        "description": "Custom-field names (an ACF field, or any post meta key) a layout binds dynamic content to that this site does not have (at most 20); Divi renders an empty module for one"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Advisories": {
+                "type": "object",
+                "description": "Present only when there is something to report. Advisories never change valid or the save.",
+                "properties": {
+                    "style_references": {
+                        "$ref": "#/components/schemas/StyleAdvisory"
+                    },
+                    "design_variety": {
+                        "type": "object",
+                        "description": "A valid page of three or more sections that looks repetitive: findings (code, sections, message, try) and a message. A hint only; the page is saved as is."
+                    },
+                    "unresolved_tokens": {
+                        "type": "object",
+                        "description": "tokens: the aied placeholder tokens (double curly braces) still in the layout, each once. A hint only: fetch the recipe again through get_section_recipes or use a real value."
+                    }
+                }
+            },
+            "GlobalPreset": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Preset id, used as modulePreset"
+                    },
+                    "module": {
+                        "type": "string",
+                        "description": "Module name, e.g. divi/button"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "default": {
+                        "type": "boolean",
+                        "description": "true when this is the default preset of its module (applied to every module without a modulePreset)"
+                    },
+                    "controls": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "The attribute areas the preset sets (dotted paths)"
+                    },
+                    "renders": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "Structural settings, e.g. headingLevel=h3"
+                    }
+                }
+            },
+            "GlobalColor": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Global color id (gcid-...)"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "color": {
+                        "type": "string"
+                    },
+                    "source": {
+                        "type": "string",
+                        "enum": [
+                            "theme",
+                            "custom"
+                        ]
+                    }
+                }
+            },
+            "GlobalVariable": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                }
+            },
+            "HistoryEntry": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Version id (use with restore)"
+                    },
+                    "saved_at": {
+                        "type": "string",
+                        "description": "UTC time the snapshot was taken"
+                    },
+                    "tool": {
+                        "type": "string",
+                        "description": "Which action replaced this version"
+                    },
+                    "actor": {
+                        "type": "integer",
+                        "description": "WordPress user id"
+                    },
+                    "bytes": {
+                        "type": "integer"
+                    },
+                    "label": {
+                        "type": "string"
+                    }
+                }
+            },
+            "DryRunAttr": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "Attribute path, dot-separated"
+                    },
+                    "before": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Value now (null if absent), cut to 200 characters"
+                    },
+                    "after": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Value after the change (null if removed), cut to 200 characters"
+                    }
+                }
+            },
+            "DryRunChange": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "Where the block sits, e.g. divi/placeholder[0]/divi/section[0]/divi/heading[1]"
+                    },
+                    "block": {
+                        "type": "string"
+                    },
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "added",
+                            "removed",
+                            "changed"
+                        ]
+                    },
+                    "attrs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DryRunAttr"
+                        },
+                        "description": "For changed blocks: the attributes that differ (at most 25)"
+                    },
+                    "attrs_omitted": {
+                        "type": "integer",
+                        "description": "How many more differing attributes were left out"
+                    }
+                }
+            },
+            "DryRunDiff": {
+                "type": "object",
+                "properties": {
+                    "summary": {
+                        "type": "object",
+                        "properties": {
+                            "added": {
+                                "type": "integer"
+                            },
+                            "removed": {
+                                "type": "integer"
+                            },
+                            "changed": {
+                                "type": "integer"
+                            },
+                            "unchanged": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "changes": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DryRunChange"
+                        },
+                        "description": "At most 50 changes"
+                    },
+                    "truncated": {
+                        "type": "boolean",
+                        "description": "true when there were more than 50 changes; summary has the true totals"
+                    }
+                }
+            },
+            "MediaItem": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Attachment id"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "alt": {
+                        "type": "string",
+                        "description": "Alt text (reuse it on the image module)"
+                    },
+                    "caption": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string",
+                        "description": "Full-size image URL to use as the image src"
+                    },
+                    "thumbnail_url": {
+                        "type": "string"
+                    },
+                    "width": {
+                        "type": "integer"
+                    },
+                    "height": {
+                        "type": "integer"
+                    },
+                    "orientation": {
+                        "type": "string",
+                        "enum": [
+                            "landscape",
+                            "portrait",
+                            "square"
+                        ]
+                    },
+                    "mime": {
+                        "type": "string"
+                    },
+                    "filename": {
+                        "type": "string"
+                    }
+                }
+            },
+            "SnapshotInfo": {
+                "type": "object",
+                "properties": {
+                    "stored": {
+                        "type": "boolean",
+                        "description": "True if the previous content was saved as an undo version"
+                    },
+                    "version_id": {
+                        "type": "integer",
+                        "description": "Version id to pass to restorePageVersion (when stored)"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "description": "Why nothing was stored: duplicate, too_large, invalid_encoding, store_failed or title_only (a title-only save has no layout snapshot) (absent or null when stored)"
+                    }
+                }
+            }
+        }
+    },
+    "paths": {
+        "/pages": {
+            "get": {
+                "operationId": "listDiviPages",
+                "summary": "List Divi 5 pages or Projects",
+                "description": "Returns the WordPress pages (or, with post_type=project, the Divi Projects) that use the Divi 5 builder and that the authenticated user can edit, including their IDs and edit links.",
+                "parameters": [
+                    {
+                        "name": "post_type",
+                        "in": "query",
+                        "required": false,
+                        "description": "page (default) or project",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "page",
+                                "project"
+                            ],
+                            "default": "page"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "pages": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PageSummary"
+                                            }
+                                        },
+                                        "count": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "post_type is not page or project"
+                    },
+                    "403": {
+                        "description": "The user cannot edit pages"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createPage",
+                "summary": "Create a new page (draft)",
+                "description": "Validates the layout and creates a new page as a DRAFT for the owner to review and publish. Returns 422 with violations if it is invalid, and nothing is created. Call the landing, style, section-recipes and image guides first.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "title",
+                                    "post_content"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "description": "Page title"
+                                    },
+                                    "post_content": {
+                                        "type": "string",
+                                        "description": "Divi 5 Gutenberg block HTML"
+                                    },
+                                    "slug": {
+                                        "type": "string",
+                                        "description": "Optional URL slug for cross-linking"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Page created (advisories lists unknown preset or color ids, if any)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "created": {
+                                            "type": "boolean"
+                                        },
+                                        "valid": {
+                                            "type": "boolean"
+                                        },
+                                        "advisories": {
+                                            "$ref": "#/components/schemas/Advisories"
+                                        }
+                                    },
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing title or post_content, or a field that is not a string"
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationResult"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/pages/{id}": {
+            "get": {
+                "operationId": "getPageLayout",
+                "summary": "Get a page layout",
+                "description": "Returns the Divi 5 post_content (block HTML) and metadata for a page or Divi Project. view=outline lists the blocks (path, name, size, start of text) for far fewer tokens; view=block with a path returns one block exactly.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "description": "WordPress page or Divi Project ID"
+                        }
+                    },
+                    {
+                        "name": "view",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "full",
+                                "outline",
+                                "block"
+                            ]
+                        },
+                        "description": "full (default), outline, or block (needs path)"
+                    },
+                    {
+                        "name": "path",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "With view=block: the path from the outline, such as 0.1.2"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Page layout",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "post_id": {
+                                            "type": "integer"
+                                        },
+                                        "post_type": {
+                                            "type": "string",
+                                            "description": "The WordPress post type: page or project"
+                                        },
+                                        "post_title": {
+                                            "type": "string"
+                                        },
+                                        "post_status": {
+                                            "type": "string"
+                                        },
+                                        "post_content": {
+                                            "type": "string",
+                                            "description": "Divi 5 Gutenberg block HTML"
+                                        },
+                                        "format": {
+                                            "type": "string"
+                                        },
+                                        "divi_version": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Page not found"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "updatePageLayout",
+                "summary": "Validate and save a page layout",
+                "description": "Saves the layout only if all checks pass (422 with violations otherwise). dry_run=true previews without saving; a dry run of an invalid layout returns 200 with valid:false and the violations. title alone renames the page (not the h1); restorePageVersion cannot undo a title.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "description": "WordPress page or Divi Project ID"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "post_content": {
+                                        "type": "string",
+                                        "description": "Divi 5 Gutenberg block HTML. Optional when title is given"
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "description": "Optional. New WordPress page title: plain text, one line, 1 to 200 characters, no HTML. Changes the page title only, not any heading in the layout."
+                                    },
+                                    "dry_run": {
+                                        "type": "boolean",
+                                        "description": "Optional. true = preview only: returns the checker verdict and a diff of what would change, and saves nothing."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Saved (history reports the undo snapshot), or, with dry_run, a preview that saved nothing",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "saved": {
+                                            "type": "boolean"
+                                        },
+                                        "valid": {
+                                            "type": "boolean"
+                                        },
+                                        "layout_changed": {
+                                            "type": "boolean",
+                                            "description": "false for a title-only call: the layout was not touched (true only if WordPress or another plugin changed the content while the title was saved; the message says so)"
+                                        },
+                                        "title": {
+                                            "type": "object",
+                                            "description": "Present when a title was sent. title.after is the exact stored title and the authority; the page object shows the display title, which can differ.",
+                                            "properties": {
+                                                "changed": {
+                                                    "type": "boolean"
+                                                },
+                                                "before": {
+                                                    "type": "string"
+                                                },
+                                                "after": {
+                                                    "type": "string"
+                                                },
+                                                "restorable": {
+                                                    "type": "boolean",
+                                                    "description": "False whenever present (only included when the title changed): restorePageVersion does not bring a title back"
+                                                }
+                                            }
+                                        },
+                                        "history": {
+                                            "$ref": "#/components/schemas/SnapshotInfo"
+                                        },
+                                        "dry_run": {
+                                            "type": "boolean",
+                                            "description": "true when this was a preview and nothing was saved"
+                                        },
+                                        "diff": {
+                                            "$ref": "#/components/schemas/DryRunDiff"
+                                        },
+                                        "diff_error": {
+                                            "type": "string",
+                                            "description": "Why no diff could be built (diff is then null); the verdict is still valid"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "advisories": {
+                                            "$ref": "#/components/schemas/Advisories"
+                                        }
+                                    },
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing post_content and title, or an invalid title"
+                    },
+                    "404": {
+                        "description": "Page not found"
+                    },
+                    "428": {
+                        "description": "Approval mode is on and this exact change was not previewed. Call again with dry_run true first, then repeat the save."
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationResult"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/pages/{id}/edit": {
+            "post": {
+                "operationId": "editPageContent",
+                "summary": "Surgically edit page text (find/replace)",
+                "description": "Change one small part of a page or Divi Project by exact find-and-replace, without resending the layout (e.g. an email, phone, link, or line of copy). \"find\" must match once unless expect_count is set. Returns 422 and changes nothing if find is missing, ambiguous, or would break validation.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "description": "WordPress page or Divi Project ID"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "find",
+                                    "replace"
+                                ],
+                                "properties": {
+                                    "find": {
+                                        "type": "string",
+                                        "description": "Exact text to find (verbatim; include surrounding text so it is unique)"
+                                    },
+                                    "replace": {
+                                        "type": "string",
+                                        "description": "Text to replace it with"
+                                    },
+                                    "expect_count": {
+                                        "type": "integer",
+                                        "description": "Optional: number of matches to replace (must equal the number found)"
+                                    },
+                                    "dry_run": {
+                                        "type": "boolean",
+                                        "description": "Optional. true = preview only: returns the checker verdict and a diff of what would change, and saves nothing. An invalid result still comes back as a normal 200 preview with valid:false."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Saved (history reports the undo snapshot), or, with dry_run, a preview that saved nothing",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "saved": {
+                                            "type": "boolean"
+                                        },
+                                        "replaced": {
+                                            "type": "integer"
+                                        },
+                                        "history": {
+                                            "$ref": "#/components/schemas/SnapshotInfo"
+                                        },
+                                        "dry_run": {
+                                            "type": "boolean",
+                                            "description": "true when this was a preview and nothing was saved"
+                                        },
+                                        "diff": {
+                                            "$ref": "#/components/schemas/DryRunDiff"
+                                        },
+                                        "diff_error": {
+                                            "type": "string",
+                                            "description": "Why no diff could be built (diff is then null); the verdict is still valid"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "advisories": {
+                                            "$ref": "#/components/schemas/Advisories"
+                                        }
+                                    },
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing find or replace"
+                    },
+                    "404": {
+                        "description": "Page not found"
+                    },
+                    "428": {
+                        "description": "Approval mode is on and this exact change was not previewed. Call again with dry_run true first, then repeat the save."
+                    },
+                    "422": {
+                        "description": "Find not found, ambiguous, or edit would invalidate — page unchanged",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationResult"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/pages/{id}/history": {
+            "get": {
+                "operationId": "listPageHistory",
+                "summary": "List a page's saved previous versions",
+                "description": "Every AI save tries to snapshot the previous content of the page or Divi Project (last 10, fewer for large pages). Returns saved versions newest first (id, time, tool, size); restore one with restorePageVersion when a snapshot was kept (history.stored).",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "description": "WordPress page or Divi Project ID"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Versions",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "page_id": {
+                                            "type": "integer"
+                                        },
+                                        "count": {
+                                            "type": "integer"
+                                        },
+                                        "versions": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/HistoryEntry"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Page not found"
+                    }
+                }
+            }
+        },
+        "/pages/{id}/history/{versionId}": {
+            "get": {
+                "operationId": "getPageHistoryEntry",
+                "summary": "Get one saved version's content",
+                "description": "Returns the full saved content of one previous version (from listPageHistory), e.g. to compare it with the current layout before restoring.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "description": "WordPress page or Divi Project ID"
+                        }
+                    },
+                    {
+                        "name": "versionId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "description": "Version id from listPageHistory"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Version content",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "page_id": {
+                                            "type": "integer"
+                                        },
+                                        "version": {
+                                            "$ref": "#/components/schemas/HistoryEntry"
+                                        },
+                                        "post_content": {
+                                            "type": "string",
+                                            "description": "Divi 5 Gutenberg block HTML"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Page or version not found"
+                    }
+                }
+            }
+        },
+        "/pages/{id}/restore": {
+            "post": {
+                "operationId": "restorePageVersion",
+                "summary": "Undo: restore a saved version",
+                "description": "Restores a page or Divi Project to a previous saved version. The current content is snapshotted first; the restore is itself undoable when its own history.stored is true. Not blocked by validation (it is the owner's own earlier content); the response reports whether it passes the validator.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "description": "WordPress page or Divi Project ID"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "version_id"
+                                ],
+                                "properties": {
+                                    "version_id": {
+                                        "type": "integer",
+                                        "description": "Version id from listPageHistory"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Restored",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "restored": {
+                                            "type": "boolean"
+                                        },
+                                        "restored_version": {
+                                            "type": "integer"
+                                        },
+                                        "title_restored": {
+                                            "type": "boolean",
+                                            "description": "Always false: a restore brings back the layout only, never the page title"
+                                        },
+                                        "title_note": {
+                                            "type": "string",
+                                            "description": "Says which title the page keeps"
+                                        },
+                                        "history": {
+                                            "$ref": "#/components/schemas/SnapshotInfo"
+                                        },
+                                        "validator": {
+                                            "$ref": "#/components/schemas/ValidationResult"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing version_id"
+                    },
+                    "404": {
+                        "description": "Page or version not found"
+                    }
+                }
+            }
+        },
+        "/style-guide": {
+            "get": {
+                "operationId": "getStyleGuide",
+                "summary": "Get the Divi 5 authoring + styling guide",
+                "description": "Returns real block structure rules, required content keys, and styling attribute shapes (backgrounds, gradients, spacing, typography, borders, shadows, transforms, hover, animation). Call before building or restyling a layout so the result is styled, not plain.",
+                "parameters": [
+                    {
+                        "name": "topic",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "Optional topic: design-languages, design-language:<id>, backgrounds, dividers, motion, hover-states, layout-advanced, layout-sizing, typography, imagery, controls, toggles, forms, composition, style-kits, kit-rules, kit-patterns, style-kit:<id>. <id>: one language or kit."
+                        }
+                    },
+                    {
+                        "name": "design_language",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "With topic=style-kit:<id>: resolve the sample blocks in this design language (ids: editorial, glass-dark, organic-warm, tech-mono, playful-pastel, corporate-trust, soft-saas, bold-vibrant, brutalist-flat, luxe). Default: the language that starts with that kit, else editorial."
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The guide (Markdown)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "guide": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/site-guide": {
+            "get": {
+                "operationId": "getSiteGuide",
+                "summary": "Get the multi-page site blueprint",
+                "description": "Blueprint for building an entire multi-page website from one brief: plan pages, lock one design system, build each page with a slug, cross-link, then tell the owner which page to set as the front page and which to add to the menu.",
+                "responses": {
+                    "200": {
+                        "description": "The blueprint (Markdown)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "guide": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/landing-guide": {
+            "get": {
+                "operationId": "getLandingGuide",
+                "summary": "Get the conversion-focused landing page blueprint",
+                "description": "Strategic blueprint for a landing page that converts: the persuasion flow (hero, problem, solution, benefits, social proof, features, FAQ, final CTA), how to adapt it to the business and audience, plus copywriting and CTA-placement rules. Call before building a marketing page.",
+                "responses": {
+                    "200": {
+                        "description": "The blueprint (Markdown)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "guide": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/image-guide": {
+            "get": {
+                "operationId": "getImageGuide",
+                "summary": "Get the image-intelligence guide",
+                "description": "How to assign the right image to each section by role: Media Library first (list_media_images), then the built-in image pack. Covers per-section rules, sizing and alt text. Call before choosing any image src.",
+                "responses": {
+                    "200": {
+                        "description": "The guide (Markdown)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "guide": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/global-styles": {
+            "get": {
+                "operationId": "listGlobalStyles",
+                "summary": "List the site's presets and colors",
+                "description": "Lists this site's own Divi 5 module presets, global colors and variables (read-only) so layouts reuse them. Filter presets with ?module=divi/button. Presets and colors are created in Divi's Visual Builder, not here.",
+                "parameters": [
+                    {
+                        "name": "module",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "Module name to list presets for, e.g. divi/button"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Presets, colors and variables",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "presets": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/GlobalPreset"
+                                            }
+                                        },
+                                        "colors": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/GlobalColor"
+                                            }
+                                        },
+                                        "variables": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/components/schemas/GlobalVariable"
+                                                }
+                                            },
+                                            "description": "Active variables grouped by type (numbers, strings, fonts...)"
+                                        },
+                                        "counts": {
+                                            "type": "object",
+                                            "properties": {
+                                                "presets": {
+                                                    "type": "integer"
+                                                },
+                                                "colors": {
+                                                    "type": "integer"
+                                                },
+                                                "variables": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        },
+                                        "truncated": {
+                                            "type": "boolean",
+                                            "description": "true when a list was cut to its limit; narrow presets with module"
+                                        },
+                                        "notes": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "module is not a string"
+                    },
+                    "403": {
+                        "description": "The user cannot edit pages"
+                    }
+                }
+            }
+        },
+        "/media": {
+            "get": {
+                "operationId": "listMediaImages",
+                "summary": "List Media Library images",
+                "description": "Lists images already in the Media Library (read-only) so pages can reuse the owner's own images. Scans the newest 200 matches (truncated=true if more; narrow with search). Filter by search and orientation. Returns id, title, alt, url, size, orientation.",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "Keywords matched against title, alt text and filename"
+                        }
+                    },
+                    {
+                        "name": "orientation",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "landscape",
+                                "portrait",
+                                "square"
+                            ],
+                            "description": "Orientation filter"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 50,
+                            "description": "Results per page (default 20, max 50)"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 200,
+                            "description": "Page number (default 1, max 200)"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Matching images",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/MediaItem"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        },
+                                        "pages": {
+                                            "type": "integer"
+                                        },
+                                        "page": {
+                                            "type": "integer"
+                                        },
+                                        "per_page": {
+                                            "type": "integer"
+                                        },
+                                        "truncated": {
+                                            "type": "boolean",
+                                            "description": "True when more matches exist beyond the 200 newest scanned; narrow with search"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Caller cannot read the Media Library"
+                    }
+                }
+            }
+        },
+        "/section-recipes": {
+            "get": {
+                "operationId": "getSectionRecipes",
+                "summary": "Get proven section recipes",
+                "description": "Library of validated Divi 5 section patterns. No query: compact catalog of names. ?role=, ?layout=, ?mood= list only the matches. ?name=<recipe> returns that section's full block markup to copy and fill (with ?design_language= in that language's colours and fonts).",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "Recipe name (omit to list all). Wins over the filters."
+                        }
+                    },
+                    {
+                        "name": "role",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "Only recipes for this role: hero, proof, features, stats, testimonials, pricing, team, faq, process, cta, gallery, contact, header, transition, content, shop, blog"
+                        }
+                    },
+                    {
+                        "name": "layout",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "Only recipes with this layout: centered, split, grid, bento, zigzag, stacked, carousel, overlap, band, list, form"
+                        }
+                    },
+                    {
+                        "name": "mood",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "Only recipes that fit this mood. Moods are design language ids (get_style_guide topic=design-languages); \"any\" lists only recipes that suit every look. Valid: any, editorial, glass-dark, organic-warm, tech-mono, playful-pastel, corporate-trust, soft-saas, bold-vibrant, brutalist-flat, luxe"
+                        }
+                    },
+                    {
+                        "name": "design_language",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "With name: serve the recipe in this design language's colours and fonts. Ids: editorial, glass-dark, organic-warm, tech-mono, playful-pastel, corporate-trust, soft-saas, bold-vibrant, brutalist-flat, luxe"
+                        }
+                    },
+                    {
+                        "name": "style_kit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "With name: serve the recipe's buttons, cards, accordions and toggles in this style kit instead of the design language's own kit; get_style_guide topic style-kits lists the kits, and an unknown id is refused with the list of valid ids."
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Catalog or a single recipe",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "catalog": {
+                                            "type": "object",
+                                            "additionalProperties": true,
+                                            "description": "Recipe names to short summaries: every recipe, or only the ones matching a role, layout or mood filter"
+                                        },
+                                        "names": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "description": "Recipe names: all of them, or only the matching ones when a role, layout or mood filter is given"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "description": "The requested recipe name (single lookup)"
+                                        },
+                                        "markup": {
+                                            "type": "string",
+                                            "description": "Block markup for the requested recipe"
+                                        }
+                                    },
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Unknown recipe name or design language (languages lists the valid ids)"
+                    }
+                }
+            }
+        },
+        "/validate": {
+            "post": {
+                "operationId": "validateLayout",
+                "summary": "Validate a layout without saving",
+                "description": "Runs all validation passes on a Divi 5 post_content string without writing to the database. Safe to call repeatedly.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "post_content"
+                                ],
+                                "properties": {
+                                    "post_content": {
+                                        "type": "string",
+                                        "description": "Divi 5 Gutenberg block HTML"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Valid layout",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationResult"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid layout",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationResult"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

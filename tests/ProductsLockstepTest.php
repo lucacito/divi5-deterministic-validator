@@ -101,7 +101,7 @@ class ProductsLockstepTest extends TestCase
 
     public function testMcpDeclaresAndDispatchesBothTools(): void
     {
-        $mcp = $this->src( 'McpHandler.php' );
+        $mcp = $this->src( 'McpHandler.php' ) . $this->src( 'ToolCatalog.php' );
         foreach ( [ 'list_products' => 'toolListProducts', 'get_product' => 'toolGetProduct' ] as $tool => $method ) {
             $this->assertStringContainsString( "'name'        => '{$tool}'", $mcp );
             $this->assertMatchesRegularExpression( "/'{$tool}'\s*=>\s*\\\$this->{$method}/", $mcp );
