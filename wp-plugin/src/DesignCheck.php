@@ -24,9 +24,10 @@ final class DesignCheck
 {
     /**
      * @param array<string,mixed>|null $known what exists on this site (StyleReferences::knownIds()), or null when it cannot be read
+     * @param ?callable(string):?bool $moduleHasPreset whether the site has any preset for a module, for the stock-look checks
      * @return array{checks:array<string,array<string,mixed>>, problem_count:int, not_checked:list<string>, message:string}
      */
-    public static function run( string $content, ?array $known = null ): array
+    public static function run( string $content, ?array $known = null, ?callable $moduleHasPreset = null ): array
     {
         $contrast = ContrastCheck::check( $content );
 
@@ -41,7 +42,7 @@ final class DesignCheck
             ? [ 'status' => 'ok', 'note' => 'No repetition found, or the page has fewer than ' . DesignVariety::MIN_SECTIONS . ' sections and is not judged.' ]
             : [ 'status' => 'problems', 'details' => $variety ];
 
-        $defaults = DefaultFallbacks::check( $content );
+        $defaults = DefaultFallbacks::check( $content, $moduleHasPreset );
 
         $checks = [
             'contrast'          => [ 'status' => $contrast['status'] ] + $contrast,

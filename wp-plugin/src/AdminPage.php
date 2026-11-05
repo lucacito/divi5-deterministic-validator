@@ -634,6 +634,19 @@ final class AdminPage
         <?php
     }
 
+    /** One line when another tool's Divi abilities are present: the plugin's guidance, checks and undo work with them. */
+    private function companionNotice(): void
+    {
+        $mcp = DiviMcpDetector::current();
+        if ( ! $mcp['present'] ) {
+            return;
+        }
+        ?>
+        <div class="notice notice-info inline"><p><strong><?php esc_html_e( 'Works alongside Divi MCP:', 'jhmg-ai-editor-for-divi-5' ); ?></strong>
+            <?php esc_html_e( 'design guidance, validation and undo are active.', 'jhmg-ai-editor-for-divi-5' ); ?></p></div>
+        <?php
+    }
+
     private function viewDashboard(): void
     {
         $summary  = UsageTracker::getSummary();
@@ -644,6 +657,8 @@ final class AdminPage
             <h1><?php esc_html_e( 'Welcome 👋', 'jhmg-ai-editor-for-divi-5' ); ?></h1>
             <p><?php esc_html_e( 'Edit your Divi 5 site by chatting with your AI assistant. Here’s what to do next.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
         </div>
+
+        <?php $this->companionNotice(); ?>
 
         <div class="aied-grid aied-grid--2">
             <!-- Primary action -->
@@ -789,6 +804,10 @@ final class AdminPage
             [ __( 'Turn existing HTML into a Divi page', 'jhmg-ai-editor-for-divi-5' ), __( 'Give your AI some HTML and it rebuilds the content as a Divi 5 page: sections, columns, headings, text, buttons, images and every link. It previews first and saves only a draft. Scripts, forms, embeds and site navigation are never converted, and it tells you what it left out.', 'jhmg-ai-editor-for-divi-5' ), 'html_to_divi' ],
             [ __( 'Build entire websites', 'jhmg-ai-editor-for-divi-5' ), __( 'A built-in blueprint helps your AI plan a cohesive multi-page site (home, about, services, contact) with shared styling and links between the pages, then tells you how to finish setting it up yourself.', 'jhmg-ai-editor-for-divi-5' ), 'get_site_guide' ],
             [ __( 'Conversion-focused page generation', 'jhmg-ai-editor-for-divi-5' ), __( 'A built-in landing-page blueprint, design vocabulary and proven section patterns guide the AI to produce polished, on-brand pages with a strategic structure built to convert.', 'jhmg-ai-editor-for-divi-5' ), 'get_landing_guide, get_style_guide, get_section_recipes' ],
+            [ __( 'Ten design languages', 'jhmg-ai-editor-for-divi-5' ), __( 'Colors, fonts, shape, spacing and things to avoid for ten complete looks, with text and background pairings checked for contrast. Your AI picks one before it builds, with any tool. Offered as a WordPress ability on WordPress 6.9 and later.', 'jhmg-ai-editor-for-divi-5' ), 'get-design-languages, get_style_guide' ],
+            [ __( 'Proven section recipes', 'jhmg-ai-editor-for-divi-5' ), __( '71 tested section patterns your AI can filter by role, layout, mood, density and the persuasion stage of the page, then use in a design language and style kit.', 'jhmg-ai-editor-for-divi-5' ), 'get_section_recipes, get-variety-advice' ],
+            [ __( 'Design check for any page', 'jhmg-ai-editor-for-divi-5' ), __( 'An advisory check of any Divi 5 page, whoever built it: text that cannot be read, Divi\'s grey placeholder images and stock buttons, ids your site does not have, and repetitive sections. It never blocks or changes anything and says what it could not check.', 'jhmg-ai-editor-for-divi-5' ), 'check-design' ],
+            [ __( 'Undo for every tool', 'jhmg-ai-editor-for-divi-5' ), __( 'The previous version of a Divi page is kept before any tool changes it, including Divi\'s own MCP, an application password or the REST API, and the Dashboard shows where each change came from. Choose the sources in Settings.', 'jhmg-ai-editor-for-divi-5' ), 'list-page-history, restore-page-version' ],
             [ __( 'Relevant images', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI looks in your Media Library first (read-only) and otherwise uses the built-in image pack, so pages do not ship with empty image slots. Nothing is downloaded from other sites.', 'jhmg-ai-editor-for-divi-5' ), 'list_media_images, get_image_guide' ],
         ];
         ?>
@@ -809,6 +828,30 @@ final class AdminPage
     // ---------------------------------------------------------------
     // View: Settings
     // ---------------------------------------------------------------
+
+    /** The text a person pastes into their assistant so it uses this plugin's abilities beside Divi's own tools. */
+    public static function aiInstructions(): string
+    {
+        return "When you work on a Divi 5 page, use the JHMG AI Editor abilities alongside the Divi tools:\n"
+            . "1. Before building, call jhmg-ai-editor/get-design-languages and jhmg-ai-editor/get-section-recipes, pick one design language and the section recipes that fit, and read jhmg-ai-editor/get-style-guide.\n"
+            . "2. Build or edit the page with any tool you like.\n"
+            . "3. After building, call jhmg-ai-editor/validate-layout and jhmg-ai-editor/check-design on the page, and fix what they report.\n"
+            . "4. If a change was wrong, undo it with jhmg-ai-editor/list-page-history and jhmg-ai-editor/restore-page-version.";
+    }
+
+    /** The Settings card with the paste-in text. */
+    public function aiInstructionsCard(): void
+    {
+        $text = self::aiInstructions();
+        ?>
+        <div class="aied-card">
+            <h3><?php esc_html_e( 'Instructions for your AI', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
+            <p class="aied-muted"><?php esc_html_e( 'Paste this into Claude, ChatGPT or Codex (a project, custom instructions or AGENTS.md) so your assistant uses this plugin\'s design guidance, checks and undo together with Divi\'s own MCP. The abilities need WordPress 6.9 or later.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            <textarea class="large-text code" rows="8" readonly id="aied-ai-instructions"><?php echo esc_textarea( $text ); ?></textarea>
+            <p><button type="button" class="button button-primary" data-copy="<?php echo esc_attr( $text ); ?>"><?php esc_html_e( 'Copy', 'jhmg-ai-editor-for-divi-5' ); ?></button></p>
+        </div>
+        <?php
+    }
 
     /** The Settings card that chooses which sources of page changes keep an undo point. */
     public function historySourcesCard(): void
@@ -915,6 +958,7 @@ final class AdminPage
 
         <?php $this->approvalCard(); ?>
         <?php $this->historySourcesCard(); ?>
+        <?php $this->aiInstructionsCard(); ?>
         <?php OAuthAdmin::card(); ?>
 
         <!-- Activity log -->

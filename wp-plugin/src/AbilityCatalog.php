@@ -188,7 +188,7 @@ final class AbilityCatalog
             'name'        => 'check-design',
             'tool'        => null,
             'label'       => 'Check the design of a page',
-            'description' => 'Call after building a page with any Divi tool to catch design problems the builder accepts: text that fails contrast, ids of presets or colors this site does not have, and repetitive sections. It is advice only, never blocks or changes a page, and lists what it could not check. Pass post_content or a page_id.',
+            'description' => 'Call after building a page with any Divi tool to catch design problems the builder accepts: text that fails contrast, Divi\'s grey placeholder images and stock buttons or tab bars, ids of presets or colors this site does not have, and repetitive sections. It is advice only, never blocks or changes a page, and lists what it could not check. Pass post_content or a page_id.',
             'annotations' => self::READ,
             'input'       => self::objectSchema( [
                 'type'       => 'object',

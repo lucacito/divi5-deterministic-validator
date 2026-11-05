@@ -1,0 +1,107 @@
+{
+  "divi": "5.15.1",
+  "source": "fixtures/valid/page-17-newpage.json (unstyled modules as the builder writes them)",
+  "measured": {
+    "button": {
+      "color": "rgb(255, 255, 255)",
+      "background-color": "rgba(0, 0, 0, 0)",
+      "border-top-width": "2px",
+      "border-top-color": "rgb(255, 255, 255)",
+      "border-top-style": "solid",
+      "font-size": "20px",
+      "padding-top": "6px"
+    },
+    "tabControl": {
+      "background-color": "rgb(255, 255, 255)",
+      "color": "rgb(102, 102, 102)"
+    },
+    "tabControlActive": {
+      "background-color": "rgb(255, 255, 255)",
+      "color": "rgb(102, 102, 102)"
+    },
+    "tabsBar": {
+      "background-color": "rgb(244, 244, 244)"
+    },
+    "accordionTitle": {
+      "color": "rgb(51, 51, 51)",
+      "background-color": "rgba(0, 0, 0, 0)"
+    },
+    "accordionItem": {
+      "background-color": "rgb(255, 255, 255)",
+      "border-top-color": "rgb(217, 217, 217)"
+    },
+    "images": [
+      {
+        "src": "http://localhost:8181/wp-content/uploads",
+        "natural": [
+          256,
+          256
+        ]
+      },
+      {
+        "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD",
+        "natural": [
+          1080,
+          540
+        ]
+      },
+      {
+        "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD",
+        "natural": [
+          1080,
+          540
+        ]
+      },
+      {
+        "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD",
+        "natural": [
+          1080,
+          540
+        ]
+      },
+      {
+        "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD",
+        "natural": [
+          1080,
+          540
+        ]
+      },
+      {
+        "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD",
+        "natural": [
+          1080,
+          540
+        ]
+      },
+      {
+        "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD",
+        "natural": [
+          1080,
+          540
+        ]
+      },
+      {
+        "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD",
+        "natural": [
+          1080,
+          540
+        ]
+      },
+      {
+        "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD",
+        "natural": [
+          1080,
+          540
+        ]
+      }
+    ],
+    "modulesSeen": [
+      "et_pb_image",
+      "et_pb_button",
+      "et_pb_accordion",
+      "et_pb_toggle",
+      "et_pb_blurb",
+      "et_pb_tabs"
+    ]
+  }
+}

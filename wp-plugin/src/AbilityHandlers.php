@@ -130,7 +130,14 @@ final class AbilityHandlers
             return $content;
         }
 
-        return DesignCheck::run( $content, StyleReferences::knownIds() );
+        return DesignCheck::run( $content, StyleReferences::knownIds(), static function ( string $module ): ?bool {
+            $catalog = GlobalStyles::catalog( $module );
+            if ( in_array( "Divi's preset data is not available on this site.", $catalog['notes'], true ) ) {
+                return null;
+            }
+
+            return [] !== $catalog['presets'];
+        } );
     }
 
     /**
