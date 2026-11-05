@@ -1,0 +1,299 @@
+[
+    {
+        "name": "audit-site",
+        "label": "Audit the whole site",
+        "capability": "edit_pages",
+        "annotations": {
+            "readonly": true,
+            "destructive": false,
+            "idempotent": true
+        },
+        "page_arg": null,
+        "description": "Call to audit Divi 5 pages (and the live header and footer with scope layouts) for layout violations, unknown ids, broken internal links, and design problems: text that cannot be read, Divi's stock placeholders, repeated sections with recipes to try. 25 items per call; pass next_cursor to continue. It works on pages built by any tool and changes nothing.",
+        "input": {
+            "type": "object",
+            "properties": {
+                "scope": {
+                    "type": "string",
+                    "enum": [
+                        "pages",
+                        "layouts",
+                        "all"
+                    ],
+                    "description": "pages, layouts or all (default all)"
+                },
+                "cursor": {
+                    "type": "integer",
+                    "description": "Where to continue: the next_cursor of the previous call (default 0 = from the start)"
+                },
+                "include_design": {
+                    "type": "boolean",
+                    "description": "Also run the design check on each page (default true)"
+                }
+            },
+            "default": []
+        }
+    },
+    {
+        "name": "design-review-site",
+        "label": "Review the site's design",
+        "capability": "edit_pages",
+        "annotations": {
+            "readonly": true,
+            "destructive": false,
+            "idempotent": true
+        },
+        "page_arg": null,
+        "description": "Call after building or changing pages with any Divi tool to get one prioritised fix list for 25 pages at a time: unreadable text and broken links first, then Divi's stock look and unknown ids, then repetition, uneven spacing and colors that should use a global color. Any agent can then fix each item with any tool. Pass next_cursor to continue. Read-only.",
+        "input": {
+            "type": "object",
+            "properties": {
+                "scope": {
+                    "type": "string",
+                    "enum": [
+                        "pages",
+                        "layouts",
+                        "all"
+                    ],
+                    "description": "pages, layouts or all (default all)"
+                },
+                "cursor": {
+                    "type": "integer",
+                    "description": "Where to continue: the next_cursor of the previous call (default 0 = from the start)"
+                }
+            },
+            "default": []
+        }
+    },
+    {
+        "name": "find-replace-site",
+        "label": "Find and replace text across the site",
+        "capability": "edit_pages",
+        "annotations": {
+            "readonly": false,
+            "destructive": false,
+            "idempotent": false
+        },
+        "page_arg": null,
+        "description": "Call to replace an exact piece of text across many pages (and optionally the header and footer). Do a dry_run first: it returns a one-time token valid for 30 minutes that a real run needs. Every result is validated, a page changed since the preview is skipped, and the whole run is one undoable batch.",
+        "input": {
+            "type": "object",
+            "properties": {
+                "find": {
+                    "type": "string",
+                    "description": "Exact text to find (case-sensitive, literal, not a pattern)"
+                },
+                "replace": {
+                    "type": "string",
+                    "description": "Text to put in its place (may be empty)"
+                },
+                "scope": {
+                    "type": "string",
+                    "description": "pages (default), layouts or all",
+                    "enum": [
+                        "pages",
+                        "layouts",
+                        "all"
+                    ]
+                },
+                "page_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "description": "Optional. Only these page or layout ids"
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only; returns the token a real run needs"
+                },
+                "token": {
+                    "type": "string",
+                    "description": "The token from your dry run of the same arguments; it works once, within 30 minutes"
+                }
+            },
+            "required": [
+                "find",
+                "replace"
+            ]
+        }
+    },
+    {
+        "name": "list-batches",
+        "label": "List recent batches of changes",
+        "capability": "edit_pages",
+        "annotations": {
+            "readonly": true,
+            "destructive": false,
+            "idempotent": true
+        },
+        "page_arg": null,
+        "description": "Call to see what could be undone: the Pro tools' recorded batches, plus the changes any agent made in the last 3 days, grouped by who made them and when (or by start-batch and end-batch), whatever tool they used.",
+        "input": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer",
+                    "description": "How many recorded batches (1-20, default 10)"
+                }
+            },
+            "default": []
+        }
+    },
+    {
+        "name": "start-batch",
+        "label": "Start a batch of changes",
+        "capability": "edit_pages",
+        "annotations": {
+            "readonly": false,
+            "destructive": false,
+            "idempotent": false
+        },
+        "page_arg": null,
+        "description": "Call before a series of edits with any tool, so they can be undone together with undo-batch. Call end-batch when done. Nothing else is needed: without it, changes by the same source close together in time are grouped automatically.",
+        "input": {
+            "type": "object",
+            "properties": {
+                "label": {
+                    "type": "string",
+                    "description": "A short name for what you are about to do"
+                }
+            },
+            "default": []
+        }
+    },
+    {
+        "name": "end-batch",
+        "label": "End the current batch",
+        "capability": "edit_pages",
+        "annotations": {
+            "readonly": false,
+            "destructive": false,
+            "idempotent": false
+        },
+        "page_arg": null,
+        "description": "Call when a start-batch series of edits is finished.",
+        "input": {
+            "type": "object",
+            "properties": [],
+            "default": []
+        }
+    },
+    {
+        "name": "get-mega-menu",
+        "label": "Look at the header mega menu",
+        "capability": "edit_theme_options",
+        "annotations": {
+            "readonly": true,
+            "destructive": false,
+            "idempotent": true
+        },
+        "page_arg": null,
+        "description": "Call to see the state of the global header's mega menu: the 14 layouts to choose from, which menu items have a panel, which layout each uses, whether panels were changed in the Divi builder, and whether the menu has changed since. Read-only; needs the Theme Builder permission.",
+        "input": {
+            "type": "object",
+            "properties": [],
+            "default": []
+        }
+    },
+    {
+        "name": "set-mega-menu",
+        "label": "Change the header mega menu",
+        "capability": "edit_theme_options",
+        "annotations": {
+            "readonly": false,
+            "destructive": false,
+            "idempotent": false
+        },
+        "page_arg": null,
+        "description": "Call to turn the global header's menu into a mega menu (apply, with a layout from get-mega-menu, for every item or for one with item_id), rebuild its panels from the menu as it is now (update), or put the plain menu back (remove). The header layout is checked, keeps an undo point and the change is one batch for undo-batch. Use dry_run to preview.",
+        "input": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "enum": [
+                        "apply",
+                        "update",
+                        "remove"
+                    ],
+                    "description": "apply, update or remove"
+                },
+                "layout": {
+                    "type": "string",
+                    "enum": [
+                        "columns-dark",
+                        "columns-footer",
+                        "feature-right",
+                        "feature-left",
+                        "feature-banner",
+                        "icons-cards",
+                        "icons-dark",
+                        "latest-cards",
+                        "latest-links-cards",
+                        "showcase-intro-cards",
+                        "showcase-tiles",
+                        "showcase-intro-links",
+                        "showcase-tiles-dark",
+                        "directory-counts"
+                    ],
+                    "description": "Layout id for apply"
+                },
+                "item_id": {
+                    "type": "integer",
+                    "description": "apply only: one menu item (a mega menu must already be applied)"
+                },
+                "edited": {
+                    "type": "string",
+                    "enum": [
+                        "keep",
+                        "rebuild"
+                    ],
+                    "description": "When a panel was changed in the Divi builder: keep or rebuild"
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only"
+                }
+            },
+            "required": [
+                "action"
+            ]
+        }
+    },
+    {
+        "name": "undo-batch",
+        "label": "Undo a batch of changes",
+        "capability": "edit_pages",
+        "annotations": {
+            "readonly": false,
+            "destructive": false,
+            "idempotent": false
+        },
+        "page_arg": null,
+        "description": "Call to put every page of a batch back as it was before, whichever tool changed it (use the id from list-batches). A page changed after the batch is skipped with the reason and a newer change is never overwritten. No page is deleted, and the undo can itself be undone. Use dry_run to preview.",
+        "input": {
+            "type": "object",
+            "properties": {
+                "batch_id": {
+                    "type": [
+                        "integer",
+                        "string"
+                    ],
+                    "description": "The id from list-batches"
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only"
+                },
+                "force": {
+                    "type": "boolean",
+                    "description": "Recorded batches only: restore items even if they changed since"
+                }
+            },
+            "required": [
+                "batch_id"
+            ]
+        }
+    }
+]

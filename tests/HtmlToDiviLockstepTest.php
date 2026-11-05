@@ -73,7 +73,7 @@ final class HtmlToDiviLockstepTest extends TestCase
 
     public function testMcpDeclaresAndDispatchesTheTool(): void
     {
-        $mcp = $this->src( 'McpHandler.php' );
+        $mcp = $this->src( 'McpHandler.php' ) . $this->src( 'ToolCatalog.php' );
         $this->assertStringContainsString( "'name'        => 'html_to_divi'", $mcp );
         $this->assertMatchesRegularExpression( "/'html_to_divi'\s*=>\s*\\\$this->toolHtmlToDivi/", $mcp );
 

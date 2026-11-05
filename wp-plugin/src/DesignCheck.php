@@ -1,0 +1,98 @@
+<?php
+
+declare(strict_types=1);
+
+namespace AiEditorDivi5\WP;
+
+if ( ! defined( 'ABSPATH' ) ) exit;
+
+require_once __DIR__ . '/ContrastCheck.php';
+require_once __DIR__ . '/DesignVariety.php';
+require_once __DIR__ . '/StyleReferences.php';
+require_once __DIR__ . '/DefaultFallbacks.php';
+
+/**
+ * The advisory design check behind the `check-design` ability: it runs the plugin's deterministic design checks on any Divi 5
+ * layout, whoever wrote it, and returns one answer. It never blocks, changes or saves anything, and it says what it could not
+ * check instead of passing it. Each check keeps its own detail format.
+ *
+ * Checks: contrast (ContrastCheck: only definite failures), style_references (preset and colour ids this site does not have,
+ * StyleReferences), variety (repeated skeletons, DesignVariety) and default_fallbacks (DefaultFallbacks: Divi's own default
+ * look showing where a design was meant).
+ */
+final class DesignCheck
+{
+    /**
+     * What this check never judges, said every time so a report with no problems is not read as a full pass. `seen` is how many
+     * times the contrast check came across it in this layout (null when it is not counted).
+     *
+     * @var array<string,array{why:string, reason?:string}>
+     */
+    public const NEVER_JUDGED = [
+        'global_colors_and_variables' => [ 'why' => 'Colors that come from the site\'s global colors, variables or color names are not judged: the site\'s settings decide them.', 'reason' => 'color_is_not_a_plain_value' ],
+        'images_gradients_video'      => [ 'why' => 'Text on an image, a gradient or a video background is not judged.', 'reason' => 'background_is_an_image_gradient_or_video' ],
+        'semi_transparent_colors'     => [ 'why' => 'Semi-transparent colors are not judged.', 'reason' => 'transparent_color' ],
+        'page_background'             => [ 'why' => 'Text with no background color on any block above it is not judged: the page background belongs to the theme.', 'reason' => 'no_background_above_the_text' ],
+        'positioned_modules'          => [ 'why' => 'Modules that are positioned or pulled over a neighbour by a negative margin are not judged.', 'reason' => 'positioned_or_overlapping' ],
+        'text_without_own_color'      => [ 'why' => 'Text that sets no color of its own is not judged: the theme decides it.' ],
+        'hover_states'                => [ 'why' => 'Hover, focus and other states are not judged.' ],
+        'tablet_and_phone'            => [ 'why' => 'Only the desktop values are judged.' ],
+        'theme_and_custom_styles'     => [ 'why' => 'Colors set by the theme, the Customizer, presets or other plugins\' styles are not judged.' ],
+        'other_accessibility'         => [ 'why' => 'Accessibility other than color contrast (keyboard use, screen readers, quality of alt text) is not checked at all.' ],
+    ];
+
+    /**
+     * @param array<string,mixed>|null $known what exists on this site (StyleReferences::knownIds()), or null when it cannot be read
+     * @param ?callable(string):?bool $moduleHasPreset whether the site has any preset for a module, for the stock-look checks
+     * @return array{checks:array<string,array<string,mixed>>, problem_count:int, not_checked:list<string>, message:string}
+     */
+    public static function run( string $content, ?array $known = null, ?callable $moduleHasPreset = null ): array
+    {
+        $contrast = ContrastCheck::check( $content );
+
+        $refs = [ 'status' => 'not_checked', 'reason' => 'This site\'s presets and colors could not be read.' ];
+        if ( null !== $known && ( null !== ( $known['presets'] ?? null ) || null !== ( $known['colors'] ?? null ) || null !== ( $known['variables'] ?? null ) ) ) {
+            $advice = StyleReferences::advise( $content, $known );
+            $refs   = null === $advice ? [ 'status' => 'ok' ] : [ 'status' => 'problems', 'details' => $advice ];
+        }
+
+        $variety = DesignVariety::advise( $content );
+        $variety = null === $variety
+            ? [ 'status' => 'ok', 'note' => 'No repetition found, or the page has fewer than ' . DesignVariety::MIN_SECTIONS . ' sections and is not judged.' ]
+            : [ 'status' => 'problems', 'details' => $variety ];
+
+        $defaults = DefaultFallbacks::check( $content, $moduleHasPreset );
+
+        $checks = [
+            'contrast'          => [ 'status' => $contrast['status'] ] + $contrast,
+            'style_references'  => $refs,
+            'variety'           => $variety,
+            'default_fallbacks' => $defaults,
+        ];
+        $problems   = 0;
+        $notChecked = [];
+        foreach ( $checks as $name => $check ) {
+            if ( 'problems' === $check['status'] ) {
+                $problems += 'contrast' === $name ? count( (array) $check['problems'] ) : ( 'default_fallbacks' === $name ? count( (array) ( $check['findings'] ?? [] ) ) : 1 );
+            } elseif ( 'not_checked' === $check['status'] ) {
+                $notChecked[] = $name;
+            }
+        }
+
+        $seen = (array) ( $contrast['not_checked'] ?? [] );
+        $items = [];
+        foreach ( self::NEVER_JUDGED as $item => $row ) {
+            $items[] = [ 'item' => $item, 'why' => $row['why'], 'seen' => isset( $row['reason'] ) ? (int) ( $seen[ $row['reason'] ] ?? 0 ) : null ];
+        }
+
+        return [
+            'checks'        => $checks,
+            'problem_count' => $problems,
+            'not_checked'   => $notChecked,
+            'not_checked_items' => $items,
+            'message'       => [] === $notChecked
+                ? ( 0 === $problems ? 'Nothing found in what is checked. This is advice only; nothing was changed. A clean report is not a full pass: see not_checked_items for what is never judged.' : 'Problems found, each with its detail. This is advice only; nothing was changed or blocked. A report without problems is not a full pass: see not_checked_items for what is never judged.' )
+                : ( 0 === $problems ? 'No problem found in what could be checked. ' : 'Problems found, each with its detail. ' ) . 'Could not check: ' . implode( ', ', $notChecked ) . '. This is advice only; nothing was changed or blocked. A report without problems is not a full pass: see not_checked_items for what is never judged.',
+        ];
+    }
+}

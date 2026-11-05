@@ -759,7 +759,7 @@ class SectionRecipesTest extends TestCase
     public function testNoPhoneScrubberArtefactsInRecipesGuidesOrToolDescriptions(): void
     {
         $blob = json_encode(json_decode((string) file_get_contents(__DIR__ . '/../wp-plugin/data/section-recipes.json'), true));
-        foreach (['McpHandler.php', 'OpenApiSpec.php', 'StyleGuide.php', 'SiteGuide.php', 'LandingGuide.php', 'ImageGuide.php', 'SectionRecipes.php'] as $f) {
+        foreach (['McpHandler.php', 'ToolCatalog.php', 'OpenApiSpec.php', 'StyleGuide.php', 'SiteGuide.php', 'LandingGuide.php', 'ImageGuide.php', 'SectionRecipes.php'] as $f) {
             $blob .= (string) file_get_contents(__DIR__ . '/../wp-plugin/src/' . $f);
         }
         foreach (['(555)', '+1 (', '010-1000'] as $bad) {

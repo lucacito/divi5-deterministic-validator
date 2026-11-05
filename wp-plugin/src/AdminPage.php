@@ -30,6 +30,8 @@ final class AdminPage
         add_action('admin_post_ai_editor_divi5_review_later',       [$this, 'handleReviewLater']);
         add_action('admin_post_ai_editor_divi5_review_done',        [$this, 'handleReviewDone']);
         add_action('admin_post_ai_editor_divi5_toggle_approval', [$this, 'handleToggleApproval']);
+        add_action('admin_post_ai_editor_divi5_history_sources', [$this, 'handleHistorySources']);
+        add_action('admin_post_' . WhatsNew::ACTION, [$this, 'handleDismissWhatsNew']);
         add_action('wp_ajax_ai_editor_divi5_diagnose', [$this, 'handleDiagnose']);
         OAuthAdmin::registerHooks();
     }
@@ -121,6 +123,29 @@ final class AdminPage
         $on = '1' === sanitize_text_field( wp_unslash( $_POST['require_preview'] ?? '' ) );
         ApprovalMode::set( $on );
         $this->redirect('settings', $on ? 'approval_on' : 'approval_off');
+    }
+
+    public function handleHistorySources(): void
+    {
+        $this->guard('ai_editor_divi5_history_sources'); // guard() verifies the nonce via check_admin_referer().
+        $chosen = [];
+        foreach ( array_keys( HistorySources::DEFAULTS ) as $type ) {
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() verified the nonce above.
+            $chosen[ $type ] = isset( $_POST['sources'][ $type ] ) && '1' === sanitize_text_field( wp_unslash( $_POST['sources'][ $type ] ) );
+        }
+        HistorySources::save( $chosen );
+        $this->redirect('settings', 'history_sources_saved');
+    }
+
+    /** "Got it" on the What's new panel: hidden for this user until the announcement's version changes. */
+    public function handleDismissWhatsNew(): void
+    {
+        $this->guard( WhatsNew::ACTION ); // guard() verifies the nonce via check_admin_referer().
+        $content = WhatsNew::content();
+        if ( null !== $content ) {
+            WhatsNew::dismiss( get_current_user_id(), $content['version'] );
+        }
+        $this->redirect('dashboard');
     }
 
     public function handleDismissProCard(): void
@@ -547,6 +572,7 @@ final class AdminPage
             'usage_cleared'      => __( 'Activity log cleared.', 'jhmg-ai-editor-for-divi-5' ),
             'approval_on'        => __( 'Approval mode is on. Your AI assistant must preview every edit to a page\'s content before it can save it.', 'jhmg-ai-editor-for-divi-5' ),
             'approval_off'       => __( 'Approval mode is off.', 'jhmg-ai-editor-for-divi-5' ),
+            'history_sources_saved' => __( 'Undo history settings saved.', 'jhmg-ai-editor-for-divi-5' ),
             'oauth_on'           => __( 'Sign-in for Claude is on. Follow the steps below to add this site to claude.ai.', 'jhmg-ai-editor-for-divi-5' ),
             'oauth_off'          => __( 'Sign-in for Claude is off, and every connected app was disconnected.', 'jhmg-ai-editor-for-divi-5' ),
             'oauth_revoked'      => __( 'The app was disconnected.', 'jhmg-ai-editor-for-divi-5' ),
@@ -585,7 +611,7 @@ final class AdminPage
         ?>
         <h3 class="aied-section-title"><?php esc_html_e( 'Recent AI edits', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
         <div class="aied-card">
-            <p class="aied-muted"><?php esc_html_e( 'Every AI save keeps the previous version when it can. Restore it here if an edit was not what you wanted.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            <p class="aied-muted"><?php esc_html_e( 'Every save made by an AI tool keeps the previous version when it can, whichever tool made it. The source is shown beside each one. Restore it here if an edit was not what you wanted.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
             <table class="widefat striped">
                 <tbody>
                 <?php foreach ( $rows as $row ) :
@@ -601,7 +627,7 @@ final class AdminPage
                             : sprintf( __( '%s ago', 'jhmg-ai-editor-for-divi-5' ), human_time_diff( $ts ) );
                         ?>
                         <td title="<?php echo esc_attr( $savedAt ); ?>"><?php echo esc_html( $when ); ?></td>
-                        <td><code><?php echo esc_html( (string) $row['tool'] ); ?></code></td>
+                        <td><code><?php echo esc_html( HistorySources::describe( (string) $row['tool'], isset( $row['label'] ) ? (string) $row['label'] : null ) ); ?></code></td>
                         <td>
                             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"
                                   data-confirm="<?php echo esc_attr__( 'Restore the version saved before this AI edit?', 'jhmg-ai-editor-for-divi-5' ); ?>">
@@ -620,16 +646,64 @@ final class AdminPage
         <?php
     }
 
+    /**
+     * The "What's new" panel: the top of the plugin's own Dashboard tab and nowhere else (it is called from viewDashboard only,
+     * and is never an admin notice). Once per version per user; it carries no offer.
+     */
+    private function whatsNewCard(): void
+    {
+        $content = WhatsNew::content();
+        if ( ! WhatsNew::shouldShow( $content, get_user_meta( get_current_user_id(), WhatsNew::META, true ), current_user_can( 'edit_pages' ) ) ) {
+            return;
+        }
+        ?>
+        <div class="aied-card aied-whats-new">
+            <div class="aied-card__head">
+                <h3><?php echo esc_html( $content['title'] ); ?></h3>
+            </div>
+            <ul class="ul-disc">
+                <?php foreach ( $content['bullets'] as $bullet ) : ?>
+                    <li><?php echo esc_html( $bullet ); ?></li>
+                <?php endforeach; ?>
+            </ul>
+            <div class="aied-review__actions">
+                <a href="<?php echo esc_url( $content['link']['url'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $content['link']['label'] ); ?><span class="screen-reader-text"> <?php esc_html_e( '(opens in a new tab)', 'jhmg-ai-editor-for-divi-5' ); ?></span></a>
+                <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                    <input type="hidden" name="action" value="<?php echo esc_attr( WhatsNew::ACTION ); ?>">
+                    <?php wp_nonce_field( WhatsNew::ACTION ); ?>
+                    <button type="submit" class="button"><?php esc_html_e( 'Got it', 'jhmg-ai-editor-for-divi-5' ); ?></button>
+                </form>
+            </div>
+        </div>
+        <?php
+    }
+
+    /** One line when another tool's Divi abilities are present: the plugin's guidance, checks and undo work with them. */
+    private function companionNotice(): void
+    {
+        $mcp = DiviMcpDetector::current();
+        if ( ! $mcp['present'] ) {
+            return;
+        }
+        ?>
+        <div class="notice notice-info inline"><p><strong><?php esc_html_e( 'Designed to work alongside Divi\'s upcoming MCP:', 'jhmg-ai-editor-for-divi-5' ); ?></strong>
+            <?php esc_html_e( 'design guidance, validation and undo are active.', 'jhmg-ai-editor-for-divi-5' ); ?></p></div>
+        <?php
+    }
+
     private function viewDashboard(): void
     {
         $summary  = UsageTracker::getSummary();
         $progress = $this->setupProgress();
         $connected = (int) $summary['total'] > 0;
         ?>
+        <?php $this->whatsNewCard(); ?>
         <div class="aied-hello">
             <h1><?php esc_html_e( 'Welcome 👋', 'jhmg-ai-editor-for-divi-5' ); ?></h1>
             <p><?php esc_html_e( 'Edit your Divi 5 site by chatting with your AI assistant. Here’s what to do next.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
         </div>
+
+        <?php $this->companionNotice(); ?>
 
         <div class="aied-grid aied-grid--2">
             <!-- Primary action -->
@@ -775,6 +849,10 @@ final class AdminPage
             [ __( 'Turn existing HTML into a Divi page', 'jhmg-ai-editor-for-divi-5' ), __( 'Give your AI some HTML and it rebuilds the content as a Divi 5 page: sections, columns, headings, text, buttons, images and every link. It previews first and saves only a draft. Scripts, forms, embeds and site navigation are never converted, and it tells you what it left out.', 'jhmg-ai-editor-for-divi-5' ), 'html_to_divi' ],
             [ __( 'Build entire websites', 'jhmg-ai-editor-for-divi-5' ), __( 'A built-in blueprint helps your AI plan a cohesive multi-page site (home, about, services, contact) with shared styling and links between the pages, then tells you how to finish setting it up yourself.', 'jhmg-ai-editor-for-divi-5' ), 'get_site_guide' ],
             [ __( 'Conversion-focused page generation', 'jhmg-ai-editor-for-divi-5' ), __( 'A built-in landing-page blueprint, design vocabulary and proven section patterns guide the AI to produce polished, on-brand pages with a strategic structure built to convert.', 'jhmg-ai-editor-for-divi-5' ), 'get_landing_guide, get_style_guide, get_section_recipes' ],
+            [ __( 'Ten design languages', 'jhmg-ai-editor-for-divi-5' ), __( 'Colors, fonts, shape, spacing and things to avoid for ten complete looks, with text and background pairings checked for contrast. Your AI picks one before it builds, with any tool. Offered as a WordPress ability on WordPress 6.9 and later.', 'jhmg-ai-editor-for-divi-5' ), 'get-design-languages, get_style_guide' ],
+            [ __( 'Proven section recipes', 'jhmg-ai-editor-for-divi-5' ), __( '71 tested section patterns your AI can filter by role, layout, mood, density and the persuasion stage of the page, then use in a design language and style kit.', 'jhmg-ai-editor-for-divi-5' ), 'get_section_recipes, get-variety-advice' ],
+            [ __( 'Design check for any page', 'jhmg-ai-editor-for-divi-5' ), __( 'An advisory check of any Divi 5 page, whoever built it: text that cannot be read, Divi\'s grey placeholder images and stock buttons, ids your site does not have, and repetitive sections. It never blocks or changes anything and says what it could not check.', 'jhmg-ai-editor-for-divi-5' ), 'check-design' ],
+            [ __( 'Undo for every tool', 'jhmg-ai-editor-for-divi-5' ), __( 'The previous version of a Divi page is kept before any tool changes it, including Divi\'s upcoming MCP (not yet tested against it), an application password or the REST API, and the Dashboard shows where each change came from. Choose the sources in Settings.', 'jhmg-ai-editor-for-divi-5' ), 'list-page-history, restore-page-version' ],
             [ __( 'Relevant images', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI looks in your Media Library first (read-only) and otherwise uses the built-in image pack, so pages do not ship with empty image slots. Nothing is downloaded from other sites.', 'jhmg-ai-editor-for-divi-5' ), 'list_media_images, get_image_guide' ],
         ];
         ?>
@@ -795,6 +873,53 @@ final class AdminPage
     // ---------------------------------------------------------------
     // View: Settings
     // ---------------------------------------------------------------
+
+    /** The text a person pastes into their assistant so it uses this plugin's abilities beside Divi's own tools. */
+    public static function aiInstructions(): string
+    {
+        return "When you work on a Divi 5 page, use the JHMG AI Editor abilities alongside the Divi tools:\n"
+            . "1. Before building, call jhmg-ai-editor/get-design-languages and jhmg-ai-editor/get-section-recipes, pick one design language and the section recipes that fit, and read jhmg-ai-editor/get-style-guide.\n"
+            . "2. Build or edit the page with any tool you like.\n"
+            . "3. After building, call jhmg-ai-editor/validate-layout and jhmg-ai-editor/check-design on the page, and fix what they report.\n"
+            . "4. If a change was wrong, undo it with jhmg-ai-editor/list-page-history and jhmg-ai-editor/restore-page-version.";
+    }
+
+    /** The Settings card with the paste-in text. */
+    public function aiInstructionsCard(): void
+    {
+        $text = self::aiInstructions();
+        ?>
+        <div class="aied-card">
+            <h3><?php esc_html_e( 'Instructions for your AI', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
+            <p class="aied-muted"><?php esc_html_e( 'Paste this into Claude, ChatGPT or Codex (a project, custom instructions or AGENTS.md) so your assistant uses this plugin\'s design guidance, checks and undo together with Divi\'s upcoming MCP. The abilities need WordPress 6.9 or later.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            <textarea class="large-text code" rows="8" readonly id="aied-ai-instructions"><?php echo esc_textarea( $text ); ?></textarea>
+            <p><button type="button" class="button button-primary" data-copy="<?php echo esc_attr( $text ); ?>"><?php esc_html_e( 'Copy', 'jhmg-ai-editor-for-divi-5' ); ?></button></p>
+        </div>
+        <?php
+    }
+
+    /** The Settings card that chooses which sources of page changes keep an undo point. */
+    public function historySourcesCard(): void
+    {
+        $settings = HistorySources::settings();
+        ?>
+        <div class="aied-card">
+            <h3><?php esc_html_e( 'Undo for changes made by other tools', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
+            <p class="aied-muted"><?php esc_html_e( 'Before a Divi page is changed, the plugin keeps the previous version so you can restore it, even when the change was made by another tool, such as Divi\'s upcoming MCP. Choose which sources keep an undo point. The last 10 versions of each page are kept. A previous version is the page\'s content only, and it stays in your own database.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                <input type="hidden" name="action" value="ai_editor_divi5_history_sources">
+                <?php wp_nonce_field( 'ai_editor_divi5_history_sources' ); ?>
+                <?php foreach ( HistorySources::names() as $type => $name ) : ?>
+                    <p><label>
+                        <input type="checkbox" name="sources[<?php echo esc_attr( $type ); ?>]" value="1"<?php checked( $settings[ $type ] ); ?>>
+                        <?php echo esc_html( $name ); ?>
+                    </label></p>
+                <?php endforeach; ?>
+                <button type="submit" class="button"><?php esc_html_e( 'Save', 'jhmg-ai-editor-for-divi-5' ); ?></button>
+            </form>
+        </div>
+        <?php
+    }
 
     /** The Settings card for the optional "Require a preview before every save" mode. */
     public function approvalCard(): void
@@ -877,6 +1002,8 @@ final class AdminPage
         </div>
 
         <?php $this->approvalCard(); ?>
+        <?php $this->historySourcesCard(); ?>
+        <?php $this->aiInstructionsCard(); ?>
         <?php OAuthAdmin::card(); ?>
 
         <!-- Activity log -->

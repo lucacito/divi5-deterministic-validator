@@ -36,7 +36,7 @@ class WpOrgNoRemoteImagesTest extends TestCase
 
     public function testWriteToolDescriptionsPointAtTheMediaLibraryAndThePack(): void
     {
-        $mcp = (string) file_get_contents(dirname(__DIR__) . '/wp-plugin/src/McpHandler.php');
+        $mcp = (string) file_get_contents(dirname(__DIR__) . '/wp-plugin/src/McpHandler.php') . (string) file_get_contents(__DIR__ . '/../wp-plugin/src/ToolCatalog.php');
         $this->assertStringContainsString('list_media_images', $mcp);
         $this->assertStringContainsString('get_image_guide', $mcp);
         $this->assertSame(2, substr_count($mcp, '(or an image URL the owner supplied)'), 'create_page and update_page_layout must match the guide rule about owner-supplied images');

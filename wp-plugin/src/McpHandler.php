@@ -13,6 +13,7 @@ require_once __DIR__ . '/PageOutline.php';
 require_once __DIR__ . '/ExtensionGuard.php';
 require_once __DIR__ . '/PageAccess.php';
 require_once __DIR__ . '/TitleChange.php';
+require_once __DIR__ . '/ToolCatalog.php';
 
 use WP_REST_Request;
 use WP_REST_Response;
@@ -124,252 +125,46 @@ final class McpHandler
 
     private function onToolsList(mixed $id): WP_REST_Response
     {
-        $tools = [
-            [
-                'name'        => 'list_divi_pages',
-                'description' => 'List the WordPress pages (or Divi Projects, with post_type "project") built with the Divi 5 editor that you can edit. Returns IDs, titles, status, post type and links. The IDs work with get_page_layout, update_page_layout, edit_page_content and the history tools.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => ['post_type' => ['type' => 'string', 'enum' => ['page', 'project'], 'description' => 'Optional. "page" (default) or "project" (Divi Projects).']],
-                    'required'   => [],
-                ],
-            ],
-            [
-                'name'        => 'list_global_styles',
-                'description' => 'List this site\'s own Divi 5 module presets, global colors and global variables (read-only), so layouts can reuse them instead of hard-coding colors. Call it before styling. Reference a color by its id (see get_style_guide); a module with no modulePreset already gets the site\'s default preset. Filter presets with "module" (e.g. divi/button). Creating or changing presets and colors is done in Divi\'s Visual Builder, not here.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => ['module' => ['type' => 'string', 'description' => 'Optional module name to list presets for, e.g. divi/button']],
-                    'required'   => [],
-                ],
-            ],
-            [
-                'name'        => 'get_site_structure',
-                'description' => 'List how this site is set up (read-only): public post types, each with how many items it has (published), taxonomies, image sizes and, when Advanced Custom Fields is active, its field groups, where each group applies (location rules) and its fields (names, labels, types and choices; never field values). Call it before building a page that lists custom post types, uses a given image size or should refer to ACF fields or other custom fields. Pass "include" to get only some sections: post_types, taxonomies, image_sizes, acf, custom_fields, components. The custom_fields section lists the custom field KEYS your recent posts use (a sample, never values); use get_custom_fields to read one post\'s values. The components section lists the site\'s Divi 5.15 components (name, kind, the ids of their Slots, how many pages use each): a component is shared by every page that uses it, so read it before editing a page that holds one.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => ['include' => ['type' => 'array', 'items' => ['type' => 'string', 'enum' => ['post_types', 'taxonomies', 'image_sizes', 'acf', 'custom_fields', 'components']], 'description' => 'Optional. Sections to return; default all.']],
-                    'required'   => [],
-                ],
-            ],
-            [
-                'name'        => 'get_custom_fields',
-                'description' => 'Read the custom fields (post meta) of ONE page, Divi Project or other post you can edit (read-only): each key with its value and, when Advanced Custom Fields knows the key, its label and type. Keys that start with an underscore, are protected by WordPress or look like secrets (password, token, API key, licence) are never returned; the answer says how many were withheld. Values are cut at 500 characters and at most 100 fields are returned; a key stored several times returns its first value. Use it to write copy that fits the post or to find a key to bind a module to (see get_style_guide). Pass "keys" to read only some. get_site_structure lists the keys a site\'s posts use.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => [
-                        'id'   => ['type' => 'integer', 'description' => 'WordPress post ID (a page, a Divi Project or another public post type)'],
-                        'keys' => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'Optional. Only these keys (at most 100).'],
-                    ],
-                    'required'   => ['id'],
-                ],
-            ],
-            [
-                'name'        => 'list_products',
-                'description' => 'List and count the WooCommerce products of this site (read-only): totals by status and by type, and one light row per product (id, name, type, status, SKU, current, regular and sale price, on-sale flag, stock status and quantity, categories, link). Use it to answer store questions ("how many products do I have?") and before writing a shop page or product copy, so names, prices and categories are real. Filters: status, type, category (slug), stock_status, on_sale, search, orderby (title, date, price), order, page, per_page (1 to 50, default 25). Needs the edit_products and edit_others_products permissions. Never returns downloadable files, purchase notes, customer or order data, or custom fields. If WooCommerce is not active it says so. Use get_product for one product in full.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => [
-                        'status'       => ['type' => 'string', 'enum' => ['any', 'publish', 'draft', 'pending', 'private', 'future'], 'description' => 'Optional. Default any (never trash).'],
-                        'type'         => ['type' => 'string', 'enum' => ['simple', 'variable', 'grouped', 'external'], 'description' => 'Optional. Product type.'],
-                        'category'     => ['type' => 'string', 'description' => 'Optional. Product category slug.'],
-                        'stock_status' => ['type' => 'string', 'enum' => ['instock', 'outofstock', 'onbackorder'], 'description' => 'Optional.'],
-                        'on_sale'      => ['type' => 'boolean', 'description' => 'Optional. true = only products on sale, false = only products not on sale.'],
-                        'search'       => ['type' => 'string', 'description' => 'Optional. Words in the product name or text (at most 100 characters).'],
-                        'orderby'      => ['type' => 'string', 'enum' => ['title', 'date', 'price'], 'description' => 'Optional. Default title.'],
-                        'order'        => ['type' => 'string', 'enum' => ['asc', 'desc'], 'description' => 'Optional. Default asc.'],
-                        'page'         => ['type' => 'integer', 'description' => 'Optional. Default 1.'],
-                        'per_page'     => ['type' => 'integer', 'description' => 'Optional. 1 to 50, default 25.'],
-                    ],
-                    'required'   => [],
-                ],
-            ],
-            [
-                'name'        => 'get_product',
-                'description' => 'Read ONE WooCommerce product in full (read-only): its text, price, stock, categories, tags, attributes, images, dimensions, tax and shipping settings and, for a variable product, every variation with its own price, stock and attributes (grouped products list their child ids, external products their link). Never returns downloadable files, the purchase note, custom fields, or the text of a password-protected product. Get ids from list_products. Needs permission to edit that product.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => ['id' => ['type' => 'integer', 'description' => 'WooCommerce product ID (not a variation id)']],
-                    'required'   => ['id'],
-                ],
-            ],
-            [
-                'name'        => 'get_page_layout',
-                'description' => 'Get the Divi 5 layout (Gutenberg block HTML) for a specific page or Divi Project by ID. A full read of a real page costs 8,000 to 16,000 tokens: pass view "outline" to list every block (path, name, size and the start of its text) for a fraction of that, then view "block" with a path to read just one block\'s exact markup.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => [
-                        'page_id' => ['type' => 'integer', 'description' => 'WordPress page or Divi Project ID'],
-                        'view'    => ['type' => 'string', 'enum' => ['full', 'outline', 'block'], 'description' => 'Optional. full (default) = the whole layout; outline = a list of blocks; block = one block (needs path).'],
-                        'path'    => ['type' => 'string', 'description' => 'With view "block": the path from the outline, such as "0.1.2".'],
-                    ],
-                    'required'   => ['page_id'],
-                ],
-            ],
-            [
-                'name'        => 'get_style_guide',
-                'description' => 'Get the Divi 5 authoring guide: real block structure/nesting rules, required content keys, and the exact styling attribute shapes (backgrounds, gradients, spacing, typography, borders, radius, box-shadow, transform, hover, filters, animation). Call this BEFORE building or restyling a layout so the result is styled and valid, not plain.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => [
-                        'topic' => ['type' => 'string', 'description' => StyleGuide::topicParameterDescription()],
-                        'design_language' => ['type' => 'string', 'description' => StyleGuide::languageParameterDescription()],
-                    ],
-                    'required'   => [],
-                ],
-            ],
-            [
-                'name'        => 'get_site_guide',
-                'description' => 'Get the blueprint for building an ENTIRE multi-page website from one brief: how to plan the page set, lock one shared design system across all pages, build each page with create_page (passing a slug), cross-link them, and hand the owner a short list of what to set up in WordPress (front page, menu). Call this when the user asks for a whole site, not a single page.',
-                'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
-            ],
-            [
-                'name'        => 'get_landing_guide',
-                'description' => 'Get the conversion-focused LANDING PAGE blueprint: how to structure a page that sells, not just looks good. Covers the persuasion flow (hero → problem → solution → benefits → social proof → how-it-works → features → FAQ → final CTA), how to adapt the structure to the business type/audience/goal, copywriting rules (benefit-driven headlines, banned generic phrases), and CTA placement strategy. Call this BEFORE building or restyling any single landing/marketing page so the result is strategically structured to convert — pair it with get_style_guide (styling) and get_section_recipes (section markup).',
-                'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
-            ],
-            [
-                'name'        => 'get_image_guide',
-                'description' => 'Get the IMAGE-INTELLIGENCE guide: how to assign the right visual to each section by role (not random images everywhere), using the Media Library of the site first (list_media_images) and the built-in image pack (a catalogue of real site-local URLs) as the fallback. Covers per-section image rules, aspect-ratio sizing and alt text. Never hotlink or invent an image URL. Call this BEFORE choosing any image src so generated pages look like finished demos, not empty templates.',
-                'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'required' => []],
-            ],
-            [
-                'name'        => 'get_section_recipes',
-                'description' => 'Get a library of complete, validated Divi 5 section recipes (hero, feature grids, split, slider, CTA, footer). With no arguments, returns a compact catalog of recipe names grouped by role. Pass {"role":"hero"}, {"layout":"split"} and/or {"mood":"editorial"} to list only the matching recipes with their full descriptions (an unknown value answers with the valid values). ' . SectionRecipes::MOOD_HELP . ' Pass {"name":"<recipe>"} to get that section\'s full block markup to copy and fill with the user\'s content; a name ignores the filters, and with a name, design_language serves it in that design language\'s colours and fonts and style_kit overrides the language\'s style kit. Use these to assemble well-composed pages instead of building sections from scratch.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => [
-                        'name'   => ['type' => 'string', 'description' => 'Recipe name from the catalog (omit to list all). Wins over the filters.'],
-                        'role'   => ['type' => 'string', 'description' => 'Only recipes for this role: ' . implode(', ', SectionRecipes::ROLES)],
-                        'layout' => ['type' => 'string', 'description' => 'Only recipes with this layout: ' . implode(', ', SectionRecipes::LAYOUTS)],
-                        'mood'   => ['type' => 'string', 'description' => 'Only recipes that fit this mood. ' . SectionRecipes::MOOD_HELP . ' Valid: ' . implode(', ', SectionRecipes::moods())],
-                        'design_language' => ['type' => 'string', 'description' => 'With name: serve the recipe in this design language\'s colours and fonts (ids: ' . implode(', ', DesignLanguages::ids()) . '). Omit for the default look.'],
-                        'style_kit' => ['type' => 'string', 'description' => SectionRecipes::styleKitHelp()],
-                    ],
-                    'required'   => [],
-                ],
-            ],
-            [
-                'name'        => 'validate_layout',
-                'description' => 'Validate a Divi 5 post_content string against the schema without saving. Use this to check edits before calling update_page_layout.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => ['post_content' => ['type' => 'string', 'description' => 'Divi 5 Gutenberg block HTML']],
-                    'required'   => ['post_content'],
-                ],
-            ],
-            [
-                'name'        => 'update_page_layout',
-                'description' => 'Validate and save a new Divi 5 layout to a page or Divi Project. It is only updated if the layout passes all schema checks — invalid layouts are rejected with a list of violations. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the result is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src: images must come from the Media Library (list_media_images) or the built-in image pack (or an image URL the owner supplied) per get_image_guide — never an invented or hotlinked URL. Pass dry_run=true to preview what would change (a diff plus the checker\'s verdict) without saving anything; an invalid result comes back as a normal preview with valid:false. To change the WordPress page title (what shows in the page list, and usually the browser tab; NOT the h1 inside the layout), pass title; with only title and page_id the layout is left alone. A title change cannot be undone with restore_page_version, so tell the owner the old title (the result has it). In the result, title.after is the exact stored title and the one to trust; page.title is the display title and can differ.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => [
-                        'page_id'      => ['type' => 'integer', 'description' => 'WordPress page or Divi Project ID'],
-                        'post_content' => ['type' => 'string',  'description' => 'Divi 5 Gutenberg block HTML. Optional when title is given.'],
-                        'title'        => ['type' => 'string',  'description' => 'Optional. New WordPress page title: plain text, one line, 1 to 200 characters, no HTML. Changes the page title only, not any heading in the layout.'],
-                        'dry_run' => ['type' => 'boolean', 'description' => 'Optional. true = preview only: returns the checker verdict and a diff of what would change, and saves nothing.'],
-                    ],
-                    'required' => ['page_id'],
-                ],
-            ],
-            [
-                'name'        => 'edit_page_content',
-                'description' => 'Make a small, surgical edit to an existing page or Divi Project WITHOUT re-sending the whole layout: an exact find-and-replace on its stored content. Use this for changing an email, phone number, link, price, or a line of copy — never rebuild the full page for a tiny change. "find" must match exactly once unless you set expect_count to the number of matches. The result is re-validated before saving; if "find" is empty, not found, or ambiguous, nothing is changed. Pass dry_run=true to preview the change (a diff plus the checker\'s verdict) without saving; an invalid result comes back as a normal preview with valid:false.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => [
-                        'page_id'      => ['type' => 'integer', 'description' => 'WordPress page or Divi Project ID'],
-                        'find'         => ['type' => 'string',  'description' => 'Exact text to find (verbatim, including any surrounding markup needed to make it unique)'],
-                        'replace'      => ['type' => 'string',  'description' => 'Text to replace it with'],
-                        'expect_count' => ['type' => 'integer', 'description' => 'Optional: how many matches to replace (must equal the number found). Omit to require a single unique match.'],
-                        'dry_run' => ['type' => 'boolean', 'description' => 'Optional. true = preview only: returns the checker verdict and a diff of what would change, and saves nothing.'],
-                    ],
-                    'required' => ['page_id', 'find', 'replace'],
-                ],
-            ],
-            [
-                'name'        => 'list_page_history',
-                'description' => 'List the saved previous versions of a page or Divi Project (newest first). Every AI save tries to snapshot the previous content of the page or Project (up to the last 10 per page, fewer for very large pages), so an AI edit can be undone when a snapshot was kept (the save result\'s history.stored says so). Returns id, saved_at, tool, actor, bytes, label for each version (no content). Use restore_page_version to undo.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => [
-                        'page_id' => ['type' => 'integer', 'description' => 'WordPress page or Divi Project ID'],
-                    ],
-                    'required' => ['page_id'],
-                ],
-            ],
-            [
-                'name'        => 'get_page_history_entry',
-                'description' => 'Get the full saved content of one previous version of a page or Divi Project (from list_page_history), e.g. to compare it with the current layout before restoring.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => [
-                        'page_id'    => ['type' => 'integer', 'description' => 'WordPress page or Divi Project ID'],
-                        'version_id' => ['type' => 'integer', 'description' => 'Version id from list_page_history'],
-                    ],
-                    'required' => ['page_id', 'version_id'],
-                ],
-            ],
-            [
-                'name'        => 'restore_page_version',
-                'description' => 'Undo: restore a page or Divi Project to a previous saved version. The current content is snapshotted first; the restore itself is undoable when its own history.stored is true. Restore does not block on validation (it returns the person\'s own earlier content); the result reports whether that content passes the validator.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => [
-                        'page_id'    => ['type' => 'integer', 'description' => 'WordPress page or Divi Project ID'],
-                        'version_id' => ['type' => 'integer', 'description' => 'Version id from list_page_history'],
-                    ],
-                    'required' => ['page_id', 'version_id'],
-                ],
-            ],
-            [
-                'name'        => 'list_media_images',
-                'description' => 'List images already in this site\'s Media Library (read-only). Call this BEFORE building a page and use a suitable image\'s "url" in Divi image modules (set the module alt text from the image alt). Filter with "search" (title/alt/filename) and "orientation" (landscape for heroes/cards, square for people). Scans the newest 200 matches (the result has "truncated": true when more exist; narrow with search). Use the built-in image pack (get_image_guide) only when the library has nothing suitable.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => [
-                        'search'      => ['type' => 'string',  'description' => 'Optional keywords matched against title, alt text and filename'],
-                        'orientation' => ['type' => 'string',  'enum' => ['landscape', 'portrait', 'square'], 'description' => 'Optional orientation filter'],
-                        'per_page'    => ['type' => 'integer', 'minimum' => 1, 'maximum' => 50,  'description' => 'Results per page (default 20, max 50)'],
-                        'page'        => ['type' => 'integer', 'minimum' => 1, 'maximum' => 200, 'description' => 'Page number (default 1, max 200)'],
-                    ],
-                ],
-            ],
-            [
-                'name'        => 'create_page',
-                'description' => 'Create a new WordPress page with a validated Divi 5 layout. The page is always created as a DRAFT for the site owner to review and publish. For a landing/marketing page, call get_landing_guide first for the conversion structure (persuasion flow, copywriting, CTA placement), get_style_guide for the real styling attribute shapes, get_section_recipes to assemble the page from complete proven section patterns, and get_image_guide to choose a relevant, role-appropriate image for each section — so the page is strategically structured, styled, well-composed, and visually finished, not plain. Never leave an image module without a src: images must come from the Media Library (list_media_images) or the built-in image pack (or an image URL the owner supplied) per get_image_guide — never an invented or hotlinked URL.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => [
-                        'title'        => ['type' => 'string', 'description' => 'Page title'],
-                        'post_content' => ['type' => 'string', 'description' => 'Divi 5 Gutenberg block HTML'],
-                        'slug'         => ['type' => 'string', 'description' => 'Optional URL slug (e.g. "about") for predictable cross-linking'],
-                    ],
-                    'required' => ['title', 'post_content'],
-                ],
-            ],
-            [
-                'name'        => 'html_to_divi',
-                'description' => 'Convert HTML you already have (a page you or another AI wrote, exported markup) into a valid Divi 5 layout, deterministically: no AI and no network. The structure, all the copy, links and images are converted (sections, columns for card grids, headings, text, buttons, images); scripts, forms, embeds, menus and CSS code are never copied and are listed in the report. Pass the HTML as `html` (a document or a fragment, up to 400,000 bytes). By default it only PREVIEWS: you get the layout and a report (what was converted, what was not, whether every word and link was kept, which images became placeholders). Pass create=true and a title to save it as a new DRAFT page in one step, without sending the layout back. Every image becomes a placeholder from the built-in pack (a third-party address never reaches the layout) unless image_mode is "keep" and the image is already in this site\'s Media Library; replace them with list_media_images afterwards. With styles=basic (the default) it also carries the HTML\'s basic colors, fonts, sizes, alignment, padding and widths where Divi can show them and the text stays readable; report.styles lists what was carried and what was left out. Finish the look with get_style_guide. For a pixel-accurate copy of a live page use the separate URL-to-Divi converter. The layout is checked by the same validator as every other write.',
-                'inputSchema' => [
-                    'type'       => 'object',
-                    'properties' => [
-                        'html'       => ['type' => 'string', 'description' => 'The HTML to convert (a full document or a fragment).'],
-                        'create'     => ['type' => 'boolean', 'description' => 'Optional. true = save the converted layout as a new DRAFT page (needs title). Default false = preview only.'],
-                        'title'      => ['type' => 'string', 'description' => 'Page title. Required when create is true; the result suggests one from the HTML.'],
-                        'slug'       => ['type' => 'string', 'description' => 'Optional URL slug for the new page.'],
-                        'image_mode' => ['type' => 'string', 'enum' => ['placeholder', 'keep'], 'description' => 'Optional. placeholder (default): every image becomes a built-in placeholder. keep: images already in this site\'s Media Library are kept.'],
-                        'styles'     => ['type' => 'string', 'enum' => ['basic', 'none'], 'description' => 'Optional. basic (default): carries text and background colors, Google or web-safe fonts, font size and weight, alignment, padding, row width and button colors and corners from inline styles and simple <style> rules, only where the text stays readable. none: structure and content only.'],
-                    ],
-                    'required' => ['html'],
-                ],
-            ],
-        ];
+        $tools = ToolCatalog::definitions();
 
         // Extension point: add-ons may append tool definitions. With no listener this is a no-op.
         $tools = ExtensionGuard::tools( $tools, apply_filters( 'jhmg_aied_mcp_tools', $tools ) );
 
         return $this->rpcResult($id, ['tools' => $tools]);
+    }
+
+    /**
+     * Runs one of the free tools in-process and returns its answer as a plain array, for callers that are not JSON-RPC (the
+     * WordPress abilities). It runs the very same tool method `tools/call` runs, so approval mode, dry run, history, the
+     * validator gate and every capability check behave identically. Only the tools of ToolCatalog are reachable: an
+     * add-on's tool is never run through here.
+     *
+     * @param array<string,mixed> $arguments
+     * @return array{ok:bool, text:string, data:?array<mixed>, code:?int, message:string}
+     *         ok=false for a protocol error (code, message) or a tool that answered isError (text and data hold its answer).
+     */
+    public function callTool(string $name, array $arguments): array
+    {
+        if (null === ToolCatalog::get($name)) {
+            return ['ok' => false, 'text' => '', 'data' => null, 'code' => -32602, 'message' => 'Unknown tool.'];
+        }
+        $body = (array) $this->onToolsCall(null, ['name' => $name, 'arguments' => $arguments])->get_data();
+        if (isset($body['error'])) {
+            $error = (array) $body['error'];
+            return ['ok' => false, 'text' => '', 'data' => null, 'code' => (int) ($error['code'] ?? -32603), 'message' => (string) ($error['message'] ?? 'Error')];
+        }
+        $result = (array) ($body['result'] ?? []);
+        $first  = (array) (((array) ($result['content'] ?? []))[0] ?? []);
+        $text   = (string) ($first['text'] ?? '');
+        $data   = json_decode($text, true);
+
+        return [
+            'ok'      => empty($result['isError']),
+            'text'    => $text,
+            'data'    => is_array($data) ? $data : null,
+            'code'    => null,
+            'message' => '',
+        ];
     }
 
     private function onToolsCall(mixed $id, array $params): WP_REST_Response

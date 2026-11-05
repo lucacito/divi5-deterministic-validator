@@ -1,0 +1,1148 @@
+[
+    {
+        "name": "set_front_page",
+        "description": "Set a published page as the site's static front page (homepage). Recorded as an undoable batch. Pass dry_run=true to preview without changing anything.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "page_id": {
+                    "type": "integer",
+                    "description": "ID of a published page"
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only; nothing is changed"
+                }
+            },
+            "required": [
+                "page_id"
+            ]
+        },
+        "capability": "manage_options"
+    },
+    {
+        "name": "set_custom_css",
+        "description": "Add site-wide CSS inside one marked block of WordPress Additional CSS. The owner's own CSS outside the block is never touched. Replaces the block on each call. Undoable. dry_run=true previews.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "css": {
+                    "type": "string",
+                    "description": "Plain CSS to apply site-wide (no HTML tags)"
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only; nothing is changed"
+                }
+            },
+            "required": [
+                "css"
+            ]
+        },
+        "capability": "edit_css"
+    },
+    {
+        "name": "set_primary_menu",
+        "description": "Build the primary menu (\"Main Menu\") from up to 30 items (a published page_id or a url each) and assign it to the theme's menu location. Replaces that menu's items. Undoable. dry_run=true previews.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "description": "Ordered menu items; page_id wins when both page_id and url are given",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "title": {
+                                "type": "string"
+                            },
+                            "page_id": {
+                                "type": "integer",
+                                "description": "A published page (preferred)"
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "Or a custom link"
+                            }
+                        },
+                        "required": [
+                            "title"
+                        ]
+                    }
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only; nothing is changed"
+                }
+            },
+            "required": [
+                "items"
+            ]
+        },
+        "capability": "edit_theme_options"
+    },
+    {
+        "name": "publish_page",
+        "description": "Publish a draft or pending page now, or schedule it with publish_at (ISO 8601 with a timezone, in the future). Does not change the page content. Undoable. dry_run=true previews.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "page_id": {
+                    "type": "integer",
+                    "description": "ID of a draft or pending page"
+                },
+                "publish_at": {
+                    "type": "string",
+                    "description": "Optional. Schedule instead of publishing now, e.g. 2026-12-01T09:00:00+01:00"
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only; nothing is changed"
+                }
+            },
+            "required": [
+                "page_id"
+            ]
+        },
+        "capability": "publish_pages"
+    },
+    {
+        "name": "propose_php_snippet",
+        "description": "Propose a PHP snippet (post type, hook, shortcode...) for the site owner to REVIEW. It is stored inert on the Pro tab and is never run or saved to the site. Say what it does and where to put it.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "description": "Short name for the snippet"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "What it does and where or how to apply it"
+                },
+                "code": {
+                    "type": "string",
+                    "description": "The PHP code"
+                }
+            },
+            "required": [
+                "code"
+            ]
+        },
+        "capability": "edit_pages"
+    },
+    {
+        "name": "list_batches",
+        "description": "List recent Pro changes (batches), newest first: what each changed and whether it can still be undone with undo_batch. Administrators see all; other users see their own.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer",
+                    "description": "How many batches (1-20, default 10)"
+                }
+            },
+            "required": []
+        },
+        "capability": "edit_pages"
+    },
+    {
+        "name": "undo_batch",
+        "description": "Undo one batch from list_batches. Restores every item it safely can and reports the rest; an item changed since is skipped unless force=true. Claims \"fully undone\" only if all items restored. dry_run=true previews.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "batch_id": {
+                    "type": "integer",
+                    "description": "Batch id from list_batches"
+                },
+                "force": {
+                    "type": "boolean",
+                    "description": "Restore items even if they changed since (never invents a missing undo point)"
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only; nothing is changed"
+                }
+            },
+            "required": [
+                "batch_id"
+            ]
+        },
+        "capability": "edit_pages"
+    },
+    {
+        "name": "list_theme_layouts",
+        "description": "List the live Divi Theme Builder templates and their header, footer and body layouts (read-only). With layout_id of a header or footer, also returns its content. Edit one with update_theme_layout or edit_theme_layout (dry_run first: it shows on every page).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "layout_id": {
+                    "type": "integer",
+                    "description": "Optional. A header or footer layout id from this list; adds its content to the answer"
+                }
+            },
+            "required": []
+        },
+        "capability": "edit_theme_options"
+    },
+    {
+        "name": "update_theme_layout",
+        "description": "Replace the content of a live Divi header or footer (layout_id from list_theme_layouts) with a new Divi 5 layout. Rejected with the exact violations unless it passes every check. It shows on every page: use dry_run=true first. Undoable.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "layout_id": {
+                    "type": "integer",
+                    "description": "A header or footer layout id from list_theme_layouts"
+                },
+                "content": {
+                    "type": "string",
+                    "description": "The full Divi 5 layout (block markup) for this header or footer"
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only; nothing is changed"
+                }
+            },
+            "required": [
+                "layout_id",
+                "content"
+            ]
+        },
+        "capability": "edit_theme_options"
+    },
+    {
+        "name": "edit_theme_layout",
+        "description": "Find and replace literal text inside a live Divi header or footer (layout_id from list_theme_layouts), leaving the rest untouched. The result must pass every layout check. It shows on every page: use dry_run=true first. Undoable.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "layout_id": {
+                    "type": "integer",
+                    "description": "A header or footer layout id from list_theme_layouts"
+                },
+                "find": {
+                    "type": "string",
+                    "description": "Exact text to find (must match one place, unless expect_count says otherwise)"
+                },
+                "replace": {
+                    "type": "string",
+                    "description": "Text to put in its place (may be empty)"
+                },
+                "expect_count": {
+                    "type": "integer",
+                    "description": "Optional. Replace all of exactly this many matches"
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only; nothing is changed"
+                }
+            },
+            "required": [
+                "layout_id",
+                "find",
+                "replace"
+            ]
+        },
+        "capability": "edit_theme_options"
+    },
+    {
+        "name": "manage_theme_template",
+        "description": "Enable or disable one live Divi Theme Builder template, or change where it applies (assign: use_on / exclude_from, in the ids list_theme_layouts shows). Affects the whole site: call with dry_run=true first, then repeat with the token it returns. Undoable. Cannot create or delete templates.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "template_id": {
+                    "type": "integer",
+                    "description": "template_id from list_theme_layouts"
+                },
+                "action": {
+                    "type": "string",
+                    "description": "assign, enable or disable",
+                    "enum": [
+                        "assign",
+                        "enable",
+                        "disable"
+                    ]
+                },
+                "use_on": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "assign only: where the template applies (replaces the current list)"
+                },
+                "exclude_from": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "assign only: where it must not apply (replaces the current list)"
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only; returns the token a real run needs"
+                },
+                "token": {
+                    "type": "string",
+                    "description": "The token from your dry run of the same arguments; it works once, within 30 minutes"
+                }
+            },
+            "required": [
+                "template_id",
+                "action"
+            ]
+        },
+        "capability": "edit_theme_options"
+    },
+    {
+        "name": "find_replace_site",
+        "description": "Replace literal text across Divi 5 pages (and, with Theme Builder permission, the live header and footer) as one undoable batch. Always call with dry_run=true first, then repeat with the token it returns. Items that would fail the layout checks are skipped. At most 50 items per run.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "find": {
+                    "type": "string",
+                    "description": "Exact text to find (case-sensitive, literal, not a pattern)"
+                },
+                "replace": {
+                    "type": "string",
+                    "description": "Text to put in its place (may be empty)"
+                },
+                "scope": {
+                    "type": "string",
+                    "description": "pages (default), layouts or all",
+                    "enum": [
+                        "pages",
+                        "layouts",
+                        "all"
+                    ]
+                },
+                "page_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "description": "Optional. Only these page or layout ids"
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only; returns the token a real run needs"
+                },
+                "token": {
+                    "type": "string",
+                    "description": "The token from your dry run of the same arguments; it works once, within 30 minutes"
+                }
+            },
+            "required": [
+                "find",
+                "replace"
+            ]
+        },
+        "capability": "edit_pages"
+    },
+    {
+        "name": "audit_site",
+        "description": "Read-only audit of Divi 5 pages and the live header/footer: layout check violations, unknown preset, color, variable or custom-field ids, and internal links to missing or unpublished pages. 25 items per call in id order; pass next_cursor to continue. Makes no remote request.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "scope": {
+                    "type": "string",
+                    "description": "pages, layouts or all (default all)",
+                    "enum": [
+                        "pages",
+                        "layouts",
+                        "all"
+                    ]
+                },
+                "cursor": {
+                    "type": "integer",
+                    "description": "Where to continue: the next_cursor of the previous call, the id of the last item audited (default 0 = from the start)"
+                }
+            },
+            "required": []
+        },
+        "capability": "edit_pages"
+    },
+    {
+        "name": "build_site",
+        "description": "Build a whole Divi 5 site as one undoable build. add_page creates one checked DRAFT page per call (an invalid page or a taken slug is refused, the build continues); status lists it; launch publishes it (dry_run first, then repeat with the token). Undo it all: undo_batch.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "description": "add_page, status or launch",
+                    "enum": [
+                        "add_page",
+                        "status",
+                        "launch"
+                    ]
+                },
+                "title": {
+                    "type": "string",
+                    "description": "add_page: the page title (plain text)"
+                },
+                "slug": {
+                    "type": "string",
+                    "description": "add_page: the page slug; it must not be used by another page"
+                },
+                "content": {
+                    "type": "string",
+                    "description": "add_page: the Divi 5 layout (it must pass every check)"
+                },
+                "menu_label": {
+                    "type": "string",
+                    "description": "add_page: the menu label (default: the title), at most 100 bytes"
+                },
+                "in_menu": {
+                    "type": "boolean",
+                    "description": "add_page: put the page in the primary menu at launch (default true if you may edit menus, else false)"
+                },
+                "is_front": {
+                    "type": "boolean",
+                    "description": "add_page: make this the front page at launch (one page per build)"
+                },
+                "build_id": {
+                    "type": "integer",
+                    "description": "The build to use: returned by the first add_page; required for later pages and for launch"
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "launch: preview only; returns the token a real launch needs"
+                },
+                "token": {
+                    "type": "string",
+                    "description": "launch: the token from your dry run of the same build; it works once, within 30 minutes"
+                }
+            },
+            "required": [
+                "action"
+            ]
+        },
+        "capability": "publish_pages"
+    },
+    {
+        "name": "manage_global_colors",
+        "description": "Create, recolor, rename or deactivate the site's Divi global colors (never deletes). The five theme colors need allow_theme_colors=true. Affects every page using a color: call with dry_run=true first, then repeat with the preview_token. Undoable.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "colors": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 50,
+                    "description": "The changes. No id = create a color (label and color needed). With an id (from list_global_styles) = change that color: any of label, color, status.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "gcid-... of an existing color; leave out to create one"
+                            },
+                            "label": {
+                                "type": "string",
+                                "description": "Name, 1 to 60 characters"
+                            },
+                            "color": {
+                                "type": "string",
+                                "description": "Hex (#rgb, #rgba, #rrggbb, #rrggbbaa) or rgb()/rgba()/hsl()/hsla() with plain numbers"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "active",
+                                    "inactive"
+                                ],
+                                "description": "inactive retires a color without deleting it"
+                            }
+                        }
+                    }
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only; returns the preview_token a real run needs"
+                },
+                "preview_token": {
+                    "type": "string",
+                    "description": "The token from your dry run of the same arguments; it works once, within 30 minutes"
+                },
+                "allow_theme_colors": {
+                    "type": "boolean",
+                    "description": "Needed to change one of the five theme colors (primary, secondary, heading, body, link): that restyles the whole theme"
+                }
+            },
+            "required": [
+                "colors"
+            ]
+        },
+        "capability": "edit_theme_options"
+    },
+    {
+        "name": "manage_global_variables",
+        "description": "Create, edit or archive the site's Divi global variables of type numbers (12px, clamp()) and strings (never deletes). Affects every page using a variable: call with dry_run=true first, then repeat with the preview_token. Undoable.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "variables": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 50,
+                    "description": "The changes. No id = create a variable (type, label and value needed). With an id (from list_global_styles) = change that numbers or strings variable: any of label, value, status.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "gvid-... of an existing variable; leave out to create one"
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "numbers",
+                                    "strings"
+                                ],
+                                "description": "Needed to create; never changes afterwards"
+                            },
+                            "label": {
+                                "type": "string",
+                                "description": "Name, 1 to 60 characters"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "numbers: a number with an optional unit or calc()/clamp()/min()/max() of those. strings: plain text up to 200 characters (balanced brackets, no braces, semicolons, quotes, comment markers or code)"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "active",
+                                    "archived"
+                                ],
+                                "description": "archived retires a variable without deleting it"
+                            }
+                        }
+                    }
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only; returns the preview_token a real run needs"
+                },
+                "preview_token": {
+                    "type": "string",
+                    "description": "The token from your dry run of the same arguments; it works once, within 30 minutes"
+                }
+            },
+            "required": [
+                "variables"
+            ]
+        },
+        "capability": "edit_theme_options"
+    },
+    {
+        "name": "manage_global_presets",
+        "description": "Create or update the site's Divi module presets (never deletes). Pages use one with modulePreset [\"<id>\"], so a change restyles every module citing it. Call with dry_run=true first, then repeat with the preview_token. Undoable.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "presets": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "description": "The changes. No id = create a preset (module, name and attrs needed). With an id (from list_global_styles) = change that preset: name and/or attrs (attrs REPLACES its whole style tree).",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Id of an existing preset; leave out to create one"
+                            },
+                            "module": {
+                                "type": "string",
+                                "description": "Needed to create, e.g. divi/heading; never changes afterwards"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Name, 1 to 60 characters"
+                            },
+                            "attrs": {
+                                "type": "object",
+                                "description": "The style attributes, in the same shape a layout block uses (for example title.decoration.font.font.desktop.value.size). No custom CSS or code."
+                            }
+                        }
+                    }
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only; returns the preview_token a real run needs"
+                },
+                "preview_token": {
+                    "type": "string",
+                    "description": "The token from your dry run of the same arguments; it works once, within 30 minutes"
+                },
+                "allow_default_presets": {
+                    "type": "boolean",
+                    "description": "Needed to change a module's DEFAULT preset: that restyles every module of that type without a preset of its own"
+                }
+            },
+            "required": [
+                "presets"
+            ]
+        },
+        "capability": "edit_theme_options"
+    },
+    {
+        "name": "set_custom_fields",
+        "description": "Set custom field values on ONE page, Divi Project or other post you can edit. Only keys the site knows; never protected or secret keys, code, or ACF lists and images. All or nothing; one undoable batch. dry_run previews. Read fields first with get_custom_fields.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "description": "Post ID"
+                },
+                "fields": {
+                    "type": "array",
+                    "description": "Up to 25 fields to set, each with a key and a text value",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "description": "Custom field key"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "New text value (at most 10,000 characters)"
+                            }
+                        },
+                        "required": [
+                            "key",
+                            "value"
+                        ]
+                    }
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only; nothing is changed"
+                }
+            },
+            "required": [
+                "id",
+                "fields"
+            ]
+        },
+        "capability": "edit_posts"
+    },
+    {
+        "name": "create_product",
+        "description": "Create up to 25 new simple WooCommerce products as DRAFTS (never published). Sets name, texts, SKU, prices, stock, existing categories, tags and Media Library images. All or nothing; one undoable batch. dry_run previews. If list_products is available, use it first to see the catalogue.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "products": {
+                    "type": "array",
+                    "description": "The products to create (1 to 25)",
+                    "maxItems": 25,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Product name (plain text, at most 200 characters)"
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Long description (HTML allowed, no scripts)"
+                            },
+                            "short_description": {
+                                "type": "string",
+                                "description": "Short description (HTML allowed, no scripts)"
+                            },
+                            "sku": {
+                                "type": "string",
+                                "description": "Unique SKU"
+                            },
+                            "regular_price": {
+                                "type": "string",
+                                "description": "Decimal string, for example \"20\" or \"20.50\""
+                            },
+                            "sale_price": {
+                                "type": "string",
+                                "description": "Decimal string lower than regular_price"
+                            },
+                            "manage_stock": {
+                                "type": "boolean",
+                                "description": "Track stock quantity"
+                            },
+                            "stock_quantity": {
+                                "type": "integer",
+                                "description": "Required when manage_stock is true"
+                            },
+                            "stock_status": {
+                                "type": "string",
+                                "description": "instock, outofstock or onbackorder (only when manage_stock is false)"
+                            },
+                            "backorders": {
+                                "type": "string",
+                                "description": "no, notify or yes (only when manage_stock is true)"
+                            },
+                            "categories": {
+                                "type": "array",
+                                "description": "Existing category slugs",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "tags": {
+                                "type": "array",
+                                "description": "Existing tag slugs",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "image_id": {
+                                "type": "integer",
+                                "description": "Media Library image id"
+                            },
+                            "gallery_image_ids": {
+                                "type": "array",
+                                "description": "Media Library image ids",
+                                "items": {
+                                    "type": "integer"
+                                }
+                            },
+                            "weight": {
+                                "type": "string",
+                                "description": "Decimal string"
+                            },
+                            "dimensions": {
+                                "type": "object",
+                                "description": "length, width and height as decimal strings"
+                            },
+                            "tax_status": {
+                                "type": "string",
+                                "description": "taxable, shipping or none"
+                            },
+                            "virtual": {
+                                "type": "boolean",
+                                "description": "A product that is not shipped"
+                            },
+                            "sold_individually": {
+                                "type": "boolean",
+                                "description": "Limit purchases to one per order"
+                            }
+                        },
+                        "required": [
+                            "name"
+                        ]
+                    }
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only; nothing is created"
+                }
+            },
+            "required": [
+                "products"
+            ]
+        },
+        "capability": "edit_posts"
+    },
+    {
+        "name": "update_products",
+        "description": "Change existing WooCommerce products: prices and sale dates, stock, texts, SKU, categories, tags, images, size and variation rows. Never publishes, creates or deletes. Call with dry_run=true first, then repeat with its token. One undoable batch. Read current values with get_product first.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "updates": {
+                    "type": "array",
+                    "description": "The products to change (1 to 25); omit a field to leave it alone",
+                    "maxItems": 25,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "description": "The variation id (it must belong to this product)"
+                            },
+                            "regular_price": {
+                                "type": "string",
+                                "description": "Decimal string, or \"\" to clear"
+                            },
+                            "sale_price": {
+                                "type": "string",
+                                "description": "Decimal string lower than regular_price, or \"\" to clear"
+                            },
+                            "sale_from": {
+                                "type": "string",
+                                "description": "YYYY-MM-DD, or \"\" to clear"
+                            },
+                            "sale_to": {
+                                "type": "string",
+                                "description": "YYYY-MM-DD, or \"\" to clear"
+                            },
+                            "manage_stock": {
+                                "type": "boolean",
+                                "description": "Track stock quantity"
+                            },
+                            "stock_quantity": {
+                                "type": "integer",
+                                "description": "Needs manage_stock"
+                            },
+                            "stock_status": {
+                                "type": "string",
+                                "description": "instock, outofstock or onbackorder (only when stock is not managed)"
+                            },
+                            "backorders": {
+                                "type": "string",
+                                "description": "no, notify or yes (only when stock is managed)"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Product name (plain text, at most 200 characters)"
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Long description (HTML allowed, no scripts), or \"\" to clear"
+                            },
+                            "short_description": {
+                                "type": "string",
+                                "description": "Short description (HTML allowed, no scripts), or \"\" to clear"
+                            },
+                            "sku": {
+                                "type": "string",
+                                "description": "Unique SKU, or \"\" to clear"
+                            },
+                            "categories": {
+                                "type": "array",
+                                "description": "Existing category slugs; the list replaces the current categories",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "tags": {
+                                "type": "array",
+                                "description": "Existing tag slugs; the list replaces the current tags",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "image_id": {
+                                "type": "integer",
+                                "description": "Media Library image id, or 0 to remove the image"
+                            },
+                            "gallery_image_ids": {
+                                "type": "array",
+                                "description": "Media Library image ids; the list replaces the gallery",
+                                "items": {
+                                    "type": "integer"
+                                }
+                            },
+                            "weight": {
+                                "type": "string",
+                                "description": "Decimal string, or \"\" to clear"
+                            },
+                            "dimensions": {
+                                "type": "object",
+                                "description": "length, width and height as decimal strings; only the axes given change"
+                            },
+                            "tax_status": {
+                                "type": "string",
+                                "description": "taxable, shipping or none"
+                            },
+                            "variations": {
+                                "type": "array",
+                                "description": "Variable products only: up to 100 variation rows to change",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "description": "The variation id (it must belong to this product)"
+                                        },
+                                        "regular_price": {
+                                            "type": "string",
+                                            "description": "Decimal string, or \"\" to clear"
+                                        },
+                                        "sale_price": {
+                                            "type": "string",
+                                            "description": "Decimal string lower than regular_price, or \"\" to clear"
+                                        },
+                                        "sale_from": {
+                                            "type": "string",
+                                            "description": "YYYY-MM-DD, or \"\" to clear"
+                                        },
+                                        "sale_to": {
+                                            "type": "string",
+                                            "description": "YYYY-MM-DD, or \"\" to clear"
+                                        },
+                                        "manage_stock": {
+                                            "type": "boolean",
+                                            "description": "Track stock quantity"
+                                        },
+                                        "stock_quantity": {
+                                            "type": "integer",
+                                            "description": "Needs manage_stock"
+                                        },
+                                        "stock_status": {
+                                            "type": "string",
+                                            "description": "instock, outofstock or onbackorder (only when stock is not managed)"
+                                        },
+                                        "backorders": {
+                                            "type": "string",
+                                            "description": "no, notify or yes (only when stock is managed)"
+                                        }
+                                    },
+                                    "required": [
+                                        "id"
+                                    ]
+                                }
+                            }
+                        },
+                        "required": [
+                            "id"
+                        ]
+                    }
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only; returns the token a real run needs"
+                },
+                "token": {
+                    "type": "string",
+                    "description": "The token from your dry run of the same arguments; it works once, within 30 minutes"
+                }
+            },
+            "required": [
+                "updates"
+            ]
+        },
+        "capability": "edit_posts"
+    },
+    {
+        "name": "bulk_adjust_prices",
+        "description": "Raise or lower the REGULAR prices of the WooCommerce products a filter matches, by a percent or an amount, rounded exactly. Never touches sale prices or anything else. Call with dry_run=true first, then repeat with its token. Unadjustable products are skipped with a reason. One undoable batch.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "filter": {
+                    "type": "object",
+                    "description": "Which products. Give at least one of categories, tags, types, stock_status, on_sale, search, ids - or all=true. Only published products unless status says otherwise.",
+                    "properties": {
+                        "categories": {
+                            "type": "array",
+                            "description": "Category slugs (also matches child categories)",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "tags": {
+                            "type": "array",
+                            "description": "Tag slugs",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "types": {
+                            "type": "array",
+                            "description": "simple, variable and/or external",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "stock_status": {
+                            "type": "string",
+                            "description": "instock, outofstock or onbackorder"
+                        },
+                        "on_sale": {
+                            "type": "boolean",
+                            "description": "Only products on sale now (true) or not (false)"
+                        },
+                        "search": {
+                            "type": "string",
+                            "description": "A phrase contained in the product name (case-insensitive)"
+                        },
+                        "ids": {
+                            "type": "array",
+                            "description": "Product ids (at most 100)",
+                            "items": {
+                                "type": "integer"
+                            }
+                        },
+                        "all": {
+                            "type": "boolean",
+                            "description": "true = every product (in the allowed statuses); cannot be combined with the narrowing filters"
+                        },
+                        "exclude_ids": {
+                            "type": "array",
+                            "description": "Product ids to leave out",
+                            "items": {
+                                "type": "integer"
+                            }
+                        },
+                        "status": {
+                            "type": "array",
+                            "description": "publish (default), private, draft and/or pending",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "change": {
+                    "type": "object",
+                    "description": "mode \"percent\" (-90 to 500) or \"amount\", value a signed decimal STRING, for example {\"mode\":\"percent\",\"value\":\"-10\"}",
+                    "properties": {
+                        "mode": {
+                            "type": "string",
+                            "description": "percent or amount"
+                        },
+                        "value": {
+                            "type": "string",
+                            "description": "Signed decimal string, for example \"10\", \"-12.5\", \"-5\""
+                        }
+                    },
+                    "required": [
+                        "mode",
+                        "value"
+                    ]
+                },
+                "round_to": {
+                    "type": "string",
+                    "description": "Optional: what new prices should end in, for example \"0.95\" or \"0.5\"; \"0\" for whole numbers. Without it prices are rounded to the shop's decimals."
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only; returns the token a real run needs"
+                },
+                "token": {
+                    "type": "string",
+                    "description": "The token from your dry run of the same arguments; it works once, within 30 minutes"
+                }
+            },
+            "required": [
+                "filter",
+                "change"
+            ]
+        },
+        "capability": "edit_posts"
+    },
+    {
+        "name": "switch_design",
+        "description": "Restyle Divi 5 pages built with this plugin to another design language and/or style kit, deterministically. It switches colours, fonts, headline type, section spacing and kit-styled modules. Always dry_run=true first, then repeat with the token. Undoable.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "page_id": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "One page or Divi Project id (or use page_ids)"
+                },
+                "page_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "minItems": 1,
+                    "maxItems": 25,
+                    "description": "Up to 25 page or Project ids, switched as one batch (or use page_id)"
+                },
+                "to_language": {
+                    "type": "string",
+                    "description": "Target design language id (get_style_guide topic design-languages); omitted keeps the page's own"
+                },
+                "to_kit": {
+                    "type": "string",
+                    "description": "Target style kit id, or \"default\" for the target language's own kit; omitted keeps the page's own"
+                },
+                "from_language": {
+                    "type": "string",
+                    "description": "Optional. The language the page was built with (detected otherwise)"
+                },
+                "from_kit": {
+                    "type": "string",
+                    "description": "Optional. The kit the page was built with (detected otherwise)"
+                },
+                "mode": {
+                    "type": "string",
+                    "enum": [
+                        "leave",
+                        "conform"
+                    ],
+                    "description": "leave (default): only blocks that exactly match a kit style switch; conform: near matches are re-styled too"
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only; returns the report and the token a real run needs"
+                },
+                "token": {
+                    "type": "string",
+                    "description": "The token from your dry run of the same arguments; it works once, within 30 minutes"
+                }
+            }
+        },
+        "capability": "edit_pages"
+    },
+    {
+        "name": "manage_mega_menu",
+        "description": "Make the global header's menu a mega menu built from Divi modules. status (read-only) lists 14 layouts and menu items; apply sets a layout (item_id: one item); update rebuilds from the menu; remove restores it. Checked, undoable with undo_batch; dry_run previews. Needs the Theme Builder permission.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "enum": [
+                        "status",
+                        "apply",
+                        "update",
+                        "remove"
+                    ],
+                    "description": "status, apply, update or remove"
+                },
+                "layout": {
+                    "type": "string",
+                    "enum": [
+                        "columns-dark",
+                        "columns-footer",
+                        "feature-right",
+                        "feature-left",
+                        "feature-banner",
+                        "icons-cards",
+                        "icons-dark",
+                        "latest-cards",
+                        "latest-links-cards",
+                        "showcase-intro-cards",
+                        "showcase-tiles",
+                        "showcase-intro-links",
+                        "showcase-tiles-dark",
+                        "directory-counts"
+                    ],
+                    "description": "Layout id for apply (see status.layouts)"
+                },
+                "item_id": {
+                    "type": "integer",
+                    "description": "apply only: the menu item id to give this layout (a mega menu must already be applied)"
+                },
+                "edited": {
+                    "type": "string",
+                    "enum": [
+                        "keep",
+                        "rebuild"
+                    ],
+                    "description": "When a panel was changed in the Divi builder: keep your changes or rebuild it. Without it a real run stops and asks."
+                },
+                "dry_run": {
+                    "type": "boolean",
+                    "description": "Preview only; nothing is changed"
+                }
+            },
+            "required": [
+                "action"
+            ]
+        },
+        "capability": "edit_theme_options"
+    }
+]

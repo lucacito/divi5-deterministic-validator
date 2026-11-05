@@ -142,7 +142,7 @@ final class HistoryStore
     /**
      * The newest snapshot of every page, newest first, without any snapshot content.
      *
-     * @return list<array{page_id:int, version_id:int, saved_at:string, tool:string}>
+     * @return list<array{page_id:int, version_id:int, saved_at:string, tool:string, label:?string}>
      */
     public static function recent( int $limit ): array
     {
@@ -155,7 +155,7 @@ final class HistoryStore
         // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
         $rows = $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT h.page_id, h.version_id, h.saved_at, h.tool
+                "SELECT h.page_id, h.version_id, h.saved_at, h.tool, h.label
                  FROM {$table} h
                  INNER JOIN ( SELECT page_id, MAX(version_id) AS newest FROM {$table} GROUP BY page_id ) n
                          ON n.page_id = h.page_id AND n.newest = h.version_id
@@ -174,10 +174,75 @@ final class HistoryStore
                 'version_id' => (int) $row['version_id'],
                 'saved_at'   => (string) $row['saved_at'],
                 'tool'       => (string) $row['tool'],
+                'label'      => isset( $row['label'] ) ? (string) $row['label'] : null,
             ];
         }
 
         return $out;
+    }
+
+    /**
+     * Every snapshot saved at or after `$sinceIso` (UTC, "Y-m-d\TH:i:s\Z"), across all pages, newest first, without any snapshot
+     * content. Lets an add-on group changes into batches by who made them and when.
+     *
+     * `row_id` is the row's number in the table: it only ever grows, across all pages, so it orders two changes made in the same
+     * second, which the one-second `saved_at` cannot.
+     *
+     * @return list<array{row_id:int, page_id:int, version_id:int, saved_at:string, tool:string, actor:int, label:?string}>
+     */
+    public static function rowsSince( string $sinceIso, int $limit = 500 ): array
+    {
+        global $wpdb;
+
+        if ( ! HistoryTable::hasTable() || 1 !== preg_match( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/', $sinceIso ) ) {
+            return [];
+        }
+        $table = HistoryTable::name();
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $rows = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT id AS row_id, page_id, version_id, saved_at, tool, actor, label
+                 FROM {$table}
+                 WHERE saved_at >= %s
+                 ORDER BY saved_at DESC, id DESC
+                 LIMIT %d",
+                $sinceIso,
+                max( 0, min( 2000, $limit ) )
+            ),
+            ARRAY_A
+        );
+        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+
+        $out = [];
+        foreach ( is_array( $rows ) ? $rows : [] as $row ) {
+            $out[] = [
+                'row_id'     => (int) $row['row_id'],
+                'page_id'    => (int) $row['page_id'],
+                'version_id' => (int) $row['version_id'],
+                'saved_at'   => (string) $row['saved_at'],
+                'tool'       => (string) $row['tool'],
+                'actor'      => (int) $row['actor'],
+                'label'      => isset( $row['label'] ) ? (string) $row['label'] : null,
+            ];
+        }
+
+        return $out;
+    }
+
+    /** The number of the newest row in the table (0 when there is none): a marker for "everything saved after this". */
+    public static function latestRowId(): int
+    {
+        global $wpdb;
+
+        if ( ! HistoryTable::hasTable() ) {
+            return 0;
+        }
+        $table = HistoryTable::name();
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $id = $wpdb->get_var( "SELECT MAX(id) FROM {$table}" );
+        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+
+        return null === $id ? 0 : (int) $id;
     }
 
     /** `delete_post` action: permanently deleting a page removes its history (trashing does not). */

@@ -26,9 +26,13 @@ class UninstallTest extends TestCase
             'aied_pro_site_limit'       => 1,
             'aied_pro_batches_db_version' => 1,
             'aied_pro_php_proposals'    => [ [ 'id' => 'php_x' ] ],
+            'aied_pro_megamenu_content' => [ 12 => [ 'headline' => 'Hi' ] ],
+            'aied_pro_agent_sessions'   => [ [ 'token' => 'x' ] ],
+            'aied_pro_strict_validation' => '1',
+            'aied_pro_strict_flags'     => [ [ 'post_id' => 1 ] ],
             'unrelated_option'          => 'keep',
         ];
-        $GLOBALS['__wp_transients'] = [ 'aied_pro_refresh_backoff' => 1, 'aied_pro_batches_backoff' => 1 ];
+        $GLOBALS['__wp_transients'] = [ 'aied_pro_refresh_backoff' => 1, 'aied_pro_batches_backoff' => 1, 'aied_pro_megamenu_drift' => [ 'lines' => [] ] ];
         $GLOBALS['__wp_http_log']   = [];
         $GLOBALS['__wp_deleted_meta'] = [];
         if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
@@ -43,6 +47,11 @@ class UninstallTest extends TestCase
         $this->assertContains( [ 'query', 'DROP TABLE IF EXISTS wp_aied_pro_batches' ], $GLOBALS['wpdb']->calls );
         $deletes = array_filter( $GLOBALS['wpdb']->calls, static fn ( array $c ): bool => 'query' === $c[0] && str_contains( (string) $c[1], 'DELETE FROM wp_options' ) && str_contains( (string) $c[1], 'aied\\_pro\\_buildlock\\_' ) );
         $this->assertCount( 1, $deletes, 'leftover build-lock rows of a crashed request are removed too' );
+        $this->assertArrayNotHasKey( 'aied_pro_megamenu_content', $GLOBALS['__wp_options'], 'the mega menu\'s own content is removed' );
+        $this->assertArrayNotHasKey( 'aied_pro_megamenu_drift', $GLOBALS['__wp_transients'], 'and its out-of-date check' );
+        $mega = array_filter( $GLOBALS['wpdb']->calls, static fn ( array $c ): bool => 'query' === $c[0] && str_contains( (string) $c[1], 'DELETE FROM wp_options' ) && str_contains( (string) $c[1], 'aied\\_pro\\_megamenu\\_' ) );
+        $this->assertCount( 1, $mega, 'and the per-user mega menu transients (messages, pending choices)' );
+        $this->assertContains( [ 'user', 0, 'aied_pro_whats_new_dismissed', true ], $GLOBALS['__wp_deleted_meta'] );
         $GLOBALS['wpdb'] = null;
     }
 }

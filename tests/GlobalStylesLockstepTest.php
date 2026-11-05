@@ -61,7 +61,7 @@ class GlobalStylesLockstepTest extends TestCase
 
     public function testMcpDeclaresAndDispatchesTheTool(): void
     {
-        $mcp = $this->src( 'McpHandler.php' );
+        $mcp = $this->src( 'McpHandler.php' ) . $this->src( 'ToolCatalog.php' );
         $this->assertStringContainsString( "'name'        => 'list_global_styles'", $mcp );
         $this->assertMatchesRegularExpression( "/'list_global_styles'\s*=>\s*\\\$this->toolListGlobalStyles/", $mcp );
     }

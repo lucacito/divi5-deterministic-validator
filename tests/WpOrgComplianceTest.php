@@ -100,6 +100,7 @@ class WpOrgComplianceTest extends TestCase
         'src/HistoryTable.php' => 'stores the history table stage: created / old history migrated (ai_editor_divi5_history_db_version)',
         'src/ApprovalMode.php' => 'stores the site owner\'s own approval-mode setting (ai_editor_divi5_require_preview); changed only from the nonce-protected admin form, never by the AI (owner-approved exception 2026-10-04)',
         'src/OAuthSettings.php' => 'stores the site owner\'s OAuth enable/disable setting (ai_editor_divi5_oauth_enabled); changed only from the admin panel, never by the AI',
+        'src/HistorySources.php' => 'stores the site owner\'s own choice of which sources of page changes keep an undo point (ai_editor_divi5_history_sources); changed only from the nonce-protected Settings form, never by an AI tool',
         'src/OAuthTable.php'    => 'stores the OAuth table schema version for migrations (ai_editor_divi5_oauth_db_version), like HistoryTable',
     ];
 
@@ -374,7 +375,7 @@ class WpOrgComplianceTest extends TestCase
 
     public function testCreatePageIsFreeAndTheMcpToolListIsExactlyTheFreeTools(): void
     {
-        $mcp  = (string) file_get_contents(self::ROOT . '/src/McpHandler.php');
+        $mcp  = (string) file_get_contents(self::ROOT . '/src/McpHandler.php') . (string) file_get_contents(self::ROOT . '/src/ToolCatalog.php');
         $rest = (string) file_get_contents(self::ROOT . '/src/RestController.php');
         $this->assertStringNotContainsString('upgrade_url', $mcp);
         $this->assertStringNotContainsString('upgrade_url', $rest);

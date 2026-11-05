@@ -82,7 +82,7 @@ class OpenApiSpecTest extends TestCase
         $this->assertStringContainsString("'page'        => ['type' => 'integer', 'minimum' => 1, 'maximum' => 200,", $rest);
 
         // ...and with the MCP list_media_images inputSchema.
-        $mcp = (string) file_get_contents(__DIR__ . '/../wp-plugin/src/McpHandler.php');
+        $mcp = (string) file_get_contents(__DIR__ . '/../wp-plugin/src/McpHandler.php') . (string) file_get_contents(__DIR__ . '/../wp-plugin/src/ToolCatalog.php');
         $this->assertStringContainsString("'per_page'    => ['type' => 'integer', 'minimum' => 1, 'maximum' => 50,", $mcp);
         $this->assertStringContainsString("'page'        => ['type' => 'integer', 'minimum' => 1, 'maximum' => 200,", $mcp);
     }

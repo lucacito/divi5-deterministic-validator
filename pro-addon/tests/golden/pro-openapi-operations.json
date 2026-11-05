@@ -1,0 +1,16 @@
+[
+    "POST /pro/audit_site auditSite",
+    "POST /pro/build_site buildSite",
+    "POST /pro/edit_theme_layout editThemeLayout",
+    "POST /pro/find_replace_site findReplaceSite",
+    "POST /pro/list_batches listBatches",
+    "POST /pro/list_theme_layouts listThemeLayouts",
+    "POST /pro/manage_theme_template manageThemeTemplate",
+    "POST /pro/propose_php_snippet proposePhpSnippet",
+    "POST /pro/publish_page publishPage",
+    "POST /pro/set_custom_css setCustomCss",
+    "POST /pro/set_front_page setFrontPage",
+    "POST /pro/set_primary_menu setPrimaryMenu",
+    "POST /pro/undo_batch undoBatch",
+    "POST /pro/update_theme_layout updateThemeLayout"
+]

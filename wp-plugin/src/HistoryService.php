@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require_once __DIR__ . '/CodePolicy.php';
 require_once __DIR__ . '/PageTitle.php';
+require_once __DIR__ . '/HistoryCapture.php';
 
 /**
  * Single entry point for page history, shared by the MCP and REST transports.
@@ -36,7 +37,8 @@ final class HistoryService
         if ( null !== $newTitle ) {
             $fields['post_title'] = $newTitle;
         }
-        $updated = wp_update_post( wp_slash( $fields ), true );
+        // This method snapshots for itself above; the universal capture (HistoryCapture) must not take a second one.
+        $updated = HistoryCapture::suspend( static fn () => wp_update_post( wp_slash( $fields ), true ) );
         if ( is_wp_error( $updated ) ) {
             return [ 'ok' => false, 'error' => 'update_failed', 'message' => $updated->get_error_message(), 'snapshot' => $snapshot ];
         }
@@ -82,7 +84,7 @@ final class HistoryService
         };
         add_filter( 'wp_insert_post_data', $restoreContent, PHP_INT_MAX, 2 );
         try {
-            $updated = wp_update_post( wp_slash( [ 'ID' => $pageId, 'post_title' => $title ] ), true );
+            $updated = HistoryCapture::suspend( static fn () => wp_update_post( wp_slash( [ 'ID' => $pageId, 'post_title' => $title ] ), true ) );
         } finally {
             remove_filter( 'wp_insert_post_data', $restoreContent, PHP_INT_MAX );
         }
@@ -108,6 +110,17 @@ final class HistoryService
         return $post ? (string) $post->post_title : '';
     }
 
+    /**
+     * Snapshots content a save by some other tool is about to replace (HistoryCapture). `$source` is a HistorySources type;
+     * the name of the ability or application password goes in the label.
+     *
+     * @return array{stored:bool, version_id:?int, reason:?string}
+     */
+    public static function capture( int $pageId, string $before, string $source, ?string $label = null ): array
+    {
+        return self::snapshot( $pageId, $before, substr( $source, 0, 50 ), null === $label ? null : mb_substr( $label, 0, 255 ) );
+    }
+
     /** @return list<array<string,mixed>> */
     public static function listFor( int $pageId ): array
     {
@@ -131,7 +144,7 @@ final class HistoryService
         $post     = get_post( $pageId );
         $snapshot = self::snapshot( $pageId, $post ? (string) $post->post_content : '', self::TOOL_RESTORE, 'before restore of #' . $versionId );
 
-        $updated = wp_update_post( wp_slash( [ 'ID' => $pageId, 'post_content' => (string) $target['content'] ] ), true );
+        $updated = HistoryCapture::suspend( static fn () => wp_update_post( wp_slash( [ 'ID' => $pageId, 'post_content' => (string) $target['content'] ] ), true ) );
         if ( is_wp_error( $updated ) ) {
             return [ 'ok' => false, 'error' => 'update_failed', 'message' => $updated->get_error_message(), 'snapshot' => $snapshot ];
         }

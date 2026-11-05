@@ -225,6 +225,10 @@ if ( ! function_exists( 'wp_update_post' ) ) {
         if ( ! isset( $GLOBALS['__wp_posts'][ $id ] ) ) {
             return new WP_Error( 'invalid_post', 'Invalid post ID.' );
         }
+        if ( ! empty( $GLOBALS['__wp_filters']['pre_post_update'] ) ) {
+            // Mirrors core: pre_post_update sees the whole post as it is about to be written, while the stored one is still the old one.
+            do_action( 'pre_post_update', $id, array_merge( get_object_vars( $GLOBALS['__wp_posts'][ $id ] ), array_diff_key( $arr, [ 'ID' => 1 ] ) ) );
+        }
         $fields = $arr; // what is written; the update hook below still sees the caller's own array
         if ( ! empty( $GLOBALS['__wp_filters']['wp_insert_post_data'] ) ) {
             // Only when a test registered a wp_insert_post_data filter: mirror core, which merges the stored post

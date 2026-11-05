@@ -19,7 +19,7 @@ class HistoryLockstepTest extends TestCase
 
     public function testMcpExposesTheThreeToolsInListAndDispatch(): void
     {
-        $mcp = $this->src('McpHandler.php');
+        $mcp = $this->src( 'McpHandler.php' ) . $this->src( 'ToolCatalog.php' );
         foreach (['list_page_history', 'get_page_history_entry', 'restore_page_version'] as $tool) {
             $this->assertStringContainsString("'name'        => '{$tool}'", $mcp, "$tool missing from tools/list");
             $this->assertStringContainsString("'{$tool}'", $mcp);
@@ -65,7 +65,7 @@ class HistoryLockstepTest extends TestCase
 
     public function testMediaToolExistsInAllThreeTransports(): void
     {
-        $mcp = $this->src('McpHandler.php');
+        $mcp = $this->src( 'McpHandler.php' ) . $this->src( 'ToolCatalog.php' );
         $this->assertStringContainsString("'name'        => 'list_media_images'", $mcp);
         $this->assertMatchesRegularExpression("/'list_media_images'\s*=>\s*\\\$this->toolListMedia/", $mcp);
         $this->assertStringContainsString("'/media'", $this->src('RestController.php'));

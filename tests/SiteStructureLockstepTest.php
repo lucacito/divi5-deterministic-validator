@@ -72,7 +72,7 @@ class SiteStructureLockstepTest extends TestCase
 
     public function testMcpDeclaresAndDispatchesTheTool(): void
     {
-        $mcp = $this->src( 'McpHandler.php' );
+        $mcp = $this->src( 'McpHandler.php' ) . $this->src( 'ToolCatalog.php' );
         $this->assertStringContainsString( "'name'        => 'get_site_structure'", $mcp );
         $this->assertMatchesRegularExpression( "/'get_site_structure'\s*=>\s*\\\$this->toolSiteStructure/", $mcp );
     }
