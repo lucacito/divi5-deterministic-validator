@@ -136,8 +136,8 @@ final class MegaMenuPanel
         $sel     = $this->selectedItem( $items );
         $this->styles();
         ?>
+        <hr class="wp-header-end aied-mm-hdr"><?php // WordPress puts other plugins' notices right after this marker: above the card, not inside it. ?>
         <div class="aied-card aied-pro" id="megamenu">
-            <hr class="wp-header-end"><?php // WordPress puts other plugins' notices right after this marker: above our toolbar, not inside it. ?>
             <div class="aied-mm-bar">
                 <div class="aied-mm-id">
                     <div class="aied-mm-titlerow">
@@ -717,7 +717,7 @@ final class MegaMenuPanel
             @media (prefers-reduced-motion: reduce) { #megamenu a, #megamenu button, #megamenu .aied-mm-card { transition: none; } }
 
             /* the bar: title and state on the left, two quiet actions on the right */
-            #megamenu hr.wp-header-end { display: none; }
+            hr.wp-header-end.aied-mm-hdr { display: none; }
             #megamenu .aied-mm-bar { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: flex-start; justify-content: space-between; margin: 0 0 16px; }
             #megamenu .aied-mm-titlerow { display: flex; align-items: center; gap: 10px; }
             #megamenu .aied-mm-titlerow h2 { margin: 0; padding: 0; font-size: 18px; font-weight: 600; line-height: 1.3; }
