@@ -269,9 +269,6 @@ if ( ! function_exists( 'wp_cache_delete' ) ) {
     // Records calls so tests can assert the object cache was purged.
     function wp_cache_delete( $key, $group = '' ) { $GLOBALS['__wp_cache_deleted'][] = [ $key, $group ]; return true; }
 }
-if ( ! function_exists( 'is_user_logged_in' ) ) {
-    function is_user_logged_in() { return ( $GLOBALS['__wp_current_user_id'] ?? 7 ) > 0; }
-}
 if ( ! function_exists( 'get_current_user_id' ) ) {
     function get_current_user_id() { return $GLOBALS['__wp_current_user_id'] ?? 7; }
 }

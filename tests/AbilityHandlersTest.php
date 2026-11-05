@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/FakeWpdb.php';
 require_once __DIR__ . '/WpRestShims.php';
+require_once __DIR__ . '/UserLoggedInShim.php';
 require_once __DIR__ . '/../wp-plugin/src/autoload.php';
 
 /** The abilities that have no MCP tool of their own: design languages, recipe filters, variety advice and check-design. */

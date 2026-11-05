@@ -12,6 +12,7 @@ use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/FakeWpdb.php';
 require_once __DIR__ . '/WpRestShims.php';
+require_once __DIR__ . '/UserLoggedInShim.php';
 require_once __DIR__ . '/WpInsertPostShims.php';
 require_once __DIR__ . '/DiviGlobalDataShims.php';
 require_once __DIR__ . '/GetPostsShim.php';
