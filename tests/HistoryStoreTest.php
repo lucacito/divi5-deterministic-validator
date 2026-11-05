@@ -148,11 +148,24 @@ class HistoryStoreTest extends TestCase
 
         $rows = HistoryStore::rowsSince( '2026-01-02T00:00:00Z' );
         $this->assertSame( [ 6, 5 ], array_column( $rows, 'page_id' ), 'newest first, the older version of page 5 is before the cut' );
-        $this->assertSame( [ 'page_id', 'version_id', 'saved_at', 'tool', 'actor', 'label' ], array_keys( $rows[0] ) );
+        $this->assertSame( [ 'row_id', 'page_id', 'version_id', 'saved_at', 'tool', 'actor', 'label' ], array_keys( $rows[0] ) );
         $this->assertCount( 3, HistoryStore::rowsSince( '2025-01-01T00:00:00Z' ) );
         $this->assertCount( 1, HistoryStore::rowsSince( '2025-01-01T00:00:00Z', 1 ) );
         $this->assertSame( [], HistoryStore::rowsSince( '2027-01-01T00:00:00Z' ) );
         $this->assertSame( [], HistoryStore::rowsSince( "2026-01-01' OR 1=1 --" ), 'a malformed time is refused before it reaches SQL' );
+    }
+
+    public function testRowIdsOrderTwoChangesMadeInTheSameSecond(): void
+    {
+        $this->assertSame( 0, HistoryStore::latestRowId(), 'an empty table' );
+        HistoryStore::save( 5, [ 'next' => 2, 'items' => [ $this->item( 1, 'a', '2026-01-01T00:00:00Z' ) ] ] );
+        $marker = HistoryStore::latestRowId();
+        $this->assertGreaterThan( 0, $marker );
+        HistoryStore::save( 6, [ 'next' => 2, 'items' => [ $this->item( 1, 'b', '2026-01-01T00:00:00Z' ) ] ] );
+        $this->assertGreaterThan( $marker, HistoryStore::latestRowId() );
+        $rows = HistoryStore::rowsSince( '2026-01-01T00:00:00Z' );
+        $after = array_values( array_filter( $rows, static fn ( $r ) => $r['row_id'] > $marker ) );
+        $this->assertSame( [ 6 ], array_column( $after, 'page_id' ), 'both rows have the same saved_at; the row id still tells which came later' );
     }
 
     public function testAFailedReadIsReportedAndDoesNotLookLikeAnEmptyHistory(): void

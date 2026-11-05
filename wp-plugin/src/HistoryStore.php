@@ -185,7 +185,10 @@ final class HistoryStore
      * Every snapshot saved at or after `$sinceIso` (UTC, "Y-m-d\TH:i:s\Z"), across all pages, newest first, without any snapshot
      * content. Lets an add-on group changes into batches by who made them and when.
      *
-     * @return list<array{page_id:int, version_id:int, saved_at:string, tool:string, actor:int, label:?string}>
+     * `row_id` is the row's number in the table: it only ever grows, across all pages, so it orders two changes made in the same
+     * second, which the one-second `saved_at` cannot.
+     *
+     * @return list<array{row_id:int, page_id:int, version_id:int, saved_at:string, tool:string, actor:int, label:?string}>
      */
     public static function rowsSince( string $sinceIso, int $limit = 500 ): array
     {
@@ -198,10 +201,10 @@ final class HistoryStore
         // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
         $rows = $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT page_id, version_id, saved_at, tool, actor, label
+                "SELECT id AS row_id, page_id, version_id, saved_at, tool, actor, label
                  FROM {$table}
                  WHERE saved_at >= %s
-                 ORDER BY saved_at DESC, page_id DESC, version_id DESC
+                 ORDER BY saved_at DESC, id DESC
                  LIMIT %d",
                 $sinceIso,
                 max( 0, min( 2000, $limit ) )
@@ -213,6 +216,7 @@ final class HistoryStore
         $out = [];
         foreach ( is_array( $rows ) ? $rows : [] as $row ) {
             $out[] = [
+                'row_id'     => (int) $row['row_id'],
                 'page_id'    => (int) $row['page_id'],
                 'version_id' => (int) $row['version_id'],
                 'saved_at'   => (string) $row['saved_at'],
@@ -223,6 +227,22 @@ final class HistoryStore
         }
 
         return $out;
+    }
+
+    /** The number of the newest row in the table (0 when there is none): a marker for "everything saved after this". */
+    public static function latestRowId(): int
+    {
+        global $wpdb;
+
+        if ( ! HistoryTable::hasTable() ) {
+            return 0;
+        }
+        $table = HistoryTable::name();
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $id = $wpdb->get_var( "SELECT MAX(id) FROM {$table}" );
+        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+
+        return null === $id ? 0 : (int) $id;
     }
 
     /** `delete_post` action: permanently deleting a page removes its history (trashing does not). */

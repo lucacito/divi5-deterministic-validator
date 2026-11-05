@@ -1,6 +1,9 @@
-# Using JHMG AI Editor for Divi 5 alongside Divi's MCP
+# Using JHMG AI Editor for Divi 5 alongside Divi's upcoming MCP
 
-Divi's own MCP builds and edits pages. This plugin is the layer around it: design guidance before the build, a fixed-rule check
+Status: the plugin is designed to work alongside Divi's upcoming MCP. It has NOT been tested against the real thing, because it
+is not released yet. Everything below works with any tool that builds Divi pages.
+
+A builder builds and edits pages. This plugin is the layer around it: design guidance before the build, a fixed-rule check
 after it, and undo for every change, whichever tool made it. The two are independent. Neither wraps, blocks or changes the
 other's tools.
 
@@ -20,7 +23,7 @@ depend on it (capture works on any version, abilities do not).
 | Undo | `jhmg-ai-editor/list-page-history`, `get-page-history-entry`, `restore-page-version` |
 | Read and write pages (still validated) | `list-divi-pages`, `get-page-layout`, `update-page-layout`, `edit-page-content`, `create-page` |
 
-Pro adds, in the `jhmg-ai-editor-pro` category: `audit-site`, `design-review-site`, `find-replace-site`, `list-batches`,
+Pro adds, in the `jhmg-ai-editor-pro` category (needs the free plugin 4.17.0; an older one shows an admin notice asking you to update): `audit-site`, `design-review-site`, `find-replace-site`, `list-batches`,
 `start-batch`, `end-batch`, `undo-batch`.
 
 All abilities are private to signed-in users: they need the same permission as the plugin's tools (edit pages, plus edit
@@ -45,7 +48,11 @@ site, call design-review-site and fix its list from the top." A person can then 
 
 ## What `check-design` does and does not do
 
-It never blocks, changes or saves anything, and it lists what it could not check instead of passing it.
+It never blocks, changes or saves anything. Every answer carries `not_checked_items`, the list of what it never judges, so a
+report without problems is not read as a full pass: colors from global colors, variables or names; text on images, gradients or
+video; semi-transparent colors; text with no background color above it; positioned or overlapping modules; text with no color
+of its own; hover and other states; tablet and phone values; colors set by the theme or presets; and accessibility other than
+color contrast. Items it met in the layout are counted (`seen`).
 
 * **Contrast.** Reports only text that definitely cannot be read: both colors are plain values written in the layout, the
   background is a solid color of the module or its nearest ancestor with nothing painted over it, and the ratio is below 3:1 (or
@@ -64,7 +71,7 @@ KB each). Each version records where the change came from:
 
 | Source | Kept by default | How it is recognised |
 |---|---|---|
-| An ability (for example Divi's MCP) | yes | the running ability's name |
+| An ability (for example Divi's upcoming MCP) | yes | the running ability's name |
 | An application password | yes | the name you gave the password (never the password) |
 | Other REST requests | yes | a REST route that is not Divi's |
 | Divi's visual builder | no (WordPress revisions cover it) | Divi's REST route `/divi/v1/` or its old save action |
@@ -75,12 +82,15 @@ a version first saves the version it replaces, so a restore can itself be undone
 
 ## Pro: batches, audits and strict validation
 
-* **Batches for any source.** There is no new table. A batch is worked out from the page history: an explicit one (between
-  `start-batch` and `end-batch`) takes every change by that user in that time; otherwise changes by the same user from the same
-  source with no gap longer than 10 minutes are one batch. `undo-batch` restores each page to how it was before the batch and
-  skips, with a reason, a page that was changed after the batch (a newer snapshot exists, or it was modified later). It never
-  overwrites a newer change and never deletes or trashes a page. History times have one-second resolution, so two batches
-  inside the same second cannot be told apart.
+* **Batches for any source.** There is no new table. A batch is worked out from the page history. An explicit one (between
+  `start-batch` and `end-batch`) takes every change by that user between the two, decided by the history table's own row
+  numbers, which only grow and so keep changes made in the same second apart. Otherwise changes by the same user from the same
+  source with no gap longer than 10 minutes are one batch (rows are ordered by row number; only the 10-minute gap uses the
+  clock). `undo-batch` restores each page to how it was before the batch and skips, with a reason, a page that was changed
+  after the batch: a newer snapshot of it exists (compared by version number, never by time), or, for saves that keep no
+  snapshot, its modified time is later than the batch's last change. It never overwrites a newer change and never deletes or
+  trashes a page. The one remaining clock limit: a save that keeps no snapshot and happens within about 10 seconds after the
+  batch's last change is not seen as a later change.
 * **`audit-site` and `design-review-site`** read 25 items per call (pass `next_cursor` to continue). The review returns one list,
   high priority first (unreadable text, links to missing pages, layouts the checker refuses), then medium (Divi's stock look, ids
   the site does not have), then low (repetition, uneven spacing, a color written as a plain value that is a global color).

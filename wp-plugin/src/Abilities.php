@@ -12,7 +12,7 @@ require_once __DIR__ . '/AbilityCatalog.php';
 
 /**
  * Registers the plugin's abilities with the WordPress Abilities API (WordPress 6.9 and later) so that any agent, including one
- * working through Divi's own MCP, can call the design guidance, the validator and the page history.
+ * working through Divi's upcoming MCP, can call the design guidance, the validator and the page history.
  *
  * Nothing here is required: on WordPress without the API the two hooks never fire and `function_exists` guards every call.
  * The existing MCP endpoint, REST routes and OpenAPI spec do not depend on this class and are unchanged.
@@ -41,7 +41,7 @@ final class Abilities
             AbilityCatalog::CATEGORY,
             [
                 'label'       => 'JHMG AI Editor for Divi 5',
-                'description' => 'Design guidance, deterministic validation and undo for any AI working on Divi 5 pages, alongside Divi\'s own tools.',
+                'description' => 'Design guidance, deterministic validation and undo for any AI working on Divi 5 pages, designed to work alongside Divi\'s upcoming MCP.',
             ]
         );
     }

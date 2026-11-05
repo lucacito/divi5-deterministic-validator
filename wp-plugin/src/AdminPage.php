@@ -642,7 +642,7 @@ final class AdminPage
             return;
         }
         ?>
-        <div class="notice notice-info inline"><p><strong><?php esc_html_e( 'Works alongside Divi MCP:', 'jhmg-ai-editor-for-divi-5' ); ?></strong>
+        <div class="notice notice-info inline"><p><strong><?php esc_html_e( 'Designed to work alongside Divi\'s upcoming MCP:', 'jhmg-ai-editor-for-divi-5' ); ?></strong>
             <?php esc_html_e( 'design guidance, validation and undo are active.', 'jhmg-ai-editor-for-divi-5' ); ?></p></div>
         <?php
     }
@@ -807,7 +807,7 @@ final class AdminPage
             [ __( 'Ten design languages', 'jhmg-ai-editor-for-divi-5' ), __( 'Colors, fonts, shape, spacing and things to avoid for ten complete looks, with text and background pairings checked for contrast. Your AI picks one before it builds, with any tool. Offered as a WordPress ability on WordPress 6.9 and later.', 'jhmg-ai-editor-for-divi-5' ), 'get-design-languages, get_style_guide' ],
             [ __( 'Proven section recipes', 'jhmg-ai-editor-for-divi-5' ), __( '71 tested section patterns your AI can filter by role, layout, mood, density and the persuasion stage of the page, then use in a design language and style kit.', 'jhmg-ai-editor-for-divi-5' ), 'get_section_recipes, get-variety-advice' ],
             [ __( 'Design check for any page', 'jhmg-ai-editor-for-divi-5' ), __( 'An advisory check of any Divi 5 page, whoever built it: text that cannot be read, Divi\'s grey placeholder images and stock buttons, ids your site does not have, and repetitive sections. It never blocks or changes anything and says what it could not check.', 'jhmg-ai-editor-for-divi-5' ), 'check-design' ],
-            [ __( 'Undo for every tool', 'jhmg-ai-editor-for-divi-5' ), __( 'The previous version of a Divi page is kept before any tool changes it, including Divi\'s own MCP, an application password or the REST API, and the Dashboard shows where each change came from. Choose the sources in Settings.', 'jhmg-ai-editor-for-divi-5' ), 'list-page-history, restore-page-version' ],
+            [ __( 'Undo for every tool', 'jhmg-ai-editor-for-divi-5' ), __( 'The previous version of a Divi page is kept before any tool changes it, including Divi\'s upcoming MCP (not yet tested against it), an application password or the REST API, and the Dashboard shows where each change came from. Choose the sources in Settings.', 'jhmg-ai-editor-for-divi-5' ), 'list-page-history, restore-page-version' ],
             [ __( 'Relevant images', 'jhmg-ai-editor-for-divi-5' ), __( 'Your AI looks in your Media Library first (read-only) and otherwise uses the built-in image pack, so pages do not ship with empty image slots. Nothing is downloaded from other sites.', 'jhmg-ai-editor-for-divi-5' ), 'list_media_images, get_image_guide' ],
         ];
         ?>
@@ -846,7 +846,7 @@ final class AdminPage
         ?>
         <div class="aied-card">
             <h3><?php esc_html_e( 'Instructions for your AI', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
-            <p class="aied-muted"><?php esc_html_e( 'Paste this into Claude, ChatGPT or Codex (a project, custom instructions or AGENTS.md) so your assistant uses this plugin\'s design guidance, checks and undo together with Divi\'s own MCP. The abilities need WordPress 6.9 or later.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            <p class="aied-muted"><?php esc_html_e( 'Paste this into Claude, ChatGPT or Codex (a project, custom instructions or AGENTS.md) so your assistant uses this plugin\'s design guidance, checks and undo together with Divi\'s upcoming MCP. The abilities need WordPress 6.9 or later.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
             <textarea class="large-text code" rows="8" readonly id="aied-ai-instructions"><?php echo esc_textarea( $text ); ?></textarea>
             <p><button type="button" class="button button-primary" data-copy="<?php echo esc_attr( $text ); ?>"><?php esc_html_e( 'Copy', 'jhmg-ai-editor-for-divi-5' ); ?></button></p>
         </div>
@@ -860,7 +860,7 @@ final class AdminPage
         ?>
         <div class="aied-card">
             <h3><?php esc_html_e( 'Undo for changes made by other tools', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
-            <p class="aied-muted"><?php esc_html_e( 'Before a Divi page is changed, the plugin keeps the previous version so you can restore it, even when the change was made by another tool such as Divi\'s own MCP. Choose which sources keep an undo point. The last 10 versions of each page are kept. A previous version is the page\'s content only, and it stays in your own database.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            <p class="aied-muted"><?php esc_html_e( 'Before a Divi page is changed, the plugin keeps the previous version so you can restore it, even when the change was made by another tool, such as Divi\'s upcoming MCP. Choose which sources keep an undo point. The last 10 versions of each page are kept. A previous version is the page\'s content only, and it stays in your own database.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                 <input type="hidden" name="action" value="ai_editor_divi5_history_sources">
                 <?php wp_nonce_field( 'ai_editor_divi5_history_sources' ); ?>

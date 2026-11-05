@@ -2,7 +2,7 @@
 Contributors:      lucaslopvet
 Requires at least: 6.0
 Requires PHP:      8.1
-Stable tag:        0.13.0
+Stable tag:        0.14.0
 License:           GPLv2 or later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -61,6 +61,15 @@ If the service cannot be reached, the Pro tools you already unlocked keep workin
 Deleting the plugin removes its own data (licence state, batch history, saved code proposals). It does not undo your site's front page, menu, CSS, page statuses, header or footer content or Theme Builder templates: undo those first if you want them back.
 
 == Changelog ==
+
+= 0.14.0 =
+* New: Pro abilities for the WordPress Abilities API (WordPress 6.9 and later), in the `jhmg-ai-editor-pro` category, so any assistant, including one working with Divi's upcoming MCP, can ask for them: `audit-site`, `design-review-site`, `find-replace-site`, `list-batches`, `start-batch`, `end-batch` and `undo-batch`. The plugin is designed to work alongside Divi's upcoming MCP and has not been tested against it yet, because it is not released.
+* New: `design-review-site` returns one prioritised fix list for 25 pages at a time: unreadable text and links to missing pages first, then Divi's stock look and ids your site does not have, then repeated sections, uneven spacing and colors that should use a global color. `audit-site` also reports design problems by page, with recipes to try.
+* New: undo for a whole batch of changes made by any tool. Changes are grouped from the page history by who made them and when, or between `start-batch` and `end-batch`, and `undo-batch` puts every page back. A page changed after the batch is skipped with the reason; a newer change is never overwritten and no page is ever deleted. Nothing new is stored: batches are worked out from the free plugin's history.
+* New: "Strict validation for AI writes" (Pro tab, off by default). A Divi page saved by an ability, an application password or the REST API is checked right after it is saved, and a page that fails is listed in the Pro tab and in an admin notice. It only flags: nothing is blocked, changed or rolled back, and no page content is stored.
+* New: the Pro tab opens with what Pro adds to a Divi MCP setup.
+* Needs the free plugin 4.17.0 for these features only. On an older free plugin the Pro tab shows a notice asking you to update it, the new features stay off, and every other Pro tool keeps working (the add-on still runs with free 4.9.0 or newer).
+* The 22 existing Pro tools, their REST routes and the ChatGPT spec are unchanged.
 
 = 0.13.0 =
 * New: `switch_design` restyles up to 25 pages or Divi Projects built with the free plugin to another of its 10 design languages and/or 40 style kits in one call: palette, fonts, headline type, section spacing and every kit-styled button, card, rule, chip, accordion, form and image. No AI and no custom CSS: the same answer every time.

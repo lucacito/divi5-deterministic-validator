@@ -80,6 +80,29 @@ class CompanionAbilitiesTest extends TestCase
         $this->assertStringContainsString( "method_exists( Abilities::class, 'args' )", $src, 'an older free plugin simply gets no abilities' );
     }
 
+    public function testAnOldFreePluginGetsAClearNoticeAndARecentOneGetsNone(): void
+    {
+        $this->assertSame( '4.17.0', ProAbilities::MIN_FREE );
+        $old = \AiEditorDivi5\Pro\Companion\FreeVersionNotice::message( '4.16.0' );
+        $this->assertStringContainsString( '4.17.0', (string) $old );
+        $this->assertStringContainsString( '4.16.0', (string) $old, 'it says which version is installed' );
+        $this->assertStringContainsString( 'Every other Pro tool keeps working', (string) $old );
+        $this->assertStringNotContainsString( "\u{2014}", (string) $old );
+        $this->assertNotNull( \AiEditorDivi5\Pro\Companion\FreeVersionNotice::message( '4.9.0' ) );
+        foreach ( [ '4.17.0', '4.17.1', '4.18.0', '5.0.0', null, '' ] as $ok ) {
+            $this->assertNull( \AiEditorDivi5\Pro\Companion\FreeVersionNotice::message( $ok ), var_export( $ok, true ) );
+        }
+    }
+
+    public function testThePluginRegistersTheNoticeBeforeAndRegardlessOfTheFeatureGuard(): void
+    {
+        $src = (string) file_get_contents( __DIR__ . '/../src/Plugin.php' );
+        $notice = strpos( $src, 'FreeVersionNotice' );
+        $guard  = strpos( $src, 'freeSupportsCompanion' );
+        $this->assertNotFalse( $notice );
+        $this->assertLessThan( $guard, $notice, 'the notice is registered outside the guard, so it shows exactly when the features are off' );
+    }
+
     // ---- consistency and the fix list ----------------------------------------------------
 
     private function section( string $padding, string $inner = '' ): string

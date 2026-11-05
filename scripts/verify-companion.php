@@ -143,7 +143,6 @@ if ( 'pro' === $stage ) {
         $pB = $divi5( $newPage( 'aied companion batch B' ) );
         $created[] = static fn () => wp_delete_post( $pA, true );
         $created[] = static fn () => wp_delete_post( $pB, true );
-        sleep( 2 ); // history times have one-second resolution: a change in the same second as start-batch counts as inside it
         $start = $call( 'start-batch', [ 'label' => 'gate redesign' ] );
         $check( ! is_wp_error( $start ) && str_starts_with( (string) $start['batch_id'], 'session-' ), 'start-batch returns a batch id' );
         $check( 200 === $restSave( $pA, $newContent( 'pa' ) ) && 200 === $restSave( $pB, $newContent( 'pb' ) ), 'two pages are changed through core REST, a tool this plugin did not write' );
@@ -161,14 +160,12 @@ if ( 'pro' === $stage ) {
         $check( null !== get_post( $pA ) && 'trash' !== get_post( $pA )->post_status, 'no page was trashed or deleted' );
 
         // a page changed after the batch is skipped, never overwritten
-        sleep( 2 ); // two batches inside one second cannot be told apart (history times have one-second resolution)
         $start2 = $call( 'start-batch', [ 'label' => 'second' ] );
         $restSave( $pA, $newContent( 'pa2' ) );
         $restSave( $pB, $newContent( 'pb2' ) );
         $call( 'end-batch' );
-        sleep( 2 );
         \AiEditorDivi5\WP\HistoryCapture::reset();
-        wp_update_post( wp_slash( [ 'ID' => $pA, 'post_content' => $newContent( 'later' ) ] ) );
+        wp_update_post( wp_slash( [ 'ID' => $pA, 'post_content' => $newContent( 'later' ) ] ) ); // same second as the batch: the history row numbers still tell it apart
         $undo2 = $call( 'undo-batch', [ 'batch_id' => $start2['batch_id'] ] );
         $check( ! is_wp_error( $undo2 ) && [ $pB ] === array_column( $undo2['restored'], 'page_id' ) && [ $pA ] === array_column( $undo2['skipped'], 'page_id' ), 'the page changed after the batch is skipped, the other restored' );
         $check( $newContent( 'later' ) === get_post( $pA )->post_content, 'and the newer change was not overwritten' );

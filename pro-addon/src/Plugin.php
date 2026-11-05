@@ -74,6 +74,8 @@ final class Plugin
         ( new BatchesPanel( $unlocked, Batches::log(), Batches::undo() ) )->register();
         ( new MegaMenuPanel( $unlocked, new MegaMenu\MegaMenuService( new ThemeBuilder\LayoutWriter( Batches::log() ) ) ) )->register();
 
+        ( new Companion\FreeVersionNotice() )->register();
+
         // Abilities, batch undo for any source and strict validation need the free plugin 4.17.0 or later; without it they are not
         // registered and every other Pro tool is unaffected.
         if ( Companion\ProAbilities::freeSupportsCompanion() ) {

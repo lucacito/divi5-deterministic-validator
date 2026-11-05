@@ -32,25 +32,39 @@ final class AgentBatches
     private const SOURCES = [ 'ability', 'application_password', 'rest', 'builder', 'unknown' ];
 
     /**
-     * @param list<array{page_id:int, version_id:int, saved_at:string, tool:string, actor:int, label:?string}> $rows any order
-     * @param list<array{token:string, user:int, label:string, started:string, ended:?string}> $sessions explicit sessions
+     * @param list<array{page_id:int, version_id:int, saved_at:string, tool:string, actor:int, label:?string, row_id?:int}> $rows any order; row_id (the history table's own number) orders and bounds changes exactly when present
+     * @param list<array{token:string, user:int, label:string, started:string, ended:?string, start_row?:?int, end_row?:?int}> $sessions explicit sessions
      * @return list<array<string,mixed>> newest batch first
      */
     public static function group( array $rows, array $sessions = [], ?string $now = null ): array
     {
         $rows = array_values( array_filter( $rows, static fn ( array $r ): bool => ! in_array( $r['tool'], self::IGNORED_TOOLS, true ) ) );
-        usort( $rows, static fn ( array $a, array $b ): int => [ $a['saved_at'], $a['page_id'], $a['version_id'] ] <=> [ $b['saved_at'], $b['page_id'], $b['version_id'] ] );
+        // Order by the row number when the rows have one (it never repeats and only grows, so same-second changes stay in order),
+        // else by time, then page and version.
+        usort( $rows, static fn ( array $a, array $b ): int => isset( $a['row_id'], $b['row_id'] )
+            ? $a['row_id'] <=> $b['row_id']
+            : [ $a['saved_at'], $a['page_id'], $a['version_id'] ] <=> [ $b['saved_at'], $b['page_id'], $b['version_id'] ] );
 
         $now     = $now ?? gmdate( 'Y-m-d\TH:i:s\Z' );
         $batches = [];
         $taken   = [];
 
         foreach ( $sessions as $session ) {
-            $end    = $session['ended'] ?? $now;
-            $member = [];
+            $end      = $session['ended'] ?? $now;
+            $startRow = $session['start_row'] ?? null;
+            $endRow   = $session['end_row'] ?? null;
+            $member   = [];
             foreach ( $rows as $i => $r ) {
-                if ( isset( $taken[ $i ] ) || $r['actor'] !== (int) $session['user'] || $r['saved_at'] < $session['started'] || $r['saved_at'] > $end ) {
+                if ( isset( $taken[ $i ] ) || $r['actor'] !== (int) $session['user'] ) {
                     continue;
+                }
+                if ( null !== $startRow && isset( $r['row_id'] ) ) {
+                    // Exact: the rows numbered after the one that was newest at start-batch, up to the one at end-batch.
+                    if ( $r['row_id'] <= $startRow || ( null !== $endRow && $r['row_id'] > $endRow ) ) {
+                        continue;
+                    }
+                } elseif ( $r['saved_at'] < $session['started'] || $r['saved_at'] > $end ) {
+                    continue; // no row numbers (an older free plugin or an older session): the one-second clock decides
                 }
                 $member[ $i ] = $r;
             }

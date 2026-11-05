@@ -98,6 +98,33 @@ class AgentBatchesTest extends TestCase
         $this->assertSame( 'session', $b[0]['kind'] );
     }
 
+    public function testRowNumbersKeepTwoSessionsApartEvenInsideOneSecond(): void
+    {
+        // Everything happened at 10:00:00. Session one owns rows 11-12, session two rows 13-14, and a stray row 15 belongs to nobody.
+        $rows = [];
+        foreach ( [ 11 => 5, 12 => 6, 13 => 5, 14 => 6, 15 => 7 ] as $row => $page ) {
+            $rows[] = $this->row( $page, $row, '2026-11-05T10:00:00Z' ) + [ 'row_id' => $row ];
+        }
+        $sessions = [
+            [ 'token' => 's1', 'user' => 1, 'label' => 'one', 'started' => '2026-11-05T10:00:00Z', 'ended' => '2026-11-05T10:00:00Z', 'start_row' => 10, 'end_row' => 12 ],
+            [ 'token' => 's2', 'user' => 1, 'label' => 'two', 'started' => '2026-11-05T10:00:00Z', 'ended' => '2026-11-05T10:00:00Z', 'start_row' => 12, 'end_row' => 14 ],
+        ];
+        $by = array_column( AgentBatches::group( $rows, $sessions, '2026-11-05T10:00:05Z' ), null, 'id' );
+        $this->assertSame( [ 5, 6 ], array_column( $by['session-s1']['pages'], 'page_id' ) );
+        $this->assertSame( 2, $by['session-s1']['changes'] );
+        $this->assertSame( [ 5, 6 ], array_column( $by['session-s2']['pages'], 'page_id' ) );
+        $this->assertSame( 2, $by['session-s2']['changes'], 'the time alone would have given all of them to the first session' );
+        $inferred = array_values( array_filter( $by, static fn ( $b ) => 'inferred' === $b['kind'] ) );
+        $this->assertSame( [ 7 ], array_column( $inferred[0]['pages'], 'page_id' ), 'the row after the sessions ended stays outside them' );
+    }
+
+    public function testRowsWithoutNumbersFallBackToTheClock(): void
+    {
+        $sessions = [ [ 'token' => 'old', 'user' => 1, 'label' => 'x', 'started' => '2026-11-05T09:00:00Z', 'ended' => '2026-11-05T11:00:00Z', 'start_row' => null, 'end_row' => null ] ];
+        $b = AgentBatches::group( [ $this->row( 5, 1, '2026-11-05T10:00:00Z' ) ], $sessions, '2026-11-05T13:00:00Z' );
+        $this->assertSame( 'session-old', $b[0]['id'] );
+    }
+
     // ---- undo planning -------------------------------------------------------------------
 
     /** @return array<string,mixed> */
@@ -175,13 +202,18 @@ class AgentBatchesTest extends TestCase
 
     public function testStartingASessionClosesTheUsersOpenOneAndKeepsOnlyTheLast20(): void
     {
-        $a = AgentSessions::start( 1, "Redesign\n<b>home</b>", '2026-11-05T09:00:00Z', 'tok1' );
+        $a = AgentSessions::start( 1, "Redesign\n<b>home</b>", '2026-11-05T09:00:00Z', 'tok1', 10 );
         $this->assertSame( 'Redesign b home /b', $a['label'] );
         AgentSessions::start( 1, '', '2026-11-05T10:00:00Z', 'tok2' );
         $all = AgentSessions::all();
         $this->assertSame( '2026-11-05T10:00:00Z', $all[0]['ended'], 'the first was closed when the second started' );
         $this->assertNull( $all[1]['ended'] );
         $this->assertSame( 'Agent session', $all[1]['label'] );
+        $this->assertSame( [ 10, null ], [ $all[0]['start_row'], $all[1]['end_row'] ] );
+
+        AgentSessions::start( 3, 'rows', '2026-11-05T09:00:00Z', 'tok3', 40 );
+        $ended = AgentSessions::end( 3, '2026-11-05T09:01:00Z', 47 );
+        $this->assertSame( [ 40, 47 ], [ $ended['start_row'], $ended['end_row'] ], 'a session remembers the history row numbers it started and ended at' );
 
         for ( $i = 0; $i < 25; ++$i ) {
             AgentSessions::start( 2, 'x', '2026-11-05T11:00:00Z', 'u' . $i );

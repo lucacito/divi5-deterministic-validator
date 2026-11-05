@@ -33,6 +33,9 @@ final class ProAbilities
     public const CATEGORY  = 'jhmg-ai-editor-pro';
     public const NAMESPACE = 'jhmg-ai-editor-pro';
 
+    /** The first free-plugin version with everything the companion features call (REQUIRED_FREE and its methods). */
+    public const MIN_FREE = '4.17.0';
+
     /**
      * Free-plugin classes only the companion features (these abilities, strict validation) need. They are NOT in
      * Compat::REQUIRED_CLASSES: that would switch every Pro tool off on a free plugin that predates them (they arrived in 4.17.0).
@@ -80,7 +83,7 @@ final class ProAbilities
         if ( function_exists( 'wp_register_ability_category' ) ) {
             wp_register_ability_category( self::CATEGORY, [
                 'label'       => 'JHMG AI Editor for Divi 5 Pro',
-                'description' => 'The design and safety layer for Divi MCP: whole-site design QA, site-wide audits, batch undo and launch control.',
+                'description' => 'The design and safety layer for Divi\'s upcoming MCP: whole-site design QA, site-wide audits, batch undo and launch control.',
             ] );
         }
     }

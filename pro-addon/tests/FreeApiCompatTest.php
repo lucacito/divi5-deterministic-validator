@@ -56,6 +56,7 @@ class FreeApiCompatTest extends TestCase
             [ $w . 'Abilities', 'args', [ 'def' => 'array', 'category' => 'string', 'permission' => 'callable', 'execute' => 'callable' ], 'array' ],
             [ $w . 'Abilities', 'permit', [ 'def' => 'array', 'input' => 'mixed', 'capability' => 'string' ], 'bool' ],
             [ $w . 'DesignCheck', 'run', [ 'content' => 'string', 'known' => '?array', 'moduleHasPreset' => '?callable' ], 'array' ],
+            [ $w . 'HistoryStore', 'latestRowId', [], 'int' ],
             [ $w . 'HistoryStore', 'rowsSince', [ 'sinceIso' => 'string', 'limit' => 'int' ], 'array' ],
             [ $w . 'HistoryCapture', 'currentSource', [], 'array' ],
             [ $w . 'HistoryCapture', 'isSuspended', [], 'bool' ],

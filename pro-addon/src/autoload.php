@@ -146,5 +146,6 @@ require_once __DIR__ . '/MegaMenu/EditedPanelsException.php';
 require_once __DIR__ . '/MegaMenu/PreviewSvg.php';
 require_once __DIR__ . '/Admin/MegaMenuPanel.php';
 require_once __DIR__ . '/Companion/ProAbilities.php';
+require_once __DIR__ . '/Companion/FreeVersionNotice.php';
 require_once __DIR__ . '/Companion/StrictMode.php';
 require_once __DIR__ . '/Admin/StrictModePanel.php';

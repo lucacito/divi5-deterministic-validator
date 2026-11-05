@@ -1,6 +1,6 @@
 === JHMG AI Editor for Divi 5 ===
 Contributors:      lucaslopvet
-Tags:              divi 5, divi mcp, abilities api, claude, chatgpt
+Tags:              divi, divi 5, mcp, claude, chatgpt
 Requires at least: 6.0
 Tested up to:      7.1
 Stable tag:        4.17.0
@@ -8,23 +8,48 @@ Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
-Design guidance, validation and undo for any AI working on Divi 5, including Divi's own MCP. Or let Claude and ChatGPT edit your pages directly.
+Design guidance, validation and undo for any AI working on Divi 5. Designed to work alongside Divi's upcoming MCP.
 
 == Description ==
+**Design guidance, validation and undo for any AI working on Divi 5.** Connect Claude, ChatGPT, Cursor, VS Code Copilot, Windsurf or Gemini to your WordPress site, then tell it in your own words what to change on your Divi 5 pages, or to build a new one. A built-in checker tests every change before it is saved, and every change can be undone.
 
-**An MCP server made for Divi 5.** Connect Claude, ChatGPT, Cursor, VS Code Copilot, Windsurf or Gemini to your WordPress site, then tell it in your own words what to change on your Divi 5 pages, or to build a new one. Give your assistant a screenshot or the address of a page you like and ask it to rebuild that design in Divi 5. A built-in checker tests every change before it is saved, and every change can be undone.
+The Model Context Protocol (MCP) server runs on your own site. The plugin uses no cloud service and no account, and nothing is sent to us.
 
-The Model Context Protocol (MCP) server runs on your own site. Your assistant talks directly to your site: the plugin uses no cloud service and no account, and nothing is sent to us.
+= Designed to work alongside Divi's upcoming MCP =
 
-= Works alongside Divi's own MCP =
+The plugin is designed to work alongside Divi's upcoming MCP and any other tool that builds Divi pages. It has not been tested against Divi's MCP yet, because that has not been released. It adds design guidance before the build (10 design languages and 71 proven section patterns), a fixed-rule check after it, and undo for every change, whichever tool made it. These are offered as WordPress abilities on WordPress 6.9 and later. It never wraps, blocks or changes another tool's abilities.
 
-If you use Divi's official MCP (or any other tool) to build pages, this plugin is the layer around it: design guidance before the build, a deterministic check after it, and undo for every change, whichever tool made it.
+= How it works =
 
-* **Design guidance:** 10 design languages, 71 proven section patterns and style guides your assistant reads before it builds. They are offered as WordPress abilities (WordPress 6.9 and later), so any assistant that can call abilities can use them, and as MCP tools.
-* **Checks:** the same fixed-rule checker validates any Divi 5 layout, and an advisory design check looks for text that cannot be read, Divi's grey placeholder images and stock buttons, ids of colors or presets your site does not have, and repetitive sections. It never blocks or changes anything.
-* **Undo for every change:** before a Divi page is changed by another tool, an application password or the REST API, the previous version is kept, labelled with where the change came from. You choose which sources keep an undo point in Settings.
+1. Connect your own AI assistant with one key (copy and paste, about two minutes).
+2. Tell it what you want in plain English, for example "change the phone number on the Contact page" or "build me a landing page for my dental clinic".
+3. The built-in guides steer it, a checker refuses a broken layout with the exact reason, and the previous version of the page is kept so you can undo.
 
-The plugin never wraps, blocks or changes another tool's abilities. It only adds its own, under the name `jhmg-ai-editor`.
+More detail is in the FAQ below: the tools, the checker, privacy, images and compatible assistants.
+
+
+== External services ==
+
+This plugin does not connect to any external service. Your AI assistant connects to your own site using the API key you generate (or, if you turn it on, by signing in to your own site from Claude on the web); no data passes through the plugin author's servers.
+
+== Installation ==
+
+1. In your WordPress admin, go to Plugins → Add New, search for "JHMG AI Editor for Divi 5", then install and activate it. (Or upload the `jhmg-ai-editor-for-divi-5` folder to `/wp-content/plugins/` and activate it on the Plugins screen.)
+2. Open **AI Editor** in your WordPress admin sidebar.
+3. Go to **Settings**, choose your AI assistant and copy the ready-made setup into it.
+4. Ask your assistant to list your Divi 5 pages to check that it is connected.
+
+= Requirements =
+
+* WordPress 6.0 or later
+* PHP 8.1 or later
+* The Divi 5 theme (Divi 4 and its shortcode format are not supported)
+* Pretty permalinks (Settings → Permalinks, any option except "Plain")
+* For Claude Desktop: Node.js (free, from nodejs.org)
+* For Claude on the web (claude.ai): your site must be reachable over public HTTPS
+* For ChatGPT: your site must be reachable over public HTTPS, you must turn on the sign-in in Settings, and custom connectors need a paid ChatGPT plan with Developer mode
+
+== Frequently Asked Questions ==
 
 = Why an MCP server built only for Divi 5? =
 
@@ -145,32 +170,9 @@ The plugin stores these things in your own WordPress database:
 * Only if you turn on sign-in for Claude on the web: the apps that registered, and their access and refresh tokens, in a table in your own database. The tokens are stored only as one-way hashes and you can disconnect any app, or turn the feature off and remove everything, from the Settings screen.
 * An activity log of AI actions: the action, the page ID, the result, the assistant's name (or, when it is not recognised, the first 80 characters of its user-agent string) and a hashed IP address (hashed with your site's own secret key, so the IP itself is not stored). You can clear it from the Settings screen.
 * Whether you chose "Maybe later" or "Don't ask again" on the review reminder (one value per user, shown only on the plugin's Dashboard after the plugin has saved at least 5 changes). Nothing is sent when you choose, and the reminder's link only opens this plugin's own page on WordPress.org if you click it.
-* Page history for undo: up to the last 10 previous versions of each Divi page that an AI tool changes (fewer for very large pages, about 768 KB per page at most). This includes changes made by other tools, such as Divi's own MCP, an application password or the REST API: the page's earlier content is kept, with where the change came from (the name of the ability, or the name you gave the application password; never a password or key). It is kept in a table in your own database, and you can switch each source off in Settings.
+* Page history for undo: up to the last 10 previous versions of each Divi page that an AI tool changes (fewer for very large pages, about 768 KB per page at most). This includes changes made by other tools, such as an application password or the REST API: the page's earlier content is kept, with where the change came from (the name of the ability, or the name you gave the application password; never a password or key). It is kept in a table in your own database, and you can switch each source off in Settings.
 
 Nothing is sent anywhere by the plugin. All of this is removed when you delete the plugin.
-
-== External services ==
-
-This plugin does not connect to any external service. Your AI assistant connects to your own site using the API key you generate (or, if you turn it on, by signing in to your own site from Claude on the web); no data passes through the plugin author's servers.
-
-== Installation ==
-
-1. In your WordPress admin, go to Plugins → Add New, search for "JHMG AI Editor for Divi 5", then install and activate it. (Or upload the `jhmg-ai-editor-for-divi-5` folder to `/wp-content/plugins/` and activate it on the Plugins screen.)
-2. Open **AI Editor** in your WordPress admin sidebar.
-3. Go to **Settings**, choose your AI assistant and copy the ready-made setup into it.
-4. Ask your assistant to list your Divi 5 pages to check that it is connected.
-
-= Requirements =
-
-* WordPress 6.0 or later
-* PHP 8.1 or later
-* The Divi 5 theme (Divi 4 and its shortcode format are not supported)
-* Pretty permalinks (Settings → Permalinks, any option except "Plain")
-* For Claude Desktop: Node.js (free, from nodejs.org)
-* For Claude on the web (claude.ai): your site must be reachable over public HTTPS
-* For ChatGPT: your site must be reachable over public HTTPS, you must turn on the sign-in in Settings, and custom connectors need a paid ChatGPT plan with Developer mode
-
-== Frequently Asked Questions ==
 
 = Does the AI get administrator access to my site? =
 
@@ -251,7 +253,7 @@ It is built for one job: editing Divi 5 layouts safely on a live site. It knows 
 
 = Do I need this if I use Divi's MCP? =
 
-Divi's own MCP builds and edits pages. This plugin adds what a builder does not: ten design languages and 71 proven section patterns to design from, a deterministic checker that refuses a broken layout with the exact reason, an advisory design check (readability, Divi's stock look, repeated sections), and undo for every change, even ones made by other tools. Use both: ask your assistant to read this plugin's design guidance before it builds, build with any tool, then run the design check and fix what it finds.
+Divi has announced its own MCP, which is not released yet, so this plugin has not been tested against it. A builder builds pages. This plugin is designed to add what a builder does not: ten design languages and 71 proven section patterns to design from, a deterministic checker that refuses a broken layout with the exact reason, an advisory design check (readability, Divi's stock look, repeated sections), and undo for every change, even ones made by other tools. The idea is to use both: ask your assistant to read this plugin's design guidance before it builds, build with any tool, then run the design check and fix what it finds.
 
 = Is this an MCP server for Divi? =
 
@@ -297,11 +299,11 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 == Changelog ==
 
 = 4.17.0 =
-* New: the plugin now works as a companion to Divi's own MCP and any other tool. On WordPress 6.9 and later it offers its design guidance, the checker, a new design check and page history as WordPress abilities (17 of them, in the `jhmg-ai-editor` category), with the same permissions as before.
+* New: the plugin is designed to work alongside Divi's upcoming MCP and any other tool (not yet tested against Divi's MCP, which is not released). On WordPress 6.9 and later it offers its design guidance, the checker, a new design check and page history as WordPress abilities (17 of them, in the `jhmg-ai-editor` category), with the same permissions as before.
 * New: `get-design-languages` returns the ten design languages with colors, fonts, shape, spacing, what to avoid and contrast-checked pairings. `get-section-recipes` can also be filtered by density and persuasion stage. `get-variety-advice` finds repeated section layouts and names recipes to try.
 * New: `check-design` is an advisory check of any Divi 5 layout: text that cannot be read (only definite failures, with the colors and the ratio), Divi's grey placeholder images and stock button or tab bar, ids of colors and presets your site does not have, and repetitive sections. It never blocks or changes a page and says what it could not check.
-* New: undo for changes made by other tools. Before a Divi page is changed by another plugin's ability (such as Divi's own MCP), an application password or the REST API, the previous version is kept and labelled with its source, and the Dashboard shows the source. Divi's visual builder is off by default because WordPress revisions already cover it. Choose the sources in Settings.
-* Improved: the Settings screen has a short text you can paste into your assistant so it uses these abilities alongside Divi's MCP.
+* New: undo for changes made by other tools. Before a Divi page is changed by another plugin's ability (such as Divi's upcoming MCP), an application password or the REST API, the previous version is kept and labelled with its source, and the Dashboard shows the source. Divi's visual builder is off by default because WordPress revisions already cover it. Choose the sources in Settings.
+* Improved: the Settings screen has a short text you can paste into your assistant so it uses these abilities alongside Divi's upcoming MCP.
 * No change to the existing 21 tools, the REST routes or the ChatGPT OpenAPI spec; they are pinned byte for byte by tests.
 
 = 4.16.0 =

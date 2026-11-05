@@ -165,6 +165,26 @@ class ContrastCheckTest extends TestCase
         }
     }
 
+    public function testEveryReportListsWhatIsNeverJudgedSoACleanReportIsNotAFullPass(): void
+    {
+        $clean = DesignCheck::run( $this->page( [ 'color' => '#101820' ], '#ffffff' ), null );
+        $this->assertSame( 0, $clean['problem_count'] );
+        $items = array_column( $clean['not_checked_items'], null, 'item' );
+        foreach ( [ 'global_colors_and_variables', 'images_gradients_video', 'hover_states', 'tablet_and_phone', 'semi_transparent_colors', 'text_without_own_color', 'other_accessibility' ] as $must ) {
+            $this->assertArrayHasKey( $must, $items, $must );
+            $this->assertNotSame( '', $items[ $must ]['why'] );
+        }
+        $this->assertStringContainsString( 'not a full pass', $clean['message'] );
+
+        // The counts are what this very layout hit: a global color id and an image background.
+        $page = $this->page( [ 'color' => '#ffffff', 'image' => [ 'url' => 'https://x.test/a.jpg' ] ], 'gcid-4f1ca2' ) . $this->page( [ 'color' => '#ffffff', 'image' => [ 'url' => 'https://x.test/a.jpg' ] ], '#fafafa' );
+        $r = DesignCheck::run( $page, null );
+        $items = array_column( $r['not_checked_items'], 'seen', 'item' );
+        $this->assertSame( 1, $items['global_colors_and_variables'] );
+        $this->assertSame( 1, $items['images_gradients_video'] );
+        $this->assertNull( $items['hover_states'], 'a thing that is never judged at all is not counted' );
+    }
+
     public function testDesignCheckCombinesTheChecksAndSaysWhatItDidNotCheck(): void
     {
         $r = DesignCheck::run( $this->page( [ 'color' => '#ffffff' ], '#f5f5f5' ), null );

@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  *
  * Divi's MCP had not shipped when this was written and Divi 5.15.1 registers no abilities, so its real ability names are not
  * known. The namespace list is therefore a filterable guess (`jhmg_aied_divi_mcp_namespaces`); when it is wrong the only
- * effect is that the Dashboard does not show the "works alongside" line.
+ * effect is that the Dashboard does not show the "designed to work alongside" line.
  */
 final class DiviMcpDetector
 {
