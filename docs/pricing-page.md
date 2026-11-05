@@ -6,17 +6,19 @@ TODO(owner) markers are decisions or facts I could not verify. {{refund:days}} =
 
 # JHMG AI Editor for Divi 5: pricing
 
-## An AI editor that cannot save a broken Divi layout
+## Divi 5 sites that look designed, built in minutes, with undo for everything.
 
-Your AI assistant can be creative. Nothing it writes reaches your database until a deterministic validator has checked every block against the real Divi 5 schema. Same layout in, same verdict out, no AI in the check. If a layout is invalid, the assistant gets the exact violation codes and fixes its own mistake.
+<!-- OWNER: "built in minutes" has not been timed and "undo for everything" has limits (see docs/launch/pro-sales-page-copy.md, owner notes). Do not publish this headline until both are settled. -->
 
-- **Undo for your AI's edits.** Before the plugin saves an edit it keeps a snapshot of the page, so you can restore the previous version. (A page too large to snapshot says so in the response; creating a new page has nothing to undo.)
-- **Theme Builder editing.** Change the live Divi header and footer, with a preview first.
-- **Whole-site build, one-step undo.** Build a site page by page as drafts, launch it in one previewed step, and take it all away again with one undo.
-- **Works with Claude, ChatGPT, Cursor and VS Code Copilot.** Over MCP and REST; ChatGPT through a custom connector that signs in with your WordPress login (we have not yet confirmed that with a real ChatGPT account). You bring your own assistant.
-- **No metered AI credits.** We never sit between you and your AI provider, so there is no usage meter to run out.
+Tell the assistant you already use what site you want. Pro builds it page by page as drafts, in one consistent design, and nothing goes live until you launch it in one previewed step. Change your mind about the look and restyle every page in one call. Change your mind about anything Pro did and undo it in one step.
 
-The free plugin on WordPress.org has 16 tools, including creating pages as drafts and undo. Pro adds 14 more: find and replace across the whole site, a site audit, Theme Builder tools, front page and menu control, publishing, and whole-site build.
+- **A look that holds together.** Ten design languages and forty style kits set colours, fonts, buttons, cards, forms, headline type and section spacing as one design, and every kit is checked for readable text.
+- **Whole-site build, one-step launch.** Build a site page by page as drafts, launch it in one previewed step, and take it all away again with one undo.
+- **Undo for every Pro change.** Each change is saved as one step you can undo: the header and footer, the menu, the front page, colours, presets, products and prices, a site-wide find and replace, a restyle. Undo tells you what it could not restore.
+- **A check that is not AI.** Nothing your assistant writes reaches your database until a deterministic validator has checked every block against the real Divi 5 schema. Same layout in, same verdict out.
+- **Works with the assistant you already use.** Claude, ChatGPT, Cursor and VS Code Copilot, over MCP and REST; ChatGPT through a custom connector that signs in with your WordPress login (we have not yet confirmed that with a real ChatGPT account). You bring your own assistant, and there is no usage meter to run out.
+
+The free plugin on WordPress.org edits, previews, checks and undoes Divi 5 pages and creates new ones as drafts. Pro adds 22 more tools for the work around the page: whole-site build, restyling to another design, find and replace across the whole site, a site audit, Theme Builder tools, front page and menu control, publishing, global colours, variables and presets, and WooCommerce products and prices.
 
 The code is GPL. The licence pays for updates and support.
 

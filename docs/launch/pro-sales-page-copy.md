@@ -6,7 +6,12 @@ Date: 2026-10-25
 Owner notes (remove before publishing):
 - Tokens used: {{sites:personal}} {{sites:freelancer}} {{sites:agency}} {{price:personal}} {{price:freelancer}} {{price:agency}}
   {{cap:founding}} {{percent:founding}} {{tier:lifetime}} {{price:lifetime}} {{cap:lifetime}} {{trial:days}} {{reminders}} {{refund:days}}.
-- Tool counts: free 21 (wp-plugin/readme.txt), Pro 22 (pro-addon/README.md, src/Tools/; the 22nd, `switch_design`, is built but UNRELEASED: publish this page only with the Pro release that ships it, or remove its bullet and say 21). Re-count before publishing.
+- Tool counts: free 21 (wp-plugin/readme.txt), Pro 22 (pro-addon/README.md, src/Tools/; `switch_design`, the 22nd, shipped in Pro 0.13.0 with free 4.15.0). Re-count before publishing.
+- POSITIONING (2026-11-05): the page now leads with the result ("Divi 5 sites that look designed, built in minutes, with undo for everything") and treats MCP and the assistant as the way in, not the product. Three claims in the headline must be backed before you publish:
+  1. "Built in minutes": NOBODY HAS TIMED A BUILD. Nothing in this repo measures how long `build_site` takes with a real assistant. Record the demo (docs/launch/demo-script.md), time it, and put the real figure in the "Built in minutes" paragraph; if it is more than a few minutes, change the headline to what you measured ("in an afternoon", "in an hour").
+  2. "Undo for everything": true for every change a Pro tool makes (each is one batch with an undo point), not literally for everything: undo refuses an item that was edited since, a page too large to snapshot has no earlier version, Pro keeps the last 20 steps, page history keeps 10 versions per page, and a free-plugin title change cannot be undone. The page says so in the paragraph and in Honest limits; keep both if you shorten the headline.
+  3. "Look designed": backed by the ten design languages and forty style kits (readable text proven in every language) and `switch_design`; "looks designed" is still a judgement. Show before and after pictures made by the plugin (docs/launch/demo-script.md) rather than adjectives.
+- The mega menu (Pro admin tab, 14 layouts) is built but UNRELEASED: it is mentioned once below, marked, and must be removed from this page if you publish before the next Pro release.
 - Competitor rows come ONLY from docs/launch/competitor-refresh-2026-10-25.md (retrieved 2026-10-25). Re-check prices on the day you publish:
   Divi Cake's launch price ends 8 November 2026.
 - TODO(owner) markers carried over from docs/pricing-page.md are still open (Lifetime scope, no-card trial keeps tools).
@@ -14,28 +19,47 @@ Owner notes (remove before publishing):
 
 # JHMG AI Editor for Divi 5 Pro
 
-## Let your AI build and run Divi 5 sites. It cannot save a broken page.
+## Divi 5 sites that look designed, built in minutes, with undo for everything.
 
-Your assistant (Claude, ChatGPT, Cursor, Copilot, Gemini) can be as creative as it likes. Before anything it writes reaches
-your database, a fixed set of rules checks every block against how Divi 5 really stores a page. Same layout in, same verdict
-out, no AI in the check. If a layout breaks a rule, nothing is saved and your assistant gets the exact reason, so it fixes
-its own mistake.
+Tell the assistant you already use what site you want. Pro builds it page by page as drafts, in one consistent design, and
+nothing goes live until you launch it in one previewed step. Want another look? Restyle every page in one call. Changed your
+mind about anything Pro did? Undo it in one step.
 
-**Four things you get on every change:**
+**1. It looks designed, not just assembled.**
+Ten design languages and forty style kits decide the details that make a page look like one person designed it: colours and
+fonts by role, buttons, cards, dividers, tags, accordions, forms, headline type and the space between sections. Every kit
+was checked for readable text in every language, so a different look never costs you legibility. Pick the look once and
+every page that follows matches it.
+`switch_design` restyles a page, or up to 25 at once, to another language and kit in one call. It uses no AI, so the same
+request gives the same page; you see a preview first and one undo puts every page back. It works best on pages built with
+the plugin; blocks you built by hand that do not match a design role are left alone and listed.
+*Built, not released yet:* a Mega menu tab in the Pro screen, with 14 ready-made mega menu layouts for your header, one
+click to apply, and the panels still editable in Divi.
 
-1. **A gate built from evidence, not guesses.** The rules come from real Divi 5 page exports, Divi's own module definitions
-   and live renders on the real Divi. In October 2026 we deliberately fed Divi 5.15.1 wrong-typed values for every content
-   setting of every module and found 92 that make Divi crash the whole page (an HTTP 500 for every visitor). The checker
-   now refuses all of them before they are saved. [See how we know](evidence-page.md)
-2. **A preview first.** Ask for a dry run and see exactly which blocks and settings would change, plus the checker's verdict,
-   with nothing saved. Turn on Approval mode and a page edit cannot be saved without a matching preview.
-3. **Undo.** Every AI edit to a page keeps the previous version (the last 10 per page). Site-wide Pro changes are grouped
-   into one batch you can undo in one step.
-4. **A page that matches itself.** Ten design languages and forty style kits decide the exact look of buttons, cards, rules,
-   tags, accordions, forms, headline type and section spacing, so the whole page is one design, and every kit was checked
-   for readable text in every language.
+**2. It is built in minutes.** <!-- OWNER: unmeasured, see the notes at the top. Put the timed figure here before publishing. -->
+`build_site` creates a whole site page by page, each page checked and saved as a draft. When you are happy, launch it in
+one previewed step: it publishes the pages, sets the front page and builds the main menu. The slow, fiddly work after that
+is one call as well: `find_replace_site` changes a phone number, a price or a sentence on every page at once, and
+`manage_global_colors` changes a brand colour everywhere it is used. You see every change before it is made.
 
-New pages are always drafts. The AI never saves custom code through a page layout.
+**3. Undo for everything Pro changes.**
+Every change a Pro tool makes is saved as one step with an undo point: a whole site build, a restyle, a find and replace
+across the site, the header and footer, the menu, the front page, your colours, variables and presets, WooCommerce prices
+and products. `undo_batch` puts it back in one step. Before any write you can ask for a preview that shows exactly what
+would change, and Approval mode makes a page edit impossible without one. Undo is honest about its limits: it checks that
+nothing changed since, restores what it safely can, and tells you what it could not (see Honest limits).
+
+**4. Underneath: a check that is not AI.**
+Before anything your assistant writes reaches your database, a fixed set of rules checks every block against how Divi 5
+really stores a page. Same layout in, same verdict out. A layout that breaks a rule is not saved and the assistant gets the
+exact reason, so it fixes its own mistake. The rules come from real Divi 5 page exports, Divi's own module definitions and
+live renders on the real Divi. In October 2026 we fed Divi 5.15.1 wrong-typed values for every content setting of every
+module and found 92 that make Divi crash the whole page for every visitor; the checker now refuses all of them before they
+are saved. [See how we know](evidence-page.md) New pages are always drafts, and the AI never saves custom code through a
+page layout.
+
+**Works with the assistant you already use.** Claude (web, Desktop, Code), ChatGPT, Cursor, Windsurf, VS Code Copilot and
+Gemini CLI connect over MCP or REST; you bring your own assistant account and there are no AI credits to run out.
 
 ## What Pro adds: 22 tools
 
@@ -61,7 +85,7 @@ the work around the page.
 **Your design system**
 - `manage_global_colors`, `manage_global_variables`, `manage_global_presets`: create and change Divi global colours,
   variables and module presets, all or nothing, with a preview and undo.
-- `switch_design` (built, unreleased: ships with the next Pro release): restyle a page or Divi Project, or up to 25 at once,
+- `switch_design`: restyle a page or Divi Project, or up to 25 at once,
   to another of the ten design languages and forty style kits in one call: colours and fonts by role, buttons, cards, rules,
   tags, accordions, forms, headline type and section spacing. No AI is used, so the same request gives the same page. You see
   a preview first, every result goes through the checker, and one undo puts every page back. Best on pages built with the
@@ -120,7 +144,7 @@ and support stop. You get an email {{reminders}} days before renewal.
 
 - **`switch_design` works best on pages built with this plugin.** On a hand-built page it switches the blocks that match a
   design role and lists the rest; colours and fonts it does not recognise are left alone; tablet and hover settings of
-  hand-built blocks are not remapped beyond what the roles express. (Built, unreleased.)
+  hand-built blocks are not remapped beyond what the roles express.
 
 - **Divi 5 only.** Divi 4 shortcode pages are not supported.
 - **Divi's own modules only.** A page with a module from another add-on (for example Divi Pixel or Divi Plus) is refused,
@@ -137,7 +161,10 @@ and support stop. You get an email {{reminders}} days before renewal.
 - **The older ChatGPT Action route does not get every tool.** Eight Pro tools (colours, variables, presets, custom fields,
   the three WooCommerce tools and the design switch) and several free tools work over MCP and REST only. A ChatGPT custom
   connector uses MCP, so it is offered all of them (not yet confirmed with a real ChatGPT account).
-- **Undo keeps up to 10 versions per page**; a very large page may not be snapshotted, and the response says so.
+- **"Undo for everything" means everything Pro changes, within these bounds:** Pro keeps your last 20 steps; undo checks each
+  item and leaves one alone that was edited since (and says so); a page may be too large to snapshot, and the response says
+  so; page history keeps up to 10 versions per page; renaming a page title through the free plugin cannot be undone.
+  Divi's own builder edits are not recorded.
 - **`html_to_divi` does not fetch websites or linked stylesheets** and turns third-party images into placeholders.
 - **WooCommerce**: `create_product` makes simple products only; `bulk_adjust_prices` changes regular prices only.
 - **Claude Desktop needs Node.js; ChatGPT and Claude on the web need a public https site.**
