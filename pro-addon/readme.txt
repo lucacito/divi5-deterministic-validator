@@ -1,6 +1,7 @@
 === JHMG AI Editor for Divi 5 Pro ===
 Contributors:      lucaslopvet
 Requires at least: 6.0
+Tested up to:      7.1
 Requires PHP:      8.1
 Stable tag:        0.14.0
 License:           GPLv2 or later

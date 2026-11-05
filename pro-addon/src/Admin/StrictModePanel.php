@@ -20,6 +20,9 @@ final class StrictModePanel
     public const ACTION_SAVE  = 'aied_pro_strict_save';
     public const ACTION_CLEAR = 'aied_pro_strict_clear';
 
+    /** The one-time message after a save or clear: kept per user for a minute, never read from the address. */
+    private const FLASH_KEY = 'aied_pro_strict_flash_';
+
     public function __construct( private \Closure $unlocked, ?\Closure $terminate = null )
     {
         $this->initTerminate( $terminate );
@@ -59,7 +62,7 @@ final class StrictModePanel
         $on        = StrictMode::enabled();
         $flags     = StrictMode::flags();
         $canManage = current_user_can( 'manage_options' );
-        $notice    = isset( $_GET['aied_pro_notice'] ) ? sanitize_key( wp_unslash( (string) $_GET['aied_pro_notice'] ) ) : '';
+        $notice    = $this->takeFlash();
         ?>
         <div class="aied-card aied-pro" id="strict">
             <h2><?php esc_html_e( 'Strict validation for AI writes', 'jhmg-ai-editor-for-divi-5-pro' ); ?></h2>
@@ -115,6 +118,7 @@ final class StrictModePanel
         $this->guardPost( self::ACTION_SAVE, 'manage_options' );
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in guardPost().
         StrictMode::set( isset( $_POST['strict'] ) && '1' === sanitize_text_field( wp_unslash( (string) $_POST['strict'] ) ) );
+        $this->flash( 'strict_saved' );
         $this->redirectToProTab( 'strict_saved' );
     }
 
@@ -122,6 +126,25 @@ final class StrictModePanel
     {
         $this->guardPost( self::ACTION_CLEAR, 'manage_options' );
         StrictMode::clear();
+        $this->flash( 'strict_cleared' );
         $this->redirectToProTab( 'strict_cleared' );
+    }
+
+    /** Remember the message for this user's next view of the tab (set only after the nonce and capability checks passed). */
+    private function flash( string $key ): void
+    {
+        set_transient( self::FLASH_KEY . (int) get_current_user_id(), $key, 60 );
+    }
+
+    /** The message set by the last save or clear of this user, once. */
+    private function takeFlash(): string
+    {
+        $name = self::FLASH_KEY . (int) get_current_user_id();
+        $key  = get_transient( $name );
+        if ( false !== $key ) {
+            delete_transient( $name );
+        }
+
+        return is_string( $key ) ? $key : '';
     }
 }

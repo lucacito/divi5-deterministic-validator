@@ -204,7 +204,7 @@ final class ProAbilities
                 return $tool;
             }
         }
-        throw new \RuntimeException( "Pro tool {$class} is not registered." );
+        throw new \RuntimeException( 'Pro tool ' . esc_html( $class ) . ' is not registered.' );
     }
 
     /** @param array<string,mixed> $args @return array<string,mixed>|\WP_Error */

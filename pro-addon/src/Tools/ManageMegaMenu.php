@@ -64,7 +64,7 @@ final class ManageMegaMenu implements ProTool
     {
         $action = (string) Args::string( $arguments, 'action', true, 20 );
         if ( ! in_array( $action, self::ACTIONS, true ) ) {
-            throw new \InvalidArgumentException( '"action" must be one of: ' . implode( ', ', self::ACTIONS ) . '.' );
+            throw new \InvalidArgumentException( '"action" must be one of: ' . esc_html( implode( ', ', self::ACTIONS ) ) . '.' );
         }
         // The tool-level gate, in addition to the registry's WordPress capability: the global header is a Theme Builder layout.
         LayoutTarget::assertMay();
@@ -75,7 +75,7 @@ final class ManageMegaMenu implements ProTool
         $dry    = Args::bool( $arguments, 'dry_run' );
         $edited = array_key_exists( 'edited', $arguments ) && null !== $arguments['edited'] ? (string) Args::string( $arguments, 'edited', true, 10 ) : null;
         if ( null !== $edited && ! in_array( $edited, self::EDITED, true ) ) {
-            throw new \InvalidArgumentException( '"edited" must be one of: ' . implode( ', ', self::EDITED ) . '.' );
+            throw new \InvalidArgumentException( '"edited" must be one of: ' . esc_html( implode( ', ', self::EDITED ) ) . '.' );
         }
 
         try {
@@ -86,7 +86,8 @@ final class ManageMegaMenu implements ProTool
             };
         } catch ( EditedPanelsException $e ) {
             // A real run does not guess whether the owner's hand edits may be thrown away: it says so and waits for the choice.
-            throw new \InvalidArgumentException( $e->getMessage() . ' Call again with edited="keep" to keep them or edited="rebuild" to replace them (a dry run shows the difference).' );
+            // The names are menu item titles from the site: escaped, because this text may be shown anywhere a client chooses.
+            throw new \InvalidArgumentException( 'You changed the panel of ' . esc_html( implode( ', ', array_values( $e->panels ) ) ) . ' in the Divi builder. Call again with edited="keep" to keep your changes or edited="rebuild" to replace them (a dry run shows the difference).' );
         }
     }
 

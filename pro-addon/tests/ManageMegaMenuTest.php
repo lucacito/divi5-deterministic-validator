@@ -244,4 +244,37 @@ class ManageMegaMenuTest extends TestCase
         $this->assertSame( MegaMenuFixture::header(), $this->layoutContent( 201 ) );
         $this->assertSame( [], $this->repo->rows );
     }
+
+    public function testMessagesBuiltFromAnythingDynamicAreEscaped(): void
+    {
+        foreach ( [ 'src/Tools/ManageMegaMenu.php', 'src/Companion/ProAbilities.php' ] as $file ) {
+            $src = (string) file_get_contents( dirname( AIED_PRO_FILE ) . '/' . $file );
+            preg_match_all( '/throw new \\\\?\w+\(([^;]*)\);/s', $src, $m );
+            foreach ( $m[1] as $arg ) {
+                $this->assertDoesNotMatchRegularExpression( '/\$\w+(?!\s*\))/', preg_replace( '/esc_html\([^;]*?\)\s*(?=\.|\))/s', '', $arg ), "{$file}: a thrown message with a variable outside esc_html(): {$arg}" );
+            }
+        }
+        // An unknown action and a bad "edited" value name the allowed values, plainly.
+        $r = $this->call( [ 'action' => 'nope' ] );
+        $this->assertStringContainsString( '"action" must be one of: status, apply, update, remove.', $r['error']['message'] );
+        $r = $this->call( [ 'action' => 'apply', 'layout' => 'columns-dark', 'edited' => 'maybe' ] );
+        $this->assertStringContainsString( '"edited" must be one of: keep, rebuild.', $r['error']['message'] );
+    }
+
+    public function testAnEditedPanelStopsARealRunAndAsksWithEscapedTitles(): void
+    {
+        $this->ok( [ 'action' => 'apply', 'layout' => 'columns-dark' ] );
+        // The owner changes the Services panel in the Divi builder: its fingerprint no longer fits, and the real run must ask.
+        $content = $this->layoutContent( 201 );
+        $changed = preg_replace( '/(JHMG panel \d+ [a-z-]+) [0-9a-f]{10}/', '$1 0000000000', $content, 1 );
+        $this->assertNotNull( $changed );
+        $GLOBALS['__wp_posts'][201]->post_content = (string) $changed;
+        $r = $this->call( [ 'action' => 'update' ] );
+        $this->assertArrayHasKey( 'error', $r, 'a real run does not guess whether to throw the owner\'s edits away' );
+        $this->assertStringContainsString( 'edited="keep"', $r['error']['message'] );
+        $this->assertStringContainsString( 'edited="rebuild"', $r['error']['message'] );
+        $this->assertStringNotContainsString( '<', $r['error']['message'], 'titles are escaped' );
+        $kept = $this->ok( [ 'action' => 'update', 'edited' => 'keep' ] );
+        $this->assertArrayHasKey( 'changed', $kept, 'with the choice given, the run goes through' );
+    }
 }
