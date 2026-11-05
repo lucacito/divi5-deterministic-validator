@@ -65,7 +65,7 @@ final class Abilities
     }
 
     /**
-     * The argument array for wp_register_ability(). Public so the Pro add-on builds its abilities the same way.
+     * The argument array for wp_register_ability(). Public so an add-on can build its abilities the same way.
      *
      * @param array<string,mixed> $def
      * @return array<string,mixed>

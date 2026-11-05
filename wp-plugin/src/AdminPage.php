@@ -30,6 +30,7 @@ final class AdminPage
         add_action('admin_post_ai_editor_divi5_review_later',       [$this, 'handleReviewLater']);
         add_action('admin_post_ai_editor_divi5_review_done',        [$this, 'handleReviewDone']);
         add_action('admin_post_ai_editor_divi5_toggle_approval', [$this, 'handleToggleApproval']);
+        add_action('admin_post_ai_editor_divi5_history_sources', [$this, 'handleHistorySources']);
         add_action('wp_ajax_ai_editor_divi5_diagnose', [$this, 'handleDiagnose']);
         OAuthAdmin::registerHooks();
     }
@@ -121,6 +122,18 @@ final class AdminPage
         $on = '1' === sanitize_text_field( wp_unslash( $_POST['require_preview'] ?? '' ) );
         ApprovalMode::set( $on );
         $this->redirect('settings', $on ? 'approval_on' : 'approval_off');
+    }
+
+    public function handleHistorySources(): void
+    {
+        $this->guard('ai_editor_divi5_history_sources'); // guard() verifies the nonce via check_admin_referer().
+        $chosen = [];
+        foreach ( array_keys( HistorySources::DEFAULTS ) as $type ) {
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() verified the nonce above.
+            $chosen[ $type ] = isset( $_POST['sources'][ $type ] ) && '1' === sanitize_text_field( wp_unslash( $_POST['sources'][ $type ] ) );
+        }
+        HistorySources::save( $chosen );
+        $this->redirect('settings', 'history_sources_saved');
     }
 
     public function handleDismissProCard(): void
@@ -547,6 +560,7 @@ final class AdminPage
             'usage_cleared'      => __( 'Activity log cleared.', 'jhmg-ai-editor-for-divi-5' ),
             'approval_on'        => __( 'Approval mode is on. Your AI assistant must preview every edit to a page\'s content before it can save it.', 'jhmg-ai-editor-for-divi-5' ),
             'approval_off'       => __( 'Approval mode is off.', 'jhmg-ai-editor-for-divi-5' ),
+            'history_sources_saved' => __( 'Undo history settings saved.', 'jhmg-ai-editor-for-divi-5' ),
             'oauth_on'           => __( 'Sign-in for Claude is on. Follow the steps below to add this site to claude.ai.', 'jhmg-ai-editor-for-divi-5' ),
             'oauth_off'          => __( 'Sign-in for Claude is off, and every connected app was disconnected.', 'jhmg-ai-editor-for-divi-5' ),
             'oauth_revoked'      => __( 'The app was disconnected.', 'jhmg-ai-editor-for-divi-5' ),
@@ -585,7 +599,7 @@ final class AdminPage
         ?>
         <h3 class="aied-section-title"><?php esc_html_e( 'Recent AI edits', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
         <div class="aied-card">
-            <p class="aied-muted"><?php esc_html_e( 'Every AI save keeps the previous version when it can. Restore it here if an edit was not what you wanted.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            <p class="aied-muted"><?php esc_html_e( 'Every save made by an AI tool keeps the previous version when it can, whichever tool made it. The source is shown beside each one. Restore it here if an edit was not what you wanted.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
             <table class="widefat striped">
                 <tbody>
                 <?php foreach ( $rows as $row ) :
@@ -601,7 +615,7 @@ final class AdminPage
                             : sprintf( __( '%s ago', 'jhmg-ai-editor-for-divi-5' ), human_time_diff( $ts ) );
                         ?>
                         <td title="<?php echo esc_attr( $savedAt ); ?>"><?php echo esc_html( $when ); ?></td>
-                        <td><code><?php echo esc_html( (string) $row['tool'] ); ?></code></td>
+                        <td><code><?php echo esc_html( HistorySources::describe( (string) $row['tool'], isset( $row['label'] ) ? (string) $row['label'] : null ) ); ?></code></td>
                         <td>
                             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"
                                   data-confirm="<?php echo esc_attr__( 'Restore the version saved before this AI edit?', 'jhmg-ai-editor-for-divi-5' ); ?>">
@@ -796,6 +810,29 @@ final class AdminPage
     // View: Settings
     // ---------------------------------------------------------------
 
+    /** The Settings card that chooses which sources of page changes keep an undo point. */
+    public function historySourcesCard(): void
+    {
+        $settings = HistorySources::settings();
+        ?>
+        <div class="aied-card">
+            <h3><?php esc_html_e( 'Undo for changes made by other tools', 'jhmg-ai-editor-for-divi-5' ); ?></h3>
+            <p class="aied-muted"><?php esc_html_e( 'Before a Divi page is changed, the plugin keeps the previous version so you can restore it, even when the change was made by another tool such as Divi\'s own MCP. Choose which sources keep an undo point. The last 10 versions of each page are kept. A previous version is the page\'s content only, and it stays in your own database.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                <input type="hidden" name="action" value="ai_editor_divi5_history_sources">
+                <?php wp_nonce_field( 'ai_editor_divi5_history_sources' ); ?>
+                <?php foreach ( HistorySources::names() as $type => $name ) : ?>
+                    <p><label>
+                        <input type="checkbox" name="sources[<?php echo esc_attr( $type ); ?>]" value="1"<?php checked( $settings[ $type ] ); ?>>
+                        <?php echo esc_html( $name ); ?>
+                    </label></p>
+                <?php endforeach; ?>
+                <button type="submit" class="button"><?php esc_html_e( 'Save', 'jhmg-ai-editor-for-divi-5' ); ?></button>
+            </form>
+        </div>
+        <?php
+    }
+
     /** The Settings card for the optional "Require a preview before every save" mode. */
     public function approvalCard(): void
     {
@@ -877,6 +914,7 @@ final class AdminPage
         </div>
 
         <?php $this->approvalCard(); ?>
+        <?php $this->historySourcesCard(); ?>
         <?php OAuthAdmin::card(); ?>
 
         <!-- Activity log -->

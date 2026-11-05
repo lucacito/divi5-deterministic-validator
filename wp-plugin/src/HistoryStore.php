@@ -142,7 +142,7 @@ final class HistoryStore
     /**
      * The newest snapshot of every page, newest first, without any snapshot content.
      *
-     * @return list<array{page_id:int, version_id:int, saved_at:string, tool:string}>
+     * @return list<array{page_id:int, version_id:int, saved_at:string, tool:string, label:?string}>
      */
     public static function recent( int $limit ): array
     {
@@ -155,7 +155,7 @@ final class HistoryStore
         // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
         $rows = $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT h.page_id, h.version_id, h.saved_at, h.tool
+                "SELECT h.page_id, h.version_id, h.saved_at, h.tool, h.label
                  FROM {$table} h
                  INNER JOIN ( SELECT page_id, MAX(version_id) AS newest FROM {$table} GROUP BY page_id ) n
                          ON n.page_id = h.page_id AND n.newest = h.version_id
@@ -174,6 +174,7 @@ final class HistoryStore
                 'version_id' => (int) $row['version_id'],
                 'saved_at'   => (string) $row['saved_at'],
                 'tool'       => (string) $row['tool'],
+                'label'      => isset( $row['label'] ) ? (string) $row['label'] : null,
             ];
         }
 

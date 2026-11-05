@@ -33,6 +33,8 @@ require_once __DIR__ . '/OAuthAuthorizeHandler.php';
 require_once __DIR__ . '/OAuthAdmin.php';
 require_once __DIR__ . '/ToolCatalog.php';
 require_once __DIR__ . '/StyleGuide.php';
+require_once __DIR__ . '/HistorySources.php';
+require_once __DIR__ . '/HistoryCapture.php';
 require_once __DIR__ . '/AbilityCatalog.php';
 require_once __DIR__ . '/ContrastCheck.php';
 require_once __DIR__ . '/DefaultFallbacks.php';

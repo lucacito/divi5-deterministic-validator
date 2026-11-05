@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 require_once __DIR__ . '/ContrastCheck.php';
 require_once __DIR__ . '/DesignVariety.php';
 require_once __DIR__ . '/StyleReferences.php';
+require_once __DIR__ . '/DefaultFallbacks.php';
 
 /**
  * The advisory design check behind the `check-design` ability: it runs the plugin's deterministic design checks on any Divi 5

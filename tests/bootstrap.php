@@ -225,6 +225,10 @@ if ( ! function_exists( 'wp_update_post' ) ) {
         if ( ! isset( $GLOBALS['__wp_posts'][ $id ] ) ) {
             return new WP_Error( 'invalid_post', 'Invalid post ID.' );
         }
+        if ( ! empty( $GLOBALS['__wp_filters']['pre_post_update'] ) ) {
+            // Mirrors core: pre_post_update sees the whole post as it is about to be written, while the stored one is still the old one.
+            do_action( 'pre_post_update', $id, array_merge( get_object_vars( $GLOBALS['__wp_posts'][ $id ] ), array_diff_key( $arr, [ 'ID' => 1 ] ) ) );
+        }
         $fields = $arr; // what is written; the update hook below still sees the caller's own array
         if ( ! empty( $GLOBALS['__wp_filters']['wp_insert_post_data'] ) ) {
             // Only when a test registered a wp_insert_post_data filter: mirror core, which merges the stored post
@@ -264,6 +268,9 @@ if ( ! function_exists( 'delete_post_meta_by_key' ) ) {
 if ( ! function_exists( 'wp_cache_delete' ) ) {
     // Records calls so tests can assert the object cache was purged.
     function wp_cache_delete( $key, $group = '' ) { $GLOBALS['__wp_cache_deleted'][] = [ $key, $group ]; return true; }
+}
+if ( ! function_exists( 'is_user_logged_in' ) ) {
+    function is_user_logged_in() { return ( $GLOBALS['__wp_current_user_id'] ?? 7 ) > 0; }
 }
 if ( ! function_exists( 'get_current_user_id' ) ) {
     function get_current_user_id() { return $GLOBALS['__wp_current_user_id'] ?? 7; }

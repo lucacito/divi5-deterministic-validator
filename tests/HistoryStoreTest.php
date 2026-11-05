@@ -136,7 +136,7 @@ class HistoryStoreTest extends TestCase
         $rows = HistoryStore::recent( 5 );
         $this->assertSame( [ 6, 7, 5 ], array_column( $rows, 'page_id' ) );
         $this->assertSame( 2, $rows[2]['version_id'], 'page 5 contributes only its newest version' );
-        $this->assertSame( [ 'page_id', 'version_id', 'saved_at', 'tool' ], array_keys( $rows[0] ) );
+        $this->assertSame( [ 'page_id', 'version_id', 'saved_at', 'tool', 'label' ], array_keys( $rows[0] ) );
         $this->assertSame( [ 6, 7 ], array_column( HistoryStore::recent( 2 ), 'page_id' ) );
         $this->assertSame( [], HistoryStore::recent( 0 ) );
     }

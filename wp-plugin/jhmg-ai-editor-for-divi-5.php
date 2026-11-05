@@ -90,6 +90,7 @@ require_once __DIR__ . '/src/autoload.php';
 AiEditorDivi5\WP\HistoryTable::register();
 AiEditorDivi5\WP\OAuthRoutes::register();
 AiEditorDivi5\WP\Abilities::register();
+AiEditorDivi5\WP\HistoryCapture::register();
 
 // ---------------------------------------------------------------
 // Register REST routes
