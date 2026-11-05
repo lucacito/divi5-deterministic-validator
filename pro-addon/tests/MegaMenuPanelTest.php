@@ -542,7 +542,9 @@ class MegaMenuPanelTest extends TestCase
         $this->assertStringContainsString( '>Automatic</span>', $html );
         $this->assertStringNotContainsString( 'Replace my version', $html );
         $this->assertStringContainsString( 'Open in Divi</a>', $html );
-        $this->assertStringContainsString( 'page=et_theme_builder', $html, 'without Divi\'s builder address the Theme Builder screen is the fallback' );
+        $this->assertMatchesRegularExpression( '#href="[^"]*page=et_theme_builder&(?:\#038;|amp;)?et_tb_layout_id=201&(?:\#038;|amp;)?et_tb_layout_type=header&(?:\#038;|amp;)?et_tb_layout_global=1"#', $html, 'the header opens in the Theme Builder screen' );
+        $this->assertStringNotContainsString( 'app_window', $html, 'the pop-up\'s inner address is a blank page on its own and is never linked' );
+        $this->assertStringNotContainsString( 'et_fb=1', $html );
         $this->assertMatchesRegularExpression( '#<option value="ask" selected=\'selected\'>Ask me#', $html );
 
         $service->content()->setEdits( 2, 'keep' );

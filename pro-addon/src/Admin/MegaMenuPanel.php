@@ -608,7 +608,7 @@ final class MegaMenuPanel
             <div class="aied-mm-srow">
                 <div class="aied-mm-grow">
                     <h4><?php esc_html_e( 'Edit in the Divi builder', 'jhmg-ai-editor-for-divi-5-pro' ); ?></h4>
-                    <p class="description"><?php echo esc_html( sprintf( /* translators: %s: menu item */ __( 'Opens your header in the Theme Builder. Select the group named "JHMG Mega Menu", then the panel of %s. Change colours, fonts, spacing or add modules.', 'jhmg-ai-editor-for-divi-5-pro' ), $sel['title'] ) ); ?></p>
+                    <p class="description"><?php echo esc_html( sprintf( /* translators: %s: menu item */ __( 'Opens your header in the Divi Theme Builder. Select the group named "JHMG Mega Menu", then the panel of %s. Change colours, fonts, spacing or add modules.', 'jhmg-ai-editor-for-divi-5-pro' ), $sel['title'] ) ); ?></p>
                 </div>
                 <a class="button button-primary" href="<?php echo esc_url( $open ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Open in Divi', 'jhmg-ai-editor-for-divi-5-pro' ); ?></a>
             </div>
@@ -1362,15 +1362,16 @@ final class MegaMenuPanel
         return null;
     }
 
-    /** Where "Open in Divi" goes: the header in the Theme Builder, the way Divi's own Theme Builder builds that address. */
+    /**
+     * Where "Open in Divi" goes: the header opened in Divi's Theme Builder (the Theme Builder screen with the layout in its address, which is how
+     * the screen shows after a click on the header's pencil). The builder address of the layout itself (`?et_fb=1&et_tb=1&app_window=1`) is only
+     * the inside of the Theme Builder's pop-up and shows a blank page on its own, so it must never be linked.
+     */
     private function builderUrl(): string
     {
         $header = $this->service->globalHeader();
-        if ( null !== $header && function_exists( 'et_fb_get_builder_url' ) && function_exists( 'get_permalink' ) ) {
-            $link = get_permalink( $header['layout_id'] );
-            if ( is_string( $link ) && '' !== $link ) {
-                return add_query_arg( [ 'et_tb' => '1', 'app_window' => '1' ], (string) et_fb_get_builder_url( $link ) );
-            }
+        if ( null !== $header && (int) $header['layout_id'] > 0 ) {
+            return add_query_arg( [ 'page' => 'et_theme_builder', 'et_tb_layout_id' => (string) (int) $header['layout_id'], 'et_tb_layout_type' => 'header', 'et_tb_layout_global' => '1' ], admin_url( 'admin.php' ) );
         }
 
         return admin_url( 'admin.php?page=et_theme_builder' );

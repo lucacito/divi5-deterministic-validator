@@ -800,7 +800,28 @@ async function adminView(browser, opts = {}) {
       const row = (name) => a1.tab.items.find((x) => x.name === name);
       check(L, '-', 'admin: the item list says "Edited in Divi" for Services only', row('Services').pills.includes('Edited in Divi') && !row('Blog').pills.includes('Edited in Divi'), JSON.stringify(a1.tab.items));
       check(L, '-', 'admin: the Builder tab says Edited in Divi and offers "Replace my version"', a1.tab.builderPill === 'Edited in Divi' && a1.tab.replaceButton === true, a1.tab.builderPill);
-      check(L, '-', 'admin: "Open in Divi" is the builder address of the header (the way Divi\'s own Theme Builder builds it)', /et_fb=1/.test(a1.tab.openHref || '') && /et_tb=1/.test(a1.tab.openHref || '') && /app_window=1/.test(a1.tab.openHref || ''), String(a1.tab.openHref));
+      const href = a1.tab.openHref || '';
+      check(L, '-', 'admin: "Open in Divi" opens the header in the Divi Theme Builder screen (the layout\'s own builder address is the inside of a pop-up and a blank page on its own)', /page=et_theme_builder/.test(href) && new RegExp(`et_tb_layout_id=${setup.header_id}\\b`).test(href) && /et_tb_layout_type=header/.test(href) && !/app_window|et_fb=1/.test(href), href);
+      {
+        const sb = await adminSession(browser);
+        try {
+          await sb.page.goto(href, { waitUntil: 'load' });
+          let drawn = false;
+          let detail = 'no builder frame';
+          for (let k = 0; k < 40 && !drawn; k++) {
+            await sb.page.waitForTimeout(2000);
+            // The toolbar (Exit, Save) is drawn by the Theme Builder screen itself; the header is drawn inside the pop-up's frame.
+            const top = await sb.page.evaluate(() => (document.body ? document.body.innerText : '')).catch(() => '');
+            const frame = sb.page.frames().find((f) => /et_fb=1/.test(f.url()) && /app_window=1/.test(f.url()));
+            const inner = frame ? await frame.evaluate(() => (document.body ? document.body.innerText : '')).catch(() => '') : '';
+            detail = frame ? `toolbar: ${/\bExit\b/.test(top) && /\bSave\b/.test(top)}, header text in the pop-up: ${inner.length} characters` : 'no builder frame';
+            drawn = /\bExit\b/.test(top) && /\bSave\b/.test(top) && inner.includes('Services');
+          }
+          check(L, '-', 'that address really opens the builder: the toolbar (Exit, Save) is drawn and the pop-up shows the header\'s menu', drawn, detail);
+        } finally {
+          await sb.ctx.close();
+        }
+      }
       const f0 = await frontPanels(browser, ['Services']);
       check(L, 1280, 'the front end shows the hand edit', f0.Services.text.includes('(edited in Divi)'));
       const ed = step('drift_edit');
