@@ -135,7 +135,18 @@ function mm_teardown(): array
     if ( ! empty( $s['second_menu_id'] ) && wp_get_nav_menu_object( (int) $s['second_menu_id'] ) ) {
         wp_delete_nav_menu( (int) $s['second_menu_id'] );
     }
-    $menuLeft = ( wp_get_nav_menu_object( AIED_MM_MENU_NAME ) ? 1 : 0 ) + ( ! empty( $s['second_menu_id'] ) && wp_get_nav_menu_object( (int) $s['second_menu_id'] ) ? 1 : 0 );
+    if ( ! empty( $s['directory_menu_id'] ) && wp_get_nav_menu_object( (int) $s['directory_menu_id'] ) ) {
+        wp_delete_nav_menu( (int) $s['directory_menu_id'] );
+    }
+    foreach ( (array) ( $s['directory_posts'] ?? [] ) as $pid ) {
+        if ( get_post( (int) $pid ) ) {
+            wp_delete_post( (int) $pid, true );
+        }
+    }
+    foreach ( (array) ( $s['directory_terms'] ?? [] ) as $tid ) {
+        wp_delete_term( (int) $tid, 'category' );
+    }
+    $menuLeft = ( wp_get_nav_menu_object( AIED_MM_MENU_NAME ) ? 1 : 0 ) + ( ! empty( $s['second_menu_id'] ) && wp_get_nav_menu_object( (int) $s['second_menu_id'] ) ? 1 : 0 ) + ( ! empty( $s['directory_menu_id'] ) && wp_get_nav_menu_object( (int) $s['directory_menu_id'] ) ? 1 : 0 );
 
     foreach ( (array) ( $s['item_ids'] ?? [] ) as $itemId ) {
         if ( get_post( (int) $itemId ) ) {
@@ -212,6 +223,7 @@ function mm_teardown(): array
         'fallback'    => $fallback,
         'menu_left'   => $menuLeft,
         'picture_left' => ! empty( $s['attachment_id'] ) && get_post( (int) $s['attachment_id'] ) ? 1 : 0,
+        'directory_left' => count( array_filter( (array) ( $s['directory_posts'] ?? [] ), static fn ( $p ): bool => (bool) get_post( (int) $p ) ) ) + count( array_filter( (array) ( $s['directory_terms'] ?? [] ), static fn ( $t ): bool => (bool) get_term( (int) $t, 'category' ) ) ),
         'extra_left'  => $extraLeft,
         'users_left'  => $usersLeft,
         'header_id'   => $hid,
@@ -661,6 +673,93 @@ switch ( $aiedMmStep ) {
         $mk( 'FAQ', '/docs/faq/', $docs );
         $mk( 'Contact', '/contact-second/', 0 );
         mm_out( [ 'menu_id' => (int) $id, 'docs_id' => $docs, 'guide_url' => home_url( '/docs/guide/' ) ] );
+        break;
+
+    // ---- the "Grouped list with counts" layout on a menu of its own ------------------------------------------------------
+    // directory_menu makes a throwaway menu whose "Library" item holds a group of two throwaway categories with throwaway posts (their post counts are what
+    // the panel must show; teardown deletes them), a group of plain links and two loose links with a description (the cards); directory_use points the header at it
+    // and applies the layout; directory_back removes the mega menu and points the header at the run's own menu again.
+    case 'directory_menu':
+        mm_admin();
+        $s  = mm_state();
+        $id = wp_create_nav_menu( 'aied megamenu directory' );
+        if ( is_wp_error( $id ) || ! $id ) {
+            mm_fail( 'could not create the directory throwaway menu' );
+        }
+        $s['directory_menu_id'] = (int) $id;
+        mm_save_state( $s );
+        // Two throwaway categories and three throwaway published posts (two in the first category, one in the second): the counts the panel must show.
+        $cats = [];
+        $posts = [];
+        foreach ( [ 'aied megamenu cat one' => 2, 'aied megamenu cat two' => 1 ] as $name => $n ) {
+            $t = wp_insert_term( $name, 'category' );
+            if ( is_wp_error( $t ) ) {
+                mm_fail( 'could not create the throwaway category: ' . $t->get_error_message() );
+            }
+            $cats[] = get_term( (int) $t['term_id'], 'category' );
+            for ( $k = 0; $k < $n; $k++ ) {
+                $pid = wp_insert_post( [ 'post_title' => 'aied megamenu directory post ' . count( $posts ), 'post_status' => 'publish', 'post_type' => 'post', 'post_category' => [ (int) $t['term_id'] ] ] );
+                if ( is_wp_error( $pid ) || ! $pid ) {
+                    mm_fail( 'could not create a throwaway post' );
+                }
+                $posts[] = (int) $pid;
+            }
+        }
+        $s['directory_terms'] = array_map( static fn ( $c ): int => (int) $c->term_id, $cats );
+        $s['directory_posts'] = $posts;
+        mm_save_state( $s );
+        $mk = static function ( array $args, int $parent ) use ( $id ): int {
+            $r = wp_update_nav_menu_item( (int) $id, 0, array_merge( [ 'menu-item-status' => 'publish', 'menu-item-parent-id' => $parent ], $args ) );
+            if ( is_wp_error( $r ) || ! $r ) {
+                mm_fail( 'could not add an item to the directory menu' );
+            }
+
+            return (int) $r;
+        };
+        $custom = static fn ( string $title, string $path, string $desc = '' ): array => [ 'menu-item-type' => 'custom', 'menu-item-title' => $title, 'menu-item-url' => home_url( $path ), 'menu-item-description' => $desc ];
+        $lib   = $mk( $custom( 'Library', '/library/' ), 0 );
+        $topic = $mk( $custom( 'By topic', '/library/topic/' ), $lib );
+        $counts = [];
+        foreach ( $cats as $cat ) {
+            $mk( [ 'menu-item-type' => 'taxonomy', 'menu-item-object' => 'category', 'menu-item-object-id' => (int) $cat->term_id, 'menu-item-title' => $cat->name ], $topic );
+            $real = new \WP_Query( [ 'post_type' => 'post', 'post_status' => 'publish', 'cat' => (int) $cat->term_id, 'fields' => 'ids', 'posts_per_page' => 1, 'no_found_rows' => false ] );
+            $fresh = get_term( (int) $cat->term_id, 'category' );
+            $counts[ $cat->name ] = [ 'term' => (int) $fresh->count, 'real' => (int) $real->found_posts, 'url' => get_term_link( $cat ) ];
+        }
+        $more = $mk( $custom( 'More', '/library/more/' ), $lib );
+        $mk( $custom( 'Press kit', '/library/press/' ), $more );
+        $mk( $custom( 'Newsletter', '/library/news/' ), $more );
+        $mk( $custom( 'Browse everything', '/library/all/', 'The full catalogue in one place.' ), $lib );
+        $mk( $custom( 'Talk to us', '/library/contact/', 'A real person answers within a day.' ), $lib );
+        $mk( $custom( 'Contact', '/contact-directory/' ), 0 );
+        mm_out( [ 'menu_id' => (int) $id, 'lib_id' => $lib, 'counts' => $counts, 'cards' => [ 'Browse everything' => home_url( '/library/all/' ), 'Talk to us' => home_url( '/library/contact/' ) ], 'rows_plain' => [ 'Press kit', 'Newsletter' ] ] );
+        break;
+
+    case 'directory_use':
+        mm_admin();
+        $s = mm_state();
+        try {
+            mm_service()->useMenu( (int) $s['directory_menu_id'] );
+            $r = mm_service()->apply( 'directory-counts', false );
+        } catch ( \Throwable $e ) {
+            mm_fail( $e->getMessage() );
+        }
+        $now = mm_raw( mm_header_id() );
+        mm_out( [ 'changed' => $r['changed'] ?? null, 'panel_ids' => array_keys( HeaderEdit::panels( $now ) ), 'layouts' => array_values( array_unique( HeaderEdit::panels( $now ) ) ), 'status_menu_id' => mm_service()->status()['menu']['id'] ?? null ] );
+        break;
+
+    case 'directory_back':
+        mm_admin();
+        $s = mm_state();
+        try {
+            mm_service()->remove();
+            mm_service()->useMenu( (int) $s['menu_id'] );
+        } catch ( \Throwable $e ) {
+            mm_fail( $e->getMessage() );
+        }
+        $now = mm_raw( mm_header_id() );
+        preg_match( '/"menuId":\{"desktop":\{"value":"(\d*)"/', $now, $m );
+        mm_out( [ 'module_menu_id' => (int) ( $m[1] ?? 0 ), 'applied' => false !== strpos( $now, 'JHMG Mega Menu' ), 'sha' => sha1( $now ), 'baseline_sha' => (string) $s['baseline_sha'] ] );
         break;
 
     case 'menu_state':

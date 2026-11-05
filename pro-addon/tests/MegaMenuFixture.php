@@ -19,9 +19,9 @@ require_once __DIR__ . '/../src/autoload.php';
 final class MegaMenuFixture
 {
     /** A flat WordPress menu item. */
-    private static function item( int $id, int $parent, string $title, string $url, string $description = '', string $type = 'custom', string $object = '', int $objectId = 0 ): array
+    private static function item( int $id, int $parent, string $title, string $url, string $description = '', string $type = 'custom', string $object = '', int $objectId = 0, ?int $count = null ): array
     {
-        return [ 'id' => $id, 'parent' => $parent, 'order' => $id, 'title' => $title, 'url' => $url, 'newTab' => false, 'description' => $description, 'type' => $type, 'object' => $object, 'objectId' => $objectId ];
+        return [ 'id' => $id, 'parent' => $parent, 'order' => $id, 'title' => $title, 'url' => $url, 'newTab' => false, 'description' => $description, 'type' => $type, 'object' => $object, 'objectId' => $objectId, 'count' => $count ];
     }
 
     /** @return array<string,list<array<string,mixed>>> name => MenuTree::build() result */
@@ -66,6 +66,22 @@ final class MegaMenuFixture
             self::item( 10, 5, 'Stands', 'https://example.test/stands/' ),
             self::item( 11, 5, 'Bags', 'https://example.test/bags/' ),
         ];
+        // Groups of categories with post counts, a link without a count, and two loose links with a description (the directory layout's cards).
+        $directory = [
+            self::item( 1, 0, 'Library', 'https://example.test/library/' ),
+            self::item( 2, 1, 'By type', 'https://example.test/by-type/' ),
+            self::item( 3, 2, 'Hero sections', 'https://example.test/hero/', '', 'taxonomy', 'category', 3, 63 ),
+            self::item( 4, 2, 'Pricing tables', 'https://example.test/pricing/', '', 'taxonomy', 'category', 4, 39 ),
+            self::item( 5, 2, 'About us', 'https://example.test/about-us/' ),
+            self::item( 6, 1, 'By industry', 'https://example.test/by-industry/' ),
+            self::item( 7, 6, 'SaaS', 'https://example.test/saas/', '', 'taxonomy', 'category', 7, 62 ),
+            self::item( 8, 6, 'Agencies', 'https://example.test/agencies/', '', 'taxonomy', 'category', 8, 0 ),
+            self::item( 9, 1, 'By style', 'https://example.test/by-style/' ),
+            self::item( 10, 9, 'Minimal', 'https://example.test/minimal/', '', 'taxonomy', 'category', 10, 92 ),
+            self::item( 11, 9, 'Bold', 'https://example.test/bold/', '', 'taxonomy', 'category', 11, 116 ),
+            self::item( 12, 1, 'Browse all layouts', 'https://example.test/browse/', 'The full validated catalog.' ),
+            self::item( 13, 1, 'Theme packs', 'https://example.test/packs/', 'Complete multi-page websites, one price.' ),
+        ];
         // Awkward text: quotes, an ampersand, angle brackets, a dash run and non-Latin text must survive in block comments and HTML.
         $nasty = [
             self::item( 1, 0, 'Q & A "quoted" <b>x</b> -- end', 'https://example.test/qa/?a=1&b=2', 'Say "hi" & <wave> -- ok' ),
@@ -78,6 +94,7 @@ final class MegaMenuFixture
             'flat'    => MenuTree::build( $flat ),
             'deep'    => MenuTree::build( $deep ),
             'nasty'   => MenuTree::build( $nasty ),
+            'directory' => MenuTree::build( $directory ),
         ];
     }
 

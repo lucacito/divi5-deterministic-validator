@@ -57,7 +57,7 @@ final class MenuDrift
                 $skipped = $skipped || 'skip' === $open[0];
             }
             if ( $skipped ) {
-                // inside a post card: a snapshot of a post, not part of the menu
+                // inside a post card or a count pill: a snapshot, not part of the menu
             } elseif ( 'divi/link' === $name ) {
                 $v                = $attrs['content']['innerContent']['desktop']['value'] ?? [];
                 $out[ $panel ][]  = self::entry( 'link', (string) ( is_array( $v ) ? ( $v['text'] ?? '' ) : '' ), (string) ( is_array( $v ) ? ( $v['linkUrl'] ?? '' ) : '' ) );
@@ -73,7 +73,7 @@ final class MenuDrift
                     $id    = is_string( $label ) && 1 === preg_match( '/^JHMG panel (\d+) /', $label, $l ) ? (int) $l[1] : -1;
                     $out[ $id ] ??= [];
                 }
-                $isPost  = 'divi/group' === $name && Blocks::POST_LABEL === ( $attrs['module']['meta']['adminLabel']['desktop']['value'] ?? null );
+                $isPost  = 'divi/group' === $name && in_array( $attrs['module']['meta']['adminLabel']['desktop']['value'] ?? null, [ Blocks::POST_LABEL, Blocks::COUNT_LABEL ], true );
                 $stack[] = [ $isPost ? 'skip' : $name, $id ];
             }
         }

@@ -300,7 +300,7 @@ final class MegaMenuPanel
                         <span class="aied-mm-badge"><?php echo esc_html( $o['label'] ); ?></span>
                     <?php endif; ?>
                     <?php if ( ! empty( $layout['icons'] ) ) : ?>
-                        <span class="aied-mm-pic aied-mm-icons-tag" title="<?php echo esc_attr__( 'You can choose the icon of every card', 'jhmg-ai-editor-for-divi-5-pro' ); ?>"><?php esc_html_e( 'Icons', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
+                        <span class="aied-mm-pic aied-mm-icons-tag" title="<?php echo ! empty( $layout['iconRows'] ) ? esc_attr__( 'You can choose the icon of every link', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_attr__( 'You can choose the icon of every card', 'jhmg-ai-editor-for-divi-5-pro' ); ?>"><?php esc_html_e( 'Icons', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
                     <?php endif; ?>
                     <?php if ( ! empty( $layout['content'] ) ) : ?>
                         <span class="aied-mm-pic" title="<?php echo esc_attr__( 'Takes your own headline, text, button and picture', 'jhmg-ai-editor-for-divi-5-pro' ); ?>"><?php esc_html_e( 'Picture', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
@@ -476,7 +476,7 @@ final class MegaMenuPanel
             <input type="hidden" name="item" value="<?php echo esc_attr( (string) $sel['id'] ); ?>">
             <?php wp_nonce_field( self::ACTION_ICONS ); ?>
             <div class="aied-mm-field">
-                <span class="aied-mm-label" id="aied-mm-iconlabel"><?php esc_html_e( 'Icon for the cards of this panel', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
+                <span class="aied-mm-label" id="aied-mm-iconlabel"><?php 'link' === ( $sel['iconUnit'] ?? 'card' ) ? esc_html_e( 'Icon for the links of this panel', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html_e( 'Icon for the cards of this panel', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
                 <div class="aied-mm-icongrid<?php echo $fontOk ? '' : ' is-text'; ?>" role="radiogroup" aria-labelledby="aied-mm-iconlabel">
                     <?php foreach ( MegaIcons::all() as $i ) : ?>
                         <label class="aied-mm-ic" title="<?php echo esc_attr( $i['label'] ); ?>">
@@ -486,11 +486,11 @@ final class MegaMenuPanel
                         </label>
                     <?php endforeach; ?>
                 </div>
-                <span class="description"><?php esc_html_e( 'Every card of this panel gets this icon, unless you choose another one below.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
+                <span class="description"><?php 'link' === ( $sel['iconUnit'] ?? 'card' ) ? esc_html_e( 'Every link of this panel gets this icon, unless you choose another one below.', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html_e( 'Every card of this panel gets this icon, unless you choose another one below.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
             </div>
             <?php if ( [] !== $sel['children'] ) : ?>
                 <div class="aied-mm-field">
-                    <span class="aied-mm-label"><?php esc_html_e( 'Icon of one card', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
+                    <span class="aied-mm-label"><?php 'link' === ( $sel['iconUnit'] ?? 'card' ) ? esc_html_e( 'Icon of one link', 'jhmg-ai-editor-for-divi-5-pro' ) : esc_html_e( 'Icon of one card', 'jhmg-ai-editor-for-divi-5-pro' ); ?></span>
                     <div class="aied-mm-cardicons">
                         <?php foreach ( $sel['children'] as $c ) : ?>
                             <div class="aied-mm-cardicon">

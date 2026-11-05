@@ -273,8 +273,8 @@ class MegaMenuMarkupTest extends TestCase
         }
     }
 
-    public function testOnlyTheTwoIconLayoutsCarryTheIconsFlag(): void
+    public function testOnlyTheIconLayoutsCarryTheIconsFlag(): void
     {
-        $this->assertSame( [ 'icons-cards', 'icons-dark' ], array_values( array_map( static fn ( array $l ): string => $l['id'], array_filter( MegaMenuFixture::layouts(), static fn ( array $l ): bool => ! empty( $l['icons'] ) ) ) ) );
+        $this->assertSame( [ 'icons-cards', 'icons-dark', 'directory-counts' ], array_values( array_map( static fn ( array $l ): string => $l['id'], array_filter( MegaMenuFixture::layouts(), static fn ( array $l ): bool => ! empty( $l['icons'] ) ) ) ) );
     }
 }

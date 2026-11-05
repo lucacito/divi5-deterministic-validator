@@ -119,6 +119,7 @@ final class PanelBuilder
             'icons'   => $this->iconsFamily( $layout, $item ),
             'latest'  => $this->latestFamily( $layout, $item, $ctx ),
             'showcase' => $this->showcaseFamily( $layout, $item ),
+            'directory' => $this->directoryFamily( $layout, $item ),
             default   => throw new \InvalidArgumentException( 'Unknown mega menu family: ' . (string) $layout['family'] ),
         };
     }
@@ -208,6 +209,125 @@ final class PanelBuilder
         $count = count( $columns ) + ( (bool) $layout['intro'] ? 1 : 0 );
 
         return $this->b->group( [ 'display' => 'grid', 'gridColumnCount' => (string) max( 1, $count ), 'columnGap' => $gap, 'rowGap' => $gap ], $cells );
+    }
+
+    // ---- the directory family ------------------------------------------------------------------------------------
+
+    /**
+     * The link rows of a directory panel, in reading order: the third-level items under each second-level heading, or, when nothing is
+     * grouped, the second-level links themselves. The owner's icon choices belong to these rows (MegaMenuService lists them).
+     *
+     * @param array<string,mixed> $item a top-level menu item
+     * @return list<array<string,mixed>>
+     */
+    public static function directoryRows( array $item ): array
+    {
+        $rows    = [];
+        $grouped = false;
+        foreach ( $item['children'] as $child ) {
+            if ( [] !== $child['children'] ) {
+                $grouped = true;
+                array_push( $rows, ...ColumnPlan::flatten( $child['children'] ) );
+            }
+        }
+
+        return $grouped ? $rows : $item['children'];
+    }
+
+    /**
+     * Titled groups of links in columns, each link with an icon and, where the menu knows it, a count of posts; the second-level links
+     * that have nothing under them become linked cards along the bottom. A menu with no groups gives the same rows without headings.
+     */
+    private function directoryFamily( array $layout, array $item ): string
+    {
+        $groups = array_values( array_filter( $item['children'], static fn ( array $c ): bool => [] !== $c['children'] ) );
+        $loose  = array_values( array_filter( $item['children'], static fn ( array $c ): bool => [] === $c['children'] ) );
+        $plan   = [] === $groups ? ColumnPlan::from( $item, (int) $layout['columns'] ) : ColumnPlan::from( array_merge( $item, [ 'children' => $groups ] ), (int) $layout['columns'] );
+        $cells  = '';
+        foreach ( $plan as $sections ) {
+            $cells .= $this->directoryColumn( $sections );
+        }
+        $out = $this->b->group( [ 'display' => 'grid', 'gridColumnCount' => (string) max( 1, count( $plan ) ), 'columnGap' => '28px', 'rowGap' => '16px' ], $cells );
+        if ( [] !== $groups && [] !== $loose && $layout['footer'] ) {
+            $n     = count( $loose );
+            $cards = implode( '', array_map( fn ( array $c ): string => $this->directoryCard( $c ), $loose ) );
+            $out  .= $this->b->group(
+                [ 'display' => 'grid', 'gridColumnCount' => (string) ( $n <= 3 ? $n : ( 0 === $n % 3 ? 3 : 2 ) ), 'columnGap' => '14px', 'rowGap' => '14px' ],
+                $cards,
+                array_merge( Blocks::padding( [ '16px', '0px', '0px', '0px' ] ), Blocks::topRule( $this->t['line'] ) )
+            );
+        }
+
+        return $out;
+    }
+
+    /** One column: for each section a small capitalised heading (plain text, never a link) and its rows. @param list<array{heading:?array<string,mixed>,links:list<array<string,mixed>>}> $sections */
+    private function directoryColumn( array $sections ): string
+    {
+        $inner = '';
+        foreach ( $sections as $at => $section ) {
+            if ( null !== $section['heading'] ) {
+                $inner .= $this->b->group(
+                    [ 'display' => 'flex', 'flexDirection' => 'column' ],
+                    $this->b->text(
+                        '<p>' . self::esc( (string) $section['heading']['title'] ) . '</p>',
+                        [ 'size' => '12px', 'weight' => '700', 'color' => $this->t['muted'], 'letterSpacing' => '1px', 'capitalization' => 'uppercase' ]
+                    ),
+                    Blocks::padding( [ 0 === $at ? '0px' : '14px', '10px', '6px', '10px' ] )
+                );
+            }
+            foreach ( $section['links'] as $l ) {
+                $inner .= $this->directoryRow( $l );
+            }
+        }
+
+        return $this->b->group( [ 'display' => 'flex', 'flexDirection' => 'column', 'rowGap' => '2px', 'alignItems' => 'stretch' ], $inner );
+    }
+
+    /** An icon, the link and (when known) the post count at the far end; the whole row takes a soft tint while the pointer is on it. */
+    private function directoryRow( array $it ): string
+    {
+        $code  = $this->iconBy[ (int) $it['id'] ] ?? $this->iconDefault ?? self::GLYPH;
+        $icon  = $this->b->group(
+            [ 'display' => 'flex', 'flexDirection' => 'column', 'alignItems' => 'center', 'justifyContent' => 'center' ],
+            $this->b->icon( $code, $this->t['muted'], '15px' ),
+            Blocks::sizing( [ 'width' => '20px', 'height' => '20px' ] )
+        );
+        $left  = $this->b->group(
+            [ 'display' => 'flex', 'flexDirection' => 'row', 'columnGap' => '10px', 'alignItems' => 'center' ],
+            $icon . $this->b->link( $it['title'], $it['url'], [ 'size' => '15px', 'weight' => '500', 'color' => $this->t['text'] ], $this->t['accent'], '', [], $it['newTab'] )
+        );
+        $count = null === ( $it['count'] ?? null ) ? '' : $this->b->group(
+            [ 'display' => 'flex', 'flexDirection' => 'column', 'alignItems' => 'center', 'justifyContent' => 'center' ],
+            $this->b->text( '<p>' . (int) $it['count'] . '</p>', [ 'size' => '12px', 'weight' => '600', 'color' => $this->t['muted'] ] ),
+            array_merge( Blocks::background( $this->t['card'] ), Blocks::padding( [ '2px', '9px', '2px', '9px' ] ), Blocks::border( '999px' ) ),
+            Blocks::COUNT_LABEL
+        );
+
+        return $this->b->group(
+            [ 'display' => 'flex', 'flexDirection' => 'row', 'columnGap' => '10px', 'alignItems' => 'center', 'justifyContent' => 'space-between' ],
+            $left . $count,
+            array_merge( Blocks::hoverBackground( $this->t['hover'] ), Blocks::padding( [ '7px', '10px', '7px', '10px' ] ), Blocks::border( '10px' ) )
+        );
+    }
+
+    /** A linked card along the bottom: the title, one line about it and an arrow. */
+    private function directoryCard( array $it ): string
+    {
+        $text = $this->b->link( $it['title'], $it['url'], [ 'size' => '15px', 'weight' => '700', 'color' => $this->t['text'] ], $this->t['accent'], '', [], $it['newTab'] )
+            . ( '' !== $it['description'] ? $this->b->text( '<p>' . self::esc( $it['description'] ) . '</p>', [ 'size' => '13px', 'color' => $this->t['muted'], 'lineHeight' => '1.45em' ] ) : '' );
+
+        return $this->b->group(
+            [ 'display' => 'flex', 'flexDirection' => 'row', 'columnGap' => '12px', 'alignItems' => 'center', 'justifyContent' => 'space-between' ],
+            $this->b->group( [ 'display' => 'flex', 'flexDirection' => 'column', 'rowGap' => '4px' ], $text ) . $this->b->icon( self::GLYPH, $this->t['accent'], '14px' ),
+            array_merge(
+                Blocks::background( $this->t['card'] ),
+                Blocks::padding( [ '16px', '18px', '16px', '18px' ] ),
+                Blocks::border( '14px', [ '1px', $this->t['line'] ], null, $this->t['accent'] ),
+                Blocks::lift(),
+                $this->enter()
+            )
+        );
     }
 
     /** One link column of the showcase family. @param list<list<array<string,mixed>>> $sections */

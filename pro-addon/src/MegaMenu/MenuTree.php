@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * can be tested without WordPress.
  *
  * An item is: id, title, url, newTab, description, type (post_type | taxonomy | post_type_archive | custom ...),
- * object (page, post, category, project ...), objectId, children.
+ * object (page, post, category, project ...), objectId, count (published posts of a category, tag or archive item, else null), children.
  */
 final class MenuTree
 {
@@ -65,6 +65,7 @@ final class MenuTree
                 'type'        => (string) ( $item['type'] ?? 'custom' ),
                 'object'      => (string) ( $item['object'] ?? '' ),
                 'objectId'    => (int) ( $item['objectId'] ?? 0 ),
+                'count'       => isset( $item['count'] ) ? (int) $item['count'] : null,
                 'children'    => $children,
             ];
         };

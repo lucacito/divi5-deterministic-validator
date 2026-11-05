@@ -176,8 +176,8 @@ class MegaMenuPanelTest extends TestCase
     public function testWithAUsableHeaderEveryLayoutHasAnEnabledUseButton(): void
     {
         $html = $this->render();
-        $this->assertSame( 13, substr_count( $html, 'aied-mm-card"' ) );
-        $this->assertSame( 13, substr_count( $html, '>Use for the whole menu</button>' ) );
+        $this->assertSame( 14, substr_count( $html, 'aied-mm-card"' ) );
+        $this->assertSame( 14, substr_count( $html, '>Use for the whole menu</button>' ) );
         $this->assertStringNotContainsString( ' disabled>', $html );
         $this->assertStringContainsString( 'Link columns', $html );
         $this->assertStringContainsString( 'Latest posts', $html );
@@ -192,7 +192,7 @@ class MegaMenuPanelTest extends TestCase
         $html = $this->render( $this->service( null, false ) );
         $this->assertStringContainsString( 'needs a global header', $html );
         $this->assertStringContainsString( 'page=et_theme_builder', $html );
-        $this->assertSame( 13, substr_count( $html, ' disabled>' ) );
+        $this->assertSame( 14, substr_count( $html, ' disabled>' ) );
         $this->assertStringNotContainsString( 'Remove mega menu', $html );
     }
 
@@ -201,14 +201,14 @@ class MegaMenuPanelTest extends TestCase
         $GLOBALS['__wp_posts'][201]->post_content = self::header();
         $html                                      = $this->render();
         $this->assertStringContainsString( 'no Menu module', $html );
-        $this->assertSame( 13, substr_count( $html, ' disabled>' ) );
+        $this->assertSame( 14, substr_count( $html, ' disabled>' ) );
     }
 
     public function testAMenuWithoutSubItemsDisablesTheButtons(): void
     {
         $html = $this->render( $this->service( [ MenuTree::build( [ self::item( 1, 0, 'Home' ) ] )[0] ] ) );
         $this->assertStringContainsString( 'None of the menu', $html );
-        $this->assertSame( 13, substr_count( $html, ' disabled>' ) );
+        $this->assertSame( 14, substr_count( $html, ' disabled>' ) );
     }
 
     public function testTheMenuNamesAndCountsAreShownEscaped(): void
@@ -450,7 +450,7 @@ class MegaMenuPanelTest extends TestCase
     {
         $html = $this->renderAt( $this->service( $this->twoPanelMenu() ) );
         $this->assertStringContainsString( 'Pick a starting look for your menu', $html );
-        $this->assertSame( 13, substr_count( $html, 'Use for the whole menu</button>' ) );
+        $this->assertSame( 14, substr_count( $html, 'Use for the whole menu</button>' ) );
         $this->assertStringNotContainsString( 'aied-mm-cols', $html );
         $this->assertStringNotContainsString( 'is-current', $html );
         $this->assertSame( 5, substr_count( $html, 'class="aied-mm-pic"' ), 'the five layouts with a content slot say Picture' );
@@ -530,8 +530,8 @@ class MegaMenuPanelTest extends TestCase
         $this->assertStringContainsString( '>This item</span>', $html );
         $this->assertStringContainsString( '>Another item</span>', $html );
         $this->assertStringContainsString( 'Rebuild this item</button>', $html );
-        $this->assertSame( 12, substr_count( $html, 'Use for this item</button>' ) );
-        $this->assertSame( 13, substr_count( $html, 'name="item" value="2"' ), 'every card posts the item' );
+        $this->assertSame( 13, substr_count( $html, 'Use for this item</button>' ) );
+        $this->assertSame( 14, substr_count( $html, 'name="item" value="2"' ), 'every card posts the item' );
         $this->assertStringContainsString( 'Use &quot;Columns and a card on the right&quot; for all items', $html );
     }
 
@@ -778,7 +778,7 @@ class MegaMenuPanelTest extends TestCase
             $this->assertMatchesRegularExpression( '/^Best for: .{10,70}$/', (string) $layout['hint'], $layout['id'] );
         }
         $html = $this->render( $this->service( $this->twoPanelMenu() ) );
-        $this->assertSame( 13, substr_count( $html, 'Best for: ' ) );
+        $this->assertSame( 14, substr_count( $html, 'Best for: ' ) );
         $this->assertStringContainsString( '<details class="aied-mm-help">', $html );
         $text = trim( (string) preg_replace( '/\s+/', ' ', strip_tags( (string) preg_replace( '#<(style|svg).*?</\1>#s', '', $html ) ) ) );
         $this->assertLessThan( 2700, strlen( $text ), 'the visible text of the tab stays short (' . strlen( $text ) . ' characters)' );
@@ -1509,6 +1509,22 @@ class MegaMenuPanelTest extends TestCase
         $this->assertStringNotContainsString( 'Reset to the arrow', $html, 'nothing to reset yet' );
         $this->assertStringNotContainsString( 'Headline', $html, 'icon layouts have no headline or picture' );
         $this->assertStringContainsString( '>Icons</span>', $this->renderAt( $service, [ 'item' => '2', 'etab' => 'layout' ] ), 'the layout cards say which layouts have icons' );
+    }
+
+    public function testTheIconsTabOfTheGroupedListOffersTheLinksNotTheGroupsOrTheCards(): void
+    {
+        $service = $this->service( MegaMenuFixture::menus()['directory'] );
+        $service->apply( 'directory-counts' );
+        $html = $this->renderAt( $service, [ 'item' => '1', 'etab' => 'content' ] );
+        $this->assertStringContainsString( 'Icon for the links of this panel', $html );
+        $this->assertStringContainsString( 'Icon of one link', $html );
+        foreach ( [ 3, 4, 5, 7, 8, 10, 11 ] as $row ) {
+            $this->assertStringContainsString( 'name="sub[' . $row . ']"', $html, 'row ' . $row );
+        }
+        foreach ( [ 2, 6, 9, 12, 13 ] as $other ) {
+            $this->assertStringNotContainsString( 'name="sub[' . $other . ']"', $html, 'item ' . $other . ' is a group or a card' );
+        }
+        $this->assertStringContainsString( 'You can choose the icon of every link', $this->renderAt( $service, [ 'item' => '1', 'etab' => 'layout' ] ) );
     }
 
     public function testChoosingIconsPutsThemOnTheCardsAndComesBackToTheItem(): void

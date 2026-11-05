@@ -24,6 +24,9 @@ final class Blocks
     /** Admin label of a card that shows a post (a snapshot taken at apply time, not part of the menu). */
     public const POST_LABEL = 'JHMG post';
 
+    /** Admin label of the pill that shows how many posts an item has (a snapshot taken at apply time, not part of the menu). */
+    public const COUNT_LABEL = 'JHMG count';
+
     /**
      * The admin label of one panel: it says which menu item and which layout it was built from (HeaderEdit::panels reads it back) and,
      * as its last word, a short fingerprint of what the panel was when it was written (PanelFingerprint). The fingerprint travels with the
@@ -69,6 +72,12 @@ final class Blocks
     public static function background( string $color ): array
     {
         return [ 'background' => self::resp( [ 'color' => $color ] ) ];
+    }
+
+    /** The module's background colour while the pointer is on it (nothing at rest). */
+    public static function hoverBackground( string $color ): array
+    {
+        return [ 'background' => [ 'desktop' => [ 'hover' => [ 'color' => $color ] ] ] ];
     }
 
     /**

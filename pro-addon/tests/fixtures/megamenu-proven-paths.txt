@@ -68,6 +68,7 @@ divi/group:module.decoration.animation.{bp}.value.repeat  render:gate
 divi/group:module.decoration.animation.{bp}.value.speedCurve  render:gate
 divi/group:module.decoration.animation.{bp}.value.startingOpacity  render:gate
 divi/group:module.decoration.animation.{bp}.value.style  render:gate
+divi/group:module.decoration.background.{bp}.hover.color  shape
 divi/group:module.decoration.background.{bp}.value.color  recipe
 divi/group:module.decoration.background.{bp}.value.gradient.direction  shape
 divi/group:module.decoration.background.{bp}.value.gradient.enabled  shape
@@ -151,7 +152,9 @@ divi/link:module.decoration.spacing.{bp}.value.padding.right  pending
 divi/link:module.decoration.spacing.{bp}.value.padding.syncHorizontal  pending
 divi/link:module.decoration.spacing.{bp}.value.padding.syncVertical  pending
 divi/link:module.decoration.spacing.{bp}.value.padding.top  render:gate
+divi/text:content.decoration.bodyFont.body.font.{bp}.value.capitalization  shape
 divi/text:content.decoration.bodyFont.body.font.{bp}.value.color  recipe
+divi/text:content.decoration.bodyFont.body.font.{bp}.value.letterSpacing  shape
 divi/text:content.decoration.bodyFont.body.font.{bp}.value.lineHeight  recipe
 divi/text:content.decoration.bodyFont.body.font.{bp}.value.size  recipe
 divi/text:content.decoration.bodyFont.body.font.{bp}.value.weight  shape

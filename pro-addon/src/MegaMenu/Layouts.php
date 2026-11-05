@@ -17,6 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *   hint                         a short "Best for" line shown on the card in the admin
  *   content                      true: the layout has a card, banner or intro panel that takes the owner's own headline, text, button and picture (MegaMenuContent)
  *   icons                        true: every card of the layout has an icon the owner can choose (MegaIcons, per panel and per card)
+ *   iconRows                     true: the icons belong to the layout's link rows (the third level), not to the second-level items
  *   tone                         'light' | 'dark' (panel colours, see Palette)
  *   mode                         'auto' (panel as wide as `width`), 'row' (follows the row) or 'viewport' (full width, content centred at `width`)
  *   width                        content width in px
@@ -39,13 +40,14 @@ final class Layouts
         'icons'   => 'Icons and descriptions',
         'latest'  => 'Latest posts',
         'showcase' => 'Showcase panels',
+        'directory' => 'Grouped lists',
     ];
 
     /** @return list<array<string,mixed>> */
     public static function all(): array
     {
         $d = static fn ( string $id, string $family, string $name, string $blurb, array $o ): array => array_merge(
-            [ 'id' => $id, 'family' => $family, 'name' => $name, 'blurb' => $blurb, 'tone' => 'light', 'mode' => 'auto', 'width' => 560, 'columns' => 1, 'rows' => 'plain', 'feature' => 'none', 'footer' => false, 'posts' => 0, 'postStyle' => 'cards', 'intro' => false, 'surface' => 'open', 'backdrop' => 'none', 'hint' => '', 'content' => false, 'icons' => false ],
+            [ 'id' => $id, 'family' => $family, 'name' => $name, 'blurb' => $blurb, 'tone' => 'light', 'mode' => 'auto', 'width' => 560, 'columns' => 1, 'rows' => 'plain', 'feature' => 'none', 'footer' => false, 'posts' => 0, 'postStyle' => 'cards', 'intro' => false, 'surface' => 'open', 'backdrop' => 'none', 'hint' => '', 'content' => false, 'icons' => false, 'iconRows' => false ],
             $o
         );
 
@@ -68,6 +70,8 @@ final class Layouts
             $d( 'showcase-tiles', 'showcase', 'Link tiles', 'Four white tiles, each with an arrow heading and ruled links, on a pale backdrop.', [ 'hint' => 'Best for: three or four groups, each with a heading.', 'mode' => 'viewport', 'width' => 1080, 'columns' => 4, 'rows' => 'hairline', 'surface' => 'cards', 'backdrop' => 'wash' ] ),
             $d( 'showcase-intro-links', 'showcase', 'Intro and ruled links', 'A coloured intro panel beside three columns of ruled links on a plain panel.', [ 'content' => true, 'hint' => 'Best for: a lighter panel with an intro beside the links.', 'width' => 880, 'columns' => 3, 'rows' => 'hairline', 'intro' => true ] ),
             $d( 'showcase-tiles-dark', 'showcase', 'Dark link tiles', 'Dark tiles with ruled links on a dark backdrop across the window.', [ 'hint' => 'Best for: grouped links on a dark header.', 'tone' => 'dark', 'mode' => 'viewport', 'width' => 1080, 'columns' => 3, 'rows' => 'hairline', 'surface' => 'cards', 'backdrop' => 'accent' ] ),
+            // Grouped lists
+            $d( 'directory-counts', 'directory', 'Grouped list with counts', 'Titled groups of links, each with an icon and a count, and linked cards underneath. Like a catalogue menu.', [ 'icons' => true, 'iconRows' => true, 'hint' => 'Best for: category groups with post counts and a few links.', 'width' => 760, 'columns' => 3, 'rows' => 'list', 'footer' => true ] ),
         ];
     }
 

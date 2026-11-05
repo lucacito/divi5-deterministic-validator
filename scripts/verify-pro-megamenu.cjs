@@ -2,7 +2,7 @@
 /*
  * Real-site gate for the Pro mega menu (make verify-pro-megamenu). Dev site only.
  *
- * For each of the 13 layouts, through the real MegaMenuService (scripts/verify-pro-megamenu.php does the PHP side, one step per call):
+ * For each of the 14 layouts, through the real MegaMenuService (scripts/verify-pro-megamenu.php does the PHP side, one step per call):
  *   dry run valid -> apply (saved once, second apply changed:false, Menu module hidden on desktop only) -> the front page in Chromium
  *   at 1280 (desktop, hover), 900 and 400 (touch: Menu module shown, mega wrapper hidden, no horizontal scroll) -> remove (blocks back
  *   to the baseline, second remove changed:false) -> undo of the remove batch (the applied header, byte for byte) -> undo of the apply
@@ -259,7 +259,8 @@ async function desktop(browser, layout, setup, ap) {
     for (const i of nav.dropdowns) {
       const title = setup.top[i].title;
       const ownHere = contentLayouts.has(layout) && title === 'Services';
-      const iconsHere = iconLayouts.has(layout) && title === 'Services';
+      const iconsHere = iconLayouts.has(layout) && layout !== 'directory-counts' && title === 'Services';
+      const directoryHere = layout === 'directory-counts' && title === 'Services';
       const label = page.locator(`[data-aied-mm="top-${i}"]`);
       const panel = page.locator(`[data-aied-mm="panel-${i}"]`);
       const panelSel = `[data-aied-mm="panel-${i}"]`;
@@ -339,6 +340,16 @@ async function desktop(browser, layout, setup, ap) {
         const want = ['f135', 'f015', 'f135'].concat(layout === 'icons-cards' ? ['f061'] : []);
         check(layout, W, `"${title}" the cards show the chosen icons (rocket, house for "Build", rocket) and the footer arrow stays`, JSON.stringify(ic.map((x) => x.code)) === JSON.stringify(want), JSON.stringify(ic.map((x) => x.code)));
         check(layout, W, `"${title}" every icon is drawn with Font Awesome at weight 900 and has a width`, ic.length > 0 && ic.every((x) => x.fa && x.weight === '900' && x.w > 0), JSON.stringify(ic.filter((x) => !(x.fa && x.weight === '900' && x.w > 0))));
+      }
+      // The grouped list: the panel's icon (a rocket) on every row, the three group names as small capitalised labels, no pill (custom links have no count).
+      if (directoryHere) {
+        const dh = await panel.evaluate((p) => ({
+          icons: [...p.querySelectorAll('.et-pb-icon')].map((e) => (e.textContent || '').trim().codePointAt(0)),
+          heads: ['Design', 'Build', 'Grow'].map((t) => { const e = [...p.querySelectorAll('p')].find((x) => x.textContent.trim() === t); const cs = e && getComputedStyle(e); return e ? { t, up: cs.textTransform, ls: cs.letterSpacing, fs: cs.fontSize } : { t, up: 'missing' }; }),
+          rowLinks: [...p.querySelectorAll('a[href]')].length,
+        }));
+        check(layout, W, `"${title}" every row has the panel's icon (a rocket, ${dh.icons.length} rows)`, dh.icons.length === 10 && dh.icons.every((c) => c === 0xf135), JSON.stringify(dh.icons));
+        check(layout, W, `"${title}" the group names are small capitalised labels with letter spacing`, dh.heads.every((h) => h.up === 'uppercase' && h.ls === '1px' && h.fs === '12px'), JSON.stringify(dh.heads));
       }
       // The newest posts: the "latest" layouts show the newest posts' permalinks.
       if (ap.layout_posts) {
@@ -675,7 +686,7 @@ async function adminView(browser, opts = {}) {
       check(L, '-', 'admin: the tab itself shows its own notice, not a second WordPress one', adminBefore.tab.tabNotice === true && adminBefore.tab.wpNoticeOnTab === false);
       check(L, '-', 'admin: the item list has one entry per menu item with its layout and says which is out of date', adminBefore.tab.items.length === setup.panels && adminBefore.tab.items.every((x) => x.layout === 'Link tiles') && adminBefore.tab.items.find((x) => x.name === 'Services').pills.includes('Out of date'), JSON.stringify(adminBefore.tab.items));
       check(L, '-', 'admin: on the Layout tab the layout in use is framed on exactly one card, badge "This item"', adminBefore.tab.current.length === 1 && adminBefore.tab.current[0].name === 'Link tiles' && adminBefore.tab.current[0].badge === 'This item', JSON.stringify(adminBefore.tab.current));
-      check(L, '-', 'admin: no dropdown on the layout cards', adminBefore.tab.cardSelects === 0 && adminBefore.tab.cards === 13, `${adminBefore.tab.cardSelects} selects, ${adminBefore.tab.cards} cards`);
+      check(L, '-', 'admin: no dropdown on the layout cards', adminBefore.tab.cardSelects === 0 && adminBefore.tab.cards === 14, `${adminBefore.tab.cardSelects} selects, ${adminBefore.tab.cards} cards`);
       check(L, '-', 'admin: nothing sticks out of the box that holds it', adminBefore.tab.overflow === 0, String(adminBefore.tab.overflow));
       check(L, '-', 'admin: the help is folded away and the visible text stays short', adminBefore.tab.helpClosed === true && adminBefore.tab.textLength < 3600, String(adminBefore.tab.textLength));
       const before = await probe();
@@ -860,6 +871,90 @@ async function adminView(browser, opts = {}) {
       const off = step('remove');
       check(L, '-', 'removed again', off.applied === false);
     }
+    // The grouped list on a menu of its own: real categories with their real post counts, two loose links as cards.
+    {
+      const L = 'directory';
+      const dm = step('directory_menu');
+      const use = step('directory_use');
+      check(L, '-', 'the header shows the directory menu and its one panel is the grouped list', use.status_menu_id === dm.menu_id && JSON.stringify(use.panel_ids) === JSON.stringify([dm.lib_id]) && use.layouts.length === 1 && use.layouts[0] === 'directory-counts', JSON.stringify(use));
+      const names = Object.keys(dm.counts);
+      check(L, '-', 'a category\'s count the menu reads is the number of its published posts (2 and 1)', names.every((n) => dm.counts[n].term === dm.counts[n].real) && JSON.stringify(names.map((n) => dm.counts[n].real)) === JSON.stringify([2, 1]), JSON.stringify(dm.counts));
+      const { ctx, page, errors, status } = await openPage(browser, 1280, 900, false);
+      try {
+        await page.waitForFunction(() => document.querySelectorAll('.et_pb_dropdown_initialized').length >= 1, null, { timeout: 10000 }).catch(() => {});
+        const nav = await page.evaluate(tagNav);
+        const i = nav.labels.indexOf('Library');
+        check(L, 1280, 'the bar shows the directory menu', i >= 0 && nav.labels.includes('Contact'), JSON.stringify(nav.labels));
+        const panelSel = `[data-aied-mm="panel-${i}"]`;
+        await page.mouse.move(5, 880);
+        await page.waitForTimeout(400);
+        await page.locator(`[data-aied-mm="top-${i}"]`).hover();
+        await page.waitForTimeout(1300);
+        const panel = page.locator(panelSel);
+        check(L, 1280, 'the panel opens on hover', await panel.evaluate(SHOWN));
+        const m = await panel.evaluate((p, o) => {
+          const rowOf = (title) => { const a = [...p.querySelectorAll('a[href]')].find((x) => x.textContent.trim() === title); let e = a; while (e && e !== p) { const cs = getComputedStyle(e); if (e.classList.contains('et_pb_group') && cs.justifyContent === 'space-between') return { a, row: e }; e = e.parentElement; } return { a, row: null }; };
+          const rows = {};
+          for (const t of o.names.concat(o.plain)) {
+            const { a, row } = rowOf(t);
+            const cs = row ? getComputedStyle(row) : null;
+            rows[t] = { link: !!a, row: !!row, bg: cs ? cs.backgroundColor : '', radius: cs ? cs.borderTopLeftRadius : '', text: row ? row.textContent.replace(/\s+/g, ' ').trim() : '', pill: row ? [...row.querySelectorAll('p')].map((x) => x.textContent.trim()).filter((x) => /^\d+$/.test(x)) : [] };
+          }
+          const heads = ['By topic', 'More'].map((t) => { const e = [...p.querySelectorAll('p')].find((x) => x.textContent.trim() === t); const cs = e && getComputedStyle(e); return { t, up: e ? cs.textTransform : 'missing', ls: e ? cs.letterSpacing : '', link: [...p.querySelectorAll('a')].some((a) => a.textContent.trim() === t) }; });
+          const cards = Object.keys(o.cards).map((t) => { const a = [...p.querySelectorAll('a[href]')].find((x) => x.textContent.trim() === t); let e = a; while (e && e !== p && !(e.classList.contains('et_pb_group') && getComputedStyle(e).backgroundColor === 'rgb(243, 245, 249)')) e = e.parentElement; const r = e && e !== p ? e.getBoundingClientRect() : null; return { t, href: a ? a.getAttribute('href') : null, card: !!r, radius: r ? getComputedStyle(e).borderTopLeftRadius : '', top: r ? Math.round(r.top) : 0, left: r ? Math.round(r.left) : 0, width: r ? Math.round(r.width) : 0, text: e ? e.textContent.replace(/\s+/g, ' ').trim() : '', arrows: e ? [...e.querySelectorAll('.et-pb-icon')].map((x) => (x.textContent || '').trim().codePointAt(0)) : [] }; });
+          return { rows, heads, cards };
+        }, { names, plain: dm.rows_plain, cards: dm.cards });
+        for (const n of names) {
+          const r = m.rows[n];
+          check(L, 1280, `row "${n}": a link inside a row, with the count ${dm.counts[n].real} at the end`, r.link && r.row && r.pill.length === 1 && r.pill[0] === String(dm.counts[n].real) && r.text.endsWith(String(dm.counts[n].real)), JSON.stringify(r));
+        }
+        for (const n of dm.rows_plain) check(L, 1280, `row "${n}" has no count`, m.rows[n].link && m.rows[n].row && m.rows[n].pill.length === 0, JSON.stringify(m.rows[n]));
+        check(L, 1280, 'the rows are plain at rest (no fill) with rounded corners', Object.values(m.rows).every((r) => r.bg === 'rgba(0, 0, 0, 0)' && r.radius === '10px'), JSON.stringify(Object.values(m.rows).map((r) => [r.bg, r.radius])));
+        check(L, 1280, 'the group names are capitalised labels, not links', m.heads.every((h) => h.up === 'uppercase' && h.ls === '1px' && !h.link), JSON.stringify(m.heads));
+        const cardNames = Object.keys(dm.cards);
+        check(L, 1280, 'the two loose links are cards with their description and an arrow, side by side', m.cards.every((c) => c.card && c.radius === '14px' && c.href === dm.cards[c.t] && /\S{3,}/.test(c.text) && c.arrows.length === 1 && c.arrows[0] === 0xf061) && m.cards[0].top === m.cards[1].top && m.cards[0].left !== m.cards[1].left && m.cards[0].width === m.cards[1].width, JSON.stringify(m.cards));
+        check(L, 1280, 'the cards say what they are (the descriptions)', m.cards[0].text.includes('The full catalogue in one place.') && m.cards[1].text.includes('A real person answers within a day.'), JSON.stringify(m.cards.map((c) => c.text)));
+        // A real hover on a row: the tint, and the link takes the accent.
+        const first = names[0];
+        const link = page.locator(`${panelSel} a[href]`, { hasText: first }).first();
+        await link.hover();
+        await page.waitForTimeout(700);
+        const hv = await panel.evaluate((p, t) => {
+          const a = [...p.querySelectorAll('a[href]')].find((x) => x.textContent.trim() === t);
+          let e = a; while (e && !(e.classList.contains('et_pb_group') && getComputedStyle(e).justifyContent === 'space-between')) e = e.parentElement;
+          const inner = a.querySelector('.et_pb_link_inner') || a;
+          return { bg: getComputedStyle(e).backgroundColor, color: getComputedStyle(inner).color };
+        }, first);
+        check(L, 1280, 'with the pointer on a row it takes the soft tint and the link turns to the accent colour', hv.bg === 'rgb(238, 242, 255)' && hv.color === 'rgb(29, 78, 216)', JSON.stringify(hv));
+        // A real hover on a card: it rises and takes the accent frame.
+        const cardLink = page.locator(`${panelSel} a[href]`, { hasText: cardNames[0] }).first();
+        await cardLink.hover();
+        await page.waitForTimeout(700);
+        const ch = await panel.evaluate((p, t) => {
+          const a = [...p.querySelectorAll('a[href]')].find((x) => x.textContent.trim() === t);
+          let e = a; while (e && !(e.classList.contains('et_pb_group') && getComputedStyle(e).backgroundColor === 'rgb(243, 245, 249)')) e = e.parentElement;
+          const cs = getComputedStyle(e);
+          return { transform: cs.transform, border: cs.borderTopColor };
+        }, cardNames[0]);
+        check(L, 1280, 'with the pointer on a card it rises 4px and takes the accent frame', /matrix\(1, 0, 0, 1, 0, -4\)/.test(ch.transform) && ch.border === 'rgb(29, 78, 216)', JSON.stringify(ch));
+        await link.hover();
+        await page.waitForTimeout(300);
+        const cc = await page.evaluate(contrastInPanel, panelSel);
+        check(L, 1280, `text contrast >= 4.5:1 (${cc.count} texts)`, cc.count > 0 && cc.min >= 4.5, `min ${cc.min} at "${cc.worst}"`);
+        const clip = await page.evaluate(clipInPanel, panelSel);
+        check(L, 1280, 'nothing clipped or outside the panel', clip.length === 0, clip.join('; '));
+        const box = await panel.boundingBox();
+        check(L, 1280, 'the panel is inside the viewport and as wide as its 760px content plus padding and frame (806px)', box.x >= -0.5 && box.x + box.width <= 1280.5 && Math.abs(box.width - 806) <= 1, JSON.stringify(box));
+        fs.mkdirSync(OUT, { recursive: true });
+        await page.screenshot({ path: path.join(OUT, 'directory-counts-menu.png') });
+        await pageSanity(page, L, 1280, status, errors);
+        check(L, 1280, 'no console error', errors.length === 0, errors.slice(0, 2).join(' | '));
+      } finally {
+        await ctx.close();
+      }
+      const back = step('directory_back');
+      check(L, '-', 'the header points at the run\'s own menu again with no mega menu', back.module_menu_id === setup.menu_id && back.applied === false, JSON.stringify(back));
+    }
     // Refusals (no global header, a copy without a Menu module, an editor without the Theme Builder permission).
     const neg = step('negative');
     check('negative', '-', 'no global header: refused with the message, nothing read', neg.no_header === 'This site has no global header. Create one in Divi > Theme Builder (a header on the Default Website Template), then come back.', neg.no_header);
@@ -883,6 +978,7 @@ async function adminView(browser, opts = {}) {
     check('teardown', '-', 'the undo batches that existed before the run are back, identical (the table trims to 20 and a run records more)', teardown.batches_back === true);
     check('teardown', '-', 'none of the undo batches this run recorded is left', teardown.batches_left === 0, String(teardown.batches_left));
     check('teardown', '-', 'the throwaway picture is deleted', teardown.picture_left === 0);
+    check('teardown', '-', 'the throwaway categories and posts of the directory scenario are deleted', teardown.directory_left === 0, String(teardown.directory_left));
     check('teardown', '-', 'the revisions WordPress made of the header during the run are removed again (they pile up and fill PHP memory)', teardown.revisions_left === 0, String(teardown.revisions_left));
   }
   console.log('');

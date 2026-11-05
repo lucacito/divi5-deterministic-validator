@@ -42,6 +42,7 @@ class MenuSource
                 'type'        => (string) $it->type,
                 'object'      => (string) $it->object,
                 'objectId'    => (int) $it->object_id,
+                'count'       => $this->count( $it ),
             ];
         }
 
@@ -90,6 +91,23 @@ class MenuSource
         }
 
         return [ null, '' ];
+    }
+
+    /** How many published posts the item leads to: a category, tag or other term's count, or a post type archive's total. Null for anything else. */
+    private function count( object $item ): ?int
+    {
+        if ( 'taxonomy' === (string) $item->type && (int) $item->object_id > 0 ) {
+            $term = get_term( (int) $item->object_id, (string) $item->object );
+
+            return $term instanceof \WP_Term ? (int) $term->count : null;
+        }
+        if ( 'post_type_archive' === (string) $item->type && '' !== (string) $item->object ) {
+            $counts = wp_count_posts( (string) $item->object );
+
+            return is_object( $counts ) && isset( $counts->publish ) ? (int) $counts->publish : null;
+        }
+
+        return null;
     }
 
     /** The menu item's own description, else a short excerpt of the page it points at. */

@@ -19,14 +19,14 @@ class MegaMenuPartsTest extends TestCase
 {
     // ---- catalog ---------------------------------------------------------------------------------------------------
 
-    public function testThereAreThirteenLayoutsInFiveFamilies(): void
+    public function testThereAreFourteenLayoutsInSixFamilies(): void
     {
         $all = Layouts::all();
-        $this->assertCount( 13, $all );
-        $this->assertSame( 13, count( array_unique( Layouts::ids() ) ), 'ids are unique' );
+        $this->assertCount( 14, $all );
+        $this->assertSame( 14, count( array_unique( Layouts::ids() ) ), 'ids are unique' );
         $perFamily = array_count_values( array_map( static fn ( array $l ): string => $l['family'], $all ) );
         $this->assertSame( array_keys( Layouts::FAMILIES ), array_keys( $perFamily ) );
-        $this->assertSame( [ 'columns' => 2, 'feature' => 3, 'icons' => 2, 'latest' => 2, 'showcase' => 4 ], $perFamily );
+        $this->assertSame( [ 'columns' => 2, 'feature' => 3, 'icons' => 2, 'latest' => 2, 'showcase' => 4, 'directory' => 1 ], $perFamily );
     }
 
     public function testEveryLayoutIsWellFormedAndNamesAreDistinct(): void
@@ -40,7 +40,7 @@ class MegaMenuPartsTest extends TestCase
             $this->assertIsBool( $l['intro'] );
             $this->assertContains( $l['surface'], [ 'open', 'cards' ] );
             $this->assertContains( $l['backdrop'], [ 'none', 'accent', 'wash' ] );
-            $this->assertContains( $l['rows'], [ 'plain', 'cards', 'hairline' ] );
+            $this->assertContains( $l['rows'], [ 'plain', 'cards', 'hairline', 'list' ] );
             $this->assertGreaterThanOrEqual( 200, $l['width'] );
             $this->assertLessThanOrEqual( 1200, $l['width'] );
             $this->assertGreaterThanOrEqual( 1, $l['columns'] );

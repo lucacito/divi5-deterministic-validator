@@ -40,6 +40,10 @@ final class PreviewSvg
             return '<svg viewBox="0 0 240 150" role="img" aria-label="' . esc_attr( $name ) . '">' . implode( '', array_merge( $shapes, self::showcase( $layout, $t ) ) ) . '</svg>';
         }
 
+        if ( 'directory' === (string) $layout['family'] ) {
+            return '<svg viewBox="0 0 240 150" role="img" aria-label="' . esc_attr( $name ) . '">' . implode( '', array_merge( $shapes, self::directory( $layout, $t ) ) ) . '</svg>';
+        }
+
         [ $px, $pw, $cx, $cw ] = self::panelBox( $width, $viewport );
         $shapes[] = self::rect( (float) $px, (float) self::PANEL_Y, (float) $pw, (float) self::PANEL_H, $viewport ? 0.0 : 6.0, $t['bg'], 1.0, $t['line'] );
 
@@ -78,6 +82,42 @@ final class PreviewSvg
         }
 
         return '<svg viewBox="0 0 240 150" role="img" aria-label="' . esc_attr( $name ) . '">' . implode( '', $shapes ) . '</svg>';
+    }
+
+    /** The directory family: titled columns of icon rows with a count at the end, and two cards along the bottom. @return list<string> */
+    private static function directory( array $layout, array $t ): array
+    {
+        [ $px, $pw, $cx, $cw ] = self::panelBox( (int) $layout['width'], false );
+        $shapes = [ self::rect( (float) $px, (float) self::PANEL_Y, (float) $pw, (float) self::PANEL_H, 6.0, $t['bg'], 1.0, $t['line'] ) ];
+        $cols   = max( 1, (int) $layout['columns'] );
+        $gap    = 6.0;
+        $colW   = ( $cw - ( $cols - 1 ) * $gap ) / $cols;
+        $top    = self::PANEL_Y + 9;
+        for ( $c = 0; $c < $cols; $c++ ) {
+            $x         = $cx + $c * ( $colW + $gap );
+            $shapes[]  = self::bar( $x + 2.0, (float) $top, $colW * 0.4, $t['muted'], 0.7, 3.0 );
+            for ( $r = 0; $r < 3; $r++ ) {
+                $y = (float) ( $top + 8 + $r * 12 );
+                if ( 0 === $c && 1 === $r ) {
+                    $shapes[] = self::rect( $x, $y - 3.0, $colW, 11.0, 3.0, $t['accent'], 0.12 );
+                }
+                $shapes[] = self::circle( $x + 5.0, $y + 2.0, 2.2, $t['muted'], 0.8 );
+                $shapes[] = self::bar( $x + 11.0, $y + 0.5, $colW * 0.42, $t['text'], 0.85, 3.0 );
+                $shapes[] = self::rect( $x + $colW - 14.0, $y - 0.5, 11.0, 5.0, 2.5, $t['card'] );
+            }
+        }
+        $cy       = (float) ( self::PANEL_Y + self::PANEL_H - 29 );
+        $shapes[] = self::rect( (float) $cx, $cy - 4.0, (float) $cw, 1.0, 0.0, $t['line'] );
+        $cardW    = ( $cw - $gap ) / 2;
+        foreach ( [ 0, 1 ] as $i ) {
+            $x        = $cx + $i * ( $cardW + $gap );
+            $shapes[] = self::rect( $x, $cy, $cardW, 21.0, 4.0, $t['card'], 1.0, $t['line'] );
+            $shapes[] = self::bar( $x + 5.0, $cy + 6.0, $cardW * 0.4, $t['text'], 0.9, 3.5 );
+            $shapes[] = self::bar( $x + 5.0, $cy + 13.0, $cardW * 0.6, $t['muted'], 0.6, 2.5 );
+            $shapes[] = self::circle( $x + $cardW - 7.0, $cy + 10.5, 2.5, $t['accent'], 0.9 );
+        }
+
+        return $shapes;
     }
 
     /** The showcase family: an optional backdrop, an optional intro panel and ruled link tiles. @return list<string> */
