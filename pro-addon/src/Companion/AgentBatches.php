@@ -125,10 +125,11 @@ final class AgentBatches
             $p = $r['page_id'];
             if ( ! isset( $pages[ $p ] ) ) {
                 // The oldest snapshot of a page in the batch holds the page as it was before the batch touched it.
-                $pages[ $p ] = [ 'page_id' => $p, 'restore_version_id' => $r['version_id'], 'first_saved_at' => $r['saved_at'], 'last_saved_at' => $r['saved_at'], 'changes' => 0 ];
+                $pages[ $p ] = [ 'page_id' => $p, 'restore_version_id' => $r['version_id'], 'last_version_id' => $r['version_id'], 'first_saved_at' => $r['saved_at'], 'last_saved_at' => $r['saved_at'], 'changes' => 0 ];
             }
             ++$pages[ $p ]['changes'];
-            $pages[ $p ]['last_saved_at'] = max( $pages[ $p ]['last_saved_at'], $r['saved_at'] );
+            $pages[ $p ]['last_saved_at']   = max( $pages[ $p ]['last_saved_at'], $r['saved_at'] );
+            $pages[ $p ]['last_version_id'] = max( $pages[ $p ]['last_version_id'], $r['version_id'] );
         }
 
         return [

@@ -135,6 +135,18 @@ class AgentBatchesTest extends TestCase
         $this->assertSame( 'changed_afterwards', $r['skipped'][0]['reason'] );
     }
 
+    public function testANewerSnapshotInTheSameSecondIsStillSeenBecauseVersionIdsAreCompared(): void
+    {
+        // the batch's last change on page 6 is version 1 at 10:01:00; another source saved version 2 in the very same second
+        $r = $this->plan(
+            static fn ( int $id ) => [ 'modified_gmt' => 5 === $id ? '2026-11-05 10:00:02' : '2026-11-05 10:01:00', 'can_edit' => true ],
+            [ [ 'page_id' => 6, 'version_id' => 2, 'saved_at' => '2026-11-05T10:01:00Z' ], [ 'page_id' => 6, 'version_id' => 1, 'saved_at' => '2026-11-05T10:01:00Z' ] ]
+        );
+        $this->assertSame( [ 5 ], array_column( $r['restore'], 'page_id' ) );
+        $this->assertSame( 'changed_afterwards', $r['skipped'][0]['reason'] );
+        $this->assertSame( 1, AgentBatches::group( [ $this->row( 6, 1, '2026-11-05T10:01:00Z' ), $this->row( 6, 2, '2026-11-05T10:01:00Z' ) ] )[0]['pages'][0]['restore_version_id'] );
+    }
+
     public function testMissingForbiddenAndLostSnapshotPagesAreSkippedWithTheirReason(): void
     {
         $page = static fn ( int $id ) => 5 === $id ? null : [ 'modified_gmt' => '2026-11-05 10:01:02', 'can_edit' => false ];

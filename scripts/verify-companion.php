@@ -73,6 +73,145 @@ if ( 'http-check' === $stage ) {
     exit( [] === $failures ? 0 : 1 );
 }
 
+// ---- pro stage: the Pro abilities, batches for any source, design review and strict validation -----------------------
+if ( 'pro' === $stage ) {
+    if ( ! class_exists( \AiEditorDivi5\Pro\Companion\ProAbilities::class ) ) {
+        WP_CLI::error( 'Activate jhmg-ai-editor-for-divi-5-pro on this site first.' );
+    }
+    $created = [];
+    $saved   = [
+        'sessions' => get_option( \AiEditorDivi5\Pro\Companion\AgentSessions::OPTION, null ),
+        'strict'   => get_option( \AiEditorDivi5\Pro\Companion\StrictMode::OPTION, null ),
+        'flags'    => get_option( \AiEditorDivi5\Pro\Companion\StrictMode::FLAGS, null ),
+        'premium'  => get_option( 'aied_pro_premium_unlocked', null ),
+    ];
+    $divi5 = static function ( int $id ): int { update_post_meta( $id, '_et_pb_use_divi_5', 'on' ); return $id; };
+    $restSave = static function ( int $id, string $content ): int {
+        \AiEditorDivi5\WP\HistoryCapture::reset();
+        $req = new WP_REST_Request( 'POST', '/wp/v2/pages/' . $id );
+        $req->set_body_params( [ 'content' => $content ] );
+
+        return rest_do_request( $req )->get_status();
+    };
+    $call = static fn ( string $name, array $in = [] ) => wp_get_ability( 'jhmg-ai-editor-pro/' . $name )->execute( $in );
+    try {
+        wp_set_current_user( 1 );
+        update_option( 'aied_pro_premium_unlocked', 1, false );
+
+        $mine = array_filter( wp_get_abilities(), static fn ( $a ) => str_starts_with( $a->get_name(), 'jhmg-ai-editor-pro/' ) );
+        $check( 7 === count( $mine ), '7 Pro abilities are registered (' . count( $mine ) . ')' );
+        $check( wp_has_ability_category( 'jhmg-ai-editor-pro' ), 'the jhmg-ai-editor-pro category exists' );
+
+        // licence and capability
+        delete_option( 'aied_pro_premium_unlocked' );
+        $r = wp_get_ability( 'jhmg-ai-editor-pro/audit-site' )->execute( [] );
+        $check( is_wp_error( $r ) && 'ability_invalid_permissions' === $r->get_error_code(), 'without a licence a Pro ability is refused' );
+        update_option( 'aied_pro_premium_unlocked', 1, false );
+        $authorId = wp_insert_user( [ 'user_login' => 'aied_gate_pro_author', 'user_pass' => wp_generate_password(), 'role' => 'author' ] );
+        $created[] = static fn () => wp_delete_user( $authorId );
+        wp_set_current_user( $authorId );
+        $check( true !== wp_get_ability( 'jhmg-ai-editor-pro/design-review-site' )->check_permissions( [] ), 'an author is refused even with a licence' );
+        wp_set_current_user( 1 );
+
+        // a page with problems: unreadable text, a link to nowhere, Divi's grey placeholder
+        $export = json_decode( (string) file_get_contents( '/fixtures/valid/page-17-newpage.json' ), true );
+        preg_match( '#data:image/svg\+xml;base64,[A-Za-z0-9+/=]+#', (string) $export['post_content'], $ph );
+        $bad = '<!-- wp:divi/placeholder --><!-- wp:divi/section {"module":{"decoration":{"background":{"desktop":{"value":{"color":"#ffffff"}}}}},"builderVersion":"5.14.0"} --><!-- wp:divi/row {"builderVersion":"5.14.0"} --><!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.14.0"} -->'
+            . '<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"<p>Hello</p>"}},"decoration":{"bodyFont":{"body":{"font":{"desktop":{"value":{"color":"#fafafa"}}}}}}},"builderVersion":"5.14.0"} /-->'
+            . '<!-- wp:divi/image {"image":{"innerContent":{"desktop":{"value":{"src":"' . $ph[0] . '","alt":"x"}}}},"builderVersion":"5.14.0"} /-->'
+            . '<!-- wp:divi/button {"button":{"innerContent":{"desktop":{"value":{"text":"Go","linkUrl":"/definitely-missing-page-aied/"}}}},"builderVersion":"5.14.0"} /-->'
+            . '<!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section --><!-- /wp:divi/placeholder -->';
+        $pBad = $divi5( $newPage( 'aied companion pro bad' ) );
+        $created[] = static fn () => wp_delete_post( $pBad, true );
+        wp_update_post( wp_slash( [ 'ID' => $pBad, 'post_content' => $bad ] ) );
+
+        $r = $call( 'audit-site', [ 'scope' => 'pages', 'cursor' => $pBad - 1 ] );
+        $check( ! is_wp_error( $r ) && isset( $r['findings'], $r['design'] ), 'audit-site returns the audit and a design section' );
+        $mine = array_values( array_filter( (array) ( $r['design']['pages_with_problems'] ?? [] ), static fn ( $p ) => $p['id'] === $pBad ) );
+        $check( [] !== $mine && isset( $mine[0]['design_problems']['LOW_CONTRAST'], $mine[0]['design_problems']['GREY_PLACEHOLDER_IMAGE'] ), 'it reports the planted page\'s contrast and placeholder problems by page' );
+
+        $r = $call( 'design-review-site', [ 'scope' => 'pages', 'cursor' => $pBad - 1 ] );
+        $codes = ! is_wp_error( $r ) ? array_column( array_filter( $r['fixes'], static fn ( $f ) => $f['id'] === $pBad ), 'priority', 'code' ) : [];
+        $check( 'high' === ( $codes['LOW_CONTRAST'] ?? '' ), 'design-review-site lists the unreadable text as a high priority fix' );
+        $check( 'high' === ( $codes['BROKEN_INTERNAL_LINK'] ?? '' ), 'and the link to a missing page as high' );
+        $check( 'medium' === ( $codes['GREY_PLACEHOLDER_IMAGE'] ?? '' ), 'and Divi\'s grey placeholder as medium' );
+        $prios = ! is_wp_error( $r ) ? array_column( $r['fixes'], 'priority' ) : [];
+        $check( $prios === array_values( array_merge( array_filter( $prios, fn ( $x ) => 'high' === $x ), array_filter( $prios, fn ( $x ) => 'medium' === $x ), array_filter( $prios, fn ( $x ) => 'low' === $x ) ) ), 'the list is ordered high, then medium, then low' );
+
+        // batch undo for any source, explicit session
+        $pA = $divi5( $newPage( 'aied companion batch A' ) );
+        $pB = $divi5( $newPage( 'aied companion batch B' ) );
+        $created[] = static fn () => wp_delete_post( $pA, true );
+        $created[] = static fn () => wp_delete_post( $pB, true );
+        sleep( 2 ); // history times have one-second resolution: a change in the same second as start-batch counts as inside it
+        $start = $call( 'start-batch', [ 'label' => 'gate redesign' ] );
+        $check( ! is_wp_error( $start ) && str_starts_with( (string) $start['batch_id'], 'session-' ), 'start-batch returns a batch id' );
+        $check( 200 === $restSave( $pA, $newContent( 'pa' ) ) && 200 === $restSave( $pB, $newContent( 'pb' ) ), 'two pages are changed through core REST, a tool this plugin did not write' );
+        $end = $call( 'end-batch' );
+        $check( ! is_wp_error( $end ) && true === $end['closed'], 'end-batch closes it' );
+        $list = $call( 'list-batches' );
+        $found = ! is_wp_error( $list ) ? array_values( array_filter( $list['agent_batches'], static fn ( $b ) => $b['id'] === $start['batch_id'] ) ) : [];
+        $check( 1 === count( $found ) && 2 === $found[0]['page_count'], 'list-batches shows the session with both pages ' . wp_json_encode( [ count( $found ), $found[0]['page_count'] ?? null, wp_json_encode( $found[0]['pages'] ?? null ), $pA, $pB, $pBad ] ) );
+        $dry = $call( 'undo-batch', [ 'batch_id' => $start['batch_id'], 'dry_run' => true ] );
+        $check( ! is_wp_error( $dry ) && 2 === count( $dry['would_restore'] ) && $newContent( 'pa' ) === get_post( $pA )->post_content, 'a dry run plans both restores and changes nothing' );
+        $undo = $call( 'undo-batch', [ 'batch_id' => $start['batch_id'] ] );
+        $check( ! is_wp_error( $undo ) && true === $undo['fully_undone'] && AIED_OLD === get_post( $pA )->post_content && AIED_OLD === get_post( $pB )->post_content, 'undo-batch puts both pages back' );
+        $again = $call( 'undo-batch', [ 'batch_id' => $start['batch_id'] ] );
+        $check( ! is_wp_error( $again ) && [] === $again['restored'] && 2 === count( $again['skipped'] ), 'a second undo changes nothing (the pages changed since)' );
+        $check( null !== get_post( $pA ) && 'trash' !== get_post( $pA )->post_status, 'no page was trashed or deleted' );
+
+        // a page changed after the batch is skipped, never overwritten
+        sleep( 2 ); // two batches inside one second cannot be told apart (history times have one-second resolution)
+        $start2 = $call( 'start-batch', [ 'label' => 'second' ] );
+        $restSave( $pA, $newContent( 'pa2' ) );
+        $restSave( $pB, $newContent( 'pb2' ) );
+        $call( 'end-batch' );
+        sleep( 2 );
+        \AiEditorDivi5\WP\HistoryCapture::reset();
+        wp_update_post( wp_slash( [ 'ID' => $pA, 'post_content' => $newContent( 'later' ) ] ) );
+        $undo2 = $call( 'undo-batch', [ 'batch_id' => $start2['batch_id'] ] );
+        $check( ! is_wp_error( $undo2 ) && [ $pB ] === array_column( $undo2['restored'], 'page_id' ) && [ $pA ] === array_column( $undo2['skipped'], 'page_id' ), 'the page changed after the batch is skipped, the other restored' );
+        $check( $newContent( 'later' ) === get_post( $pA )->post_content, 'and the newer change was not overwritten' );
+
+        // an inferred batch (no start-batch): same source close together
+        $pC = $divi5( $newPage( 'aied companion batch C' ) );
+        $created[] = static fn () => wp_delete_post( $pC, true );
+        delete_option( \AiEditorDivi5\Pro\Companion\AgentSessions::OPTION );
+        $restSave( $pC, $newContent( 'c1' ) );
+        $restSave( $pC, $newContent( 'c2' ) );
+        $list = $call( 'list-batches' );
+        $inf = ! is_wp_error( $list ) ? array_values( array_filter( $list['agent_batches'], static fn ( $b ) => 'inferred' === $b['kind'] && in_array( $pC, array_column( $b['pages'], 'page_id' ), true ) ) ) : [];
+        $check( [] !== $inf && $inf[0]['changes'] >= 2, 'without start-batch the changes are still grouped by source and time' );
+
+        // strict validation: flags after the save, blocks nothing
+        update_option( \AiEditorDivi5\Pro\Companion\StrictMode::OPTION, '1', false );
+        delete_option( \AiEditorDivi5\Pro\Companion\StrictMode::FLAGS );
+        $status = $restSave( $pC, $bad . '<!-- wp:divi/not-a-module {"builderVersion":"5.14.0"} /-->' );
+        $check( 200 === $status, 'strict mode does not block an invalid save by REST (status ' . $status . ')' );
+        $flags = \AiEditorDivi5\Pro\Companion\StrictMode::flags();
+        $check( [] !== $flags && $pC === $flags[0]['post_id'] && 'rest' === $flags[0]['source'], 'but the page is flagged with its source' );
+        $check( str_contains( get_post( $pC )->post_content, 'not-a-module' ), 'and nothing was rolled back' );
+        $restSave( $pC, $newContent( 'valid-again' ) );
+        $check( [] === \AiEditorDivi5\Pro\Companion\StrictMode::flags(), 'a later valid save clears the flag' );
+        update_option( \AiEditorDivi5\Pro\Companion\StrictMode::OPTION, '0', false );
+        $restSave( $pC, $bad . '<!-- wp:divi/not-a-module {"builderVersion":"5.14.0"} /-->' );
+        $check( [] === \AiEditorDivi5\Pro\Companion\StrictMode::flags(), 'with it off nothing is flagged' );
+    } finally {
+        foreach ( array_reverse( $created ) as $undo ) {
+            $undo();
+        }
+        foreach ( [ 'sessions' => \AiEditorDivi5\Pro\Companion\AgentSessions::OPTION, 'strict' => \AiEditorDivi5\Pro\Companion\StrictMode::OPTION, 'flags' => \AiEditorDivi5\Pro\Companion\StrictMode::FLAGS, 'premium' => 'aied_pro_premium_unlocked' ] as $k => $opt ) {
+            null === $saved[ $k ] ? delete_option( $opt ) : update_option( $opt, $saved[ $k ], false );
+        }
+    }
+    WP_CLI::log( '' );
+    if ( [] === $failures ) {
+        WP_CLI::success( 'companion Pro gate: all checks passed' );
+        exit( 0 );
+    }
+    WP_CLI::error( count( $failures ) . ' check(s) failed' );
+}
+
 // ---- main ----------------------------------------------------------------------------------------------------------
 $created = [];
 $restore = [ 'options' => get_option( HistorySources::OPTION, null ) ];

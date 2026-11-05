@@ -15,8 +15,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * A page is skipped, with a reason, when:
  *  - it no longer exists (not_found) or the user may not edit it (forbidden),
- *  - it was changed after the batch: its modified time is later than the batch's last change on it by more than GRACE
- *    seconds, or a newer history snapshot of it exists that is not part of the batch (changed_afterwards),
+ *  - it was changed after the batch: it has a history snapshot newer than the batch's last one on it (compared by version id, so
+ *    not blurred by the one-second clock), or its modified time is later than the batch's last change on it by more than GRACE
+ *    seconds, which catches saves that keep no snapshot (changed_afterwards),
  *  - the snapshot to go back to is gone (snapshot_missing).
  */
 final class AgentBatchUndo
@@ -57,7 +58,8 @@ final class AgentBatchUndo
             }
             $newer = false;
             foreach ( $rowsAfter as $r ) {
-                if ( $r['page_id'] === $pageId && $r['saved_at'] > $p['last_saved_at'] ) {
+                // Version ids count a page's snapshots exactly, so a change in the same second as the batch's last one is still seen.
+                if ( $r['page_id'] === $pageId && $r['version_id'] > $p['last_version_id'] ) {
                     $newer = true;
                     break;
                 }

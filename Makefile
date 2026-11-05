@@ -388,3 +388,4 @@ dogfood-render:
 verify-companion:
 	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-companion.php --user=1
 	@bash scripts/verify-companion-http.sh
+	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-companion.php --user=1 pro

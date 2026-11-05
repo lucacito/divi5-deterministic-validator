@@ -271,3 +271,30 @@ write and its error handling, so I will not build it without your explicit appro
   `ApiKey.php`, `DesignVariety.php`, `WpOrgComplianceTest.php`, and in the Pro add-on `ProTool.php`, `ToolRegistry.php`, `Tools.php`,
   `Batch/*`.
 - Not verified: any MCP adapter's meta key, Divi's MCP names and execution path, Divi's builder save path.
+
+## Outcome (built on this branch)
+
+Your answers to section 8, and what was built. Decisions I took from my own recommendation are marked (R).
+
+| # | Question | Decision |
+|---|---|---|
+| 1 | Divi's default fallbacks | Probed once on the dev site (`scripts/probe-divi-defaults.cjs`). Found and used: the builder's grey placeholder (`#EBEBEB` SVG data URI, certain), the stock button (white label, transparent fill, 2px white border) and the stock tab bar (`#f4f4f4`), both "possible" and silenced when the site has a preset for the module. |
+| 2 | Page-level contrast | Built, conservative: only definite failures, everything else "not checked". |
+| 3 | MCP adapter key | Read from WordPress/mcp-adapter v0.7.1: `meta.mcp.public` (falls back to `meta.public`), `meta.mcp.type`. Both set. |
+| 4 | Shared catalog and `callTool` | Done; `tools/list` and the OpenAPI spec are pinned byte for byte. |
+| 5 | Builder saves | Distinguishable: Divi's builder saves through the REST route `/divi/v1/sync-to-server` (all of Divi's own interface is under `/divi/v1/`). Builder is off by default; anything unmatched is labelled "unknown" and kept. |
+| 6 | Pro batches | Virtual batches from history rows at undo time; no new table. |
+| 7 | Pro ability names | `jhmg-ai-editor-pro/`. |
+| 8 | Minimum WordPress and version | Minimum stays 6.0. Latest released version is 4.16.0 (header, constant and readme agreed), so this branch is 4.17.0. |
+| 9 | (R) Version number | 4.17.0 in the header, constant, readme and changelog. The Pro version is not bumped (a release decision). |
+| 10 | (R) Disclaimer | The readme already had a non-affiliation sentence; a test allows only one, so no second was added. |
+
+Things that differ from the plan:
+
+* The running ability is found by reading the call stack, not by remembering a name between `wp_before_execute_ability` and
+  `wp_after_execute_ability`. The live gate showed the remembered name goes stale when an ability fails (core does not fire the
+  "after" hook then).
+* "Changed afterwards" for a batch undo compares history version ids (exact) and the page's modified time (for saves that keep
+  no snapshot, such as the builder when it is switched off). History times have one-second resolution.
+* The companion Pro features need free 4.17.0. They are guarded at run time and not listed in `Compat::REQUIRED_CLASSES`, so a
+  Pro add-on running beside an older free plugin keeps every existing tool.

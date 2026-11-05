@@ -295,7 +295,9 @@ final class ProAbilities
     {
         $ended = AgentSessions::end( (int) get_current_user_id() );
 
-        return null === $ended ? [ 'ended' => false, 'message' => 'There was no open batch.' ] : $ended + [ 'ended' => true, 'batch_id' => 'session-' . $ended['token'], 'message' => 'Batch ended. Undo it with undo-batch and this batch_id.' ];
+        return null === $ended
+            ? [ 'closed' => false, 'message' => 'There was no open batch.' ]
+            : [ 'closed' => true, 'batch_id' => 'session-' . $ended['token'], 'label' => $ended['label'], 'started' => $ended['started'], 'ended' => $ended['ended'], 'message' => 'Batch ended. Undo it with undo-batch and this batch_id.' ];
     }
 
     /** @param array<string,mixed> $args @return array<string,mixed>|\WP_Error */
