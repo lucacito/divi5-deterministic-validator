@@ -6,9 +6,11 @@ Stable tag:        0.13.0
 License:           GPLv2 or later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
-Pro add-on for JHMG AI Editor for Divi 5. Lets your AI assistant set the front page and menu, publish pages, add CSS, edit the live Divi header and footer, find and replace text across your pages, audit them for layout problems and broken links, build a whole site page by page and launch it in one undoable step, and lets you undo each change in one step.
+Pro add-on for JHMG AI Editor for Divi 5: Divi 5 sites that look designed, built in minutes, with undo for everything. Build a whole site page by page and launch it in one undoable step, restyle pages to another design, edit the live header and footer, find and replace across your pages, set the front page and menu, publish, manage colours, presets and WooCommerce products, and undo each change in one step.
 
 == Description ==
+
+Pro is for the moment after the first page: a whole site in one consistent design, built as drafts you launch in one previewed step, restyled in one call, and undone in one step if you change your mind. It works with the AI assistant you already use (over MCP or REST), and every change it writes is checked first.
 
 This is a separate plugin. It needs the free plugin "JHMG AI Editor for Divi 5" (version 4.9.0 or newer) and a licence from divi5lab.com. Without both, the Pro tools stay off.
 

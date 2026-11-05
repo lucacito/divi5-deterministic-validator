@@ -37,4 +37,11 @@ trait AdminActions
         wp_safe_redirect( add_query_arg( [ 'page' => 'ai-editor-divi5', 'tab' => 'pro', 'aied_pro_notice' => $notice ], admin_url( 'admin.php' ) ) );
         ( $this->terminate )();
     }
+
+    /** Redirect back to one tab of the plugin's admin page with a notice code, then stop. */
+    private function redirectToTab( string $tab, string $notice ): void
+    {
+        wp_safe_redirect( add_query_arg( [ 'page' => 'ai-editor-divi5', 'tab' => $tab, 'aied_pro_notice' => $notice ], admin_url( 'admin.php' ) ) );
+        ( $this->terminate )();
+    }
 }
