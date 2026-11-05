@@ -15,6 +15,11 @@ require_once __DIR__ . '/src/Settings/PhpProposals.php';
 AiEditorDivi5\Pro\Licensing::clear();
 // Per-user dismissal of the lapse notice.
 delete_metadata( 'user', 0, 'aied_pro_lapse_dismissed', '', true );
+delete_metadata( 'user', 0, 'aied_pro_whats_new_dismissed', '', true );
+// Options the companion features keep (explicit batch sessions, strict validation switch and its flagged list).
+foreach ( [ 'aied_pro_agent_sessions', 'aied_pro_strict_validation', 'aied_pro_strict_flags' ] as $aied_option ) {
+    delete_option( $aied_option );
+}
 AiEditorDivi5\Pro\Settings\PhpProposals::clear();
 AiEditorDivi5\Pro\Batch\BatchTable::drop();
 

@@ -43,7 +43,7 @@ final class HistorySources
     public static function names(): array
     {
         return [
-            self::ABILITY              => 'An AI agent calling an ability (for example Divi\'s own MCP)',
+            self::ABILITY              => 'An AI agent calling an ability (for example Divi\'s upcoming MCP)',
             self::APPLICATION_PASSWORD => 'A tool signed in with an application password',
             self::REST                 => 'Other requests to the WordPress REST API',
             self::BUILDER              => 'Divi\'s visual builder (WordPress revisions already cover these)',

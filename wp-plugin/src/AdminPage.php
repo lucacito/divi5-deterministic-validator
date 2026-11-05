@@ -31,6 +31,7 @@ final class AdminPage
         add_action('admin_post_ai_editor_divi5_review_done',        [$this, 'handleReviewDone']);
         add_action('admin_post_ai_editor_divi5_toggle_approval', [$this, 'handleToggleApproval']);
         add_action('admin_post_ai_editor_divi5_history_sources', [$this, 'handleHistorySources']);
+        add_action('admin_post_' . WhatsNew::ACTION, [$this, 'handleDismissWhatsNew']);
         add_action('wp_ajax_ai_editor_divi5_diagnose', [$this, 'handleDiagnose']);
         OAuthAdmin::registerHooks();
     }
@@ -134,6 +135,17 @@ final class AdminPage
         }
         HistorySources::save( $chosen );
         $this->redirect('settings', 'history_sources_saved');
+    }
+
+    /** "Got it" on the What's new panel: hidden for this user until the announcement's version changes. */
+    public function handleDismissWhatsNew(): void
+    {
+        $this->guard( WhatsNew::ACTION ); // guard() verifies the nonce via check_admin_referer().
+        $content = WhatsNew::content();
+        if ( null !== $content ) {
+            WhatsNew::dismiss( get_current_user_id(), $content['version'] );
+        }
+        $this->redirect('dashboard');
     }
 
     public function handleDismissProCard(): void
@@ -634,6 +646,38 @@ final class AdminPage
         <?php
     }
 
+    /**
+     * The "What's new" panel: the top of the plugin's own Dashboard tab and nowhere else (it is called from viewDashboard only,
+     * and is never an admin notice). Once per version per user; it carries no offer.
+     */
+    private function whatsNewCard(): void
+    {
+        $content = WhatsNew::content();
+        if ( ! WhatsNew::shouldShow( $content, get_user_meta( get_current_user_id(), WhatsNew::META, true ), current_user_can( 'edit_pages' ) ) ) {
+            return;
+        }
+        ?>
+        <div class="aied-card aied-whats-new">
+            <div class="aied-card__head">
+                <h3><?php echo esc_html( $content['title'] ); ?></h3>
+            </div>
+            <ul class="ul-disc">
+                <?php foreach ( $content['bullets'] as $bullet ) : ?>
+                    <li><?php echo esc_html( $bullet ); ?></li>
+                <?php endforeach; ?>
+            </ul>
+            <div class="aied-review__actions">
+                <a href="<?php echo esc_url( $content['link']['url'] ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $content['link']['label'] ); ?><span class="screen-reader-text"> <?php esc_html_e( '(opens in a new tab)', 'jhmg-ai-editor-for-divi-5' ); ?></span></a>
+                <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                    <input type="hidden" name="action" value="<?php echo esc_attr( WhatsNew::ACTION ); ?>">
+                    <?php wp_nonce_field( WhatsNew::ACTION ); ?>
+                    <button type="submit" class="button"><?php esc_html_e( 'Got it', 'jhmg-ai-editor-for-divi-5' ); ?></button>
+                </form>
+            </div>
+        </div>
+        <?php
+    }
+
     /** One line when another tool's Divi abilities are present: the plugin's guidance, checks and undo work with them. */
     private function companionNotice(): void
     {
@@ -653,6 +697,7 @@ final class AdminPage
         $progress = $this->setupProgress();
         $connected = (int) $summary['total'] > 0;
         ?>
+        <?php $this->whatsNewCard(); ?>
         <div class="aied-hello">
             <h1><?php esc_html_e( 'Welcome 👋', 'jhmg-ai-editor-for-divi-5' ); ?></h1>
             <p><?php esc_html_e( 'Edit your Divi 5 site by chatting with your AI assistant. Here’s what to do next.', 'jhmg-ai-editor-for-divi-5' ); ?></p>

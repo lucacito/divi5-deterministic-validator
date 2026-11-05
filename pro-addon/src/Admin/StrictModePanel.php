@@ -68,7 +68,7 @@ final class StrictModePanel
             <?php elseif ( 'strict_cleared' === $notice ) : ?>
                 <div class="notice notice-success inline"><p><?php esc_html_e( 'The list was cleared.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></p></div>
             <?php endif; ?>
-            <p><?php esc_html_e( 'When this is on, a Divi page saved by an AI tool (another plugin\'s ability such as Divi\'s own MCP, an application password or the REST API) is checked by the layout checker right after it is saved. A page that fails is listed here. Nothing is blocked, changed or rolled back, and no page content is stored: you see the page, where the change came from and the violation codes. A later valid save clears the entry. Off by default.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></p>
+            <p><?php esc_html_e( 'When this is on, a Divi page saved by an AI tool (another plugin\'s ability such as Divi\'s upcoming MCP, an application password or the REST API) is checked by the layout checker right after it is saved. A page that fails is listed here. Nothing is blocked, changed or rolled back, and no page content is stored: you see the page, where the change came from and the violation codes. A later valid save clears the entry. Off by default.', 'jhmg-ai-editor-for-divi-5-pro' ); ?></p>
             <?php if ( $canManage ) : ?>
                 <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                     <input type="hidden" name="action" value="<?php echo esc_attr( self::ACTION_SAVE ); ?>">

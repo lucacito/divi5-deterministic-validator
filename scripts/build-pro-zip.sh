@@ -28,6 +28,7 @@ trap 'rm -rf "$STAGE"' EXIT
 mkdir -p "$STAGE/$SLUG"
 cp "$SRC/$MAIN" "$SRC/uninstall.php" "$SRC/readme.txt" "$STAGE/$SLUG/"
 cp -R "$SRC/src" "$STAGE/$SLUG/src"
+cp -R "$SRC/data" "$STAGE/$SLUG/data" # the What's new announcement (data/whats-new.php) is read at run time
 find "$STAGE" -name '.DS_Store' -delete
 
 mkdir -p "$OUT_DIR"

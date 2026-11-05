@@ -75,6 +75,7 @@ final class Plugin
         ( new MegaMenuPanel( $unlocked, new MegaMenu\MegaMenuService( new ThemeBuilder\LayoutWriter( Batches::log() ) ) ) )->register();
 
         ( new Companion\FreeVersionNotice() )->register();
+        ( new Admin\WhatsNewPanel() )->register();
 
         // Abilities, batch undo for any source and strict validation need the free plugin 4.17.0 or later; without it they are not
         // registered and every other Pro tool is unaffected.

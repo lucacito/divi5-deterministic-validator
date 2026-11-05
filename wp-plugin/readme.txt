@@ -303,6 +303,7 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 * New: `get-design-languages` returns the ten design languages with colors, fonts, shape, spacing, what to avoid and contrast-checked pairings. `get-section-recipes` can also be filtered by density and persuasion stage. `get-variety-advice` finds repeated section layouts and names recipes to try.
 * New: `check-design` is an advisory check of any Divi 5 layout: text that cannot be read (only definite failures, with the colors and the ratio), Divi's grey placeholder images and stock button or tab bar, ids of colors and presets your site does not have, and repetitive sections. It never blocks or changes a page and says what it could not check.
 * New: undo for changes made by other tools. Before a Divi page is changed by another plugin's ability (such as Divi's upcoming MCP), an application password or the REST API, the previous version is kept and labelled with its source, and the Dashboard shows the source. Divi's visual builder is off by default because WordPress revisions already cover it. Choose the sources in Settings.
+* New: a short "What's new" panel at the top of the plugin's own Dashboard (once per version, dismissible per user). It never appears anywhere else in the admin.
 * Improved: the Settings screen has a short text you can paste into your assistant so it uses these abilities alongside Divi's upcoming MCP.
 * No change to the existing 21 tools, the REST routes or the ChatGPT OpenAPI spec; they are pinned byte for byte by tests.
 

@@ -58,6 +58,7 @@ require_once __DIR__ . '/LandingGuide.php';
 require_once __DIR__ . '/ImageGuide.php';
 require_once __DIR__ . '/UsageTracker.php';
 require_once __DIR__ . '/ReviewPrompt.php';
+require_once __DIR__ . '/WhatsNew.php';
 require_once __DIR__ . '/DiviCompat.php';
 require_once __DIR__ . '/GlobalStyles.php';
 require_once __DIR__ . '/ComponentReader.php';
