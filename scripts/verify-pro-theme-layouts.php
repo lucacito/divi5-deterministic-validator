@@ -225,7 +225,7 @@ try {
     }
     $check( null !== $t, 'list_theme_layouts lists the live template' );
     $check( null !== $t && $H === ( $t['header']['layout_id'] ?? null ) && $F === ( $t['footer']['layout_id'] ?? null ) && $B === ( $t['body']['layout_id'] ?? null ), 'header, footer and body layout ids are the fixtures\'' );
-    $check( null !== $t && true === ( $t['header']['editable'] ?? null ) && true === ( $t['footer']['editable'] ?? null ) && false === ( $t['body']['editable'] ?? null ), 'header and footer are editable, the body layout is listed but not editable' );
+    $check( null !== $t && true === ( $t['header']['editable'] ?? null ) && true === ( $t['footer']['editable'] ?? null ) && true === ( $t['body']['editable'] ?? null ), 'header, footer and body are editable' );
     $check( null !== $t && false === $t['default'] && [] === $t['use_on'], 'the throwaway template is not the default and applies to nothing' );
     $json = (string) wp_json_encode( $l['result'] );
     $check( false === strpos( $json, 'aied verify orphan' ) && false === strpos( $json, 'aied verify draft' ), 'the orphan header and the draft-only layout appear nowhere in the listing' );
@@ -263,6 +263,34 @@ try {
     clean_post_cache( $F );
     $check( true === ( $uf['result']['fully_undone'] ?? null ) && get_post( $F )->post_content === $layout( 'AIED-FOOTER-V1' ), 'undo_batch puts the footer back byte for byte' );
 
+    // ---- 5d2. a body layout with the post content module: read, replace byte-exact, edit, undo ---------------
+    $bodyNew = '<!-- wp:divi/placeholder --><!-- wp:divi/section {"builderVersion":"5.14.0"} -->' . "\n"
+        . '<!-- wp:divi/row {"module":{"advanced":{"columnStructure":{"desktop":{"value":"4_4"}},"flexColumnStructure":{"desktop":{"value":"equal-columns_1"}}},"decoration":{"layout":{"desktop":{"value":{"flexWrap":"nowrap"}}}}},"builderVersion":"5.14.0"} -->' . "\n"
+        . '<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}},"decoration":{"sizing":{"desktop":{"value":{"flexType":"24_24"}}}}},"builderVersion":"5.14.0"} -->' . "\n"
+        . '<!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"<p>AIED-BODY-V2</p>"}}},"builderVersion":"5.14.0"} /-->' . "\n\n"
+        . '<!-- wp:divi/post-content {"builderVersion":"5.14.0"} /-->' . "\n"
+        . '<!-- /wp:divi/column -->' . "\n" . '<!-- /wp:divi/row -->' . "\n" . '<!-- /wp:divi/section --><!-- /wp:divi/placeholder -->';
+    $rb = $call( 'list_theme_layouts', [ 'layout_id' => $B ] );
+    $check( null === $rb['error'] && 'body' === ( $rb['result']['layout']['kind'] ?? null ) && false !== strpos( (string) ( $rb['result']['layout']['content'] ?? '' ), 'AIED-BODY-V1' ), 'list_theme_layouts returns the body layout and its content' );
+    $dry = $call( 'update_theme_layout', [ 'layout_id' => $B, 'content' => $bodyNew, 'dry_run' => true ] );
+    clean_post_cache( $B );
+    $check( null === $dry['error'] && true === ( $dry['result']['dry_run'] ?? null ) && false !== strpos( get_post( $B )->post_content, 'AIED-BODY-V1' ), 'a dry run on the body previews and saves nothing' );
+    $ub = $call( 'update_theme_layout', [ 'layout_id' => $B, 'content' => $bodyNew ] );
+    clean_post_cache( $B );
+    $check( null === $ub['error'] && 'body' === ( $ub['result']['layout']['kind'] ?? null ) && get_post( $B )->post_content === $bodyNew, 'update_theme_layout on the body (with the post content module): stored byte for byte' );
+    $eb = $call( 'edit_theme_layout', [ 'layout_id' => $B, 'find' => 'AIED-BODY-V2', 'replace' => 'AIED-BODY-V3', 'expect_count' => 1 ] );
+    clean_post_cache( $B );
+    $check( null === $eb['error'] && false !== strpos( get_post( $B )->post_content, 'AIED-BODY-V3' ), 'edit_theme_layout on the body replaces exactly one occurrence' );
+    $ue = $call( 'undo_batch', [ 'batch_id' => (int) $eb['result']['batch']['id'] ] );
+    clean_post_cache( $B );
+    $check( true === ( $ue['result']['fully_undone'] ?? null ) && get_post( $B )->post_content === $bodyNew, 'undo_batch puts the body back to the previous edit byte for byte' );
+    $uu = $call( 'undo_batch', [ 'batch_id' => (int) $ub['result']['batch']['id'] ] );
+    clean_post_cache( $B );
+    $check( true === ( $uu['result']['fully_undone'] ?? null ) && get_post( $B )->post_content === $layout( 'AIED-BODY-V1' ), 'undo_batch puts the original body back byte for byte' );
+    $hb2 = $state( $B );
+    $badBody = $call( 'update_theme_layout', [ 'layout_id' => $B, 'content' => str_replace( 'wp:divi/text', 'wp:divi/not-a-module', $bodyNew ) ] );
+    $check( $errHas( $badBody, 'The layout was not saved' ) && $state( $B ) === $hb2, 'an invalid body is refused and the body is unchanged' );
+
     // ---- 5e. an invalid layout and custom CSS are refused, nothing changes -----------------------------------
     $hb  = $state( $H );
     $bad = $call( 'update_theme_layout', [ 'layout_id' => $H, 'content' => str_replace( 'wp:divi/heading', 'wp:divi/not-a-module', $layout( 'x' ) ) ] );
@@ -275,7 +303,7 @@ try {
     // ---- 5f. everything else is refused ----------------------------------------------------------------------
     $PG = (int) wp_insert_post( [ 'post_type' => 'page', 'post_status' => 'draft', 'post_title' => 'aied verify page', 'post_content' => wp_slash( $layout( 'AIED-PAGE-V1' ) ) ] );
     $created[] = $PG;
-    $refused = [ 'orphan header' => $O, 'draft-only layout' => $DL, 'body layout' => $B, 'template' => $T, 'live Theme Builder post' => $tb, 'ordinary post' => $P, 'page' => $PG ];
+    $refused = [ 'orphan header' => $O, 'draft-only layout' => $DL, 'template' => $T, 'live Theme Builder post' => $tb, 'ordinary post' => $P, 'page' => $PG ];
     foreach ( $refused as $name => $rid ) {
         $b = $state( $rid );
         foreach ( [
@@ -283,7 +311,7 @@ try {
             'update_theme_layout' => [ 'layout_id' => $rid, 'content' => $layout( 'Hijack' ) ],
             'edit_theme_layout'   => [ 'layout_id' => $rid, 'find' => 'AIED', 'replace' => 'X', 'expect_count' => 1 ],
         ] as $tool => $args ) {
-            $check( $errHas( $call( $tool, $args ), 'not an editable header or footer' ), "{$tool} on the {$name} is refused as not an editable header or footer" );
+            $check( $errHas( $call( $tool, $args ), 'not an editable header, footer or body' ), "{$tool} on the {$name} is refused as not an editable header, footer or body" );
         }
         $check( $state( $rid ) === $b && 0 === $state( $rid )['history'], "the {$name} is unchanged: same content, same post_modified, no history rows" );
     }

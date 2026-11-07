@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-/** Read-only: the live Theme Builder's templates with their header, footer and body layouts; one header or footer's content on request. */
+/** Read-only: the live Theme Builder's templates with their header, footer and body layouts; one layout's content on request. */
 final class ListThemeLayouts implements ProTool
 {
     public const NAME = 'list_theme_layouts';
@@ -32,11 +32,11 @@ final class ListThemeLayouts implements ProTool
     {
         return [
             'name'        => self::NAME,
-            'description' => 'List the live Divi Theme Builder templates and their header, footer and body layouts (read-only). With layout_id of a header or footer, also returns its content. Edit one with update_theme_layout or edit_theme_layout (dry_run first: it shows on every page).',
+            'description' => 'List the live Divi Theme Builder templates and their header, footer and body layouts (read-only). With layout_id of a header, footer or body, also returns its content. Edit one with update_theme_layout or edit_theme_layout (dry_run first: it shows on every page that uses the template).',
             'inputSchema' => [
                 'type'       => 'object',
                 'properties' => [
-                    'layout_id' => [ 'type' => 'integer', 'description' => 'Optional. A header or footer layout id from this list; adds its content to the answer' ],
+                    'layout_id' => [ 'type' => 'integer', 'description' => 'Optional. A header, footer or body layout id from this list; adds its content to the answer' ],
                 ],
                 'required'   => [],
             ],

@@ -61,11 +61,12 @@ class ThemeLayoutsTest extends TestCase
         $GLOBALS['__wp_can'] = true;
     }
 
-    public function testKindOfMapsOnlyHeaderAndFooter(): void
+    public function testKindOfMapsOnlyHeaderFooterAndBody(): void
     {
         $this->assertSame( 'header', ThemeLayouts::kindOf( 'et_header_layout' ) );
         $this->assertSame( 'footer', ThemeLayouts::kindOf( 'et_footer_layout' ) );
-        foreach ( [ 'et_body_layout', 'et_template', 'et_theme_builder', 'page', 'post', '' ] as $other ) {
+        $this->assertSame( 'body', ThemeLayouts::kindOf( 'et_body_layout' ) );
+        foreach ( [ 'et_template', 'et_theme_builder', 'page', 'post', '' ] as $other ) {
             $this->assertNull( ThemeLayouts::kindOf( $other ), $other );
         }
     }
@@ -177,7 +178,7 @@ class ThemeLayoutsTest extends TestCase
         $first = $l['templates'][0];
         $this->assertTrue( $first['header']['editable'] );
         $this->assertTrue( $first['footer']['editable'] );
-        $this->assertFalse( $first['body']['editable'], 'body layouts are listed but never editable' );
+        $this->assertTrue( $first['body']['editable'] );
         $second = $l['templates'][1];
         $this->assertArrayNotHasKey( 'footer', $second );
         $this->assertArrayNotHasKey( 'body', $second );
@@ -185,6 +186,14 @@ class ThemeLayoutsTest extends TestCase
         $GLOBALS['__wp_caps'] = [ 'edit_post' => false ];
         $l = ThemeLayouts::listing();
         $this->assertFalse( $l['templates'][0]['header']['editable'] );
+    }
+
+    public function testTheSiteWideSetLeavesTheBodyOutAndTheSingleLayoutSetIncludesIt(): void
+    {
+        $this->assertSame( [ 201 => 'header', 202 => 'footer' ], array_intersect_key( ThemeLayouts::liveLayoutKinds(), [ 201 => 1, 202 => 1, 203 => 1 ] ) );
+        $this->assertArrayNotHasKey( 203, ThemeLayouts::liveLayoutKinds(), 'find_replace_site and audit_site never walk a body' );
+        $this->assertSame( 'body', ThemeLayouts::editableLayoutKinds()[203] );
+        $this->assertSame( 'header', ThemeLayouts::editableLayoutKinds()[201] );
     }
 
     public function testUserMayWithFailsClosedAndAsksForTheThemeBuilderCapability(): void

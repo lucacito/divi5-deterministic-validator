@@ -67,7 +67,7 @@ class ThemeLayoutKindTest extends TestCase
     public function testAllowedNeedsTheToolsCapabilityAndALiveEditableLayout(): void
     {
         $this->assertTrue( $this->kind()->allowed( [ 'ref' => '201' ] ) );
-        $this->assertFalse( $this->kind()->allowed( [ 'ref' => '203' ] ), 'a body layout' );
+        $this->assertTrue( $this->kind()->allowed( [ 'ref' => '203' ] ), 'a live body layout' );
         $this->assertFalse( $this->kind()->allowed( [ 'ref' => '5' ] ), 'a page' );
         $GLOBALS['__wp_caps'] = [ 'edit_post' => true, 'edit_others_posts' => true ];
         $this->assertFalse( $this->kind()->allowed( [ 'ref' => '201' ] ), 'no edit_theme_options' );

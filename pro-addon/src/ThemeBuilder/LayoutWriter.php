@@ -26,9 +26,9 @@ final class LayoutWriter
     /** The shared gate rejects anything larger; this only bounds the argument before it is read. */
     public const MAX_BYTES = 1000000;
 
-    public const NOTE = 'A header or footer is shown on every page that uses its template. Divi\'s caches were cleared.';
+    public const NOTE = 'A header, footer or body is shown on every page that uses its template. Divi\'s caches were cleared.';
 
-    public const DRY_NOTE = 'A header or footer is shown on every page that uses its template. Nothing was saved.';
+    public const DRY_NOTE = 'A header, footer or body is shown on every page that uses its template. Nothing was saved.';
 
     /** @param (\Closure(int,string,string):array<string,mixed>)|null $write fn(layoutId, content, tool): HistoryService::write()'s result */
     public function __construct( private BatchLog $log, private ?\Closure $write = null )

@@ -173,13 +173,13 @@
     },
     {
         "name": "list_theme_layouts",
-        "description": "List the live Divi Theme Builder templates and their header, footer and body layouts (read-only). With layout_id of a header or footer, also returns its content. Edit one with update_theme_layout or edit_theme_layout (dry_run first: it shows on every page).",
+        "description": "List the live Divi Theme Builder templates and their header, footer and body layouts (read-only). With layout_id of a header, footer or body, also returns its content. Edit one with update_theme_layout or edit_theme_layout (dry_run first: it shows on every page that uses the template).",
         "inputSchema": {
             "type": "object",
             "properties": {
                 "layout_id": {
                     "type": "integer",
-                    "description": "Optional. A header or footer layout id from this list; adds its content to the answer"
+                    "description": "Optional. A header, footer or body layout id from this list; adds its content to the answer"
                 }
             },
             "required": []
@@ -188,17 +188,17 @@
     },
     {
         "name": "update_theme_layout",
-        "description": "Replace the content of a live Divi header or footer (layout_id from list_theme_layouts) with a new Divi 5 layout. Rejected with the exact violations unless it passes every check. It shows on every page: use dry_run=true first. Undoable.",
+        "description": "Replace the content of a live Divi header, footer or body (layout_id from list_theme_layouts) with a new Divi 5 layout. Rejected with the exact violations unless it passes every check. It shows on every page that uses the template: use dry_run=true first. Undoable.",
         "inputSchema": {
             "type": "object",
             "properties": {
                 "layout_id": {
                     "type": "integer",
-                    "description": "A header or footer layout id from list_theme_layouts"
+                    "description": "A header, footer or body layout id from list_theme_layouts"
                 },
                 "content": {
                     "type": "string",
-                    "description": "The full Divi 5 layout (block markup) for this header or footer"
+                    "description": "The full Divi 5 layout (block markup) for this layout"
                 },
                 "dry_run": {
                     "type": "boolean",
@@ -214,13 +214,13 @@
     },
     {
         "name": "edit_theme_layout",
-        "description": "Find and replace literal text inside a live Divi header or footer (layout_id from list_theme_layouts), leaving the rest untouched. The result must pass every layout check. It shows on every page: use dry_run=true first. Undoable.",
+        "description": "Find and replace literal text inside a live Divi header, footer or body (layout_id from list_theme_layouts), leaving the rest untouched. The result must pass every layout check. It shows on every page that uses the template: use dry_run=true first. Undoable.",
         "inputSchema": {
             "type": "object",
             "properties": {
                 "layout_id": {
                     "type": "integer",
-                    "description": "A header or footer layout id from list_theme_layouts"
+                    "description": "A header, footer or body layout id from list_theme_layouts"
                 },
                 "find": {
                     "type": "string",

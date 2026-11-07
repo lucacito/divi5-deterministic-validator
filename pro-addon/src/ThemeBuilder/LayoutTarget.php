@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * The one rule for "which post may a Pro layout tool read and edit": a header or footer layout that a template of
+ * The one rule for "which post may a Pro layout tool read and edit": a header, footer or body layout that a template of
  * the LIVE Divi Theme Builder uses, and only for a user who passes Divi's own Theme Builder bar. Pages are the free
  * plugin's job, so a page id is reported like any other post: not found. Nothing leaks about other post types.
  */
@@ -21,7 +21,7 @@ final class LayoutTarget
     public const NO_THEME_BUILDER_PERMISSION = 'You need Divi\'s Theme Builder permission (and the right to edit other people\'s posts) to use this tool.';
 
     /**
-     * @return array{post: ?\WP_Post, kind: ?string, error: ?string} kind is 'header' or 'footer'
+     * @return array{post: ?\WP_Post, kind: ?string, error: ?string} kind is 'header', 'footer' or 'body'
      */
     public static function resolve( int $id ): array
     {
@@ -30,11 +30,11 @@ final class LayoutTarget
             return self::fail( self::NOT_FOUND );
         }
         $postKind = ThemeLayouts::kindOf( (string) $post->post_type );
-        $kind     = null === $postKind ? null : ( ThemeLayouts::liveLayoutKinds()[ $id ] ?? null );
+        $kind     = null === $postKind ? null : ( ThemeLayouts::editableLayoutKinds()[ $id ] ?? null );
         if ( null === $kind || $postKind !== $kind || 'publish' !== $post->post_status ) {
             return self::fail( self::NOT_FOUND );
         }
-        // Divi's own bar (edit_others_posts and the Role Editor's 'theme_builder'); a header or footer shows on every page.
+        // Divi's own bar (edit_others_posts and the Role Editor's 'theme_builder'); a header or footer shows on every page and a body on every page the template covers.
         if ( ! current_user_can( 'edit_post', $id ) || ! ThemeLayouts::userMay() ) {
             return self::fail( self::FORBIDDEN );
         }
@@ -53,7 +53,7 @@ final class LayoutTarget
         self::assertMay();
         $r = self::resolve( $id );
         if ( self::NOT_FOUND === $r['error'] ) {
-            throw new \InvalidArgumentException( "Layout {$id} is not an editable header or footer of the live Theme Builder. Call list_theme_layouts to see the layout ids." );
+            throw new \InvalidArgumentException( "Layout {$id} is not an editable header, footer or body of the live Theme Builder. Call list_theme_layouts to see the layout ids." );
         }
         if ( null !== $r['error'] || null === $r['post'] || null === $r['kind'] ) {
             throw new \InvalidArgumentException( "You do not have permission to edit layout {$id}." );
