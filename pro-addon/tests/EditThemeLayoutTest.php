@@ -101,12 +101,12 @@ class EditThemeLayoutTest extends TestCase
 
     public function testOnlyLiveHeadersAndFootersCanBeEdited(): void
     {
-        foreach ( [ 5, 203, 204, 200, 9999 ] as $id ) {
+        foreach ( [ 5, 204, 200, 9999 ] as $id ) {
             try {
                 $this->tool->run( [ 'layout_id' => $id, 'find' => 'builderVersion', 'replace' => 'x', 'expect_count' => 99 ] );
                 $this->fail( "{$id} must be refused" );
             } catch ( \InvalidArgumentException $e ) {
-                $this->assertStringContainsString( 'not an editable header or footer', $e->getMessage(), (string) $id );
+                $this->assertStringContainsString( 'not an editable header, footer or body', $e->getMessage(), (string) $id );
             }
         }
         $this->assertSame( 0, $GLOBALS['__wp_update_calls'] );

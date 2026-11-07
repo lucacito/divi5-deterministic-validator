@@ -65,6 +65,21 @@ class LayoutTargetTest extends TestCase
         $this->assertSame( [ 202, 'footer', null ], [ $f['post']->ID, $f['kind'], $f['error'] ] );
     }
 
+    public function testALiveBodyLayoutIsResolvedAsABody(): void
+    {
+        $b = LayoutTarget::resolve( 203 );
+        $this->assertSame( [ 203, 'body', null ], [ $b['post']->ID, $b['kind'], $b['error'] ] );
+    }
+
+    public function testALiveBodyNeedsTheSameBarAsAHeader(): void
+    {
+        $GLOBALS['__wp_caps'] = [ 'edit_post' => true, 'edit_others_posts' => false ];
+        $this->assertSame( LayoutTarget::FORBIDDEN, LayoutTarget::resolve( 203 )['error'] );
+        $GLOBALS['__wp_caps'] = [];
+        $GLOBALS['__divi_role_allowed'] = false;
+        $this->assertSame( LayoutTarget::FORBIDDEN, LayoutTarget::resolve( 203 )['error'] );
+    }
+
     public function testALiveLayoutNeedsBothEditPostAndEditOthersPosts(): void
     {
         $GLOBALS['__wp_caps'] = [ 'edit_post' => true, 'edit_others_posts' => false ];
@@ -80,7 +95,6 @@ class LayoutTargetTest extends TestCase
     {
         return [
             [ 5, 'a page (the free plugin\'s job)' ],
-            [ 203, 'a body layout' ],
             [ 204, 'an orphaned header (no live template uses it)' ],
             [ 302, 'a header used only by the draft Theme Builder' ],
             [ 200, 'a live template' ],
@@ -107,7 +121,7 @@ class LayoutTargetTest extends TestCase
     public function testNotFoundEvenForAnAdministratorWhoCanDoEverything(): void
     {
         $GLOBALS['__wp_caps'] = [ 'edit_post' => true, 'edit_others_posts' => true, 'manage_options' => true, 'edit_theme_options' => true ];
-        $this->assertSame( LayoutTarget::NOT_FOUND, LayoutTarget::resolve( 203 )['error'] );
+        $this->assertNull( LayoutTarget::resolve( 203 )['error'], 'a live body is editable for an administrator' );
         $this->assertSame( LayoutTarget::NOT_FOUND, LayoutTarget::resolve( 204 )['error'] );
         $this->assertSame( LayoutTarget::NOT_FOUND, LayoutTarget::resolve( 5 )['error'] );
     }
@@ -145,7 +159,8 @@ class LayoutTargetTest extends TestCase
         $GLOBALS['__divi_role_allowed'] = false;
         $this->assertSame( LayoutTarget::FORBIDDEN, LayoutTarget::resolve( 201 )['error'] );
         $this->assertSame( LayoutTarget::FORBIDDEN, LayoutTarget::resolve( 202 )['error'] );
-        foreach ( [ 203, 204, 302, 200 ] as $id ) {
+        $this->assertSame( LayoutTarget::FORBIDDEN, LayoutTarget::resolve( 203 )['error'] );
+        foreach ( [ 204, 302, 200 ] as $id ) {
             $this->assertSame( LayoutTarget::NOT_FOUND, LayoutTarget::resolve( $id )['error'], (string) $id );
         }
     }

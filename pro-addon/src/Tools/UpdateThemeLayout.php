@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-/** Replace the whole content of a live header or footer. Validated, snapshotted, undoable; dry_run previews. */
+/** Replace the whole content of a live header, footer or body. Validated, snapshotted, undoable; dry_run previews. */
 final class UpdateThemeLayout implements ProTool
 {
     public const NAME = 'update_theme_layout';
@@ -40,12 +40,12 @@ final class UpdateThemeLayout implements ProTool
     {
         return [
             'name'        => self::NAME,
-            'description' => 'Replace the content of a live Divi header or footer (layout_id from list_theme_layouts) with a new Divi 5 layout. Rejected with the exact violations unless it passes every check. It shows on every page: use dry_run=true first. Undoable.',
+            'description' => 'Replace the content of a live Divi header, footer or body (layout_id from list_theme_layouts) with a new Divi 5 layout. Rejected with the exact violations unless it passes every check. It shows on every page that uses the template: use dry_run=true first. Undoable.',
             'inputSchema' => [
                 'type'       => 'object',
                 'properties' => [
-                    'layout_id' => [ 'type' => 'integer', 'description' => 'A header or footer layout id from list_theme_layouts' ],
-                    'content'   => [ 'type' => 'string', 'description' => 'The full Divi 5 layout (block markup) for this header or footer' ],
+                    'layout_id' => [ 'type' => 'integer', 'description' => 'A header, footer or body layout id from list_theme_layouts' ],
+                    'content'   => [ 'type' => 'string', 'description' => 'The full Divi 5 layout (block markup) for this layout' ],
                     'dry_run'   => [ 'type' => 'boolean', 'description' => 'Preview only; nothing is changed' ],
                 ],
                 'required'   => [ 'layout_id', 'content' ],

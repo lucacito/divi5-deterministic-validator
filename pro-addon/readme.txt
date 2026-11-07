@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Requires at least: 6.0
 Tested up to:      7.1
 Requires PHP:      8.1
-Stable tag:        0.14.0
+Stable tag:        0.14.1
 License:           GPLv2 or later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,9 +24,9 @@ Every change a Pro tool makes is recorded as a batch with an undo point. `undo_b
 * `publish_page` - publish or schedule a draft; preview first with `dry_run`.
 * `set_custom_css` - add CSS inside one clearly marked block of WordPress Additional CSS. Your own CSS is never touched.
 * `propose_php_snippet` - store PHP for you to review. Nothing is ever run, saved as a file or loaded by the plugin.
-* `list_theme_layouts` - list the live Divi Theme Builder templates and their header, footer and body layouts (read-only); with a header or footer id it also returns that layout's content.
-* `update_theme_layout` - replace the content of a live Divi header or footer with a new, checked Divi 5 layout. It shows on every page, so preview with `dry_run` first; undo restores the previous content.
-* `edit_theme_layout` - find and replace literal text inside a live Divi header or footer, with the same checks, `dry_run` preview and undo as `update_theme_layout`.
+* `list_theme_layouts` - list the live Divi Theme Builder templates and their header, footer and body layouts (read-only); with a header, footer or body id it also returns that layout's content.
+* `update_theme_layout` - replace the content of a live Divi header, footer or body with a new, checked Divi 5 layout. It shows on every page that uses the template, so preview with `dry_run` first; undo restores the previous content.
+* `edit_theme_layout` - find and replace literal text inside a live Divi header, footer or body, with the same checks, `dry_run` preview and undo as `update_theme_layout`.
 * `manage_theme_template` - enable or disable one live Divi Theme Builder template, or change where it applies. It affects the whole site, so every real run needs the token from a preview (`dry_run`). It cannot create or delete templates.
 * `find_replace_site` - replace literal text across your Divi 5 pages (and, with Theme Builder permission, the header and footer) as one undoable batch. You must preview first (`dry_run`) and repeat with the token; pages whose result would fail the layout checks are skipped; at most 50 items per run.
 * `audit_site` - a read-only check of your Divi 5 pages and header/footer: layout check violations (including custom code the plugin would not save), unknown preset or color ids, and internal links to missing or unpublished pages. 25 items per call. It never makes a remote request and never changes anything.
@@ -63,6 +63,9 @@ If the service cannot be reached, the Pro tools you already unlocked keep workin
 Deleting the plugin removes its own data (licence state, batch history, saved code proposals). It does not undo your site's front page, menu, CSS, page statuses, header or footer content or Theme Builder templates: undo those first if you want them back.
 
 == Changelog ==
+
+= 0.14.1 =
+* New: `list_theme_layouts`, `update_theme_layout` and `edit_theme_layout` now also work on the body layout of a live Theme Builder template (before, the body was listed as read-only). Same checks, `dry_run` preview and undo as the header and footer. `find_replace_site` and `audit_site` still only walk pages, the header and the footer, never a body.
 
 = 0.14.0 =
 * New: Pro abilities for the WordPress Abilities API (WordPress 6.9 and later), in the `jhmg-ai-editor-pro` category, so any assistant, including one working with Divi's upcoming MCP, can ask for them: `audit-site`, `design-review-site`, `find-replace-site`, `list-batches`, `start-batch`, `end-batch`, `undo-batch`, `get-mega-menu` and `set-mega-menu`. The plugin is designed to work alongside Divi's upcoming MCP and has not been tested against it yet, because it is not released.

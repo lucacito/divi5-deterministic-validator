@@ -59,7 +59,7 @@ class ListThemeLayoutsTest extends TestCase
         $this->assertSame( 1, $r['count'] );
         $this->assertSame( 201, $r['templates'][0]['header']['layout_id'] );
         $this->assertTrue( $r['templates'][0]['header']['editable'] );
-        $this->assertFalse( $r['templates'][0]['body']['editable'], 'a body layout is listed but never editable' );
+        $this->assertTrue( $r['templates'][0]['body']['editable'], 'a body layout is editable like a header' );
         $this->assertArrayNotHasKey( 'footer', $r['templates'][0] );
     }
 
@@ -69,15 +69,22 @@ class ListThemeLayoutsTest extends TestCase
         $this->assertSame( [ 'layout_id' => 201, 'kind' => 'header', 'title' => 'Post 201', 'content' => '<!-- wp:divi/placeholder --><!-- /wp:divi/placeholder -->' ], $r['layout'] );
     }
 
-    public function testAPageABodyLayoutAndAnUnknownIdAreRefusedAndNeverLeakContent(): void
+    public function testWithABodyIdItReturnsTheBodysContent(): void
     {
-        foreach ( [ 5, 203, 200, 9999 ] as $id ) {
+        $r = $this->tool->run( [ 'layout_id' => 203 ] );
+        $this->assertSame( 'body', $r['layout']['kind'] );
+        $this->assertSame( 203, $r['layout']['layout_id'] );
+    }
+
+    public function testAPageATemplateAndAnUnknownIdAreRefusedAndNeverLeakContent(): void
+    {
+        foreach ( [ 5, 200, 9999 ] as $id ) {
             try {
                 $this->tool->run( [ 'layout_id' => $id ] );
                 $this->fail( "layout {$id} must be refused" );
             } catch ( \InvalidArgumentException $e ) {
                 $this->assertStringNotContainsString( 'PAGE CONTENT', $e->getMessage() );
-                $this->assertStringContainsString( 'not an editable header or footer', $e->getMessage() );
+                $this->assertStringContainsString( 'not an editable header, footer or body', $e->getMessage() );
             }
         }
     }

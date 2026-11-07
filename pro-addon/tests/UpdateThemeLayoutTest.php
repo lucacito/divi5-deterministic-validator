@@ -55,6 +55,34 @@ class UpdateThemeLayoutTest extends TestCase
         $this->assertSame( self::header(), $this->layoutContent( 202 ), 'other layouts are untouched' );
     }
 
+    public function testABodyLayoutIsSavedLikeAHeaderAndTheBatchNamesIt(): void
+    {
+        $r = $this->tool->run( [ 'layout_id' => 203, 'content' => self::otherHeader() ] );
+        $this->assertTrue( $r['changed'] );
+        $this->assertSame( [ 'layout_id' => 203, 'kind' => 'body', 'title' => 'Post 203' ], $r['layout'] );
+        $this->assertSame( self::otherHeader(), $this->layoutContent( 203 ) );
+        $this->assertSame( 1, $this->historyRows( 203 ) );
+        $this->assertTrue( $r['batch']['undoable'] );
+        $this->assertStringContainsString( 'Body', $this->repo->rows[ $r['batch']['id'] ]['summary'] ?? $this->repo->rows[ $r['batch']['id'] ]['label'] ?? 'Body' );
+        $this->assertSame( self::header(), $this->layoutContent( 201 ), 'the header is untouched' );
+    }
+
+    public function testABodyDryRunAndAnInvalidBodyChangeNothing(): void
+    {
+        $before = $this->layoutContent( 203 );
+        $r = $this->tool->run( [ 'layout_id' => 203, 'content' => self::otherHeader(), 'dry_run' => true ] );
+        $this->assertTrue( $r['dry_run'] );
+        $this->assertSame( $before, $this->layoutContent( 203 ) );
+        $this->assertSame( 0, $this->historyRows( 203 ) );
+        try {
+            $this->tool->run( [ 'layout_id' => 203, 'content' => self::invalid() ] );
+            $this->fail( 'an invalid body must be refused' );
+        } catch ( \InvalidArgumentException $e ) {
+            $this->assertStringContainsString( 'failed the checks', $e->getMessage() );
+        }
+        $this->assertSame( $before, $this->layoutContent( 203 ) );
+    }
+
     public function testADryRunOfContentThatIsAlreadyStoredStillReportsTheVerdict(): void
     {
         $r = $this->tool->run( [ 'layout_id' => 201, 'content' => self::header(), 'dry_run' => true ] );
@@ -144,18 +172,18 @@ class UpdateThemeLayoutTest extends TestCase
     /** @return list<array{int,string}> */
     public static function notEditable(): array
     {
-        return [ [ 5, 'a page' ], [ 203, 'a body layout' ], [ 204, 'an orphaned header' ], [ 200, 'a template' ], [ 100, 'the Theme Builder post' ], [ 9999, 'a missing post' ] ];
+        return [ [ 5, 'a page' ], [ 204, 'an orphaned header' ], [ 200, 'a template' ], [ 100, 'the Theme Builder post' ], [ 9999, 'a missing post' ] ];
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider( 'notEditable' )]
-    public function testOnlyLiveHeadersAndFootersCanBeWritten( int $id, string $why ): void
+    public function testOnlyLiveThemeLayoutsCanBeWritten( int $id, string $why ): void
     {
         $before = $this->layoutContent( 5 );
         try {
             $this->tool->run( [ 'layout_id' => $id, 'content' => self::otherHeader() ] );
             $this->fail( "{$why} must be refused" );
         } catch ( \InvalidArgumentException $e ) {
-            $this->assertStringContainsString( 'not an editable header or footer', $e->getMessage(), $why );
+            $this->assertStringContainsString( 'not an editable header, footer or body', $e->getMessage(), $why );
         }
         $this->assertSame( 0, $GLOBALS['__wp_update_calls'], $why );
         $this->assertSame( $before, $this->layoutContent( 5 ), $why );

@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-/** Find and replace literal text inside a live header or footer, with the free plugin's exact-replace rules. Same gate, history and undo as update_theme_layout. */
+/** Find and replace literal text inside a live header, footer or body, with the free plugin's exact-replace rules. Same gate, history and undo as update_theme_layout. */
 final class EditThemeLayout implements ProTool
 {
     public const NAME = 'edit_theme_layout';
@@ -41,11 +41,11 @@ final class EditThemeLayout implements ProTool
     {
         return [
             'name'        => self::NAME,
-            'description' => 'Find and replace literal text inside a live Divi header or footer (layout_id from list_theme_layouts), leaving the rest untouched. The result must pass every layout check. It shows on every page: use dry_run=true first. Undoable.',
+            'description' => 'Find and replace literal text inside a live Divi header, footer or body (layout_id from list_theme_layouts), leaving the rest untouched. The result must pass every layout check. It shows on every page that uses the template: use dry_run=true first. Undoable.',
             'inputSchema' => [
                 'type'       => 'object',
                 'properties' => [
-                    'layout_id'    => [ 'type' => 'integer', 'description' => 'A header or footer layout id from list_theme_layouts' ],
+                    'layout_id'    => [ 'type' => 'integer', 'description' => 'A header, footer or body layout id from list_theme_layouts' ],
                     'find'         => [ 'type' => 'string', 'description' => 'Exact text to find (must match one place, unless expect_count says otherwise)' ],
                     'replace'      => [ 'type' => 'string', 'description' => 'Text to put in its place (may be empty)' ],
                     'expect_count' => [ 'type' => 'integer', 'description' => 'Optional. Replace all of exactly this many matches' ],

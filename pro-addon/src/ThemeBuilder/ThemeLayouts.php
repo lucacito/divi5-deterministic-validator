@@ -21,12 +21,13 @@ final class ThemeLayouts
 
     private const TEMPLATE = 'et_template';
 
-    /** 'header' / 'footer' for the two editable layout post types, null for everything else. */
+    /** 'header' / 'footer' / 'body' for the three editable layout post types, null for everything else. */
     public static function kindOf( string $postType ): ?string
     {
         return match ( $postType ) {
             self::HEADER => 'header',
             self::FOOTER => 'footer',
+            self::BODY   => 'body',
             default      => null,
         };
     }
@@ -115,15 +116,36 @@ final class ThemeLayouts
     }
 
     /**
-     * Layout id => 'header'|'footer' for every layout the plugin may edit (used by a live template).
+     * Layout id => 'header'|'footer' for the layouts the SITE-WIDE tools (find_replace_site, audit_site) walk. The body is
+     * deliberately not here: a body replaces what a template shows around the page content, and a site-wide replace over
+     * every body would reach further than the owner asked. Single-layout tools use editableLayoutKinds().
      *
      * @return array<int,string>
      */
     public static function liveLayoutKinds(): array
     {
+        return self::kindsOf( [ 'header', 'footer' ] );
+    }
+
+    /**
+     * Layout id => 'header'|'footer'|'body' for every layout the single-layout tools (list, update, edit) may touch.
+     *
+     * @return array<int,string>
+     */
+    public static function editableLayoutKinds(): array
+    {
+        return self::kindsOf( [ 'header', 'footer', 'body' ] );
+    }
+
+    /**
+     * @param list<string> $wanted
+     * @return array<int,string>
+     */
+    private static function kindsOf( array $wanted ): array
+    {
         $kinds = [];
         foreach ( self::liveTemplates() as $template ) {
-            foreach ( [ 'header', 'footer' ] as $kind ) {
+            foreach ( $wanted as $kind ) {
                 if ( null !== $template[ $kind ] ) {
                     $kinds[ (int) $template[ $kind ]['layout_id'] ] = $kind;
                 }
@@ -135,7 +157,7 @@ final class ThemeLayouts
 
     /**
      * What `list_theme_layouts` returns: absent layouts are omitted, each present layout says whether
-     * the current user can edit it, and body layouts are listed but never editable.
+     * and the current user can edit it.
      *
      * @return array{templates: list<array<string,mixed>>, count: int, note: ?string}
      */
@@ -148,7 +170,7 @@ final class ThemeLayouts
                     unset( $template[ $kind ] );
                     continue;
                 }
-                $template[ $kind ]['editable'] = 'body' !== $kind && current_user_can( 'edit_post', (int) $template[ $kind ]['layout_id'] ) && self::userMay();
+                $template[ $kind ]['editable'] = current_user_can( 'edit_post', (int) $template[ $kind ]['layout_id'] ) && self::userMay();
             }
             $templates[] = $template;
         }
