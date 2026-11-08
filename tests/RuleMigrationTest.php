@@ -511,7 +511,7 @@ class RuleMigrationTest extends TestCase
     {
         $file = __DIR__ . '/../wp-plugin/data/section-recipes.json';
         clearstatcache();
-        $this->assertLessThan( self::SIZE_BEFORE_RULES, filesize( $file ), 'migrating the rules and chips shrinks the recipe file (rules and chips plan, Task 5)' );
+        $this->assertLessThan( self::SIZE_BEFORE_RULES, \Divi5Validator\Tests\Support\RecipeFileSize::withoutLoopRecipes(), 'migrating the rules and chips shrinks the recipe file (rules and chips plan, Task 5)' );
         $this->assertLessThan( 700 * 1024, filesize( $file ), 'the 700 KB bound holds' );
     }
 

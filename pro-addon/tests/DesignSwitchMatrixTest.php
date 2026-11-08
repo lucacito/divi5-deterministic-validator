@@ -107,10 +107,10 @@ class DesignSwitchMatrixTest extends TestCase
     public function testDefaultDesignsMatrix(): void
     {
         $r = DesignSwitchMatrixOne::result();
-        $this->assertSame( 71 * 10 * 10, $r['switches'] );
+        $this->assertSame( 73 * 10 * 10, $r['switches'] );
         $this->assertSame( [], $r['unclassified'], 'every difference is one of D1-D5' );
         // Plan 6,571 (prototype): minus 23 slider switches (the accepted tie), plus 1 identity switch (the shortcut).
-        $this->assertSame( 6549, $r['identical'] );
+        $this->assertSame( 6749, $r['identical'] );
         $this->assertCaps( [ 'D1' => 458, 'D2' => 48, 'D3' => 36, 'D4' => 9, 'D5' => 0 ], DesignDiffClassifier::tally( $r['firsts'] ) );
         $this->assertSame( [ 'D1' => 458, 'D2' => 48, 'D3' => 36, 'D4' => 9 ], $r['combos'], 'no switch mixes two classes' );
         // Leaves, not switches (review fix 3): an extra wrong leaf inside an already classified switch moves a total.
@@ -183,9 +183,9 @@ class DesignSwitchMatrixTest extends TestCase
                 }
             }
         }
-        $this->assertSame( 71 * 8 * 8, $n );
+        $this->assertSame( 73 * 8 * 8, $n );
         $this->assertSame( [], $bad, 'every difference is one of D1-D5' );
-        $this->assertSame( 4199, $same );
+        $this->assertSame( 4327, $same );
         $this->assertCaps( [ 'D1' => 249, 'D2' => 30, 'D3' => 32, 'D4' => 30, 'D5' => 4 ], DesignDiffClassifier::tally( $firsts ) );
         // D1 = 687 text body + 12 text h4 + 24 + 24 slider fonts; D2 = 150 x 4 corners; D3 = 192 group fills;
         // D4 = 30 x 4 card radius corners + 12 frame widths + 6 frame styles; D5 = 6 blocks.

@@ -204,7 +204,7 @@ class CardMigrationReportTest extends TestCase
     public function test_the_shipped_recipes_have_these_group_classes(): void
     {
         $groups = $this->counts( $this->shipped(), 'divi/group' );
-        $this->assertSame( 359, array_sum( $groups ), 'divi/group blocks in the shipped recipes' );
+        $this->assertSame( 363, array_sum( $groups ), 'divi/group blocks in the shipped recipes' );
         $this->assertSame(
             // Tasks 7 and 8 marked every group card (9, now plain wrappers: the kit owns their padding) and panel (10, padded
             // wrappers: a panel keeps its own padding); a marked block is classified by the decoration it has left. Kit-limits
@@ -215,7 +215,7 @@ class CardMigrationReportTest extends TestCase
             // is gone, padding stays: padded wrappers, MARKED=rule|rule-strong) and the 5 portfolio tags (chip: padded wrappers, MARKED=chip),
             // so 53 -> 84 padded wrappers, no `rule` group and 14 -> 9 chips are left (the 4 step badges, 4 timeline dots and the
             // filled "[Most popular]" badge: shape decisions that stay literal).
-            [ 'chip' => 9, 'grid-cell' => 40, 'padded-wrapper' => 84, 'wrapper' => 226 ],
+            [ 'chip' => 9, 'grid-cell' => 40, 'padded-wrapper' => 84, 'wrapper' => 230 ],
             $groups
         );
     }
@@ -243,8 +243,8 @@ class CardMigrationReportTest extends TestCase
     public function test_the_marked_blocks_are_counted_and_fill_only_columns_are_unlisted(): void
     {
         $rows = $this->shipped();
-        $this->assertSame( 32, count( array_filter( $rows, fn ( $r ) => in_array( $r['marked'], [ 'card', 'panel' ], true ) ) ), 'the blocks migrated so far (card plan Tasks 7, 8 and 9, kit-limits Tasks 5 and 6)' );
-        $this->assertStringContainsString( 'marked (carry an aied card/panel marker): 32 blocks', \CardReport::render( $rows, false ) );
+        $this->assertSame( 34, count( array_filter( $rows, fn ( $r ) => in_array( $r['marked'], [ 'card', 'panel' ], true ) ) ), 'the blocks migrated so far (card plan Tasks 7, 8 and 9, kit-limits Tasks 5 and 6, plus the two Loop Builder recipes)' );
+        $this->assertStringContainsString( 'marked (carry an aied card/panel marker): 34 blocks', \CardReport::render( $rows, false ) );
         // Rules and chips Task 5: the 26 top-rule groups (rule or rule-strong), the 3 top-rule columns of proof-press-quotes (rule-strong)
         // and the 5 portfolio tags (chip) are reported too, the icon chips and the dividers are not group/column blocks.
         $this->assertSame( 34, count( array_filter( $rows, fn ( $r ) => in_array( $r['marked'], [ 'rule', 'rule-strong', 'chip' ], true ) ) ) );
@@ -292,6 +292,8 @@ class CardMigrationReportTest extends TestCase
             'icon-values divi/column#1 marked card',
             'icon-values divi/column#2 marked card',
             'icon-values divi/column#3 marked card',
+            'loop-posts-cards divi/group#1 marked card',
+            'loop-products-grid divi/group#1 marked card',
             'pricing-three-tier divi/column#1 marked card',
             'pricing-three-tier divi/column#2 marked card',
             'pricing-three-tier divi/column#3 marked card',

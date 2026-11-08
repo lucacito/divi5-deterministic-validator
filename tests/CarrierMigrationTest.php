@@ -383,7 +383,7 @@ class CarrierMigrationTest extends TestCase
     {
         $file = __DIR__ . '/../wp-plugin/data/section-recipes.json';
         clearstatcache();
-        $this->assertLessThan( self::SIZE_BEFORE_CARRIERS, filesize( $file ), 'migrating the carriers shrinks the recipe file (carriers adapter plan, Task 5)' );
+        $this->assertLessThan( self::SIZE_BEFORE_CARRIERS, \Divi5Validator\Tests\Support\RecipeFileSize::withoutLoopRecipes(), 'migrating the carriers shrinks the recipe file (carriers adapter plan, Task 5)' );
         $this->assertLessThan( 700 * 1024, filesize( $file ), 'the 700 KB bound holds' );
     }
 

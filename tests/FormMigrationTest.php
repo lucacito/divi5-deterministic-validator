@@ -393,7 +393,7 @@ class FormMigrationTest extends TestCase
     {
         $file = __DIR__ . '/../wp-plugin/data/section-recipes.json';
         clearstatcache();
-        $this->assertLessThan( self::SIZE_BEFORE_FORMS, filesize( $file ), 'migrating the four forms shrinks the recipe file (forms adapter plan, Task 4)' );
+        $this->assertLessThan( self::SIZE_BEFORE_FORMS, \Divi5Validator\Tests\Support\RecipeFileSize::withoutLoopRecipes(), 'migrating the four forms shrinks the recipe file (forms adapter plan, Task 4)' );
         $this->assertLessThan( 700 * 1024, filesize( $file ), 'the 700 KB bound holds' );
     }
 

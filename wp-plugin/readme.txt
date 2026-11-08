@@ -17,7 +17,7 @@ The Model Context Protocol (MCP) server runs on your own site. The plugin uses n
 
 = Designed to work alongside Divi's upcoming MCP =
 
-The plugin is designed to work alongside Divi's upcoming MCP and any other tool that builds Divi pages. It has not been tested against Divi's MCP yet, because that has not been released. It adds design guidance before the build (10 design languages and 71 proven section patterns), a fixed-rule check after it, and undo for every change, whichever tool made it. These are offered as WordPress abilities on WordPress 6.9 and later. It never wraps, blocks or changes another tool's abilities.
+The plugin is designed to work alongside Divi's upcoming MCP and any other tool that builds Divi pages. It has not been tested against Divi's MCP yet, because that has not been released. It adds design guidance before the build (10 design languages and 73 proven section patterns), a fixed-rule check after it, and undo for every change, whichever tool made it. These are offered as WordPress abilities on WordPress 6.9 and later. It never wraps, blocks or changes another tool's abilities.
 
 = How it works =
 
@@ -81,7 +81,7 @@ What to expect: your assistant, not the plugin, looks at the picture or reads th
 * **Small changes stay small.** Changing one phone number replaces just that text. The rest of the page is not rebuilt or touched.
 * **Preview before saving.** Your AI can ask what a change would do before it saves anything. It gets a list of the blocks and settings that would change, and the checker's verdict. Nothing is saved until it repeats the request for real.
 * **Matches your site.** Your AI can look up your site's own Divi colors and presets and reuse them, and it is told when a page uses one your site does not have. It cannot create or change presets or colors: that stays in Divi's Visual Builder.
-* **Proven building blocks.** 71 ready-made section patterns (heroes, feature grids, testimonials, contact forms and more), each one tested against the checker, plus landing-page guidance on the order of sections, headlines and calls to action.
+* **Proven building blocks.** 73 ready-made section patterns (heroes, feature grids, testimonials, contact forms and more), each one tested against the checker, plus landing-page guidance on the order of sections, headlines and calls to action.
 * **Consistent looks.** Ten design languages (editorial, glass dark, organic warm, tech mono and more) and 40 style kits set the exact look of buttons, cards, accordions, toggles, contact forms and image corners, so a whole page matches.
 * **Sensible images.** The AI looks in your Media Library first. When nothing there fits, it uses a built-in pack of 44 original images that ships with the plugin.
 * **One-click undo.** The previous version of each page or Divi Project the AI changes is kept (up to the last 10). Restore it from the plugin's Dashboard with one click, or just ask your AI to undo.
@@ -125,7 +125,7 @@ Guides that help the AI build good pages:
 * `get_style_guide`: how to build styled Divi 5 layouts, using real Divi 5 settings.
 * `get_landing_guide`: how to build a landing page that turns visitors into customers.
 * `get_site_guide`: how to plan a site with several pages that link to each other.
-* `get_section_recipes`: the 71 ready-made section patterns.
+* `get_section_recipes`: the 73 ready-made section patterns.
 * `get_image_guide`: how to pick the right image for each section, including the built-in image pack.
 
 Images:
@@ -253,7 +253,7 @@ It is built for one job: editing Divi 5 layouts safely on a live site. It knows 
 
 = Do I need this if I use Divi's MCP? =
 
-Divi has announced its own MCP, which is not released yet, so this plugin has not been tested against it. A builder builds pages. This plugin is designed to add what a builder does not: ten design languages and 71 proven section patterns to design from, a deterministic checker that refuses a broken layout with the exact reason, an advisory design check (readability, Divi's stock look, repeated sections), and undo for every change, even ones made by other tools. The idea is to use both: ask your assistant to read this plugin's design guidance before it builds, build with any tool, then run the design check and fix what it finds.
+Divi has announced its own MCP, which is not released yet, so this plugin has not been tested against it. A builder builds pages. This plugin is designed to add what a builder does not: ten design languages and 73 proven section patterns to design from, a deterministic checker that refuses a broken layout with the exact reason, an advisory design check (readability, Divi's stock look, repeated sections), and undo for every change, even ones made by other tools. The idea is to use both: ask your assistant to read this plugin's design guidance before it builds, build with any tool, then run the design check and fix what it finds.
 
 = Is this an MCP server for Divi? =
 

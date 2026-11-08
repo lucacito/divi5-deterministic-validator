@@ -118,7 +118,7 @@ class DesignInventoryTest extends TestCase
 
     public function testTheRecipeTokenInventory(): void
     {
-        $this->assertCount( 71, self::recipes() );
+        $this->assertCount( 73, self::recipes() );
 
         $colour = 0;
         $colourAt = [];
@@ -149,14 +149,14 @@ class DesignInventoryTest extends TestCase
             $markers += (int) preg_match_all( '/"aied":\{/', $raw );
         }
 
-        $this->assertSame( 860, $colour, 'colour tokens (whole values)' );
-        $this->assertSame( [ 'color' => 781, 'value' => 79 ], $colourAt, 'at keys color and value only' );
+        $this->assertSame( 871, $colour, 'colour tokens (whole values)' );
+        $this->assertSame( [ 'color' => 792, 'value' => 79 ], $colourAt, 'at keys color and value only' );
         $this->assertSame( 0, $alpha, 'no alpha colour token in a recipe body' );
-        $this->assertSame( 628, $font, 'font tokens' );
-        $this->assertSame( [ 'family' => 628 ], $fontAt, 'all at key family' );
-        $this->assertSame( 860 + 628, $anyToken, 'no colour or font token sits anywhere but a whole value at those keys' );
-        $this->assertSame( 11, $media, '{{aied:kit:radius-media}} image tokens' );
-        $this->assertSame( 405, $markers, 'aied markers (kit, type, rhythm)' );
+        $this->assertSame( 641, $font, 'font tokens' );
+        $this->assertSame( [ 'family' => 641 ], $fontAt, 'all at key family' );
+        $this->assertSame( 871 + 641, $anyToken, 'no colour or font token sits anywhere but a whole value at those keys' );
+        $this->assertSame( 13, $media, '{{aied:kit:radius-media}} image tokens' );
+        $this->assertSame( 418, $markers, 'aied markers (kit, type, rhythm)' );
     }
 
     /**

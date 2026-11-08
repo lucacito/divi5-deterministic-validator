@@ -101,7 +101,7 @@ class DesignSwitchScorerLockstepTest extends TestCase
                 $this->assertSame( array_values( array_filter( $y, $keep ) ), $fx, "$recipe editorial>$l" );
             }
         }
-        $this->assertSame( 710, $pairs );
+        $this->assertSame( 730, $pairs );
         $this->assertSame( 0, $excluded );
         $this->assertGreaterThan( 10000, $checks );
     }

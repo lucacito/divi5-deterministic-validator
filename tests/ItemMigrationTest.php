@@ -394,7 +394,7 @@ class ItemMigrationTest extends TestCase
     {
         $file = __DIR__ . '/../wp-plugin/data/section-recipes.json';
         clearstatcache();
-        $this->assertLessThan( self::SIZE_BEFORE_ITEMS, filesize( $file ), 'migrating the accordion and toggles shrinks the recipe file (accordion adapter plan, Task 6)' );
+        $this->assertLessThan( self::SIZE_BEFORE_ITEMS, \Divi5Validator\Tests\Support\RecipeFileSize::withoutLoopRecipes(), 'migrating the accordion and toggles shrinks the recipe file (accordion adapter plan, Task 6)' );
         $this->assertLessThan( 700 * 1024, filesize( $file ), 'the 700 KB bound holds' );
     }
 

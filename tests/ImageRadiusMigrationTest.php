@@ -49,6 +49,8 @@ class ImageRadiusMigrationTest extends TestCase
 
     /** The 11 kit-like images (a corner decision), pinned as literals: recipe => image indexes (among that recipe's divi/image blocks). */
     private const TOKEN_IMAGES = [
+        'loop-posts-cards'         => [ 0 ],
+        'loop-products-grid'       => [ 0 ],
         'portfolio-featured-grid'  => [ 0, 1, 2, 3, 4 ],
         'hero-product-glow'        => [ 0 ],
         'testimonials-avatar-grid' => [ 0, 1, 2 ],
@@ -187,8 +189,8 @@ class ImageRadiusMigrationTest extends TestCase
         $this->assertSame( 0, self::BESPOKE_IMAGES_MAX, 'cap 0' );
         $this->assertSame( [], self::BESPOKE_IMAGES );
         $this->assertSame( [], $other );
-        $this->assertSame( 25, $radii, '25 image radii in the library (the audit of the image radius spec; every breakpoint counted)' );
-        $this->assertSame( [ 'token' => 11, 'flush' => 10, 'shaped' => 4 ], $counts );
+        $this->assertSame( 27, $radii, '27 image radii in the library (the audit of the image radius spec; every breakpoint counted)' );
+        $this->assertSame( [ 'token' => 13, 'flush' => 10, 'shaped' => 4 ], $counts );
     }
 
     public function testTheElevenKitLikeImagesCarryTheMediaToken(): void
@@ -245,7 +247,7 @@ class ImageRadiusMigrationTest extends TestCase
                 }
             }
         }
-        $this->assertSame( 11 * 40, $checked );
+        $this->assertSame( 13 * 40, $checked );
     }
 
     public function testTheTokenIsTheWholeRadiusValueWithNoCornerOrSyncKeyBesideIt(): void
@@ -274,7 +276,7 @@ class ImageRadiusMigrationTest extends TestCase
         $this->assertSame( [ 'divi/image' ], KitAdapters::MEDIA_RADIUS_BLOCKS );
         $file = __DIR__ . '/../wp-plugin/data/section-recipes.json';
         clearstatcache();
-        $this->assertLessThan( self::SIZE_BEFORE, filesize( $file ), 'the token is shorter than the four literal corners: the recipe file shrinks' );
+        $this->assertLessThan( self::SIZE_BEFORE, \Divi5Validator\Tests\Support\RecipeFileSize::withoutLoopRecipes(), 'the token is shorter than the four literal corners: the recipe file shrinks' );
         $this->assertLessThan( 700 * 1024, filesize( $file ) );
     }
 }

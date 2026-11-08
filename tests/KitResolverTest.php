@@ -304,7 +304,7 @@ class KitResolverTest extends TestCase
     public function testEveryShippedRecipeStillParsesUnchanged(): void
     {
         $kit = $this->kit();
-        $this->assertSame( 71, count( SectionRecipes::names() ) );
+        $this->assertSame( 73, count( SectionRecipes::names() ) );
         foreach ( SectionRecipes::names() as $name ) {
             $raw = (string) SectionRecipes::rawMarkup( $name );
             if ( [] !== KitResolver::leftovers( $raw ) ) {

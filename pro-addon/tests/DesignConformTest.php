@@ -77,7 +77,7 @@ class DesignConformTest extends TestCase
     private const LEAVE_CORPUS_REPORT = 'f0d4d31c0ffb2b43604359a8d1d370cbbc8c71a96a5a8c2b7baeee5fe1b82b68';
 
     /** sha256 over every recipe built under editorial and switched (`leave`) to the ten default designs (710 switches). */
-    private const LEAVE_LIBRARY_CONTENT = 'c4fa6d7dd2ad66cda2185e44c2207f26663fee7a16c27466acabfa14e5efc9ad';
+    private const LEAVE_LIBRARY_CONTENT = '56983eb94a5509a50e71cdc38381ee02bb2f5a7ba2659ce520fcd5115bb6f343';
 
     /** @var list<array{name:string, from:Design, markup:string}>|null */
     private static ?array $corpus = null;
@@ -169,7 +169,7 @@ class DesignConformTest extends TestCase
                 $this->assertSame( $leave->content, DesignSwitch::run( $page, $from, self::own( $l ), 'conform' )->content, "$recipe -> $l" );
             }
         }
-        $this->assertSame( 710, $n );
+        $this->assertSame( 730, $n );
         $this->assertSame( self::LEAVE_LIBRARY_CONTENT, hash_final( $library ) );
     }
 

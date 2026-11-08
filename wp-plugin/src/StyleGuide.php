@@ -258,6 +258,8 @@ Where a token goes (each rendered): a heading's `title.innerContent.desktop.valu
 <!-- /wp:divi/row -->
 <!-- /wp:divi/section -->
 ```
+Ready-made: `get_section_recipes` with name `loop-posts-cards` (the newest posts as cards) or `loop-products-grid` (the newest WooCommerce products); each already follows the design language and the style kit. Use one copy of a recipe per page: its loop id is fixed. A save or `validate_layout` answer carries `advisories.loops` when a `loop_` token sits outside a loop that is switched on, or a `post_` token inside one.
+
 Style the cards with the modules' own settings, as on any page (the design language and the style kit apply as usual). Check the page with
 `validate_layout` or `dry_run` before saving; the answer lists the first wrong setting.
 MD;

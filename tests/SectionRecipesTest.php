@@ -118,7 +118,7 @@ class SectionRecipesTest extends TestCase
                 if (in_array($b->name(), ['divi/row', 'divi/row-inner'], true)) {
                     $rows[] = count(array_filter($b->children(), static fn ($c): bool => in_array($c->name(), ['divi/column', 'divi/column-inner'], true)));
                 }
-                $collection = $collection || in_array($b->name(), $collections, true);
+                $collection = $collection || in_array($b->name(), $collections, true) || 'on' === $b->attr('module.advanced.loop.desktop.value.enable'); // a Loop Builder loop renders a grid of posts or products too
             });
             $fp = DesignVariety::fingerprints('<!-- wp:divi/placeholder -->' . (string) SectionRecipes::recipe($name) . '<!-- /wp:divi/placeholder -->');
             $this->assertCount(1, $fp, $name);

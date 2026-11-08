@@ -184,6 +184,42 @@ try {
     $r = $render( $save( $wrap( $group( $loopOn( [ 'subTypes' => [ [ 'value' => 'manufacturer', 'label' => 'M' ] ], 'orderBy' => 'name', 'order' => 'ascending', 'postPerPage' => '6' ] ), $heading( 'loop_post_title' ) ) ), 'name order' ) );
     $check( [ 'aied verify loop Alpha Fryers', 'aied verify loop Bayou Boilers', 'aied verify loop Gulf Mixers', 'aied verify loop Mid Grills', 'aied verify loop Palm Slicers', 'aied verify loop Zeta Ovens' ] === $headings( $r['html'] ), 'orderBy name + order ascending sorts the items by name' );
 
+    // ---- the shipped loop recipes, served by the real pipeline and rendered ---------------------------------------------------
+    $h3s = static fn( string $html ): array => preg_match_all( '#<h3[^>]*>(.*?)</h3>#s', $html, $m ) ? array_map( static fn( $x ) => trim( html_entity_decode( wp_strip_all_tags( $x ) ) ), $m[1] ) : [];
+    foreach ( [ 'loop-posts-cards' => [ 'post', 3 ], 'loop-products-grid' => [ 'product', 4 ] ] as $recipe => [ $type, $max ] ) {
+        if ( 'product' === $type && ! function_exists( 'wc_get_product' ) ) {
+            WP_CLI::log( "SKIP  {$recipe}: WooCommerce is not active here" );
+            continue;
+        }
+        $want = get_posts( [ 'post_type' => $type, 'post_status' => 'publish', 'numberposts' => $max, 'orderby' => 'date', 'order' => 'DESC', 'suppress_filters' => true ] );
+        $check( count( $want ) >= 2, "{$recipe}: the dev site has at least two published {$type}s to loop over (" . count( $want ) . ')' );
+        foreach ( [ 'the default look' => [ null, null ], 'brutalist-flat' => [ 'brutalist-flat', null ] ] as $look => [ $lang, $kit ] ) {
+            $markup = \AiEditorDivi5\WP\SectionRecipes::recipe( $recipe, $lang, $kit );
+            $check( is_string( $markup ) && LayoutGate::check( $markup )->isValid(), "{$recipe} under {$look}: the served recipe passes the layout gate" );
+            $check( is_string( $markup ) && false === strpos( $markup, '{{aied:' ) && false !== strpos( $markup, 'loop_' ), "{$recipe} under {$look}: tokens resolved, the loop tokens kept" );
+            $r = $render( $save( (string) $markup, "{$recipe} {$look}" ) );
+            $titles = $h3s( $r['html'] );
+            $check( '' === $r['threw'], "{$recipe} under {$look}: Divi renders it without throwing" . ( '' !== $r['threw'] ? ' (' . $r['threw'] . ')' : '' ) );
+            $check( array_map( static fn( $p ) => $p->post_title, $want ) === $titles, "{$recipe} under {$look}: one card per {$type}, newest first, with its own title (" . count( $titles ) . ' cards)' );
+            $check( false === strpos( $r['html'], '$variable(' ) && false === strpos( $r['html'], 'No Results Found' ), "{$recipe} under {$look}: no raw token and no empty-loop notice on the page" );
+            preg_match_all( '#<a[^>]+class="[^"]*et_pb_button[^"]*"[^>]+href="([^"]+)"#', $r['html'], $btn );
+            $hrefs   = array_values( array_filter( array_map( 'html_entity_decode', $btn[1] ?? [] ), static fn( $u ) => '#' !== $u ) );
+            $links   = array_map( 'get_permalink', $want );
+            $check( array_values( array_intersect( $hrefs, $links ) ) === $links, "{$recipe} under {$look}: each card's button links to its own {$type}" );
+            preg_match_all( '#<img[^>]+>#', $r['html'], $imgs );
+            $check( count( $imgs[0] ) === count( $want ), "{$recipe} under {$look}: one picture per card (" . count( $imgs[0] ) . ' found)' );
+            if ( 'product' === $type ) {
+                $texts = wp_strip_all_tags( $r['html'] );
+                $ok    = true;
+                foreach ( $want as $p ) {
+                    $price = wc_get_product( $p->ID )->get_price();
+                    $ok    = $ok && '' !== (string) $price && false !== strpos( html_entity_decode( $texts ), (string) wc_format_decimal( $price, wc_get_price_decimals() ) );
+                }
+                $check( $ok, "{$recipe} under {$look}: every card shows its product's current price" );
+            }
+        }
+    }
+
     // ---- what the validator refuses, and why --------------------------------------------------------------------------------
     $refused = [
         'metaQuery as a string'  => [ $loopOn( [ 'metaQuery' => '' ] ), 'throws' ],

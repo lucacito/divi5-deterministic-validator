@@ -166,6 +166,6 @@ final class CarrierBudgetTest extends TestCase
 
     public function testTheRecipeFileDoesNotGrow(): void
     {
-        $this->assertLessThanOrEqual( 652430, filesize( __DIR__ . '/../wp-plugin/data/section-recipes.json' ), 'section-recipes.json (the migration only shrinks it)' );
+        $this->assertLessThanOrEqual( 652430, \Divi5Validator\Tests\Support\RecipeFileSize::withoutLoopRecipes(), 'section-recipes.json (the migration only shrinks it)' );
     }
 }

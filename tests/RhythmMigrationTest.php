@@ -118,6 +118,8 @@ class RhythmMigrationTest extends TestCase
         'features-bento|divi/section|0'             => 'section',
         'features-zigzag|divi/section|0'            => 'section',
         'list-icon-dividers|divi/section|0'         => 'section',
+        'loop-posts-cards|divi/section|0'           => 'section',
+        'loop-products-grid|divi/section|0'         => 'section',
         'checklist-two-column|divi/section|0'       => 'section',
         'steps-numbered|divi/section|0'             => 'section',
         'steps-horizontal|divi/section|0'           => 'section',
@@ -382,10 +384,10 @@ class RhythmMigrationTest extends TestCase
         ksort( $pinned );
         ksort( $found );
         $this->assertSame( $pinned, $found, 'exactly these sections carry a rhythm marker, with this role' );
-        $this->assertCount( 46, $found );
+        $this->assertCount( 48, $found );
         $spelled = array_sum( array_map( static fn ( array $r ): int => substr_count( (string) $r['markup'], '"aied":{"rhythm":' ), self::library() ) );
-        $this->assertSame( 46, $spelled, 'every marker is spelled the one way, as a top-level key' );
-        $this->assertSame( [ 'open' => 7, 'section' => 38, 'tight' => 1 ], ( static function ( array $c ): array { ksort( $c ); return $c; } )( array_count_values( $found ) ) );
+        $this->assertSame( 48, $spelled, 'every marker is spelled the one way, as a top-level key' );
+        $this->assertSame( [ 'open' => 7, 'section' => 40, 'tight' => 1 ], ( static function ( array $c ): array { ksort( $c ); return $c; } )( array_count_values( $found ) ) );
         foreach ( RhythmAudit::sections( self::library() ) as $r ) {
             $key = RhythmAudit::key( $r );
             if ( $r['marked'] ) {
@@ -408,7 +410,7 @@ class RhythmMigrationTest extends TestCase
         foreach ( self::library() as $recipe ) {
             $problems = array_merge( $problems, self::ownPaddingProblems( (string) $recipe['name'], (string) $recipe['markup'], $checked ) );
         }
-        $this->assertSame( 46, $checked, 'every rhythm marker is checked for its own padding' );
+        $this->assertSame( 48, $checked, 'every rhythm marker is checked for its own padding' );
         $this->assertSame( [], $problems, 'a marked section keeps its own top, bottom or syncVertical (Ruling 4)' );
     }
 
@@ -434,7 +436,7 @@ class RhythmMigrationTest extends TestCase
                 }
             }
         }
-        $this->assertSame( 46, $sections, 'the merge trap walks all 46 rhythm markers' );
+        $this->assertSame( 48, $sections, 'the merge trap walks all 48 rhythm markers' );
         $this->assertSame( [], array_slice( array_values( array_unique( $problems ) ), 0, 40 ), 'a marked section keeps everything but the padding the language writes' );
     }
 
@@ -522,7 +524,7 @@ class RhythmMigrationTest extends TestCase
                 $this->assertTrue( $result->isValid(), "$label must pass the layout gate, got: $codes" );
             }
         }
-        $this->assertSame( 46, $recipes, 'the recipes with a rhythm marker' );
+        $this->assertSame( 48, $recipes, 'the recipes with a rhythm marker' );
     }
 
     public function testNoMarkerTokenOrLeftoverReachesServedMarkup(): void
@@ -540,13 +542,13 @@ class RhythmMigrationTest extends TestCase
                 ++$served;
             }
         }
-        $this->assertSame( 71 * 11, $served );
+        $this->assertSame( 73 * 11, $served );
     }
 
     public function testRecipesFileIsSmallerThanBeforeTheRhythmMarkers(): void
     {
         clearstatcache();
-        $this->assertLessThan( self::SIZE_BEFORE_RHYTHM, filesize( self::FILE ), 'migrating the section padding shrinks the recipe file (rhythm adapter plan, Task 5)' );
+        $this->assertLessThan( self::SIZE_BEFORE_RHYTHM, \Divi5Validator\Tests\Support\RecipeFileSize::withoutLoopRecipes(), 'migrating the section padding shrinks the recipe file (rhythm adapter plan, Task 5)' );
         $this->assertLessThan( 700 * 1024, filesize( self::FILE ), 'the 700 KB bound holds' );
     }
 
@@ -579,7 +581,7 @@ class RhythmMigrationTest extends TestCase
                 }
             }
         }
-        $this->assertSame( 46, $checked );
+        $this->assertSame( 48, $checked );
         $this->assertSame( [], $problems );
         // The phrases catch the wording they were written for, and leave the library's own clauses alone.
         foreach ( [ '120px top and bottom padding', 'a padding of 80px', 'with 96 px padding' ] as $hit ) {

@@ -126,7 +126,7 @@ class RecipeLibraryTest extends TestCase
     private const BESPOKE_CARDS_MAX = 0;
 
     /** Every card surface the report found when the card adapter started (Task 2): each one is either marked or listed. */
-    private const CARD_SURFACES_KNOWN = 32;
+    private const CARD_SURFACES_KNOWN = 34; // 32 + the looped card of loop-posts-cards and of loop-products-grid
 
     /**
      * Keys a marked card's `module.decoration` may keep besides the ones the kit's patch writes: structure, never card
@@ -368,7 +368,9 @@ class RecipeLibraryTest extends TestCase
     private static function literalColours( string $markup ): array
     {
         $bad = [];
-        if ( str_contains( $markup, '$variable(' ) ) {
+        // A Loop Builder token (type content, name loop_...) cites no colour; every other $variable( is a site-specific global id.
+        $withoutLoopTokens = (string) preg_replace( '/\$variable\(\{(?:"|\\\\u0022|\\\\")type(?:"|\\\\u0022|\\\\"):(?:"|\\\\u0022|\\\\")content(?:"|\\\\u0022|\\\\"),(?:"|\\\\u0022|\\\\")value(?:"|\\\\u0022|\\\\"):\{(?:"|\\\\u0022|\\\\")name(?:"|\\\\u0022|\\\\"):(?:"|\\\\u0022|\\\\")loop_[a-z0-9_]+(?:"|\\\\u0022|\\\\"),.*?\)\$/s', '', $markup );
+        if ( str_contains( $withoutLoopTokens, '$variable(' ) ) {
             $bad[] = '$variable(...) (a site-specific global colour id)';
         }
         preg_match_all( '/#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)/', $markup, $m );
@@ -401,6 +403,8 @@ class RecipeLibraryTest extends TestCase
         // The checker itself.
         $this->assertSame( [ '#0cf57e', 'rgba(42,42,42,0.85)' ], self::literalColours( '"a":"#0cf57e","b":"#FFFFFF","c":"rgba(42,42,42,0.85)","d":"RGBA(255,255,255,0)","e":"rgba(0,0,0,0.4)","f":"#000"' ) );
         $this->assertNotSame( [], self::literalColours( '"c":"$variable({"type":1})$"' ) );
+        $this->assertSame( [], self::literalColours( '"t":"$variable({\\u0022type\\u0022:\\u0022content\\u0022,\\u0022value\\u0022:{\\u0022name\\u0022:\\u0022loop_post_title\\u0022,\\u0022settings\\u0022:{}}})$"' ), 'a Loop Builder token cites no colour' );
+        $this->assertNotSame( [], self::literalColours( '"t":"$variable({\\u0022type\\u0022:\\u0022color\\u0022,\\u0022value\\u0022:{\\u0022name\\u0022:\\u0022gcid-x\\u0022,\\u0022settings\\u0022:{}}})$"' ), 'a global colour id is still refused' );
     }
 
     /**
@@ -541,12 +545,12 @@ class RecipeLibraryTest extends TestCase
             }
         }
         $this->assertSame( 0, count( self::BESPOKE_BUTTONS ), 'shrink-only by test: no recipe button is bespoke any more, and none may be added' );
-        $this->assertSame( 28, $total, 'the recipes hold 28 buttons (update this count with the recipes)' );
+        $this->assertSame( 32, $total, 'the recipes hold 32 buttons (update this count with the recipes)' ); // 28 + the two Loop Builder recipes' card and all-link buttons (loop-posts-cards, loop-products-grid)
         $this->assertSame( array_keys( self::BESPOKE_BUTTONS ), $bespoke, 'every bespoke entry names a real button that is still bespoke' );
         $this->assertSame( $total - count( self::BESPOKE_BUTTONS ), $migrated );
         $file = __DIR__ . '/../wp-plugin/data/section-recipes.json';
         clearstatcache();
-        $this->assertLessThan( self::SIZE_BEFORE_KITS, filesize( $file ), 'the recipe file ends smaller than before the kits (spec section 4)' );
+        $this->assertLessThan( self::SIZE_BEFORE_KITS, \Divi5Validator\Tests\Support\RecipeFileSize::withoutLoopRecipes(), 'the recipe file ends smaller than before the kits (spec section 4)' );
         $this->assertLessThan( 700 * 1024, filesize( $file ), 'the 700 KB bound holds' );
     }
 
@@ -639,7 +643,7 @@ class RecipeLibraryTest extends TestCase
                 }
             }
         }
-        $this->assertSame( 28, $checked, 'every kit marker is checked (update with the recipes)' );
+        $this->assertSame( 32, $checked, 'every kit marker is checked (update with the recipes)' );
         $this->assertSame( [], $problems, 'a button\'s "on" must name the band it really sits on, or the kit picks unreadable colours' );
     }
 
@@ -1167,28 +1171,28 @@ class RecipeLibraryTest extends TestCase
     {
         $file = __DIR__ . '/../wp-plugin/data/section-recipes.json';
         clearstatcache();
-        $this->assertLessThan( self::SIZE_BEFORE_CARDS, filesize( $file ), 'the recipe file ends smaller than before the card adapter (spec section 4)' );
+        $this->assertLessThan( self::SIZE_BEFORE_CARDS, \Divi5Validator\Tests\Support\RecipeFileSize::withoutLoopRecipes(), 'the recipe file ends smaller than before the card adapter (spec section 4)' );
     }
 
     public function testRecipesFileIsSmallerThanBeforeTheGrounds(): void
     {
         $file = __DIR__ . '/../wp-plugin/data/section-recipes.json';
         clearstatcache();
-        $this->assertLessThan( self::SIZE_BEFORE_GROUNDS, filesize( $file ), 'the recipe file ends smaller than before the grounds and panel buttons (kit-limits spec section 4)' );
+        $this->assertLessThan( self::SIZE_BEFORE_GROUNDS, \Divi5Validator\Tests\Support\RecipeFileSize::withoutLoopRecipes(), 'the recipe file ends smaller than before the grounds and panel buttons (kit-limits spec section 4)' );
     }
 
     public function testRecipesFileIsSmallerThanBeforeTheFeaturedPlanGround(): void
     {
         $file = __DIR__ . '/../wp-plugin/data/section-recipes.json';
         clearstatcache();
-        $this->assertLessThan( self::SIZE_BEFORE_FEATURED, filesize( $file ), 'the featured plan\'s own fill, frame, shadow and padding moved to the kit (kit-limits spec section 4)' );
+        $this->assertLessThan( self::SIZE_BEFORE_FEATURED, \Divi5Validator\Tests\Support\RecipeFileSize::withoutLoopRecipes(), 'the featured plan\'s own fill, frame, shadow and padding moved to the kit (kit-limits spec section 4)' );
     }
 
     public function testRecipesFileIsSmallerThanBeforeTheColumnCards(): void
     {
         $file = __DIR__ . '/../wp-plugin/data/section-recipes.json';
         clearstatcache();
-        $this->assertLessThan( self::SIZE_BEFORE_COLUMNS, filesize( $file ), 'migrating the column cards shrinks the recipe file (card adapter plan, Task 9)' );
+        $this->assertLessThan( self::SIZE_BEFORE_COLUMNS, \Divi5Validator\Tests\Support\RecipeFileSize::withoutLoopRecipes(), 'migrating the column cards shrinks the recipe file (card adapter plan, Task 9)' );
     }
 
     /**
@@ -1794,8 +1798,9 @@ class RecipeLibraryTest extends TestCase
         // plus the 24 recipes that carry rules or chips: the 21 rule recipes and the 3 chip recipes, 45 minus the 12 that already counted
         // for another marker (rules and chips Task 5; icon-values is both a card and a chip recipe),
         // plus the 4 carrier recipes (carriers adapter, plan 2026-10-24, Task 5): testimonial, blurb-grid, stats-counter-band and
-        // blog-feed join; icon-values, the fifth carrier recipe, already counted (45 -> 49).
-        $this->assertSame( 49, $checked, 'the recipes with a kit marker (button, card, item, form, rule, chip or carrier)' );
+        // blog-feed join; icon-values, the fifth carrier recipe, already counted (45 -> 49),
+        // plus the two Loop Builder recipes, loop-posts-cards and loop-products-grid (49 -> 51).
+        $this->assertSame( 51, $checked, 'the recipes with a kit marker (button, card, item, form, rule, chip or carrier)' );
     }
 
     public function testRecipesWithoutPairsAreOnlyTheFrozenBaselineAndItOnlyShrinks(): void

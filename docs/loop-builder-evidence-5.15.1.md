@@ -58,3 +58,18 @@ Loop pagination (`loop_pagination_*`, the page parameter named by `loopId`), ACF
 menu-item loops and `current_page` on a real archive, loops inside Theme Builder templates, WooCommerce archive add-to-cart in a loop, the
 Visual Builder's own display of a looped page, whether a hand-written `loopId` survives the builder's duplicate-id repair on save
 (`LoopIdDeduplicationUtils`, which runs on a builder save). The guide says to use a unique id per loop.
+
+
+## Recipes and the token advisory (2026-11-07)
+
+`make verify-loop-builder` also renders the two shipped loop recipes (`loop-posts-cards`, `loop-products-grid`) as served by
+`SectionRecipes::recipe` under the default look and brutalist-flat, on this site's own newest posts and products: one card per item,
+newest first, each with its own title, picture and link (price on the products); the featured-image and product tokens
+(`loop_post_featured_image`, `loop_product_post_featured_image`, `loop_product_title` as alt text, `loop_product_price_current`,
+`loop_product_post_link_url`) are proven here by that render. 70 checks, 0 FAIL. `node scripts/verify-recipes.cjs --names
+loop-posts-cards,loop-products-grid --languages default,editorial,glass-dark,organic-warm,tech-mono,playful-pastel,corporate-trust,soft-saas,bold-vibrant,brutalist-flat,luxe`
+renders both at 1280/900/400 with contrast measured: 66 PASS, 0 FAIL.
+
+`LoopAdvisory` states only what section "Tokens" above proves: a `loop_` token outside a switched-on loop renders nothing, and
+`post_title` inside a loop shows the page's title. Other `post_` tokens are flagged by the same mechanism (they read the current
+page), not by their own render.
