@@ -66,6 +66,9 @@ final class LoopRulesTest extends TestCase
         yield 'loopId int'          => [array_merge($g, ['loopId' => 5])];
         yield 'queryType unknown'   => [array_merge($g, ['queryType' => 'products'])];
         yield 'queryType array'     => [array_merge($g, ['queryType' => ['post_types']])];
+        yield 'queryType bare repeater' => [array_merge($g, ['queryType' => 'repeater_'])];
+        yield 'queryType repeater upper' => [array_merge($g, ['queryType' => 'repeater_Team'])];
+        yield 'queryType repeater space' => [array_merge($g, ['queryType' => 'repeater_my team'])];
         yield 'order array (500)'   => [array_merge($g, ['order' => ['descending']])];
         yield 'order desc'          => [array_merge($g, ['order' => 'desc'])];
         yield 'order true'          => [array_merge($g, ['order' => true])];
@@ -94,6 +97,40 @@ final class LoopRulesTest extends TestCase
         $this->assertContains(Validator::E_INVALID_LOOP_SETTING, self::codes(self::page($loop)));
     }
 
+    /** "terms" is read by Divi as post_taxonomies (live render, probe 2026-11-08); repeater_<field> is Divi's ACF repeater query. */
+    public function testTheTermsAliasAndRepeaterQueryTypesAreValid(): void
+    {
+        $terms = array_merge(self::good(), ['queryType' => 'terms', 'subTypes' => [['value' => 'category', 'label' => 'Categories']], 'orderBy' => 'name']);
+        $this->assertSame([], self::codes(self::page($terms)));
+        foreach (['repeater_team', 'repeater_team_members', 'repeater_team-2'] as $type) {
+            $this->assertSame([], self::codes(self::page(array_merge(self::good(), ['queryType' => $type, 'subTypes' => []]))), $type);
+        }
+    }
+
+    /** @return iterable<string, array{mixed, bool}> */
+    public static function targetLoops(): iterable
+    {
+        yield 'loop id'        => ['loop-spike0001', true];
+        yield 'main query'     => ['main_query', true];
+        yield 'empty string'   => ['', true];
+        yield 'integer'        => [5, true];
+        yield 'true'           => [true, true];
+        yield 'list (500)'     => [['loop-spike0001'], false];
+        yield 'object (500)'   => [['a' => 'loop-spike0001'], false];
+    }
+
+    /** A Post Navigation module paging a loop: an array or object targetLoop is a TypeError for the whole page (probe 2026-11-08). */
+    #[\PHPUnit\Framework\Attributes\DataProvider('targetLoops')]
+    public function testThePostNavigationTargetLoop(mixed $value, bool $valid): void
+    {
+        $nav = ['module' => ['advanced' => ['targetLoop' => ['desktop' => ['value' => $value]]]], 'builderVersion' => '5.8.0'];
+        $page = '<!-- wp:divi/section {"builderVersion":"5.8.0"} --><!-- wp:divi/row {"builderVersion":"5.8.0"} --><!-- wp:divi/column {"builderVersion":"5.8.0"} -->'
+            . '<!-- wp:divi/post-nav ' . json_encode($nav, JSON_UNESCAPED_SLASHES) . ' /-->'
+            . '<!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section -->';
+        $codes = self::codes($page);
+        $this->assertSame($valid ? [] : ['INVALID_LOOP_SETTING'], $codes);
+    }
+
     public function testAMetaQueryListIsValid(): void
     {
         $mq = [['id' => 'mq1', 'metaKey' => '_thumbnail_id', 'metaValue' => '', 'compare' => 'EXISTS', 'type' => 'CHAR']];
@@ -119,5 +156,16 @@ final class LoopRulesTest extends TestCase
         $bad = '$variable({"type":"content","value":{"name":"loop_post_title","settings":{}}})';
         $this->assertContains(Validator::E_MALFORMED_DYNAMIC_TOKEN, self::codes(self::page(self::good(), $bad)));
         $this->assertContains(Validator::E_MALFORMED_DYNAMIC_TOKEN, self::codes(self::page(self::good(), '<p>' . $ok . ' ' . $bad . '</p>')));
+    }
+
+    /** A token with plain quotes inside a block comment is not JSON; the refusal says how to write it (dogfood round, 2026-11-08). */
+    public function testARawQuoteTokenIsRefusedWithAHowToFix(): void
+    {
+        $page = '<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"$variable({"type":"content","value":{"name":"loop_post_title","settings":{}}})$"}}}} /-->';
+        $v    = (new Validator())->validateContent($page)->violations();
+        $this->assertSame('BLOCK_PARSE_ERROR', $v[0]->code());
+        $this->assertStringContainsString('\\u0022', $v[0]->message());
+        $plain = '<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"broken"}}} /-->';
+        $this->assertStringNotContainsString('u0022', (new Validator())->validateContent($plain)->violations()[0]->message());
     }
 }

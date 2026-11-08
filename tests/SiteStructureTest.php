@@ -48,11 +48,38 @@ class SiteStructureTest extends TestCase
 
     // ---- parseInclude -------------------------------------------------------------------------
 
-    public function testParseIncludeDefaultsToEverySection(): void
+    public function testParseIncludeDefaultsToEverySectionButTheTwoLongOnes(): void
     {
         foreach ( [ null, '', [] ] as $empty ) {
-            $this->assertSame( SiteStructure::SECTIONS, SiteStructure::parseInclude( $empty ) );
+            $this->assertSame( SiteStructure::DEFAULT_SECTIONS, SiteStructure::parseInclude( $empty ) );
         }
+        $this->assertSame( [ 'menus', 'terms' ], array_values( array_diff( SiteStructure::SECTIONS, SiteStructure::DEFAULT_SECTIONS ) ) );
+        $this->assertSame( [ 'menus', 'terms' ], SiteStructure::parseInclude( 'terms,menus' ), 'section order is kept' );
+    }
+
+    public function testMenusAndTermsAreAskedForByNameAndListOnlyIdsAndNames(): void
+    {
+        $r = $this->readers( [
+            'menus' => static fn () => [ [ 'id' => '35', 'name' => 'Main', 'slug' => 'main', 'items' => 15, 'locations' => [ 'primary' ], 'content' => 'NEVER SHOWN' ] ],
+            'terms' => static fn () => [ 'category' => [ [ 'id' => '4', 'name' => 'News', 'slug' => 'news', 'count' => 9, 'parent' => '0', 'description' => 'NEVER SHOWN' ] ] ],
+        ] );
+        $this->assertArrayNotHasKey( 'menus', SiteStructure::catalogWith( $r ) );
+        $d = SiteStructure::catalogWith( $r, [ 'menus', 'terms' ] );
+        $this->assertSame( [ [ 'id' => '35', 'name' => 'Main', 'slug' => 'main', 'items' => 15, 'locations' => [ 'primary' ] ] ], $d['menus']['items'] );
+        $this->assertSame( [ [ 'name' => 'category', 'terms' => [ [ 'id' => '4', 'name' => 'News', 'slug' => 'news', 'count' => 9, 'parent' => '0' ] ] ] ], $d['terms']['taxonomies'] );
+        $this->assertStringNotContainsString( 'NEVER SHOWN', (string) json_encode( $d ) );
+        $d = SiteStructure::catalogWith( $this->readers( [ 'menus' => null, 'terms' => static fn () => throw new \RuntimeException( 'x' ) ] ), [ 'menus', 'terms' ] );
+        $this->assertSame( [], $d['menus']['items'] );
+        $this->assertSame( [], $d['terms']['taxonomies'] );
+        $this->assertCount( 2, $d['notes'] );
+    }
+
+    public function testTermsAreCappedPerTaxonomy(): void
+    {
+        $many = array_map( static fn ( int $i ): array => [ 'id' => (string) $i, 'name' => "T$i", 'slug' => "t$i", 'count' => 0, 'parent' => '0' ], range( 1, SiteStructure::MAX_TERMS_PER_TAXONOMY + 5 ) );
+        $d    = SiteStructure::catalogWith( $this->readers( [ 'terms' => static fn () => [ 'tag' => $many ] ] ), [ 'terms' ] );
+        $this->assertCount( SiteStructure::MAX_TERMS_PER_TAXONOMY, $d['terms']['taxonomies'][0]['terms'] );
+        $this->assertTrue( $d['truncated'] );
     }
 
     public function testParseIncludeAcceptsAListOrACommaStringAndKeepsSectionOrder(): void

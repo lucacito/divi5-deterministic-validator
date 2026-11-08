@@ -83,7 +83,10 @@ final class BlockParser
                 if ($jsonStr !== '' && $jsonStr !== '{}') {
                     $attrs = json_decode($jsonStr, associative: true);
                     if ($attrs === null && json_last_error() !== JSON_ERROR_NONE) {
-                        $errors[] = "Invalid JSON in block wp:$name at offset $start: " . json_last_error_msg();
+                        $hint = str_contains($jsonStr, '$variable({"')
+                            ? ' (a dynamic-content token inside a block comment must write each of its quotes as \\u0022, not "; see get_style_guide topic=loops)'
+                            : '';
+                        $errors[] = "Invalid JSON in block wp:$name at offset $start: " . json_last_error_msg() . $hint;
                         $attrs = [];
                     }
                 }

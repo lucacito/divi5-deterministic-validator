@@ -14,11 +14,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  * field values). Also the custom field KEYS the site's recent posts use (a sample; keys only, never values), and Divi 5.15's
  * Components (name, kind, Slot ids and how many pages use each; never their content). Everything comes from WordPress's and ACF's own public read functions, each behind a
  * guard: a missing or throwing reader means an empty section plus a note. Nothing here writes anything,
- * and nothing reads theme files or menus.
+ * and nothing reads theme files. The opt-in `menus` section lists menu names and ids, never their items.
  */
 final class SiteStructure
 {
-    public const SECTIONS    = [ 'post_types', 'taxonomies', 'image_sizes', 'acf', 'custom_fields', 'components' ];
+    public const SECTIONS    = [ 'post_types', 'taxonomies', 'image_sizes', 'acf', 'custom_fields', 'components', 'menus', 'terms' ];
+    /** What a call without `include` returns; `menus` and `terms` can be long, so they are asked for by name. */
+    public const DEFAULT_SECTIONS = [ 'post_types', 'taxonomies', 'image_sizes', 'acf', 'custom_fields', 'components' ];
+    public const MAX_TERMS_PER_TAXONOMY = 50;
+    public const MAX_TAXONOMIES_WITH_TERMS = 20;
     public const MAX_ITEMS   = 100;
     public const MAX_FIELDS  = 100;
     public const MAX_CHOICES = 50;
@@ -37,7 +41,7 @@ final class SiteStructure
     public static function parseInclude( mixed $value ): ?array
     {
         if ( null === $value || '' === $value || [] === $value ) {
-            return self::SECTIONS;
+            return self::DEFAULT_SECTIONS;
         }
         if ( is_string( $value ) ) {
             $value = array_map( 'trim', explode( ',', $value ) );
@@ -67,7 +71,55 @@ final class SiteStructure
             'acf_fields'  => function_exists( 'acf_get_fields' ) ? 'acf_get_fields' : null,
             'custom_fields' => class_exists( CustomFieldReader::class ) ? [ CustomFieldReader::class, 'discover' ] : null,
             'components'  => class_exists( ComponentReader::class ) ? [ ComponentReader::class, 'discover' ] : null,
+            'menus'       => function_exists( 'wp_get_nav_menus' ) ? [ self::class, 'readMenus' ] : null,
+            'terms'       => function_exists( 'get_terms' ) && function_exists( 'get_taxonomies' ) ? [ self::class, 'readTerms' ] : null,
         ];
+    }
+
+    /** @return list<array{id:string,name:string,slug:string,items:int,locations:list<string>}> the site's navigation menus (names and ids only, never their items) */
+    public static function readMenus(): array
+    {
+        $locations = function_exists( 'get_nav_menu_locations' ) ? (array) get_nav_menu_locations() : [];
+        $out       = [];
+        foreach ( (array) wp_get_nav_menus() as $menu ) {
+            if ( ! is_object( $menu ) ) {
+                continue;
+            }
+            $id    = (int) ( $menu->term_id ?? 0 );
+            $where = [];
+            foreach ( $locations as $slug => $menuId ) {
+                if ( (int) $menuId === $id ) {
+                    $where[] = (string) $slug;
+                }
+            }
+            $out[] = [ 'id' => (string) $id, 'name' => (string) ( $menu->name ?? '' ), 'slug' => (string) ( $menu->slug ?? '' ), 'items' => (int) ( $menu->count ?? 0 ), 'locations' => $where ];
+        }
+
+        return $out;
+    }
+
+    /** @return array<string,list<array{id:string,name:string,slug:string,count:int,parent:string}>> taxonomy => its most used terms */
+    public static function readTerms(): array
+    {
+        $out = [];
+        foreach ( array_keys( (array) get_taxonomies( [ 'public' => true ] ) ) as $taxonomy ) {
+            if ( count( $out ) >= self::MAX_TAXONOMIES_WITH_TERMS ) {
+                break;
+            }
+            $terms = get_terms( [ 'taxonomy' => (string) $taxonomy, 'hide_empty' => false, 'number' => self::MAX_TERMS_PER_TAXONOMY + 1, 'orderby' => 'count', 'order' => 'DESC' ] );
+            if ( ! is_array( $terms ) || [] === $terms ) {
+                continue;
+            }
+            $rows = [];
+            foreach ( $terms as $term ) {
+                if ( is_object( $term ) ) {
+                    $rows[] = [ 'id' => (string) ( $term->term_id ?? 0 ), 'name' => (string) ( $term->name ?? '' ), 'slug' => (string) ( $term->slug ?? '' ), 'count' => (int) ( $term->count ?? 0 ), 'parent' => (string) ( $term->parent ?? 0 ) ];
+                }
+            }
+            $out[ (string) $taxonomy ] = $rows;
+        }
+
+        return $out;
     }
 
     /** @return array<string,array<string,mixed>> name => raw post type data */
@@ -120,7 +172,7 @@ final class SiteStructure
      */
     public static function catalogWith( array $readers, ?array $include = null ): array
     {
-        $include   = $include ?? self::SECTIONS;
+        $include   = $include ?? self::DEFAULT_SECTIONS;
         $notes     = [];
         $truncated = false;
         $out       = [];
@@ -196,7 +248,76 @@ final class SiteStructure
             $truncated = $truncated || ! empty( $raw['truncated'] );
         }
 
+        if ( in_array( 'menus', $include, true ) ) {
+            $raw = self::read( $readers['menus'] ?? null );
+            if ( null === $raw ) {
+                $notes[] = 'Menu data is not available on this site.';
+            }
+            $out['menus'] = [
+                'items' => self::menuRows( $raw ?? [], $truncated ),
+                'note'  => 'Navigation menus: id (a string, what a menu loop takes as its subTypes value), name, slug, how many items and the theme locations that show it. The items themselves are not listed.',
+            ];
+        }
+
+        if ( in_array( 'terms', $include, true ) ) {
+            $raw = self::read( $readers['terms'] ?? null );
+            if ( null === $raw ) {
+                $notes[] = 'Term data is not available on this site.';
+            }
+            $out['terms'] = [
+                'taxonomies' => self::termRows( $raw ?? [], $truncated ),
+                'note'       => 'The most used terms of each public taxonomy: id (a string, what a loop filter takes as its selected value, not the slug), name, slug, how many items use it and the parent term id ("0" for none). At most ' . self::MAX_TERMS_PER_TAXONOMY . ' per taxonomy.',
+            ];
+        }
+
         return $out + [ 'truncated' => $truncated, 'notes' => $notes ];
+    }
+
+    /** @return list<array{id:string,name:string,slug:string,items:int,locations:list<string>}> */
+    private static function menuRows( mixed $raw, bool &$truncated ): array
+    {
+        $list = [];
+        foreach ( is_array( $raw ) ? $raw : [] as $m ) {
+            if ( ! is_array( $m ) ) {
+                continue;
+            }
+            if ( count( $list ) >= self::MAX_ITEMS ) {
+                $truncated = true;
+                break;
+            }
+            $list[] = [ 'id' => self::text( $m['id'] ?? '' ), 'name' => self::text( $m['name'] ?? '' ), 'slug' => self::text( $m['slug'] ?? '' ), 'items' => max( 0, (int) ( $m['items'] ?? 0 ) ), 'locations' => self::strings( $m['locations'] ?? [] ) ];
+        }
+
+        return $list;
+    }
+
+    /** @return list<array{name:string,terms:list<array{id:string,name:string,slug:string,count:int,parent:string}>}> */
+    private static function termRows( mixed $raw, bool &$truncated ): array
+    {
+        $list = [];
+        foreach ( is_array( $raw ) ? $raw : [] as $taxonomy => $terms ) {
+            if ( ! is_array( $terms ) ) {
+                continue;
+            }
+            if ( count( $list ) >= self::MAX_TAXONOMIES_WITH_TERMS ) {
+                $truncated = true;
+                break;
+            }
+            $rows = [];
+            foreach ( $terms as $t ) {
+                if ( ! is_array( $t ) ) {
+                    continue;
+                }
+                if ( count( $rows ) >= self::MAX_TERMS_PER_TAXONOMY ) {
+                    $truncated = true;
+                    break;
+                }
+                $rows[] = [ 'id' => self::text( $t['id'] ?? '' ), 'name' => self::text( $t['name'] ?? '' ), 'slug' => self::text( $t['slug'] ?? '' ), 'count' => max( 0, (int) ( $t['count'] ?? 0 ) ), 'parent' => self::text( $t['parent'] ?? '0' ) ];
+            }
+            $list[] = [ 'name' => self::text( (string) $taxonomy ), 'terms' => $rows ];
+        }
+
+        return $list;
     }
 
     /**

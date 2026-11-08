@@ -216,12 +216,12 @@ slug, the taxonomy and the custom field keys (get_site_structure lists them), ne
 A loop is a set of settings on the module that should repeat, at `module.advanced.loop.desktop.value`. The module repeats, with everything inside it.
 - `enable`: the string "on" (or "off"). Anything else leaves the loop off.
 - `loopId`: a string, unique on the page, "loop-" and ten lowercase letters or digits ("loop-k3m9q2x7ab"). Two loops on one page need two ids.
-- `queryType`: "post_types" (posts, pages, products, any custom post type), "post_taxonomies" (the terms of a taxonomy), "user_roles" (users), "menus" (menu items), "current_page".
+- `queryType`: "post_types" (posts, pages, products, any custom post type), "post_taxonomies" (the terms of a taxonomy), "user_roles" (users), "menus" (menu items), "current_page" (the list of the archive page it sits on; on an ordinary page it lists nothing), or "repeater_" plus an ACF repeater field name in lowercase ("repeater_team"; needs ACF's repeater field, not proven here).
 - `subTypes`: what to list, a list of objects: `[{"value":"post","label":"Posts"}]`. The value is the slug: a post type ("post", "page", "product", "manufacturer"), a taxonomy ("category"), a user role ("administrator") or a menu slug. Always write it; any other shape, or none, reads every post type, media files included.
 - `orderBy` (Divi's own lists): posts "date", "title", "name" (the slug), "modified", "rand", "menu_order", "comment_count", "ID"; products also "price", "popularity", "rating"; terms "name", "slug", "count", "term_id"; users "display_name", "registered", "post_count"; menu items "menu_order", "title". `order`: "ascending" or "descending" (not "asc" or "desc").
-- `postPerPage` and `postOffset`: whole numbers written as strings ("6", "0"). "0" or text loads every item.
+- `postPerPage`: a whole number of 1 or more written as a string ("6"); to list everything write a big number such as "100" (the checker refuses "0" and text: they load every item). `postOffset`: a whole number as a string ("0" is fine). For a menu loop `postPerPage` caps the items, sub-items included.
 - `excludeCurrentPost`, `ignoreStickysPost`: "on" or "off".
-- `includePostWithSpecificTerms` / `excludePostWithSpecificTerms`: only the posts that have (or lack) a term: `[{"categoryId":"state","categoryName":"States","selectedOptions":[{"value":"3","label":"North Carolina"}]}]`. `categoryId` is the taxonomy slug, `value` the term ID as a string (the ID, not the slug). Term IDs are site data: ask the owner for the ID, or do not filter. The builder writes "" for an empty list; leave an unused list out.
+- `includePostWithSpecificTerms` / `excludePostWithSpecificTerms`: only the posts that have (or lack) a term: `[{"categoryId":"state","categoryName":"States","selectedOptions":[{"value":"3","label":"North Carolina"}]}]`. `categoryId` is the taxonomy slug, `value` the term ID as a string (the ID, not the slug). Term IDs are site data: get_site_structure with include=terms lists them (and include=menus lists the menu IDs); a wrong ID or taxonomy is quietly ignored, so the loop is not filtered at all. The builder writes "" for an empty list; leave an unused list out.
 - `metaQuery`: a list of `{"id","metaKey","metaValue","compare","type"}` objects, or leave it out. Never a string.
 
 ## What goes inside the loop
@@ -229,7 +229,7 @@ Inside a looping module, write the content as loop tokens. A token is a string i
 
 `$variable({"type":"content","value":{"name":"loop_post_title","settings":{}}})$`
 
-Both ends matter: `$variable(` at the start and `)$` at the end. Without the closing `$` the page prints the raw text. Inside the block comment's JSON write each quote of the token as `\u0022`, as the example does.
+Both ends matter: `$variable(` at the start and `)$` at the end. Without the closing `$` the page prints the raw text. **In a block comment every quote of the token MUST be written as `\u0022`** (copy the example): plain quotes break the JSON and the whole block is refused as BLOCK_PARSE_ERROR.
 - Posts: `loop_post_title`, `loop_post_excerpt`, `loop_post_date`, `loop_post_link` (a web address), `loop_post_featured_image` (a picture), `loop_post_author`, `loop_post_terms`, `loop_post_id`.
 - Products (queryType "post_types", subTypes "product"): `loop_product_title`, `loop_product_price_current`, `loop_product_price_regular`, `loop_product_price_sale`, `loop_product_short_description`, `loop_product_post_featured_image`, `loop_product_post_link_url`, `loop_product_sku`.
 - Terms: `loop_term_name`, `loop_term_description`, `loop_term_count`, `loop_term_permalink`, `loop_term_featured_image`.
@@ -238,13 +238,17 @@ Both ends matter: `$variable(` at the start and `)$` at the end. Without the clo
 - A custom field of each item: `loop_post_meta_key_manual_custom_field` with `"settings":{"select_loop_meta_key":"loop_post_meta_key_<field key>"}` (key "logo" is `loop_post_meta_key_logo`).
 Use a `loop_` token, never `post_title` and its relatives: those show the page's own title in every item. A `loop_` token outside a loop shows nothing.
 
-Where a token goes (each rendered): a heading's `title.innerContent.desktop.value`; a text module's `content.innerContent.desktop.value`, inside the HTML ("<h3>token</h3><p>token</p>"); an image's `image.innerContent.desktop.value.src` and `.linkUrl`; a button's `button.innerContent.desktop.value.linkUrl` (the label can be a token too).
+Where a token goes (each rendered): a heading's `title.innerContent.desktop.value`; a text module's `content.innerContent.desktop.value`, inside the HTML ("<h3>token</h3><p>token</p>"); an image's `image.innerContent.desktop.value.src`, `.alt` (a token such as `loop_post_title` works) and `.linkUrl`; a button's `button.innerContent.desktop.value.linkUrl` (the label can be a token too).
 
 ## Which module repeats
-- A group repeats with everything in it: one card per item. Put the card's modules inside the group and the loop on the group.
+- A group repeats with everything in it: one card per item. Put the card's modules inside the group and the loop on the group. For a grid of cards, put that looped group inside a plain grid group (`module.decoration.layout.desktop.value`: `display` "grid", `gridColumnCount` "3", `columnGap`; the same path under `tablet` and `phone` for fewer columns); each repeated card becomes one grid cell.
 - An image grid: the grid is a group with `display` "grid" and `gridColumnCount` "4" (tablet "2", phone "1") and NO loop of its own; the loop is on the image inside it.
 - A row repeats too (one row per item). A loop inside a loop multiplies the items: use it only on purpose.
 - An empty result prints Divi's own "No Results Found."; say in your answer which filter produced it.
+
+## Pages of results and menus
+- Next and Previous links: put a Post Navigation module (`divi/post-nav`) after the looped module, in the same column, and point it at the loop: `module.advanced.targetLoop.desktop.value` is the loop's `loopId` string, for example `{"module":{"advanced":{"targetLoop":{"desktop":{"value":"loop-k3m9q2x7ab"}}}},"builderVersion":"5.8.0"}`. Set the loop's `postPerPage` to the page size. The page is `?loop-k3m9q2x7ab=2` in the address, so each loop pages on its own. The links are Divi's own (Next and Previous, shown only when there is another page); no other setting is needed. Never write a list or object as the `targetLoop` value: the whole page fails.
+- A menu loop (queryType "menus", `subTypes` `[{"value":"<menu ID>","label":"Main menu"}]`, the ID a string from get_site_structure or the owner) lists every item of the menu, sub-items included, one after the other. The order is inverted: "descending" (the default) is the menu's own order and "ascending" is backwards (checked on Divi 5.15.1; a later Divi may fix it). Use `loop_menu_text` for the label and `loop_menu_link` for the address; the post tokens (`loop_post_title` and the rest) are empty there.
 
 ## Example: the three latest posts as cards
 ```
@@ -258,7 +262,7 @@ Where a token goes (each rendered): a heading's `title.innerContent.desktop.valu
 <!-- /wp:divi/row -->
 <!-- /wp:divi/section -->
 ```
-Ready-made: `get_section_recipes` with name `loop-posts-cards` (the newest posts as cards) or `loop-products-grid` (the newest WooCommerce products); each already follows the design language and the style kit. Use one copy of a recipe per page: its loop id is fixed. A save or `validate_layout` answer carries `advisories.loops` when a `loop_` token sits outside a loop that is switched on, or a `post_` token inside one.
+Ready-made: `get_section_recipes` with name `loop-posts-cards` (the newest posts as cards), `loop-posts-paged` (all posts, six per page with Next and Previous), `loop-categories-grid` (the site's categories) or `loop-products-grid` (the newest WooCommerce products); each already follows the design language and the style kit. Use one copy of a recipe per page: its loop id is fixed. A save, `validate_layout` or `dry_run` answer carries `advisories.loops` when a `loop_` token sits outside a loop that is switched on, does not match the loop around it, or a `post_` token sits inside one, when two loops share an id, or when a Post Navigation points at no loop on the page, and `advisories.loop_results`: what each loop will list on this site (how many items, the first titles, and a problem such as a post type, menu or taxonomy this site does not have; an unknown post type makes the loop list every post type).
 
 Style the cards with the modules' own settings, as on any page (the design language and the style kit apply as usual). Check the page with
 `validate_layout` or `dry_run` before saving; the answer lists the first wrong setting.

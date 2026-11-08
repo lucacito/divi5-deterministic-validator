@@ -83,4 +83,52 @@ class LoopAdvisoryTest extends TestCase
         $fx = json_decode( (string) file_get_contents( dirname( __DIR__ ) . '/fixtures/valid/loop-builder-5.3.json' ), true );
         $this->assertNull( LoopAdvisory::advise( (string) $fx['post_content'] ) );
     }
+
+    private function nav( mixed $target ): string
+    {
+        return '<!-- wp:divi/post-nav ' . json_encode( [ 'module' => [ 'advanced' => [ 'targetLoop' => [ 'desktop' => [ 'value' => $target ] ] ] ] ] ) . ' /-->';
+    }
+
+    public function testATokenOfAnotherKindThanTheInnermostLoopIsFlagged(): void
+    {
+        $menu = [ 'enable' => 'on', 'queryType' => 'menus', 'orderBy' => 'menu_order', 'order' => 'descending' ];
+        $a    = LoopAdvisory::advise( $this->group( $menu, $this->heading( 'loop_post_title' ) . $this->heading( 'loop_menu_text' ) ) );
+        $this->assertSame( [ [ 'name' => 'loop_post_title', 'count' => 1 ] ], $a['token_for_other_loop'] );
+        $terms = [ 'enable' => 'on', 'queryType' => 'post_taxonomies' ];
+        $a     = LoopAdvisory::advise( $this->group( $terms, $this->heading( 'loop_term_name' ) . $this->heading( 'loop_user_name' ) ) );
+        $this->assertSame( [ [ 'name' => 'loop_user_name', 'count' => 1 ] ], $a['token_for_other_loop'] );
+        $this->assertNull( LoopAdvisory::advise( $this->group( [ 'enable' => 'on', 'queryType' => 'repeater_team' ], $this->heading( 'loop_post_title' ) ) ), 'repeater loops are not judged' );
+        // the INNERMOST loop decides: a term loop inside a post loop
+        $nested = $this->group( [ 'enable' => 'on', 'loopId' => 'loop-a' ], $this->heading( 'loop_post_title' ) . $this->group( [ 'enable' => 'on', 'loopId' => 'loop-b', 'queryType' => 'post_taxonomies' ], $this->heading( 'loop_term_name' ) ) );
+        $this->assertNull( LoopAdvisory::advise( $nested ) );
+    }
+
+    public function testADuplicateLoopIdIsFlagged(): void
+    {
+        $two = $this->group( [ 'enable' => 'on', 'loopId' => 'loop-a' ], $this->heading( 'loop_post_title' ) ) . $this->group( [ 'enable' => 'on', 'loopId' => 'loop-a' ], $this->heading( 'loop_post_title' ) );
+        $this->assertSame( [ [ 'name' => 'loop-a', 'count' => 2 ] ], LoopAdvisory::advise( $two )['duplicate_loop_id'] );
+        $ok = $this->group( [ 'enable' => 'on', 'loopId' => 'loop-a' ], $this->heading( 'loop_post_title' ) ) . $this->group( [ 'enable' => 'on', 'loopId' => 'loop-b' ], $this->heading( 'loop_post_title' ) );
+        $this->assertNull( LoopAdvisory::advise( $ok ) );
+        $off = $this->group( [ 'enable' => 'off', 'loopId' => 'loop-a' ], '' ) . $this->group( [ 'enable' => 'on', 'loopId' => 'loop-a' ], $this->heading( 'loop_post_title' ) );
+        $this->assertNull( LoopAdvisory::advise( $off ), 'a switched-off loop does not page' );
+    }
+
+    public function testAPostNavigationAimedAtNoLoopOnThePageIsFlagged(): void
+    {
+        $loop = $this->group( [ 'enable' => 'on', 'loopId' => 'loop-a' ], $this->heading( 'loop_post_title' ) );
+        $this->assertNull( LoopAdvisory::advise( $loop . $this->nav( 'loop-a' ) ) );
+        $this->assertNull( LoopAdvisory::advise( $loop . $this->nav( 'main_query' ) ) );
+        $this->assertNull( LoopAdvisory::advise( $loop . $this->nav( '' ) ) );
+        $a = LoopAdvisory::advise( $loop . $this->nav( 'loop-zzz' ) );
+        $this->assertSame( [ [ 'name' => 'loop-zzz', 'count' => 1 ] ], $a['post_nav_target_missing'] );
+    }
+
+    public function testAMenuLoopOrderedAscendingByMenuOrderRunsBackwards(): void
+    {
+        $menu = static fn( array $over ): array => array_replace( [ 'enable' => 'on', 'queryType' => 'menus', 'loopId' => 'loop-m' ], $over );
+        $this->assertSame( 1, LoopAdvisory::advise( $this->group( $menu( [ 'order' => 'ascending', 'orderBy' => 'menu_order' ] ), $this->heading( 'loop_menu_text' ) ) )['menu_loop_backwards'] );
+        $this->assertSame( 1, LoopAdvisory::advise( $this->group( $menu( [ 'order' => 'ascending' ] ), $this->heading( 'loop_menu_text' ) ) )['menu_loop_backwards'], 'menu_order is the default' );
+        $this->assertNull( LoopAdvisory::advise( $this->group( $menu( [ 'order' => 'ascending', 'orderBy' => 'title' ] ), $this->heading( 'loop_menu_text' ) ) ) );
+        $this->assertNull( LoopAdvisory::advise( $this->group( $menu( [ 'order' => 'descending' ] ), $this->heading( 'loop_menu_text' ) ) ) );
+    }
 }

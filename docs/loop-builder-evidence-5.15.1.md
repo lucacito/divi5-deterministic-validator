@@ -54,11 +54,58 @@ container), shapes that render correctly. `tests/LoopRulesTest.php` pins 31 case
 
 ## Not covered
 
-Loop pagination (`loop_pagination_*`, the page parameter named by `loopId`), ACF repeater and Meta Box loop sources (`repeater_*` query types),
-menu-item loops and `current_page` on a real archive, loops inside Theme Builder templates, WooCommerce archive add-to-cart in a loop, the
-Visual Builder's own display of a looped page, whether a hand-written `loopId` survives the builder's duplicate-id repair on save
-(`LoopIdDeduplicationUtils`, which runs on a builder save). The guide says to use a unique id per loop.
+ACF repeater loops with a real ACF Pro field (ACF Pro is commercial and not on the dev site), loops inside Theme Builder templates,
+WooCommerce archive add-to-cart in a loop, the Visual Builder's own display of a looped page, whether a hand-written `loopId` survives the
+builder's duplicate-id repair on save (`LoopIdDeduplicationUtils`, which runs on a builder save). The guide says to use a unique id per loop.
+Meta Box is not a loop source: Divi 5.15.1 has no Meta Box code in its loop or dynamic-content classes.
 
+## Pagination, menus, current_page and repeaters (probe 2026-11-08)
+
+`scripts/probe-loop-sources.php` (one case per process, throwaway draft deleted afterwards; 6 published posts, one 15-item menu, Divi 5.15.1):
+
+- **Pagination.** The Post Navigation module (`divi/post-nav`) connects to a loop with `module.advanced.targetLoop.desktop.value` = the loop's
+  `loopId`. The page comes from the URL parameter named by the loop id (`?loop-spike0001=2`), read in `LoopUtils` (a page below 1 is page 1).
+  With `postPerPage` 2 pages 1, 2 and 3 show items 1-2, 3-4 and 5-6; the module prints "Next" on page 1, "Previous" and "Next" on page 2,
+  "Previous" on page 3, each a link to `?loopId=N`. `postOffset` 1 shifts every page by one item. Page 99 lists nothing ("No Results Found.")
+  and still links "Previous" to page 98. A target id that matches no loop prints no links and no error. Without the Post Navigation module the
+  loop simply shows page 1.
+- **Page-fatal.** A `targetLoop` value that is an array or an object throws a TypeError for the whole page (`LoopQueryRegistry::get_query()`
+  wants a string). An integer, `true`, `""` and a `targetLoop` without `desktop` do not throw (no links, or the module falls back to the
+  previous/next post). The validator accepts the fatal shapes today.
+- **Menus.** `queryType: "menus"`, `subTypes: [{"value":"<menu term id as a string>","label":"..."}]`, tokens `loop_menu_text`, `loop_menu_link`
+  (and the other `loop_menu_*` names): one item per menu item, the whole tree flattened (children included), the link token gives the item's URL
+  in a button. No `subTypes` or an unknown menu id lists nothing. An integer `value` lists nothing (the validator already refuses it).
+  `loop_post_*` tokens inside a menu loop render empty. `orderBy: title` sorts alphabetically. **The order is inverted for `menu_order`:**
+  `order: "descending"` (the default) shows the menu in its own order (positions 1, 2, 3 ...), `order: "ascending"` shows it backwards
+  (15, 14, 13 ...), because Divi reverses a list it wrongly assumes is descending (`QueryResultsController` 1394-1411).
+- **current_page.** `queryType: "current_page"` lists the main query: on a category archive three posts newest first; on an ordinary page
+  "No Results Found." `subTypes` (a post type) changes nothing there.
+- **Repeaters.** Divi treats any `queryType` starting with `repeater_` as an ACF repeater named after the prefix
+  (`DynamicContentACFUtils::is_repeater_query`). Without ACF the loop lists nothing and nothing throws. The validator refuses `repeater_*`
+  today (`queryType` must be one of ...). Not proven with a real repeater.
+- **`queryType: "terms"`.** Divi accepts it as an alias of `post_taxonomies` (live: the category list renders); the validator now accepts it.
+
+### Second probe round (2026-11-08)
+
+- **Nested loops.** A terms loop inside a posts loop renders: every outer post lists the inner terms, but the inner loop is NOT scoped to the outer
+  item (each post shows the same "Uncategorized"). An outer `loop_post_title` inside the inner loop renders empty. Two nested loops with the same
+  id render the inner list from the outer item (wrong).
+- **Duplicate loop ids.** Two separate loops with one `loopId` each render with their own settings, but `?loopId=2` pages BOTH. The builder repairs
+  duplicate ids on save (not probed). `LoopAdvisory` reports `duplicate_loop_id`.
+- **Unknown post type.** `subTypes` naming a post type the site does not have: with no other valid type Divi lists EVERY post type (media files
+  included); next to a valid type it is ignored.
+- **Filters on a missing term.** `includePostWithSpecificTerms` / `excludePostWithSpecificTerms` with a term id that does not exist, a taxonomy that
+  does not exist, or a slug instead of an id: the filter is ignored (the loop lists everything), not "nothing".
+- **Terms loops** list only terms that have posts (`hide_empty` true in `QueryResultsController` 1069 / `LoopUtils` 3069).
+- **Post Filter module (`divi/post-filter`).** Not built: its filter items need a real builder export for their field and source settings, and the
+  repo has none. It targets a loop with the same `module.advanced.targetLoop` path and uses `?loop_filter-<loopId>[field]=` parameters.
+- **Theme Builder templates.** A `current_page` loop in a body layout was not probed in a real template (the render path is assumed to be the same as an
+  archive page's).
+
+`LoopPreview` (`advisories.loop_results`, `make verify-loop-builder`): for every enabled loop, whether its post types, taxonomies, term ids, menus and
+roles exist on this site, and for a plain post or menu loop how many items match and the first titles; the live gate compares these with Divi's own
+render (post loops by date and title, ascending and descending; menu loops in both orders; term counts; an unknown post type, menu id and taxonomy;
+a missing term id). Filters, sticky posts, `current_page`, users and attachments are not counted and the row says so.
 
 ## Recipes and the token advisory (2026-11-07)
 

@@ -3105,6 +3105,11 @@
             "path": "video.innerContent",
             "how": "export",
             "evidence": "fixtures/valid/page-17-newpage.json"
+        },
+        {
+            "path": "module.advanced.targetLoop.{bp}.value",
+            "how": "probe",
+            "evidence": "docs/loop-builder-evidence-5.15.1.md#pagination-menus-current_page-and-repeaters-probe-2026-11-08"
         }
     ]
 }

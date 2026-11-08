@@ -17,7 +17,7 @@ The Model Context Protocol (MCP) server runs on your own site. The plugin uses n
 
 = Designed to work alongside Divi's upcoming MCP =
 
-The plugin is designed to work alongside Divi's upcoming MCP and any other tool that builds Divi pages. It has not been tested against Divi's MCP yet, because that has not been released. It adds design guidance before the build (10 design languages and 73 proven section patterns), a fixed-rule check after it, and undo for every change, whichever tool made it. These are offered as WordPress abilities on WordPress 6.9 and later. It never wraps, blocks or changes another tool's abilities.
+The plugin is designed to work alongside Divi's upcoming MCP and any other tool that builds Divi pages. It has not been tested against Divi's MCP yet, because that has not been released. It adds design guidance before the build (10 design languages and 75 proven section patterns), a fixed-rule check after it, and undo for every change, whichever tool made it. These are offered as WordPress abilities on WordPress 6.9 and later. It never wraps, blocks or changes another tool's abilities.
 
 = How it works =
 
@@ -81,7 +81,7 @@ What to expect: your assistant, not the plugin, looks at the picture or reads th
 * **Small changes stay small.** Changing one phone number replaces just that text. The rest of the page is not rebuilt or touched.
 * **Preview before saving.** Your AI can ask what a change would do before it saves anything. It gets a list of the blocks and settings that would change, and the checker's verdict. Nothing is saved until it repeats the request for real.
 * **Matches your site.** Your AI can look up your site's own Divi colors and presets and reuse them, and it is told when a page uses one your site does not have. It cannot create or change presets or colors: that stays in Divi's Visual Builder.
-* **Proven building blocks.** 73 ready-made section patterns (heroes, feature grids, testimonials, contact forms and more), each one tested against the checker, plus landing-page guidance on the order of sections, headlines and calls to action.
+* **Proven building blocks.** 75 ready-made section patterns (heroes, feature grids, testimonials, contact forms and more), each one tested against the checker, plus landing-page guidance on the order of sections, headlines and calls to action.
 * **Consistent looks.** Ten design languages (editorial, glass dark, organic warm, tech mono and more) and 40 style kits set the exact look of buttons, cards, accordions, toggles, contact forms and image corners, so a whole page matches.
 * **Sensible images.** The AI looks in your Media Library first. When nothing there fits, it uses a built-in pack of 44 original images that ships with the plugin.
 * **One-click undo.** The previous version of each page or Divi Project the AI changes is kept (up to the last 10). Restore it from the plugin's Dashboard with one click, or just ask your AI to undo.
@@ -103,7 +103,7 @@ Read and check:
 * `list_divi_pages`: list the pages built with Divi 5 that you can edit (pass post_type project to list Divi Projects).
 * `get_page_layout`: read the current layout of a page or Divi Project. For a big page your assistant can read just an outline (every block with its place, size and the start of its text) or one block, which costs a fraction of reading the whole page.
 * `list_global_styles`: list your site's own Divi colors and presets so the AI can reuse them (read-only).
-* `get_site_structure`: list your site's custom post types, taxonomies, image sizes, Divi 5.15 components (name, kind, Slots, how many pages use each) and Advanced Custom Fields field groups so pages fit your site (read-only: field names and the keys your posts use, never values here or theme files; available over MCP and the REST API, not in the ChatGPT Action).
+* `get_site_structure`: list your site's custom post types, taxonomies, image sizes, Divi 5.15 components (name, kind, Slots, how many pages use each), on request the names and ids of your site's navigation lists and of your most used categories and tags (so a list on a page can name them), and Advanced Custom Fields field groups so pages fit your site (read-only: field names and the keys your posts use, never values here or theme files; available over MCP and the REST API, not in the ChatGPT Action).
 * `get_custom_fields`: read the custom fields of one page or Divi Project you can edit, with their values, so your assistant can write copy that fits and use the right field names (read-only: keys WordPress protects, or that look like passwords, API keys or other secrets, are never shown; available over MCP and the REST API, not in the ChatGPT Action).
 * `list_products`: list and count your WooCommerce products with their prices, stock status and categories (read-only; needs the permission to edit products; available over MCP and the REST API, not in the ChatGPT Action).
 * `get_product`: read one WooCommerce product in full, including its variations (read-only; never downloadable files, purchase notes or custom fields).
@@ -125,7 +125,7 @@ Guides that help the AI build good pages:
 * `get_style_guide`: how to build styled Divi 5 layouts, using real Divi 5 settings.
 * `get_landing_guide`: how to build a landing page that turns visitors into customers.
 * `get_site_guide`: how to plan a site with several pages that link to each other.
-* `get_section_recipes`: the 73 ready-made section patterns.
+* `get_section_recipes`: the 75 ready-made section patterns.
 * `get_image_guide`: how to pick the right image for each section, including the built-in image pack.
 
 Images:
@@ -219,7 +219,7 @@ Yes, for reading. Your assistant can list and count your products and read one p
 
 = Can it read my ACF fields, custom post types or functions.php? =
 
-It can read how your site is set up: custom post types, taxonomies, image sizes and, when Advanced Custom Fields is active, its field groups and fields (names, labels, types and choices). It reads custom field values only when your assistant asks about one specific page or Project you can edit, never ones WordPress protects or that look like passwords, API keys or other secrets, and it never reads your theme files or `functions.php`. This is available to assistants that connect over MCP or the REST API, not to the ChatGPT Action.
+It can read how your site is set up: custom post types, taxonomies, image sizes, on request the names and ids of your site's navigation lists (never their links) and of your most used categories, tags and other public taxonomy terms, and, when Advanced Custom Fields is active, its field groups and fields (names, labels, types and choices). It reads custom field values only when your assistant asks about one specific page or Project you can edit, never ones WordPress protects or that look like passwords, API keys or other secrets, and it never reads your theme files or `functions.php`. This is available to assistants that connect over MCP or the REST API, not to the ChatGPT Action.
 
 = Can it create global colors and presets? =
 
@@ -253,7 +253,7 @@ It is built for one job: editing Divi 5 layouts safely on a live site. It knows 
 
 = Do I need this if I use Divi's MCP? =
 
-Divi has announced its own MCP, which is not released yet, so this plugin has not been tested against it. A builder builds pages. This plugin is designed to add what a builder does not: ten design languages and 73 proven section patterns to design from, a deterministic checker that refuses a broken layout with the exact reason, an advisory design check (readability, Divi's stock look, repeated sections), and undo for every change, even ones made by other tools. The idea is to use both: ask your assistant to read this plugin's design guidance before it builds, build with any tool, then run the design check and fix what it finds.
+Divi has announced its own MCP, which is not released yet, so this plugin has not been tested against it. A builder builds pages. This plugin is designed to add what a builder does not: ten design languages and 75 proven section patterns to design from, a deterministic checker that refuses a broken layout with the exact reason, an advisory design check (readability, Divi's stock look, repeated sections), and undo for every change, even ones made by other tools. The idea is to use both: ask your assistant to read this plugin's design guidance before it builds, build with any tool, then run the design check and fix what it finds.
 
 = Is this an MCP server for Divi? =
 

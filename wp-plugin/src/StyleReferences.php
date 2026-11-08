@@ -151,6 +151,10 @@ final class StyleReferences
         if ( null !== $loops ) {
             $advisories['loops'] = $loops;
         }
+        $results = LoopPreview::advise( $content );
+        if ( null !== $results ) {
+            $advisories['loop_results'] = $results;
+        }
 
         return [] === $advisories ? $payload : $payload + [ 'advisories' => $advisories ];
     }

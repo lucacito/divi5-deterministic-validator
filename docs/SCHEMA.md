@@ -397,7 +397,7 @@ Divi 5.15 turned global modules into Components and added the Slot module. Real 
 `module.advanced.loop.desktop.value` is the Loop Builder's option group; it sits on any module (the looped module repeats once per
 item). Divi 5.15.1 was rendered with 49 wrong and right shapes (`docs/loop-builder-evidence-5.15.1.md`). The validator refuses, as
 `INVALID_LOOP_SETTING`: a `loop` that is not `{"desktop":{"value":{...}}}`; `enable` other than `"on"`/`"off"`; `loopId` that is not a
-string (an array answers HTTP 500); `queryType` outside `post_types`, `post_taxonomies`, `user_roles`, `menus`, `current_page`; `order`
+string (an array answers HTTP 500); `queryType` outside `post_types`, `post_taxonomies`, `terms`, `user_roles`, `menus`, `current_page` and `repeater_<lowercase field name>`; a Post Navigation `module.advanced.targetLoop.desktop.value` that is an array or object (a TypeError for the whole page); `order`
 other than `"ascending"`/`"descending"` (an array answers HTTP 500); `orderBy` that is not a string; `postPerPage` below 1 or not a
 whole number; `postOffset` not a whole number; `excludeCurrentPost` / `ignoreStickysPost` other than `"on"`/`"off"`; `subTypes` that is
 not a list of `{"value": "<slug>", "label": ...}` objects (any other shape makes the loop read every post type); `metaQuery` that is not a

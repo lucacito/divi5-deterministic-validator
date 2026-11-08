@@ -220,6 +220,7 @@ try {
         }
     }
 
+
     // ---- what the validator refuses, and why --------------------------------------------------------------------------------
     $refused = [
         'metaQuery as a string'  => [ $loopOn( [ 'metaQuery' => '' ] ), 'throws' ],
@@ -244,6 +245,125 @@ try {
             $check( '' === $r['threw'] && 3 === count( $h ) && $h !== $baseline, "{$label}: Divi renders the WRONG items (the loop read every post type, so other items come up: " . implode( ', ', array_slice( $h, 0, 2 ) ) . ')' );
         }
     }
+
+    // ---- pages of results, menus, the terms alias and repeater names (probe 2026-11-08) ------------------------------------------
+    $postsAll = get_posts( [ 'post_type' => 'post', 'post_status' => 'publish', 'numberposts' => -1, 'orderby' => 'date', 'order' => 'DESC', 'suppress_filters' => true ] );
+    $nav      = static fn( $target ): string => $blk( 'post-nav', [ 'module' => [ 'advanced' => [ 'targetLoop' => [ 'desktop' => [ 'value' => $target ] ] ] ], 'builderVersion' => '5.8.0' ] );
+    $pagedLoop = $loopOn( [ 'loopId' => 'loop-verifypage1', 'postPerPage' => '2' ] );
+    $paged     = $wrap( $group( $pagedLoop, $heading( 'loop_post_title' ) ) . $nav( 'loop-verifypage1' ) );
+    $check( LayoutGate::check( $paged )->isValid(), 'a looped group with a Post Navigation module aimed at its loopId passes the layout gate' );
+    if ( count( $postsAll ) >= 5 ) {
+        $pid = $save( $paged, 'paged' );
+        foreach ( [ 1 => [ 0, 1 ], 2 => [ 2, 3 ], 3 => [ 4, 5 ] ] as $page => $slice ) {
+            $_GET['loop-verifypage1'] = (string) $page;
+            $r    = $render( $pid );
+            $want = array_map( static fn( $p ) => $p->post_title, array_slice( $postsAll, $slice[0], 2 ) );
+            $check( '' === $r['threw'] && array_map( 'html_entity_decode', $headings( $r['html'] ) ) === array_map( 'html_entity_decode', $want ), "loop page {$page} lists items " . ( $slice[0] + 1 ) . '-' . ( $slice[0] + count( $want ) ) . ' in order' );
+            $check( ( 1 === $page ) === ( false === strpos( $r['html'], 'loop-verifypage1=' . ( $page - 1 ) ) ) && false !== strpos( $r['html'], 'et_pb_posts_nav' ), "loop page {$page}: the navigation links to the neighbouring pages only" );
+        }
+        unset( $_GET['loop-verifypage1'] );
+    } else {
+        $check( false, 'the dev site has at least five published posts to page through (' . count( $postsAll ) . ')' );
+    }
+    foreach ( [ 'a list' => [ 'loop-verifypage1' ], 'an object' => [ 'a' => 'loop-verifypage1' ] ] as $label => $target ) {
+        $content = $wrap( $group( $pagedLoop, $heading( 'loop_post_title' ) ) . $nav( $target ) );
+        $check( ! LayoutGate::check( $content )->isValid(), "Post Navigation targetLoop as {$label}: the validator refuses it" );
+        $r = $render( $save( $content, "targetLoop {$label}" ) );
+        $check( '' !== $r['threw'], "Post Navigation targetLoop as {$label}: Divi really throws (" . $r['threw'] . ')' );
+    }
+
+    $menu = wp_get_nav_menus()[0] ?? null;
+    if ( null !== $menu ) {
+        $items = wp_get_nav_menu_items( $menu->term_id );
+        $titles = array_map( static fn( $i ) => $i->title, $items );
+        foreach ( [ 'descending' => $titles, 'ascending' => array_reverse( $titles ) ] as $order => $expected ) {
+            $loop    = [ 'enable' => 'on', 'loopId' => 'loop-verifymenu1', 'queryType' => 'menus', 'subTypes' => [ [ 'value' => (string) $menu->term_id, 'label' => $menu->name ] ], 'orderBy' => 'menu_order', 'order' => $order, 'postPerPage' => (string) count( $items ) ];
+            $content = $wrap( $group( $loop, $heading( 'loop_menu_text' ) ) );
+            $check( LayoutGate::check( $content )->isValid(), "menu loop ({$order}): passes the layout gate" );
+            $r = $render( $save( $content, "menu {$order}" ) );
+            $check( '' === $r['threw'] && array_map( 'html_entity_decode', $headings( $r['html'] ) ) === array_map( 'html_entity_decode', $expected ), "menu loop: order \"{$order}\" shows the menu " . ( 'descending' === $order ? 'in its own order' : 'BACKWARDS' ) . ' (' . count( $expected ) . ' items)' );
+        }
+    }
+
+    $termsLoop = [ 'enable' => 'on', 'loopId' => 'loop-verifyterm1', 'queryType' => 'terms', 'subTypes' => [ [ 'value' => 'category', 'label' => 'Categories' ] ], 'orderBy' => 'name', 'order' => 'ascending', 'postPerPage' => '5' ];
+    $content   = $wrap( $group( $termsLoop, $heading( 'loop_term_name' ) ) );
+    $check( LayoutGate::check( $content )->isValid(), 'queryType "terms": passes the layout gate' );
+    $r = $render( $save( $content, 'terms alias' ) );
+    $check( '' === $r['threw'] && in_array( 'Uncategorized', $headings( $r['html'] ), true ), 'queryType "terms": Divi lists the categories like post_taxonomies' );
+    $content = $wrap( $group( [ 'enable' => 'on', 'loopId' => 'loop-verifyrepe1', 'queryType' => 'repeater_team', 'subTypes' => [], 'postPerPage' => '3' ], $heading( 'loop_post_title' ) ) );
+    $check( LayoutGate::check( $content )->isValid(), 'queryType "repeater_team": passes the layout gate' );
+    $r = $render( $save( $content, 'repeater name' ) );
+    $check( '' === $r['threw'] && ! function_exists( 'acf_get_field_groups' ) ? 'No Results Found.' === ( $headings( $r['html'] )[0] ?? '' ) : '' === $r['threw'], 'queryType "repeater_team": without ACF Divi lists nothing and does not throw (not rendered with a real repeater)' );
+
+    // ---- the loop result preview (advisories.loop_results) against what Divi really renders ---------------------------------------
+    $preview = static function ( string $content ): array {
+        $a = \AiEditorDivi5\WP\LoopPreview::advise( $content );
+
+        return $a['loops'] ?? [];
+    };
+    $same = static fn( array $a, array $b ): bool => array_map( 'html_entity_decode', $a ) === array_map( 'html_entity_decode', $b );
+    $content = $wrap( $group( $loopOn( [ 'loopId' => 'loop-verifyprev1', 'postPerPage' => '4' ] ), $heading( 'loop_post_title' ) ) );
+    $rows    = $preview( $content );
+    $r       = $render( $save( $content, 'preview posts' ) );
+    $shown   = $headings( $r['html'] );
+    $check( 1 === count( $rows ) && [] === $rows[0]['problems'] && $rows[0]['listed'] === count( $shown ) && $rows[0]['found'] === count( $postsAll ) && ( [] === $rows[0]['first'] || $same( $rows[0]['first'], array_slice( $shown, 0, count( $rows[0]['first'] ) ) ) ), 'preview of a post loop: found/listed/first titles equal what Divi renders (' . count( $shown ) . ' shown of ' . ( $rows[0]['found'] ?? '?' ) . ')' );
+    foreach ( [ 'title' => 'ascending', 'date' => 'ascending' ] as $by => $dir ) {
+        $content = $wrap( $group( $loopOn( [ 'loopId' => 'loop-verifyprev1', 'postPerPage' => '3', 'orderBy' => $by, 'order' => $dir ] ), $heading( 'loop_post_title' ) ) );
+        $rows    = $preview( $content );
+        $shown   = $headings( $render( $save( $content, "preview posts {$by}" ) )['html'] );
+        $check( 1 === count( $rows ) && [] !== $rows[0]['first'] && $same( $rows[0]['first'], $shown ), "preview of a post loop ordered by {$by} {$dir}: the first titles equal Divi's list (" . implode( ' | ', array_slice( $shown, 0, 3 ) ) . ')' );
+    }
+    if ( null !== $menu ) {
+        foreach ( [ 'descending', 'ascending' ] as $order ) {
+            $loop    = [ 'enable' => 'on', 'loopId' => 'loop-verifyprev2', 'queryType' => 'menus', 'subTypes' => [ [ 'value' => (string) $menu->term_id, 'label' => $menu->name ] ], 'orderBy' => 'menu_order', 'order' => $order, 'postPerPage' => '3' ];
+            $content = $wrap( $group( $loop, $heading( 'loop_menu_text' ) ) );
+            $rows    = $preview( $content );
+            $shown   = $headings( $render( $save( $content, "preview menu {$order}" ) )['html'] );
+            $check( 1 === count( $rows ) && $rows[0]['listed'] === count( $shown ) && $same( $rows[0]['first'], $shown ), "preview of a menu loop ({$order}): count and first titles equal Divi's list (" . implode( ' | ', $shown ) . ')' );
+        }
+    }
+    $content = $wrap( $group( [ 'enable' => 'on', 'loopId' => 'loop-verifyprev3', 'queryType' => 'post_taxonomies', 'subTypes' => [ [ 'value' => 'category', 'label' => 'C' ] ], 'orderBy' => 'name', 'order' => 'ascending', 'postPerPage' => '50' ], $heading( 'loop_term_name' ) ) );
+    $rows    = $preview( $content );
+    $shown   = array_filter( $headings( $render( $save( $content, 'preview terms' ) )['html'] ) );
+    $check( 1 === count( $rows ) && $rows[0]['listed'] === count( $shown ), 'preview of a terms loop: the number of terms equals what Divi lists (' . count( $shown ) . ')' );
+    $postTitles = array_map( static fn( $p ) => $p->post_title, array_slice( $postsAll, 0, 3 ) );
+    foreach ( [
+        'an unknown post type'  => [ $loopOn( [ 'loopId' => 'loop-verifyprev4', 'subTypes' => [ [ 'value' => 'nosuchtype', 'label' => 'X' ] ] ] ), 'loop_post_title', 'everything' ],
+        'an unknown menu id'    => [ [ 'enable' => 'on', 'loopId' => 'loop-verifyprev5', 'queryType' => 'menus', 'subTypes' => [ [ 'value' => '99999', 'label' => 'x' ] ], 'postPerPage' => '3' ], 'loop_menu_text', 'nothing' ],
+        'an unknown taxonomy'   => [ [ 'enable' => 'on', 'loopId' => 'loop-verifyprev6', 'queryType' => 'post_taxonomies', 'subTypes' => [ [ 'value' => 'nosuchtax', 'label' => 'x' ] ], 'postPerPage' => '3' ], 'loop_term_name', 'nothing' ],
+    ] as $label => [ $loop, $tokenName, $effect ] ) {
+        $content = $wrap( $group( $loop, $heading( $tokenName ) ) );
+        $rows    = $preview( $content );
+        $shown   = array_values( array_filter( $headings( $render( $save( $content, "preview {$label}" ) )['html'] ), static fn( $h ) => 'No Results Found.' !== $h ) );
+        $real    = 'nothing' === $effect ? 0 === count( $shown ) : ( 3 === count( $shown ) && ! $same( $shown, $postTitles ) );
+        $check( 1 === count( $rows ) && [] !== $rows[0]['problems'] && $real, "preview of a loop with {$label}: flagged as a problem, and Divi really lists " . ( 'nothing' === $effect ? 'nothing' : 'the wrong items (' . implode( ', ', array_slice( $shown, 0, 2 ) ) . ')' ) );
+    }
+    $content = $wrap( $group( $loopOn( [ 'loopId' => 'loop-verifyprev7', 'includePostWithSpecificTerms' => [ [ 'categoryId' => 'category', 'categoryName' => 'C', 'selectedOptions' => [ [ 'value' => '98765', 'label' => 'Gone' ] ] ] ] ] ), $heading( 'loop_post_title' ) ) );
+    $rows    = $preview( $content );
+    $shown   = array_filter( $headings( $render( $save( $content, 'preview term filter' ) )['html'] ), static fn( $h ) => 'No Results Found.' !== $h );
+    $check( 1 === count( $rows ) && [] !== $rows[0]['problems'] && null === $rows[0]['found'] && $same( $shown, $postTitles ), 'preview of a filter on a term id that does not exist: flagged, and Divi really ignores the filter (the unfiltered newest posts come up)' );
+    // ---- the paged posts recipe and the categories recipe, as served, on this site's own data ----------------------------------
+    foreach ( [ 'loop-posts-paged', 'loop-categories-grid' ] as $recipe ) {
+        foreach ( [ 'the default look' => [ null, null ], 'brutalist-flat' => [ 'brutalist-flat', null ] ] as $look => [ $lang, $kit ] ) {
+            $markup = \AiEditorDivi5\WP\SectionRecipes::recipe( $recipe, $lang, $kit );
+            $check( is_string( $markup ) && LayoutGate::check( $markup )->isValid(), "{$recipe} under {$look}: the served recipe passes the layout gate" );
+            $r      = $render( $save( (string) $markup, "{$recipe} {$look}" ) );
+            $titles = $h3s( $r['html'] );
+            $check( '' === $r['threw'] && false === strpos( $r['html'], '$variable(' ) && false === strpos( $r['html'], 'No Results Found' ), "{$recipe} under {$look}: renders without throwing, no raw token, no empty-loop notice" );
+            if ( 'loop-posts-paged' === $recipe ) {
+                $want = array_map( static fn( $p ) => $p->post_title, array_slice( $postsAll, 0, 6 ) );
+                $check( $same( $want, $titles ), "{$recipe} under {$look}: one card per post, newest first, six per page (" . count( $titles ) . ' cards)' );
+                $check( false !== strpos( $r['html'], 'et_pb_posts_nav' ), "{$recipe} under {$look}: the Post Navigation module is on the page" );
+            } else {
+                $cats = array_values( array_filter( get_terms( [ 'taxonomy' => 'category', 'hide_empty' => true, 'orderby' => 'count', 'order' => 'DESC' ] ), 'is_object' ) );
+                $check( $same( array_map( static fn( $t ) => $t->name, $cats ), $titles ), "{$recipe} under {$look}: one card per category that has posts, most used first (" . count( $titles ) . ' cards)' );
+                preg_match_all( '#<a[^>]+class="[^"]*et_pb_button[^"]*"[^>]+href="([^"]+)"#', $r['html'], $btn );
+                $hrefs = array_map( 'html_entity_decode', $btn[1] ?? [] );
+                $check( [] !== $cats && in_array( get_term_link( $cats[0] ), $hrefs, true ), "{$recipe} under {$look}: each card's button links to its category archive" );
+            }
+        }
+    }
+
     $bad = $wrap( $group( $loopOn(), $blk( 'heading', [ 'title' => [ 'innerContent' => [ 'desktop' => [ 'value' => '$variable({"type":"content","value":{"name":"loop_post_title","settings":{}}})' ] ] ], 'builderVersion' => '5.8.0' ] ) ) );
     $check( ! LayoutGate::check( $bad )->isValid(), 'a token without its closing )$: the validator refuses it' );
     $r = $render( $save( $bad, 'open token' ) );

@@ -65,6 +65,7 @@ require_once __DIR__ . '/ComponentReader.php';
 require_once __DIR__ . '/ComponentAdvisory.php';
 require_once __DIR__ . '/ContentLoss.php';
 require_once __DIR__ . '/LoopAdvisory.php';
+require_once __DIR__ . '/LoopPreview.php';
 require_once __DIR__ . '/DesignVariety.php';
 require_once __DIR__ . '/ViolationReport.php';
 require_once __DIR__ . '/PageOutline.php';

@@ -426,10 +426,24 @@ final class Validator
     // Pass 5b — Loop Builder (module.advanced.loop) and dynamic tokens
     // ---------------------------------------------------------------
 
-    /** @return string[] Query types the Loop Builder offers (Divi 5.15.1 QueryTypeController). */
+    /**
+     * @return string[] Query types the Loop Builder offers (Divi 5.15.1 QueryTypeController), plus "terms" (Divi reads it as
+     * post_taxonomies; live-rendered) and "repeater_<acf field name>" (matched by isLoopQueryType()).
+     */
     private function loopQueryTypes(): array
     {
-        return ['post_types', 'post_taxonomies', 'user_roles', 'menus', 'current_page'];
+        return ['post_types', 'post_taxonomies', 'terms', 'user_roles', 'menus', 'current_page'];
+    }
+
+    /**
+     * An ACF repeater loop is any queryType "repeater_" plus the field name (DynamicContentACFUtils::is_repeater_query). Divi runs
+     * the type through sanitize_key(), so only lowercase letters, digits, "_" and "-" survive. Source-grounded and rendered on
+     * Divi 5.15.1 without ACF (nothing listed, nothing thrown); not rendered with a real ACF Pro repeater.
+     */
+    private function isLoopQueryType(mixed $type): bool
+    {
+        return is_string($type)
+            && (in_array($type, $this->loopQueryTypes(), true) || preg_match('/^repeater_[a-z0-9_-]+$/', $type) === 1);
     }
 
     /**
@@ -463,6 +477,17 @@ final class Validator
                 }
             }
 
+            // A Post Navigation module connected to a loop: an array or object here is a TypeError for the whole page
+            // (LoopQueryRegistry::get_query() wants a string; docs/loop-builder-evidence-5.15.1.md, probe 2026-11-08).
+            if ($type === 'divi/post-nav' && is_array($block->attr('module.advanced.targetLoop.desktop.value'))) {
+                $violations[] = new Violation(
+                    self::E_INVALID_LOOP_SETTING,
+                    "Block '$type': 'module.advanced.targetLoop.desktop.value' must be the loopId string of the loop it pages "
+                        . '(an array or object makes Divi answer HTTP 500 for the whole page).',
+                    "$path.module.advanced.targetLoop.desktop.value"
+                );
+            }
+
             $this->checkTokens($block->attrs(), $path, $type, $violations);
         });
     }
@@ -479,8 +504,8 @@ final class Validator
         if (array_key_exists('loopId', $v) && !is_string($v['loopId'])) {
             $fail("'loopId' must be a string such as \"loop-ab12cd34ef\" (an array makes Divi answer HTTP 500 for the whole page).");
         }
-        if (array_key_exists('queryType', $v) && !(is_string($v['queryType']) && in_array($v['queryType'], $this->loopQueryTypes(), true))) {
-            $fail("'queryType' must be one of " . implode(', ', $this->loopQueryTypes()) . '.');
+        if (array_key_exists('queryType', $v) && !$this->isLoopQueryType($v['queryType'])) {
+            $fail("'queryType' must be one of " . implode(', ', $this->loopQueryTypes()) . ', or repeater_<lowercase ACF field name>.');
         }
         if (array_key_exists('order', $v) && !in_array($v['order'], ['ascending', 'descending'], true)) {
             $fail("'order' must be the string \"ascending\" or \"descending\" (an array makes Divi answer HTTP 500, \"desc\" is read as ascending).");
