@@ -51,6 +51,7 @@ class ImageRadiusMigrationTest extends TestCase
     private const TOKEN_IMAGES = [
         'loop-posts-cards'         => [ 0 ],
         'loop-products-grid'       => [ 0 ],
+        'loop-posts-paged'         => [ 0 ],
         'portfolio-featured-grid'  => [ 0, 1, 2, 3, 4 ],
         'hero-product-glow'        => [ 0 ],
         'testimonials-avatar-grid' => [ 0, 1, 2 ],
@@ -189,8 +190,8 @@ class ImageRadiusMigrationTest extends TestCase
         $this->assertSame( 0, self::BESPOKE_IMAGES_MAX, 'cap 0' );
         $this->assertSame( [], self::BESPOKE_IMAGES );
         $this->assertSame( [], $other );
-        $this->assertSame( 27, $radii, '27 image radii in the library (the audit of the image radius spec; every breakpoint counted)' );
-        $this->assertSame( [ 'token' => 13, 'flush' => 10, 'shaped' => 4 ], $counts );
+        $this->assertSame( 28, $radii, '28 image radii in the library (the audit of the image radius spec; every breakpoint counted)' );
+        $this->assertSame( [ 'token' => 14, 'flush' => 10, 'shaped' => 4 ], $counts );
     }
 
     public function testTheElevenKitLikeImagesCarryTheMediaToken(): void
@@ -247,7 +248,7 @@ class ImageRadiusMigrationTest extends TestCase
                 }
             }
         }
-        $this->assertSame( 13 * 40, $checked );
+        $this->assertSame( 14 * 40, $checked );
     }
 
     public function testTheTokenIsTheWholeRadiusValueWithNoCornerOrSyncKeyBesideIt(): void

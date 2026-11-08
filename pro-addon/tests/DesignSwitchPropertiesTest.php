@@ -32,21 +32,21 @@ class DesignSwitchPropertiesTest extends TestCase
     public function testIdentityIsANoOp(): void
     {
         $r = DesignSwitchMatrixOne::result();
-        $this->assertSame( 730, $r['identity_shortcut'], 'run() with from == to returns every page byte for byte' );
+        $this->assertSame( 750, $r['identity_shortcut'], 'run() with from == to returns every page byte for byte' );
     }
 
     public function testIdentityThroughTheEngine(): void
     {
         $r = DesignSwitchMatrixOne::result();
-        $this->assertSame( 729, $r['identity_engine'] );
+        $this->assertSame( 749, $r['identity_engine'] );
         $this->assertSame( [ 'contact-location-form luxe D5' ], $r['identity_engine_failures'] );
     }
 
     public function testSwitchingTwiceToTheSameTargetIsANoOp(): void
     {
         $r = DesignSwitchMatrixOne::result();
-        $this->assertSame( 6570, $r['pairs'] );
-        $this->assertSame( 6561, $r['twice'] );
+        $this->assertSame( 6750, $r['pairs'] );
+        $this->assertSame( 6741, $r['twice'] );
         $named = [];
         foreach ( [ 'editorial', 'glass-dark', 'organic-warm', 'tech-mono', 'playful-pastel', 'corporate-trust', 'soft-saas', 'bold-vibrant', 'brutalist-flat' ] as $l ) {
             $named[] = "contact-location-form $l>luxe D5";
@@ -61,7 +61,7 @@ class DesignSwitchPropertiesTest extends TestCase
     public function testRoundTripReturnsTheOriginal(): void
     {
         $r = DesignSwitchMatrixOne::result();
-        $this->assertSame( 6036, $r['round_trip'] );
+        $this->assertSame( 6216, $r['round_trip'] );
         $this->assertSame( [], $r['unclassified'], 'every difference of every property is one of D1-D5' );
         $tally = DesignDiffClassifier::tally( $r['round_trip_firsts'] );
         foreach ( [ 'D1' => 422, 'D2' => 48, 'D3' => 46, 'D4' => 9, 'D5' => 9 ] as $class => $cap ) {
@@ -75,8 +75,8 @@ class DesignSwitchPropertiesTest extends TestCase
     public function testEveryNthOutputPassesTheGate(): void
     {
         $r = DesignSwitchMatrixOne::result();
-        $this->assertSame( 939, $r['gated'] );
-        $this->assertSame( 939, $r['gate_valid'], 'LayoutGate::check($out, $in) is valid on every sampled output' );
+        $this->assertSame( 965, $r['gated'] );
+        $this->assertSame( 965, $r['gate_valid'], 'LayoutGate::check($out, $in) is valid on every sampled output' );
     }
 
     public function testNoOutputCarriesATokenOrMarker(): void
@@ -126,6 +126,6 @@ class DesignSwitchPropertiesTest extends TestCase
                 }
             }
         }
-        $this->assertSame( 664, $runs );
+        $this->assertSame( 682, $runs );
     }
 }

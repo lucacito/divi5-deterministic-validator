@@ -126,7 +126,7 @@ class RecipeLibraryTest extends TestCase
     private const BESPOKE_CARDS_MAX = 0;
 
     /** Every card surface the report found when the card adapter started (Task 2): each one is either marked or listed. */
-    private const CARD_SURFACES_KNOWN = 34; // 32 + the looped card of loop-posts-cards and of loop-products-grid
+    private const CARD_SURFACES_KNOWN = 36; // 32 + the looped card of the four Loop Builder recipes
 
     /**
      * Keys a marked card's `module.decoration` may keep besides the ones the kit's patch writes: structure, never card
@@ -545,7 +545,7 @@ class RecipeLibraryTest extends TestCase
             }
         }
         $this->assertSame( 0, count( self::BESPOKE_BUTTONS ), 'shrink-only by test: no recipe button is bespoke any more, and none may be added' );
-        $this->assertSame( 32, $total, 'the recipes hold 32 buttons (update this count with the recipes)' ); // 28 + the two Loop Builder recipes' card and all-link buttons (loop-posts-cards, loop-products-grid)
+        $this->assertSame( 35, $total, 'the recipes hold 35 buttons (update this count with the recipes)' ); // 28 + the four Loop Builder recipes' card and all-link buttons (loop-posts-cards, loop-products-grid, loop-posts-paged, loop-categories-grid)
         $this->assertSame( array_keys( self::BESPOKE_BUTTONS ), $bespoke, 'every bespoke entry names a real button that is still bespoke' );
         $this->assertSame( $total - count( self::BESPOKE_BUTTONS ), $migrated );
         $file = __DIR__ . '/../wp-plugin/data/section-recipes.json';
@@ -643,7 +643,7 @@ class RecipeLibraryTest extends TestCase
                 }
             }
         }
-        $this->assertSame( 32, $checked, 'every kit marker is checked (update with the recipes)' );
+        $this->assertSame( 35, $checked, 'every kit marker is checked (update with the recipes)' );
         $this->assertSame( [], $problems, 'a button\'s "on" must name the band it really sits on, or the kit picks unreadable colours' );
     }
 
@@ -1799,8 +1799,9 @@ class RecipeLibraryTest extends TestCase
         // for another marker (rules and chips Task 5; icon-values is both a card and a chip recipe),
         // plus the 4 carrier recipes (carriers adapter, plan 2026-10-24, Task 5): testimonial, blurb-grid, stats-counter-band and
         // blog-feed join; icon-values, the fifth carrier recipe, already counted (45 -> 49),
-        // plus the two Loop Builder recipes, loop-posts-cards and loop-products-grid (49 -> 51).
-        $this->assertSame( 51, $checked, 'the recipes with a kit marker (button, card, item, form, rule, chip or carrier)' );
+        // plus the two Loop Builder recipes, loop-posts-cards and loop-products-grid (49 -> 51),
+        // plus loop-posts-paged and loop-categories-grid (51 -> 53).
+        $this->assertSame( 53, $checked, 'the recipes with a kit marker (button, card, item, form, rule, chip or carrier)' );
     }
 
     public function testRecipesWithoutPairsAreOnlyTheFrozenBaselineAndItOnlyShrinks(): void

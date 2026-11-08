@@ -67,7 +67,7 @@ class ContextTableTest extends TestCase
     {
         $table = ContextTable::current();
         $this->assertSame( [], $table->skipped(), 'every recipe resolves and keeps its block list' );
-        $this->assertSame( [ 'colour' => 871, 'font' => 641 ], $table->totals(), 'DesignInventoryTest: 871 colour, 641 font tokens' );
+        $this->assertSame( [ 'colour' => 882, 'font' => 653 ], $table->totals(), 'DesignInventoryTest: 882 colour, 653 font tokens' );
     }
 
     public function testTheMeasuredLibraryContexts(): void
@@ -75,7 +75,7 @@ class ContextTableTest extends TestCase
         $t    = ContextTable::current();
         $body = '.content.decoration.bodyFont.body.font.desktop.value.family';
         // Spec section 6, D1: the untyped text body font.
-        $this->assertSame( [ 'body' => 240, 'display' => 41, 'eyebrow' => 13 ], $t->font( 'divi/text', $body, '-' ) );
+        $this->assertSame( [ 'body' => 243, 'display' => 41, 'eyebrow' => 13 ], $t->font( 'divi/text', $body, '-' ) );
         $this->assertSame( [ 'eyebrow' => 33 ], $t->font( 'divi/text', $body, 'eyebrow' ) );
         $this->assertSame( [ 'display' => 3, 'eyebrow' => 1 ], $t->font( 'divi/text', '.content.decoration.headingFont.h4.font.desktop.value.family', '-' ) );
         $this->assertSame( [], $t->font( 'divi/text', $body, 'no-such-role' ) );

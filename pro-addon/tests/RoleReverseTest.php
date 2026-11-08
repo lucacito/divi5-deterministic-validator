@@ -254,8 +254,8 @@ class RoleReverseTest extends TestCase
         // value (harmless by definition); "assumed:other" is D1, "ambiguous:left" is D3 (colours) and D1 (fonts left).
         $this->assertSame(
             [
-                'color' => [ 'ambiguous:left' => 252, 'context:right' => 16281, 'same-target:other' => 36, 'same-target:right' => 36 ],
-                'font'  => [ 'ambiguous:left' => 452, 'assumed:other' => 1041, 'assumed:right' => 6783, 'context:right' => 17172, 'same-target:other' => 1092, 'same-target:right' => 10270 ],
+                'color' => [ 'ambiguous:left' => 252, 'context:right' => 16425, 'same-target:other' => 36, 'same-target:right' => 36 ],
+                'font'  => [ 'ambiguous:left' => 452, 'assumed:other' => 1041, 'assumed:right' => 6867, 'context:right' => 17658, 'same-target:other' => 1098, 'same-target:right' => 10396 ],
             ],
             $outcomes
         );

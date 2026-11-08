@@ -27,16 +27,16 @@ class RhythmMigrationReportTest extends TestCase
     public function testTheTotalsLineIsThePlansCounts(): void
     {
         $out = \RhythmReport::render( RhythmAudit::sections( self::library() ) );
-        $this->assertStringContainsString( "\nsection 40, open 7, tight 1, exempt 25\n", $out );
+        $this->assertStringContainsString( "\nsection 42, open 7, tight 1, exempt 25\n", $out );
         // Since Task 5 (scripts/migrate-rhythm-markers.php) every classified section carries its marker.
-        $this->assertStringContainsString( "\nmarked 48 of 48\n", $out );
+        $this->assertStringContainsString( "\nmarked 50 of 50\n", $out );
         $this->assertStringContainsString( "\nexempt by reason: 0px edge 3, asymmetric 6, desktop only 3, no padding 7, old alpha shape 3, out of band 1, percent or vw 2\n", $out );
     }
 
     public function testEverySectionHasALine(): void
     {
         $out = \RhythmReport::render( RhythmAudit::sections( self::library() ) );
-        $this->assertSame( 73, substr_count( $out, "\n  " ), 'one indented line per section' );
+        $this->assertSame( 75, substr_count( $out, "\n  " ), 'one indented line per section' );
         $this->assertStringContainsString( '  hero-pattern-centered | section#0 | -/-/- | open | MARKED | -', $out );
         $this->assertStringContainsString( '  proof-logo-wall | section#0 | -/-/- | tight | MARKED | -', $out );
         $this->assertStringContainsString( '  features-bento | section#0 | -/-/- | section | MARKED | -', $out );
@@ -67,6 +67,6 @@ class RhythmMigrationReportTest extends TestCase
         $code = 1;
         exec( escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( __DIR__ . '/../scripts/rhythm-migration-report.php' ) . ' 2>&1', $out, $code );
         $this->assertSame( 0, $code, implode( "\n", $out ) );
-        $this->assertContains( 'section 40, open 7, tight 1, exempt 25', $out );
+        $this->assertContains( 'section 42, open 7, tight 1, exempt 25', $out );
     }
 }

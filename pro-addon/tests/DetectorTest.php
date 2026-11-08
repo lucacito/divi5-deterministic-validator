@@ -30,7 +30,7 @@ class DetectorTest extends TestCase
      * kit block, nothing to recover; `refused`: two kits within the floor that unresolve differently; `wrong`: accepted
      * although it unresolves differently (must stay 0).
      */
-    private const TABLE = [ 'languages' => 292, 'exact' => 137, 'harmless' => 39, 'none' => 76, 'refused' => 40, 'wrong' => 0 ];
+    private const TABLE = [ 'languages' => 300, 'exact' => 145, 'harmless' => 39, 'none' => 76, 'refused' => 40, 'wrong' => 0 ];
 
     /**
      * The language confidence measured on the same 284 pages (FIX 1 of the review): the lowest score, the lowest share
@@ -40,7 +40,7 @@ class DetectorTest extends TestCase
     private const LANGUAGE_FLOOR_TABLE = [ 'min_score' => 6, 'min_share' => 0.688, 'refused' => 0 ];
 
     /** sha256 of the drawn (recipe, language, kit) list, so a PHP generator change cannot move the table silently. */
-    private const DRAW_HASH = '9c0ef7f6fdc19493c1d952a3cc8e78b5c86688b24c4e387566898fa6c0e63641';
+    private const DRAW_HASH = 'be9539e47f8973355fe8bd13b4ef9a21030096c50b34780deb20e616e4286d65';
 
     private static function build( string $recipe, string $language, string $kit ): string
     {
@@ -69,7 +69,7 @@ class DetectorTest extends TestCase
     public function testDetectionOnTheLibrary(): void
     {
         $draws = self::draws();
-        $this->assertCount( 292, $draws );
+        $this->assertCount( 300, $draws );
         $this->assertSame( self::DRAW_HASH, hash( 'sha256', (string) json_encode( $draws ) ) );
 
         $to    = Design::make( 'luxe', 'gilt-hairline' );

@@ -437,7 +437,7 @@ class LanguageResolverTest extends TestCase
                 $this->assertSame( LegacyKitResolver::resolve( $raw, $kit ), KitResolver::resolve( $raw, $kit ), "$name / $id" );
             }
         }
-        $this->assertSame( 46, $recipes, 'the 46 kit-marker recipes whose every marker the legacy resolver knows' );
+        $this->assertSame( 48, $recipes, 'the 48 kit-marker recipes whose every marker the legacy resolver knows' );
         sort( $left );
         $this->assertSame( [ 'blog-feed', 'blurb-grid', 'icon-values', 'stats-counter-band', 'testimonial' ], $left, 'only the five carrier recipes are left out' );
         // The scanner edge cases of KitResolverTest, too.

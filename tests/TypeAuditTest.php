@@ -48,6 +48,7 @@ class TypeAuditTest extends TestCase
         $add( [ 'list-icon-dividers' ], [ 1 ], range( 2, 6 ), [ 0 ], [] );
         $add( [ 'loop-posts-cards' ], [ 1 ], [ 2 ], [ 0 ], [] );
         $add( [ 'loop-products-grid' ], [ 0 ], [ 1 ], [], [] );
+        $add( [ 'loop-posts-paged', 'loop-categories-grid' ], [ 1 ], [ 2 ], [ 0 ], [] );
         $add( [ 'steps-numbered' ], [ 1 ], range( 2, 4 ), [ 0 ], [] );
         $add( [ 'steps-horizontal' ], [ 1 ], range( 2, 5 ), [ 0 ], [] );
         $add( [ 'timeline-vertical' ], [ 1 ], [ 3, 5, 7, 9 ], [ 0, 2, 4, 6, 8 ], [] );
@@ -112,8 +113,8 @@ class TypeAuditTest extends TestCase
         $rows    = TypeAudit::blocks( $recipes );
 
         $headings = array_filter( $rows, static fn ( array $r ): bool => 'divi/heading' === $r['block'] );
-        $this->assertCount( 179, $headings, 'the library has 179 headings' );
-        $this->assertCount( 59, array_unique( array_column( $headings, 'recipe' ) ), 'in 59 recipes' );
+        $this->assertCount( 185, $headings, 'the library has 185 headings' );
+        $this->assertCount( 61, array_unique( array_column( $headings, 'recipe' ) ), 'in 61 recipes' );
 
         $roles = [ 'display' => 0, 'title' => 0, 'eyebrow-heading' => 0, 'eyebrow-text' => 0 ];
         $got   = [];
@@ -137,9 +138,9 @@ class TypeAuditTest extends TestCase
         }
 
         $this->assertSame( [], $unclassified, 'every heading and uppercase label is classified or a named exemption' );
-        $this->assertSame( [ 'display' => 58, 'title' => 66, 'eyebrow-heading' => 54, 'eyebrow-text' => 33 ], $roles );
-        $this->assertSame( 211, array_sum( $roles ) );
-        $this->assertCount( 58, $got, '211 blocks in 58 recipes' );
+        $this->assertSame( [ 'display' => 60, 'title' => 68, 'eyebrow-heading' => 56, 'eyebrow-text' => 33 ], $roles );
+        $this->assertSame( 217, array_sum( $roles ) );
+        $this->assertCount( 60, $got, '217 blocks in 60 recipes' );
 
         $this->assertEqualsCanonicalizing(
             [ 'shop-grid|divi/heading|0', 'proof-press-quotes|divi/text|0', 'proof-press-quotes|divi/text|3', 'proof-press-quotes|divi/text|6' ],
@@ -172,7 +173,7 @@ class TypeAuditTest extends TestCase
             $this->assertSame( null !== $r['role'], $r['marked'], TypeAudit::key( $r ) );
             $marked += $r['marked'] ? 1 : 0;
         }
-        $this->assertSame( 211, $marked );
+        $this->assertSame( 217, $marked );
     }
 
     public function testTheAuditClassifiesPlantedBlocks(): void

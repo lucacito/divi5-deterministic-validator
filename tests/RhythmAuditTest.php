@@ -41,7 +41,7 @@ class RhythmAuditTest extends TestCase
         $add( 'section', [ 120, 88, 64 ], [ 'stats-big-numbers' ] );
         $add( 'section', [ 96, 80, 64 ], [ 'cta-band' ] );
         $add( 'section', [ 112, 88, 64 ], [
-            'features-bento', 'features-zigzag', 'list-icon-dividers', 'loop-posts-cards', 'loop-products-grid', 'checklist-two-column', 'steps-numbered', 'steps-horizontal', 'timeline-vertical',
+            'features-bento', 'features-zigzag', 'list-icon-dividers', 'loop-posts-cards', 'loop-products-grid', 'loop-posts-paged', 'loop-categories-grid', 'checklist-two-column', 'steps-numbered', 'steps-horizontal', 'timeline-vertical',
             'features-accordion-image', 'compare-two-panels', 'features-carousel-strip', 'proof-press-quotes', 'stats-counter-band', 'stats-circle-counters',
             'stats-big-captions', 'testimonials-slider-quote', 'testimonials-avatar-grid', 'pricing-three-tier', 'pricing-two-plan-highlight',
             'pricing-comparison-table', 'team-grid', 'values-list', 'faq-accordion', 'faq-two-column', 'faq-toggle-list', 'cta-split-form', 'cta-countdown',
@@ -96,8 +96,8 @@ class RhythmAuditTest extends TestCase
     public function testTheAuditFindsTheLibrarysSections(): void
     {
         $rows = RhythmAudit::sections( self::library() );
-        $this->assertCount( 73, $rows, 'the library has 73 sections' );
-        $this->assertCount( 73, array_unique( array_column( $rows, 'recipe' ) ), 'one in each of 73 recipes' );
+        $this->assertCount( 75, $rows, 'the library has 75 sections' );
+        $this->assertCount( 75, array_unique( array_column( $rows, 'recipe' ) ), 'one in each of 75 recipes' );
 
         $roles  = [ 'section' => 0, 'open' => 0, 'tight' => 0 ];
         $got    = [];
@@ -120,8 +120,8 @@ class RhythmAuditTest extends TestCase
         }
 
         $this->assertSame( [], $unclassified, 'every section is classified or a named exemption' );
-        $this->assertSame( [ 'section' => 40, 'open' => 7, 'tight' => 1 ], $roles );
-        $this->assertCount( 48, $got );
+        $this->assertSame( [ 'section' => 42, 'open' => 7, 'tight' => 1 ], $roles );
+        $this->assertCount( 50, $got );
         $this->assertCount( 25, $exempt );
         $this->assertEqualsCanonicalizing(
             array_map( static fn ( string $recipe ): string => $recipe . '|divi/section|0', array_keys( RhythmAudit::EXEMPTIONS ) ),
@@ -133,7 +133,7 @@ class RhythmAuditTest extends TestCase
         $this->assertSame( 25, RhythmAudit::EXEMPTIONS_MAX );
 
         $pinned = self::pinned();
-        $this->assertCount( 48, $pinned );
+        $this->assertCount( 50, $pinned );
         $this->assertEqualsCanonicalizing( array_keys( $pinned ), array_keys( $got ), 'the classified recipes are exactly the pinned ones' );
         foreach ( $pinned as $recipe => [ $role, $d, $t, $p ] ) {
             // Since Task 5 (scripts/migrate-rhythm-markers.php) a classified section is found by its marker and its own padding
@@ -159,7 +159,7 @@ class RhythmAuditTest extends TestCase
         ksort( $byRecipeRole );
         $this->assertSame(
             [
-                'blog'         => [ 'section' => 1 ],
+                'blog'         => [ 'section' => 3 ],
                 'contact'      => [ 'section' => 2 ],
                 'content'      => [ 'open' => 1, 'section' => 1 ],
                 'cta'          => [ 'open' => 1, 'section' => 3 ],
@@ -330,6 +330,6 @@ class RhythmAuditTest extends TestCase
             $this->assertSame( null !== $r['role'], $r['marked'], RhythmAudit::key( $r ) );
             $marked += $r['marked'] ? 1 : 0;
         }
-        $this->assertSame( 48, $marked );
+        $this->assertSame( 50, $marked );
     }
 }

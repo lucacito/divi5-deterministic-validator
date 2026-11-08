@@ -27,16 +27,16 @@ class TypeMigrationReportTest extends TestCase
     public function testTheTotalsLineIsThePlansCounts(): void
     {
         $out = \TypeReport::render( TypeAudit::blocks( self::library() ), false );
-        $this->assertStringContainsString( "\ndisplay 58, title 66, eyebrow 87 (54 headings + 33 texts), exempt 4\n", $out );
+        $this->assertStringContainsString( "\ndisplay 60, title 68, eyebrow 89 (56 headings + 33 texts), exempt 4\n", $out );
         // Since Task 5 (scripts/migrate-type-markers.php) every classified block carries its marker.
-        $this->assertStringContainsString( "\nmarked 211 of 211\n", $out );
+        $this->assertStringContainsString( "\nmarked 217 of 217\n", $out );
     }
 
     public function testEveryClassifiedBlockHasALine(): void
     {
         $rows = TypeAudit::blocks( self::library() );
         $out  = \TypeReport::render( $rows, false );
-        $this->assertSame( 211 + 4, substr_count( $out, "\n  " ) , 'one indented line per classified or exempt block' );
+        $this->assertSame( 217 + 4, substr_count( $out, "\n  " ) , 'one indented line per classified or exempt block' );
         $this->assertStringContainsString( '  proof-press-quotes | text#0 | - | display | exempt | - | a publication name', $out );
         $this->assertStringContainsString( '  shop-grid | heading#0 | - | display | exempt | - |', $out );
         $this->assertStringContainsString( '  hero-cta | heading#1 | h1 | display | display | MARKED |', $out );
@@ -67,6 +67,6 @@ class TypeMigrationReportTest extends TestCase
         $code = 1;
         exec( escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( __DIR__ . '/../scripts/type-migration-report.php' ) . ' 2>&1', $out, $code );
         $this->assertSame( 0, $code, implode( "\n", $out ) );
-        $this->assertContains( 'display 58, title 66, eyebrow 87 (54 headings + 33 texts), exempt 4', $out );
+        $this->assertContains( 'display 60, title 68, eyebrow 89 (56 headings + 33 texts), exempt 4', $out );
     }
 }

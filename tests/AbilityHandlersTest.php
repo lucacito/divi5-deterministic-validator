@@ -57,7 +57,7 @@ class AbilityHandlersTest extends TestCase
     public function testRecipesFilterByRoleDensityAndStage(): void
     {
         $all = AbilityHandlers::run( 'get-section-recipes', [] );
-        $this->assertSame( 73, $all['count'] );
+        $this->assertSame( 75, $all['count'] );
         $airyHero = AbilityHandlers::run( 'get-section-recipes', [ 'role' => 'hero', 'density' => 'airy' ] );
         $this->assertGreaterThan( 0, $airyHero['count'] );
         $this->assertLessThan( $all['count'], $airyHero['count'] );

@@ -425,9 +425,9 @@ class WordingGapsEvidenceTest extends TestCase
                 }
             }
         }
-        $this->assertSame( 105, $rows, 'rows in the library (101 measured at 895610e, plus the 4 rows of the two Loop Builder recipes)' );
+        $this->assertSame( 109, $rows, 'rows in the library (101 measured at 895610e, plus the 8 rows of the four Loop Builder recipes)' );
         $this->assertGreaterThanOrEqual( 30, $wrap );
-        $this->assertSame( 39, $wrap, 'rows that wrap at phone (measured: 38 rows in 30 recipes, plus the split header of loop-posts-cards)' );
+        $this->assertSame( 40, $wrap, 'rows that wrap at phone (measured: 38 rows in 30 recipes, plus the split headers of loop-posts-cards and loop-categories-grid)' );
 
         // A flex GROUP stacks with its own phone flexDirection: used by the library (portfolio-featured-grid's header group).
         $groupStacks = 0;

@@ -165,6 +165,12 @@ class TypeMigrationTest extends TestCase
         'loop-posts-cards|divi/heading|0' => 'eyebrow',
         'loop-posts-cards|divi/heading|1' => 'display',
         'loop-posts-cards|divi/heading|2' => 'title',
+        'loop-posts-paged|divi/heading|0' => 'eyebrow',
+        'loop-posts-paged|divi/heading|1' => 'display',
+        'loop-posts-paged|divi/heading|2' => 'title',
+        'loop-categories-grid|divi/heading|0' => 'eyebrow',
+        'loop-categories-grid|divi/heading|1' => 'display',
+        'loop-categories-grid|divi/heading|2' => 'title',
         'loop-products-grid|divi/heading|0' => 'display',
         'loop-products-grid|divi/heading|1' => 'title',
         'checklist-two-column|divi/heading|0'                => 'eyebrow',
@@ -483,13 +489,13 @@ class TypeMigrationTest extends TestCase
         ksort( $pinned );
         ksort( $found );
         $this->assertSame( $pinned, $found, 'exactly these blocks carry a type marker, with this role' );
-        $this->assertCount( 211, $found );
+        $this->assertCount( 217, $found );
         $spelled = array_sum( array_map( static fn ( array $r ): int => substr_count( (string) $r['markup'], '"aied":{"type":' ), self::library() ) );
-        $this->assertSame( 211, $spelled, 'every marker is spelled the one way, as a top-level key' );
+        $this->assertSame( 217, $spelled, 'every marker is spelled the one way, as a top-level key' );
         $roles = array_count_values( array_map( static fn ( string $k, string $r ): string => explode( '|', $k )[1] . ' ' . $r, array_keys( $found ), $found ) );
         ksort( $roles );
-        $this->assertSame( [ 'divi/heading display' => 58, 'divi/heading eyebrow' => 54, 'divi/heading title' => 66, 'divi/text eyebrow' => 33 ], $roles );
-        $this->assertCount( 58, array_unique( array_map( static fn ( string $k ): string => explode( '|', $k )[0], array_keys( $found ) ) ), 'the 211 markers sit in 58 recipes' );
+        $this->assertSame( [ 'divi/heading display' => 60, 'divi/heading eyebrow' => 56, 'divi/heading title' => 68, 'divi/text eyebrow' => 33 ], $roles );
+        $this->assertCount( 60, array_unique( array_map( static fn ( string $k ): string => explode( '|', $k )[0], array_keys( $found ) ) ), 'the 217 markers sit in 60 recipes' );
         // Every heading and uppercase label the audit sees is marked, with the role the rule gives it, or a named exemption.
         foreach ( TypeAudit::blocks( self::library() ) as $r ) {
             $key = TypeAudit::key( $r );
@@ -512,7 +518,7 @@ class TypeMigrationTest extends TestCase
         foreach ( self::library() as $recipe ) {
             $problems = array_merge( $problems, self::ownTypeProblems( (string) $recipe['name'], (string) $recipe['markup'], $checked ) );
         }
-        $this->assertSame( 211, $checked, 'every type marker is checked for its own weight, tracking and capitals' );
+        $this->assertSame( 217, $checked, 'every type marker is checked for its own weight, tracking and capitals' );
         $this->assertSame( [], $problems, 'a marked block keeps its own weight, letter spacing or capitalisation (Ruling 4)' );
     }
 
@@ -536,7 +542,7 @@ class TypeMigrationTest extends TestCase
                 }
             }
         }
-        $this->assertSame( 211, $blocks, 'the merge trap walks all 211 type markers' );
+        $this->assertSame( 217, $blocks, 'the merge trap walks all 217 type markers' );
         $this->assertSame( [], array_slice( array_values( array_unique( $problems ) ), 0, 40 ), 'a marked heading or label keeps everything but the type the language writes' );
     }
 
@@ -582,7 +588,7 @@ class TypeMigrationTest extends TestCase
                 $this->assertTrue( $result->isValid(), "$label must pass the layout gate, got: $codes" );
             }
         }
-        $this->assertSame( 58, $recipes, 'the recipes with a type marker' );
+        $this->assertSame( 60, $recipes, 'the recipes with a type marker' );
     }
 
     public function testNoMarkerTokenOrLeftoverReachesServedMarkup(): void
@@ -600,7 +606,7 @@ class TypeMigrationTest extends TestCase
                 ++$served;
             }
         }
-        $this->assertSame( 73 * 11, $served );
+        $this->assertSame( 75 * 11, $served );
     }
 
     public function testRecipesFileIsSmallerThanBeforeTheTypeMarkers(): void

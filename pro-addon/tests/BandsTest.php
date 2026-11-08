@@ -33,7 +33,7 @@ class BandsTest extends TestCase
                 $pages[ $name . ' @ ' . $id ] = [ $markup, $id ];
             }
         }
-        $this->assertCount( 730, $pages );
+        $this->assertCount( 750, $pages );
         $corpus = json_decode( (string) file_get_contents( self::CORPUS . '/corpus.json' ), true );
         $this->assertCount( 8, $corpus );
         foreach ( $corpus as $entry ) {
