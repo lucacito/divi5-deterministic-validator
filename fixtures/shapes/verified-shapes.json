@@ -1407,6 +1407,81 @@
             "evidence": "docs/shape-evidence-5.15.1.md#rm-html-section-id"
         },
         {
+            "path": "module.advanced.loop.{bp}.value.enable",
+            "how": "export",
+            "evidence": "fixtures/valid/loop-builder-5.3.json"
+        },
+        {
+            "path": "module.advanced.loop.{bp}.value.excludePostWithSpecificTerms",
+            "how": "export",
+            "evidence": "fixtures/valid/loop-builder-5.3.json"
+        },
+        {
+            "path": "module.advanced.loop.{bp}.value.excludeSpecificPosts",
+            "how": "export",
+            "evidence": "fixtures/valid/loop-builder-5.3.json"
+        },
+        {
+            "path": "module.advanced.loop.{bp}.value.includePostWithSpecificTerms.{n}.categoryId",
+            "how": "export",
+            "evidence": "fixtures/valid/loop-builder-5.3.json"
+        },
+        {
+            "path": "module.advanced.loop.{bp}.value.includePostWithSpecificTerms.{n}.categoryName",
+            "how": "export",
+            "evidence": "fixtures/valid/loop-builder-5.3.json"
+        },
+        {
+            "path": "module.advanced.loop.{bp}.value.includePostWithSpecificTerms.{n}.selectedOptions.{n}.label",
+            "how": "export",
+            "evidence": "fixtures/valid/loop-builder-5.3.json"
+        },
+        {
+            "path": "module.advanced.loop.{bp}.value.includePostWithSpecificTerms.{n}.selectedOptions.{n}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/loop-builder-5.3.json"
+        },
+        {
+            "path": "module.advanced.loop.{bp}.value.includeSpecificPosts",
+            "how": "export",
+            "evidence": "fixtures/valid/loop-builder-5.3.json"
+        },
+        {
+            "path": "module.advanced.loop.{bp}.value.loopId",
+            "how": "export",
+            "evidence": "fixtures/valid/loop-builder-5.3.json"
+        },
+        {
+            "path": "module.advanced.loop.{bp}.value.order",
+            "how": "export",
+            "evidence": "fixtures/valid/loop-builder-5.3.json"
+        },
+        {
+            "path": "module.advanced.loop.{bp}.value.orderBy",
+            "how": "export",
+            "evidence": "fixtures/valid/loop-builder-5.3.json"
+        },
+        {
+            "path": "module.advanced.loop.{bp}.value.postPerPage",
+            "how": "export",
+            "evidence": "fixtures/valid/loop-builder-5.3.json"
+        },
+        {
+            "path": "module.advanced.loop.{bp}.value.queryType",
+            "how": "export",
+            "evidence": "fixtures/valid/loop-builder-5.3.json"
+        },
+        {
+            "path": "module.advanced.loop.{bp}.value.subTypes.{n}.label",
+            "how": "export",
+            "evidence": "fixtures/valid/loop-builder-5.3.json"
+        },
+        {
+            "path": "module.advanced.loop.{bp}.value.subTypes.{n}.value",
+            "how": "export",
+            "evidence": "fixtures/valid/loop-builder-5.3.json"
+        },
+        {
             "path": "module.advanced.open.{bp}.value",
             "how": "export",
             "evidence": "fixtures/valid/page-17-newpage.json"

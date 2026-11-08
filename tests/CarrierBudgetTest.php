@@ -68,8 +68,8 @@ final class CarrierBudgetTest extends TestCase
 
     public function testTheDefaultGuideAndTheTopicDescriptionDoNotMove(): void
     {
-        $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
-        $this->assertSame( 272, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
+        $this->assertSame( 28982, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
+        $this->assertSame( 279, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
     }
 
     public function testTheKitTopicsDoNotMove(): void
@@ -157,8 +157,8 @@ final class CarrierBudgetTest extends TestCase
         // wording gaps T4 (plan 2026-10-25-wording-gaps): 9271 -> 9355 (+84 B = StyleGuide::controlsFormClause(), spec gap 14).
         $this->assertSame( 9355, strlen( StyleGuide::markdown( 'controls' ) ) );
 
-        $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
-        $this->assertSame( 272, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
+        $this->assertSame( 28982, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
+        $this->assertSame( 279, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
         foreach ( self::KIT_TOPIC_SIZES as $id => $size ) {
             $this->assertSame( $size, strlen( StyleGuide::markdown( 'style-kit:' . $id ) ), "$id: a kit topic does not move" );
         }

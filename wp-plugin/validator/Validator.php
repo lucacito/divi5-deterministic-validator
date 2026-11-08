@@ -49,6 +49,10 @@ final class Validator
     public const E_OBJECT_WHERE_SCALAR     = 'OBJECT_WHERE_SCALAR';
     public const E_ORPHANED_REFERENCE      = 'ORPHANED_REFERENCE';
 
+    // Pass 5b — Loop Builder settings and dynamic-content tokens (live-proven on Divi 5.15.1, docs/loop-builder-evidence-5.15.1.md)
+    public const E_INVALID_LOOP_SETTING     = 'INVALID_LOOP_SETTING';
+    public const E_MALFORMED_DYNAMIC_TOKEN  = 'MALFORMED_DYNAMIC_TOKEN';
+
     // Pass 6 — SEO / accessibility
     public const E_MULTIPLE_H1             = 'MULTIPLE_H1';
 
@@ -100,6 +104,9 @@ final class Validator
 
         // Pass 5 — render-critical attributes
         $this->passRenderCritical($tree, $violations);
+
+        // Pass 5b — Loop Builder settings and dynamic-content tokens
+        $this->passLoops($tree, $violations);
 
         // Pass 6 — SEO / accessibility (at most one h1 per page)
         $this->passSingleH1($tree, $violations);
@@ -413,5 +420,135 @@ final class Validator
                 }
             }
         });
+    }
+
+    // ---------------------------------------------------------------
+    // Pass 5b — Loop Builder (module.advanced.loop) and dynamic tokens
+    // ---------------------------------------------------------------
+
+    /** @return string[] Query types the Loop Builder offers (Divi 5.15.1 QueryTypeController). */
+    private function loopQueryTypes(): array
+    {
+        return ['post_types', 'post_taxonomies', 'user_roles', 'menus', 'current_page'];
+    }
+
+    /**
+     * Every shape below was rendered on the real Divi 5.15.1 (docs/loop-builder-evidence-5.15.1.md):
+     * some answer HTTP 500 for the whole page (a non-list metaQuery, an array order or loopId), the others make the loop
+     * silently switch off or query every post type, which is what a saved layout must never do. The builder itself only
+     * writes the shapes accepted here (fixtures/valid/loop-builder-5.3.json), including "" for an empty include/exclude list.
+     *
+     * @param Violation[] $violations
+     */
+    private function passLoops(Block $root, array &$violations): void
+    {
+        $root->walk(function (Block $block, string $path) use (&$violations): void {
+            $type = $block->name();
+            $loop = $block->attr('module.advanced.loop');
+            $base = "$path.module.advanced.loop";
+
+            if ($loop !== null && $loop !== []) {
+                $fail = static function (string $what) use (&$violations, $type, $base): void {
+                    $violations[] = new Violation(
+                        self::E_INVALID_LOOP_SETTING,
+                        "Block '$type': loop setting $what",
+                        $base
+                    );
+                };
+                $value = is_array($loop) ? ($loop['desktop']['value'] ?? null) : null;
+                if (!is_array($loop) || !is_array($loop['desktop'] ?? null) || !is_array($value)) {
+                    $fail("must be an object {\"desktop\":{\"value\":{...}}} (anything else switches the loop off without a message).");
+                } else {
+                    $this->checkLoopValue($value, $fail);
+                }
+            }
+
+            $this->checkTokens($block->attrs(), $path, $type, $violations);
+        });
+    }
+
+    /** @param callable(string):void $fail */
+    private function checkLoopValue(array $v, callable $fail): void
+    {
+        $isDigits = static fn($x, int $min): bool => (is_int($x) && $x >= $min)
+            || (is_string($x) && preg_match('/^\d+$/', $x) === 1 && (int) $x >= $min);
+
+        if (array_key_exists('enable', $v) && !in_array($v['enable'], ['on', 'off'], true)) {
+            $fail("'enable' must be the string \"on\" or \"off\" (true, \"yes\" or a missing value leave the loop off).");
+        }
+        if (array_key_exists('loopId', $v) && !is_string($v['loopId'])) {
+            $fail("'loopId' must be a string such as \"loop-ab12cd34ef\" (an array makes Divi answer HTTP 500 for the whole page).");
+        }
+        if (array_key_exists('queryType', $v) && !(is_string($v['queryType']) && in_array($v['queryType'], $this->loopQueryTypes(), true))) {
+            $fail("'queryType' must be one of " . implode(', ', $this->loopQueryTypes()) . '.');
+        }
+        if (array_key_exists('order', $v) && !in_array($v['order'], ['ascending', 'descending'], true)) {
+            $fail("'order' must be the string \"ascending\" or \"descending\" (an array makes Divi answer HTTP 500, \"desc\" is read as ascending).");
+        }
+        if (array_key_exists('orderBy', $v) && !is_string($v['orderBy'])) {
+            $fail("'orderBy' must be a string such as \"date\", \"name\" or \"title\".");
+        }
+        if (array_key_exists('postPerPage', $v) && !$isDigits($v['postPerPage'], 1)) {
+            $fail("'postPerPage' must be a whole number of 1 or more, written as a string such as \"6\" (\"abc\" and \"0\" load every item).");
+        }
+        if (array_key_exists('postOffset', $v) && !$isDigits($v['postOffset'], 0)) {
+            $fail("'postOffset' must be a whole number written as a string such as \"0\".");
+        }
+        foreach (['excludeCurrentPost', 'ignoreStickysPost'] as $key) {
+            if (array_key_exists($key, $v) && !in_array($v[$key], ['on', 'off'], true)) {
+                $fail("'$key' must be the string \"on\" or \"off\".");
+            }
+        }
+        if (array_key_exists('subTypes', $v)) {
+            $ok = is_array($v['subTypes']) && $this->isList($v['subTypes']);
+            foreach ($ok ? $v['subTypes'] : [] as $item) {
+                if (!is_array($item) || !is_string($item['value'] ?? null) || $item['value'] === '') {
+                    $ok = false;
+                }
+            }
+            if (!$ok) {
+                $fail("'subTypes' must be a list of {\"value\":\"<slug>\",\"label\":\"<name>\"} objects, for example [{\"value\":\"post\",\"label\":\"Posts\"}] (any other shape makes the loop read EVERY post type, media files included).");
+            }
+        }
+        if (array_key_exists('metaQuery', $v) && !(is_array($v['metaQuery']) && $this->isList($v['metaQuery']))) {
+            $fail("'metaQuery' must be a list of {\"id\",\"metaKey\",\"metaValue\",\"compare\",\"type\"} objects, or left out (a string, even an empty one, makes Divi answer HTTP 500 for the whole page).");
+        }
+    }
+
+    /** A JSON array (not an object): keys 0..n-1 (array_is_list() needs WordPress 6.5). */
+    private function isList(array $a): bool
+    {
+        return $a === [] || array_keys($a) === range(0, count($a) - 1);
+    }
+
+    /**
+     * A dynamic-content token is written $variable({...})$. Without the closing "$" Divi prints the raw text on the page.
+     *
+     * @param Violation[] $violations
+     */
+    private function checkTokens(mixed $node, string $path, string $type, array &$violations): void
+    {
+        if (is_array($node)) {
+            foreach ($node as $key => $child) {
+                $this->checkTokens($child, $path . '.' . $key, $type, $violations);
+            }
+            return;
+        }
+        if (!is_string($node) || !str_contains($node, '$variable(')) {
+            return;
+        }
+        $offset = 0;
+        while (($at = strpos($node, '$variable(', $offset)) !== false) {
+            if (preg_match('/\G\$variable\(\{.*?\}\)\$/s', $node, $m, 0, $at) !== 1) {
+                $violations[] = new Violation(
+                    self::E_MALFORMED_DYNAMIC_TOKEN,
+                    "Block '$type': a dynamic-content token must read \$variable({...})\$ with both the opening \$variable( and the closing )\$; "
+                        . 'otherwise Divi prints the raw text on the page.',
+                    $path
+                );
+                return;
+            }
+            $offset = $at + strlen($m[0]);
+        }
     }
 }

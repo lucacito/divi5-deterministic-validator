@@ -592,7 +592,7 @@ class StyleGuideKitTopicsTest extends TestCase
         // Wording gaps Task 3b: -43 B read in editorial (the builderVersion 5.8.0 of five samples, the card legend names the language).
         $this->assertSame( 9599 - 43, $max, 'the largest kit topic today (neo-brutal; was 8124 before the inverted panel, 9992 before kit-rules)' );
         // The default guide grew only by ", kit-rules" in its topic line (Ruling 19: the line names every topic): 28,964 + 11.
-        $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide changed only by the new topic name' );
+        $this->assertSame( 28982, strlen( StyleGuide::markdown() ), 'the default guide changed only by the new topic name' );
         // Re-pinned deliberately (forms adapter T2): +30 B, the form named in the kit-driven sentence and "Forms, " dropped from the not-applied one.
         // Re-pinned deliberately (image radius pass): -14 B, ", image radius" left the not-applied sentence.
         // Rules and chips adapter Step 0 (plan 2026-10-21): fixed prose reworded to reclaim headroom for the new applied-sentence tail: 8,439 -> 8,325 B.

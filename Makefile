@@ -1,4 +1,4 @@
-.PHONY: up down clean test test-pro verify-companion build-pro verify-pro-megamenu verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-switch-design verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-page-title verify-products verify-oauth verify-oauth-chatgpt verify-test-connection verify-html-to-divi verify-guide-shapes verify-shapes verify-recipes verify-kits verify-language-type verify-components verify-style-values card-report type-report rhythm-report dogfood-prepare dogfood-score dogfood-render divi-currency
+.PHONY: up down clean test test-pro verify-companion build-pro verify-pro-megamenu verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-switch-design verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-page-title verify-products verify-oauth verify-oauth-chatgpt verify-test-connection verify-html-to-divi verify-guide-shapes verify-shapes verify-recipes verify-kits verify-language-type verify-components verify-loop-builder verify-style-values card-report type-report rhythm-report dogfood-prepare dogfood-score dogfood-render divi-currency
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -295,6 +295,12 @@ verify-components:
 # ---------------------------------------------------------------
 # verify-style-values — proves in a real browser on the real Divi why a style value with an unclosed quote or bracket is refused (it takes the page's other styles with it) and that balanced values (calc, clamp) pass and apply (dev site only; every page it creates is deleted)
 # ---------------------------------------------------------------
+# ---------------------------------------------------------------
+# verify-loop-builder — real-site check of the Loop Builder: the builder's own export and the guide's loops render one item per matching post on the real Divi, and every shape the validator refuses is shown to break the page or the loop (Docker site on Divi 5.15 or newer; dev site only; everything it creates is deleted)
+# ---------------------------------------------------------------
+verify-loop-builder:
+	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-loop-builder.php --user=1
+
 verify-style-values:
 	@node scripts/verify-style-values.cjs
 

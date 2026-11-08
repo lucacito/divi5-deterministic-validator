@@ -214,7 +214,7 @@
                     "properties": {
                         "topic": {
                             "type": "string",
-                            "description": "Optional topic: design-languages, design-language:<id>, backgrounds, dividers, motion, hover-states, layout-advanced, layout-sizing, typography, imagery, controls, toggles, forms, composition, style-kits, kit-rules, kit-patterns, style-kit:<id>. <id>: one language or kit."
+                            "description": "Optional topic: design-languages, design-language:<id>, backgrounds, dividers, motion, hover-states, layout-advanced, layout-sizing, typography, imagery, controls, toggles, forms, composition, loops, style-kits, kit-rules, kit-patterns, style-kit:<id>. <id>: one language or kit."
                         },
                         "design_language": {
                             "type": "string",

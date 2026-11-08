@@ -48,6 +48,7 @@ final class StyleGuide
         $topics[] = 'toggles';
         $topics[] = 'forms';
         $topics[] = 'composition';
+        $topics[] = 'loops';
         $topics[] = 'style-kits';
         $topics[] = 'kit-rules';
         $topics[] = 'kit-patterns';
@@ -166,6 +167,9 @@ final class StyleGuide
         if ( 'forms' === $topic ) {
             return self::formsTopic();
         }
+        if ( 'loops' === $topic ) {
+            return self::loopsTopic();
+        }
         if ( 'composition' === $topic ) {
             return self::compositionTopic();
         }
@@ -190,6 +194,73 @@ final class StyleGuide
             $lines[] = '- `' . $valid . '`';
         }
         return implode( "\n", $lines ) . "\n";
+    }
+
+    /**
+     * Topic `loops`: the Loop Builder (a module that repeats once per post, product, term or user). Every setting and token named
+     * here was rendered on the real Divi 5.15.1 (`make verify-loop-builder`, docs/loop-builder-evidence-5.15.1.md); the validator
+     * refuses the shapes that break the page or switch the loop off (`INVALID_LOOP_SETTING`, `MALFORMED_DYNAMIC_TOKEN`).
+     * At most 10,000 bytes.
+     */
+    private static function loopsTopic(): string
+    {
+        return <<<'MD'
+# Loops: a module that repeats once per post, product, term or user
+
+Use a loop when the page should list things the site already holds: the latest posts, a product grid, the team, the manufacturers of
+one state. Do not copy the same card five times by hand. Every setting and token below was rendered on the real Divi 5.15.1; the
+checker refuses the shapes that break the page or quietly switch the loop off. The loop shows what the site has: ask for the post type
+slug, the taxonomy and the custom field keys (get_site_structure lists them), never invent a slug.
+
+## The settings
+A loop is a set of settings on the module that should repeat, at `module.advanced.loop.desktop.value`. The module repeats, with everything inside it.
+- `enable`: the string "on" (or "off"). Anything else leaves the loop off.
+- `loopId`: a string, unique on the page, "loop-" and ten lowercase letters or digits ("loop-k3m9q2x7ab"). Two loops on one page need two ids.
+- `queryType`: "post_types" (posts, pages, products, any custom post type), "post_taxonomies" (the terms of a taxonomy), "user_roles" (users), "menus" (menu items), "current_page".
+- `subTypes`: what to list, a list of objects: `[{"value":"post","label":"Posts"}]`. The value is the slug: a post type ("post", "page", "product", "manufacturer"), a taxonomy ("category"), a user role ("administrator") or a menu slug. Always write it; any other shape, or none, reads every post type, media files included.
+- `orderBy` (Divi's own lists): posts "date", "title", "name" (the slug), "modified", "rand", "menu_order", "comment_count", "ID"; products also "price", "popularity", "rating"; terms "name", "slug", "count", "term_id"; users "display_name", "registered", "post_count"; menu items "menu_order", "title". `order`: "ascending" or "descending" (not "asc" or "desc").
+- `postPerPage` and `postOffset`: whole numbers written as strings ("6", "0"). "0" or text loads every item.
+- `excludeCurrentPost`, `ignoreStickysPost`: "on" or "off".
+- `includePostWithSpecificTerms` / `excludePostWithSpecificTerms`: only the posts that have (or lack) a term: `[{"categoryId":"state","categoryName":"States","selectedOptions":[{"value":"3","label":"North Carolina"}]}]`. `categoryId` is the taxonomy slug, `value` the term ID as a string (the ID, not the slug). Term IDs are site data: ask the owner for the ID, or do not filter. The builder writes "" for an empty list; leave an unused list out.
+- `metaQuery`: a list of `{"id","metaKey","metaValue","compare","type"}` objects, or leave it out. Never a string.
+
+## What goes inside the loop
+Inside a looping module, write the content as loop tokens. A token is a string in the field that should change per item:
+
+`$variable({"type":"content","value":{"name":"loop_post_title","settings":{}}})$`
+
+Both ends matter: `$variable(` at the start and `)$` at the end. Without the closing `$` the page prints the raw text. Inside the block comment's JSON write each quote of the token as `\u0022`, as the example does.
+- Posts: `loop_post_title`, `loop_post_excerpt`, `loop_post_date`, `loop_post_link` (a web address), `loop_post_featured_image` (a picture), `loop_post_author`, `loop_post_terms`, `loop_post_id`.
+- Products (queryType "post_types", subTypes "product"): `loop_product_title`, `loop_product_price_current`, `loop_product_price_regular`, `loop_product_price_sale`, `loop_product_short_description`, `loop_product_post_featured_image`, `loop_product_post_link_url`, `loop_product_sku`.
+- Terms: `loop_term_name`, `loop_term_description`, `loop_term_count`, `loop_term_permalink`, `loop_term_featured_image`.
+- Users: `loop_user_name`, `loop_user_username`, `loop_user_description`, `loop_user_avatar`, `loop_user_url`.
+- Menu items: `loop_menu_text`, `loop_menu_link`, `loop_menu_description`.
+- A custom field of each item: `loop_post_meta_key_manual_custom_field` with `"settings":{"select_loop_meta_key":"loop_post_meta_key_<field key>"}` (key "logo" is `loop_post_meta_key_logo`).
+Use a `loop_` token, never `post_title` and its relatives: those show the page's own title in every item. A `loop_` token outside a loop shows nothing.
+
+Where a token goes (each rendered): a heading's `title.innerContent.desktop.value`; a text module's `content.innerContent.desktop.value`, inside the HTML ("<h3>token</h3><p>token</p>"); an image's `image.innerContent.desktop.value.src` and `.linkUrl`; a button's `button.innerContent.desktop.value.linkUrl` (the label can be a token too).
+
+## Which module repeats
+- A group repeats with everything in it: one card per item. Put the card's modules inside the group and the loop on the group.
+- An image grid: the grid is a group with `display` "grid" and `gridColumnCount` "4" (tablet "2", phone "1") and NO loop of its own; the loop is on the image inside it.
+- A row repeats too (one row per item). A loop inside a loop multiplies the items: use it only on purpose.
+- An empty result prints Divi's own "No Results Found."; say in your answer which filter produced it.
+
+## Example: the three latest posts as cards
+```
+<!-- wp:divi/section {"builderVersion":"5.8.0"} -->
+<!-- wp:divi/row {"builderVersion":"5.8.0"} -->
+<!-- wp:divi/column {"module":{"advanced":{"type":{"desktop":{"value":"4_4"}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/group {"module":{"advanced":{"loop":{"desktop":{"value":{"enable":"on","loopId":"loop-k3m9q2x7ab","queryType":"post_types","subTypes":[{"value":"post","label":"Posts"}],"orderBy":"date","order":"descending","postPerPage":"3","postOffset":"0"}}}}},"builderVersion":"5.8.0"} -->
+<!-- wp:divi/heading {"title":{"innerContent":{"desktop":{"value":"$variable({\u0022type\u0022:\u0022content\u0022,\u0022value\u0022:{\u0022name\u0022:\u0022loop_post_title\u0022,\u0022settings\u0022:{}}})$"}}},"builderVersion":"5.8.0"} /-->
+<!-- /wp:divi/group -->
+<!-- /wp:divi/column -->
+<!-- /wp:divi/row -->
+<!-- /wp:divi/section -->
+```
+Style the cards with the modules' own settings, as on any page (the design language and the style kit apply as usual). Check the page with
+`validate_layout` or `dry_run` before saving; the answer lists the first wrong setting.
+MD;
     }
 
     /** Topic `style-kits`: what a kit is, the catalog, which language uses which kit and how to choose. At most 10,000 bytes. */

@@ -74,13 +74,13 @@ final class WordingGapsBudgetTest extends TestCase
 
     public function testTheDefaultGuideIsExactlyTheSameSize(): void
     {
-        $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide neither grows nor shrinks (the swap is same-length)' );
+        $this->assertSame( 28982, strlen( StyleGuide::markdown() ), 'the default guide neither grows nor shrinks (the swap is same-length)' );
     }
 
     public function testTheTopicDescriptionIsPinned(): void
     {
         // Task 4 (Ruling 2): 258 -> 272 characters (", kit-patterns"), and every <= 260 pin raised to <= 290 (the schema bound is 300).
-        $this->assertSame( 272, strlen( StyleGuide::topicParameterDescription() ) );
+        $this->assertSame( 279, strlen( StyleGuide::topicParameterDescription() ) );
     }
 
     public function testKitRulesAndControlsStayWithinTheirBounds(): void
@@ -122,7 +122,7 @@ final class WordingGapsBudgetTest extends TestCase
 
     public function testThePinsCoverEveryServedTopic(): void
     {
-        $named = [ 'kit-rules', 'controls', 'kit-patterns' ];
+        $named = [ 'kit-rules', 'controls', 'kit-patterns', 'loops' ];
         foreach ( StyleGuide::topics() as $topic ) {
             if ( in_array( $topic, $named, true ) || str_starts_with( $topic, 'style-kit:' ) ) {
                 continue;

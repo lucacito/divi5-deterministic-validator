@@ -95,7 +95,7 @@ class KitPatternsTopicTest extends TestCase
         // Named by the default guide's topic line and the parameter description (258 -> 272 characters, Ruling 2).
         $this->assertStringContainsString( ', kit-rules, kit-patterns, style-kit:<id>.', StyleGuide::markdown() );
         $this->assertStringContainsString( 'kit-patterns', StyleGuide::topicParameterDescription() );
-        $this->assertSame( 272, strlen( StyleGuide::topicParameterDescription() ) );
+        $this->assertSame( 279, strlen( StyleGuide::topicParameterDescription() ) );
         $this->assertStringContainsString( 'topic=kit-patterns', StyleGuide::markdown( 'kit-rules' ), 'kit-rules points to it' );
     }
 
@@ -543,6 +543,6 @@ class KitPatternsTopicTest extends TestCase
         $this->assertStringNotContainsString( 'stops.0', $text );
         $this->assertStringNotContainsString( 'stops.1', $text );
         $this->assertStringContainsString( '`…gradient.stops` = a list: `[{"position":0,"color":"rgba(10,10,10,.5)"},{"position":100,"color":"rgba(0,0,0,.6)"}]`', $text );
-        $this->assertSame( 28975, strlen( $text ), 'exactly the same size' );
+        $this->assertSame( 28982, strlen( $text ), 'exactly the same size' );
     }
 }

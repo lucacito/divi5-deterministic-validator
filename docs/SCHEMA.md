@@ -390,3 +390,17 @@ Divi 5.15 turned global modules into Components and added the Slot module. Real 
 - A component instance on a page is a `divi/global-layout` block (`globalModule`, `blockName`, `localAttrs`, `localAttrOverridePaths`; no `builderVersion`). A Section or Row instance wraps the section's or row's own blocks; a Module instance is a self-closing block **in a column** (`divi/column` now accepts `divi/global-layout`). Blocks inside an instance carry `syncNodeId` and `localAttrOverridePaths`.
 - `divi/global-slot` (needs a non-empty string `slotId`) is accepted in a column and holds modules and module components. It is hand-written in `SchemaRules`, not promoted by the module harness: the harness skips category `structure`, and a Slot only means something inside a component, so the evidence is the builder exports plus `make verify-components`, not `docs/module-verification-5.15.json`.
 - Still refused (no export shows them): a Slot directly in a row or section, a row or another Slot inside a Slot, a column saved as a component sitting in a row.
+
+
+## Loop Builder settings and dynamic-content tokens (pass 5b)
+
+`module.advanced.loop.desktop.value` is the Loop Builder's option group; it sits on any module (the looped module repeats once per
+item). Divi 5.15.1 was rendered with 49 wrong and right shapes (`docs/loop-builder-evidence-5.15.1.md`). The validator refuses, as
+`INVALID_LOOP_SETTING`: a `loop` that is not `{"desktop":{"value":{...}}}`; `enable` other than `"on"`/`"off"`; `loopId` that is not a
+string (an array answers HTTP 500); `queryType` outside `post_types`, `post_taxonomies`, `user_roles`, `menus`, `current_page`; `order`
+other than `"ascending"`/`"descending"` (an array answers HTTP 500); `orderBy` that is not a string; `postPerPage` below 1 or not a
+whole number; `postOffset` not a whole number; `excludeCurrentPost` / `ignoreStickysPost` other than `"on"`/`"off"`; `subTypes` that is
+not a list of `{"value": "<slug>", "label": ...}` objects (any other shape makes the loop read every post type); `metaQuery` that is not a
+list (a string, even `""`, answers HTTP 500). The builder's own empty lists (`""` for `excludePostWithSpecificTerms`,
+`includeSpecificPosts`, `excludeSpecificPosts`) stay valid. `MALFORMED_DYNAMIC_TOKEN`: a `$variable(` without the closing `)$` leaks the raw
+text onto the page. Real export: `fixtures/valid/loop-builder-5.3.json`.

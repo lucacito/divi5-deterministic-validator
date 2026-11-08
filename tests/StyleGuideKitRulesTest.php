@@ -131,8 +131,8 @@ class StyleGuideKitRulesTest extends TestCase
         // carriers adapter: 9000 -> 9600 (Ruling 8: the full applied sentence and the More carriers paragraph).
         $this->assertLessThanOrEqual( 9600, strlen( $text ) );
         $this->assertLessThanOrEqual( self::BUDGET, strlen( $text ) );
-        $this->assertSame( 272, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
-        $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
+        $this->assertSame( 279, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
+        $this->assertSame( 28982, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
     }
 
     public function testTheRepeatedProseIsSaidOnceInKitRulesAndInNoKitTopic(): void
@@ -349,7 +349,7 @@ class StyleGuideKitRulesTest extends TestCase
 
     public function testTheDefaultGuideAndTheBudgetsOfTheFormAdapter(): void
     {
-        $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
+        $this->assertSame( 28982, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
         // The 700 B planned for kit-rules growth became 776 B: the accent-band clause of the field frame and the path clause
         // (`button.decoration.*`, not `module.decoration`) were added after review. The bound below is the real one, the cap is 10,000 B.
         // Re-bounded deliberately (rules and chips adapter T3): + the applied tail and the Rules and chips paragraph (648 B in all; the bound is 650).
@@ -767,8 +767,8 @@ class StyleGuideKitRulesTest extends TestCase
 
     public function testTheBudgetsOfTheRulesAndChipsAdapter(): void
     {
-        $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
-        $this->assertSame( 272, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
+        $this->assertSame( 28982, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
+        $this->assertSame( 279, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
         $rules = strlen( StyleGuide::markdown( 'kit-rules' ) );
         // carriers adapter: 9000 -> 9600 (Ruling 8).
         $this->assertLessThanOrEqual( 9600, $rules, 'kit-rules (guide polish replaced the 4,607 + 650 pin; the real bound is 10,000 B)' );
@@ -1050,7 +1050,7 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertStringNotContainsString( '(root wrapper, required)', $text );
         $this->assertStringContainsString( 'divi/placeholder              (root wrapper, optional)', $text );
         // Size-neutral by owner rule: "optional" and "required" are both 8 characters; the default guide does not grow.
-        $this->assertSame( 28975, strlen( $text ) );
+        $this->assertSame( 28982, strlen( $text ) );
         $this->assertLessThanOrEqual( 29108, strlen( $text ) );
         // The claim is the validator's own: both roots are accepted.
         foreach ( [ 'divi/placeholder', 'divi/section' ] as $root ) {
@@ -1350,7 +1350,7 @@ class StyleGuideKitRulesTest extends TestCase
     public function testTheKitRulesBudgetOfTheLeftItemsPass(): void
     {
         // Deliberate raise from 7,600 B to 7,900 B for the per-role accordion clauses and the toggle clause; the real bound is 10,000 B.
-        $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
+        $this->assertSame( 28982, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
         // carriers adapter: kit-rules 9000 -> 9600 (Ruling 8), controls 8331 -> 8348 (Ruling 10), catalog 8444 -> 8178 (Ruling 7).
         $this->assertLessThanOrEqual( 9600, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
         // render-fatal sweep: 9105 -> 9271 (+166 B = the longer generated object-values paragraph, StyleGuideObjectValuesTest).
@@ -1359,7 +1359,7 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertSame( 6474, strlen( StyleGuide::markdown( 'forms' ) ) );
         $this->assertSame( 8706, strlen( StyleGuide::markdown( 'composition' ) ) );
         $this->assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ) );
-        $this->assertSame( 272, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
+        $this->assertSame( 279, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
         $max = 0;
         foreach ( StyleKits::ids() as $id ) {
             $max = max( $max, strlen( StyleGuide::markdown( 'style-kit:' . $id, 'editorial' ) ) );
@@ -1374,14 +1374,14 @@ class StyleGuideKitRulesTest extends TestCase
     {
         $size = strlen( StyleGuide::markdown() );
         // The default guide does not grow (owner rule): the Structure fix is size-neutral.
-        $this->assertSame( 28975, $size, 'the default guide, pinned exactly' );
+        $this->assertSame( 28982, $size, 'the default guide, pinned exactly' );
         $this->assertLessThanOrEqual( 29108, $size, 'Ruling 5 ceiling' );
         // carriers adapter: kit-rules 9000 -> 9600 (Ruling 8), controls 8331 -> 8348 (Ruling 10), catalog 8444 -> 8178 (Ruling 7).
         $this->assertLessThanOrEqual( 9600, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules (spec Ruling 5 raised the 7,000 B pin to 7,600 B; the real bound is 10,000 B)' );
         // render-fatal sweep: 9105 -> 9271 (+166 B = the longer generated object-values paragraph, StyleGuideObjectValuesTest).
         // wording gaps T4 (plan 2026-10-25-wording-gaps): 9271 -> 9355 (+84 B = StyleGuide::controlsFormClause(), spec gap 14).
         $this->assertSame( 9355, strlen( StyleGuide::markdown( 'controls' ) ) );
-        $this->assertSame( 272, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
+        $this->assertSame( 279, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
         $this->assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog' );
         $max = 0;
         foreach ( StyleKits::ids() as $id ) {
@@ -1396,12 +1396,12 @@ class StyleGuideKitRulesTest extends TestCase
 
     public function testTheBudgetsOfTheGuidePolish(): void
     {
-        $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
+        $this->assertSame( 28982, strlen( StyleGuide::markdown() ), 'the default guide does not grow' );
         // carriers adapter: 9000 -> 9600 (Ruling 8).
         $this->assertLessThanOrEqual( 9600, strlen( StyleGuide::markdown( 'kit-rules' ) ), 'kit-rules (plan 2026-10-21-guide-polish-rules-chips; the real bound is 10,000 B)' );
         $this->assertLessThanOrEqual( 9500, strlen( StyleGuide::markdown( 'controls' ) ) );
         $this->assertLessThanOrEqual( 10000, strlen( StyleGuide::markdown( 'composition' ) ) );
-        $this->assertSame( 272, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
+        $this->assertSame( 279, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
         // carriers adapter: 8444 -> 8178 (Ruling 7).
         $this->assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ), 'the catalog' );
         $max = 0;
@@ -1687,7 +1687,7 @@ class StyleGuideKitRulesTest extends TestCase
 
     public function testTheBudgetsOfRound3(): void
     {
-        $this->assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide is exactly as it was' );
+        $this->assertSame( 28982, strlen( StyleGuide::markdown() ), 'the default guide is exactly as it was' );
         // Deliberate raise of the 7,900 B pin (7,864 B served before round 3): the real bound is 10,000 B.
         // carriers adapter: kit-rules 9000 -> 9600 (Ruling 8), controls 8331 -> 8348 (Ruling 10), catalog 8444 -> 8178 (Ruling 7).
         $this->assertLessThanOrEqual( 9600, strlen( StyleGuide::markdown( 'kit-rules' ) ) );
@@ -1698,7 +1698,7 @@ class StyleGuideKitRulesTest extends TestCase
         $this->assertSame( 6474, strlen( StyleGuide::markdown( 'forms' ) ) );
         $this->assertSame( 8706, strlen( StyleGuide::markdown( 'composition' ) ) );
         $this->assertSame( 8178, strlen( StyleGuide::markdown( 'style-kits' ) ) );
-        $this->assertSame( 272, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
+        $this->assertSame( 279, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
         $max = 0;
         foreach ( self::KIT_TOPIC_SIZES_BEFORE as $id => $before ) {
             $len = strlen( StyleGuide::markdown( 'style-kit:' . $id, 'editorial' ) );

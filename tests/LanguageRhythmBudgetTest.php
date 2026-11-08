@@ -52,8 +52,8 @@ final class LanguageRhythmBudgetTest extends TestCase
 
     public function testNothingButTheLanguageTopicsMoves(): void
     {
-        self::assertSame( 28975, strlen( StyleGuide::markdown() ), 'the default guide has no headroom to spare' );
-        self::assertSame( 272, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
+        self::assertSame( 28982, strlen( StyleGuide::markdown() ), 'the default guide has no headroom to spare' );
+        self::assertSame( 279, strlen( StyleGuide::topicParameterDescription() ), 'one topic name added: kit-patterns (wording gaps T4 (plan 2026-10-25-wording-gaps), Ruling 2: 258 -> 272)' );
         self::assertSame( 7943, strlen( StyleGuide::markdown( 'typography' ) ) );
         // carriers adapter: kit-rules 8997 -> 9598 (Ruling 8), style-kits 8444 -> 8178 (Ruling 7), controls 8331 -> 8348 (Ruling 10).
         self::assertSame( 9589, strlen( StyleGuide::markdown( 'kit-rules' ) ) ); // wording fixes (review): the tag width reword (a double at least 3px) moved kit-rules 9585 -> 9589; // wording gaps T4 (plan 2026-10-25-wording-gaps): 9598 -> 9585 (Ruling 8, within the 9,600 pin).

@@ -152,6 +152,8 @@ The canonical "layout file" is a JSON envelope:
 | `RENDER_CRITICAL_MISSING` | Content key (`title`, `content`, etc.) missing |
 | `SCALAR_WHERE_OBJECT` | A string where Divi needs an object (`image`, `button`, and the live-proven keys of `src/VerifiedContentTypes.php`) — causes PHP fatal on render |
 | `OBJECT_WHERE_SCALAR` | An object or empty array where Divi needs a plain string or HTML (`title`, `content`, ... per `src/VerifiedContentTypes.php`) — causes PHP fatal on render |
+| `INVALID_LOOP_SETTING` | A Loop Builder setting (`module.advanced.loop.desktop.value`) in a shape Divi renders wrongly: a non-list `metaQuery`, an array `order` or `loopId` (HTTP 500), or `enable`, `queryType`, `order`, `subTypes`, `postPerPage` that silently switch the loop off or make it read every post type |
+| `MALFORMED_DYNAMIC_TOKEN` | A `$variable({...})$` dynamic-content token missing its opening or its closing `)$` — Divi prints the raw text on the page |
 
 ## The verdict
 
