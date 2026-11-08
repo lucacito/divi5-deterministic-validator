@@ -24,7 +24,7 @@ class WhatsNewTest extends TestCase
     {
         $c = WhatsNew::content();
         $this->assertNotNull( $c, 'data/whats-new.php is well formed' );
-        $this->assertSame( '4.17', $c['version'] );
+        $this->assertSame( '4.18', $c['version'] );
         $this->assertGreaterThanOrEqual( 3, count( $c['bullets'] ) );
         $this->assertLessThanOrEqual( 5, count( $c['bullets'] ) );
         foreach ( [ $c['title'], $c['link']['label'], ...$c['bullets'] ] as $text ) {
@@ -35,7 +35,7 @@ class WhatsNewTest extends TestCase
         $all = strtolower( implode( ' ', [ $c['title'], ...$c['bullets'], $c['link']['label'] ] ) );
         $this->assertDoesNotMatchRegularExpression( '/\bpro\b|premium|upgrade|licen[sc]e|buy|price|discount/', $all, 'no offer in the panel' );
         $text = implode( ' ', $c['bullets'] );
-        foreach ( [ 'abilities', 'check-design', 'Undo', "Divi's upcoming MCP", 'Instructions for your AI' ] as $must ) {
+        foreach ( [ 'Loop Builder', 'Next and Previous', 'patterns', 'each loop will list', 'checker' ] as $must ) {
             $this->assertStringContainsString( $must, $text, "the announcement mentions {$must}" );
         }
     }
@@ -47,17 +47,18 @@ class WhatsNewTest extends TestCase
         $this->assertTrue( WhatsNew::shouldShow( $c, null, true ) );
         $this->assertTrue( WhatsNew::shouldShow( $c, false, true ), 'get_user_meta returns false/empty when nothing is stored' );
         $this->assertFalse( WhatsNew::shouldShow( $c, '', false ), 'never for a user without edit_pages' );
-        $this->assertFalse( WhatsNew::shouldShow( $c, '4.17', true ), 'hidden after dismissal' );
-        $this->assertFalse( WhatsNew::shouldShow( $c, '4.18', true ), 'a dismissal of anything newer also hides it' );
+        $this->assertFalse( WhatsNew::shouldShow( $c, '4.18', true ), 'hidden after dismissal' );
+        $this->assertFalse( WhatsNew::shouldShow( $c, '4.19', true ), 'a dismissal of anything newer also hides it' );
+        $this->assertTrue( WhatsNew::shouldShow( $c, '4.17', true ), 'a dismissal of the previous announcement does not hide this one' );
         $this->assertFalse( WhatsNew::shouldShow( null, '', true ), 'no announcement, no panel' );
     }
 
     public function testAnewVersionBringsItBackOnce(): void
     {
-        $next = [ 'version' => '4.18', 'title' => 'T', 'bullets' => [ 'a', 'b', 'c' ], 'link' => [ 'label' => 'l', 'url' => 'https://wordpress.org/x' ] ];
+        $next = [ 'version' => '4.19', 'title' => 'T', 'bullets' => [ 'a', 'b', 'c' ], 'link' => [ 'label' => 'l', 'url' => 'https://wordpress.org/x' ] ];
         $this->assertTrue( WhatsNew::valid( $next ) );
-        $this->assertTrue( WhatsNew::shouldShow( $next, '4.17', true ), 'dismissed 4.17, so 4.18 shows' );
-        $this->assertFalse( WhatsNew::shouldShow( $next, '4.18', true ), 'and not again after it is dismissed' );
+        $this->assertTrue( WhatsNew::shouldShow( $next, '4.18', true ), 'dismissed 4.18, so 4.19 shows' );
+        $this->assertFalse( WhatsNew::shouldShow( $next, '4.19', true ), 'and not again after it is dismissed' );
         $this->assertTrue( WhatsNew::shouldShow( [ 'version' => '4.17.1' ] + $next, '4.17', true ), 'a point release counts as new' );
         $this->assertTrue( WhatsNew::shouldShow( [ 'version' => '4.100' ] + $next, '4.17', true ), 'versions compare as versions, not text' );
     }

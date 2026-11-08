@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi, divi 5, mcp, claude, chatgpt
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.17.0
+Stable tag:        4.18.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -297,6 +297,15 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 3. Features: everything your AI assistant can do on your Divi 5 site.
 
 == Changelog ==
+
+= 4.18.0 =
+* New: Divi's Loop Builder. Your AI can build lists that repeat once per post, product, category, user or navigation item, and page through them with Next and Previous links. The style guide has a new `loops` topic, and there are four ready-made patterns: the newest posts, all posts in pages, the site's categories and the newest products.
+* New: the checker refuses the loop settings that make Divi fail the whole page (HTTP 500) or quietly list the wrong things, and says exactly which setting to fix.
+* New: when your AI saves, checks or previews a page with a loop, it also gets a short report of what each loop will show on your site (how many items and the first titles). It flags a post type, category, term ID or navigation list your site does not have, and mistakes such as a post token in a navigation loop or two loops sharing one ID. Advice only: it never blocks a save.
+* New: `get_site_structure` can also list the names and IDs of your site's navigation lists and of your most used categories and tags (ask for them with `include`). Read-only.
+* Improved: four new loop patterns join the ready-made library.
+* Improved: when a dynamic-content token is written with plain quotes inside a block, the refusal now says how to write it.
+* Tested on Divi 5.15.1. Not covered yet: ACF repeater loops with a real repeater field, loops inside site-wide templates, and Divi's Post Filter module.
 
 = 4.17.0 =
 * New: the plugin is designed to work alongside Divi's upcoming MCP and any other tool (not yet tested against Divi's MCP, which is not released). On WordPress 6.9 and later it offers its design guidance, the checker, a new design check and page history as WordPress abilities (17 of them, in the `jhmg-ai-editor` category), with the same permissions as before.
