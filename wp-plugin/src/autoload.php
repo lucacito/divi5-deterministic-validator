@@ -56,6 +56,7 @@ require_once __DIR__ . '/SectionRecipes.php';
 require_once __DIR__ . '/StudioLinks.php';
 require_once __DIR__ . '/StudioSlots.php';
 require_once __DIR__ . '/StudioBrief.php';
+require_once __DIR__ . '/StudioCompiler.php';
 require_once __DIR__ . '/SiteGuide.php';
 require_once __DIR__ . '/LandingGuide.php';
 require_once __DIR__ . '/ImageGuide.php';
