@@ -408,6 +408,21 @@ final class SectionRecipes
      */
     public static function recipe(string $name, ?string $language = null, ?string $kit = null): ?string
     {
+        foreach ( self::all() as $r ) {
+            if ( $r['name'] === $name ) {
+                return self::resolveRaw( $r['markup'], $language, $kit );
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The serve pipeline for markup that is not a stored recipe (the Studio compiler fills a recipe's slots first):
+     * language and kit lookup and validation exactly as recipe() does them, then the image step and resolveMarkup().
+     * Null for an unknown or invalid language or kit, or a marker the pipeline cannot resolve.
+     */
+    public static function resolveRaw(string $rawMarkup, ?string $language = null, ?string $kit = null): ?string
+    {
         $lang = null === $language ? RecipeTokens::default() : DesignLanguages::get($language);
         if (null === $lang) {
             return null;
@@ -417,18 +432,13 @@ final class SectionRecipes
         if (null === $styleKit || [] !== StyleKits::problems($styleKit)) {
             return null;
         }
-        foreach ( self::all() as $r ) {
-            if ( $r['name'] === $name ) {
-                $markup = ImageTokens::resolve(
-                    $r['markup'],
-                    self::imageBaseUrl(),
-                    null,
-                    static fn ( ?string $u, string $t ): ?string => apply_filters( 'jhmg_aied_image_token', $u, $t )
-                );
-                return self::resolveMarkup( $markup, $lang, $styleKit );
-            }
-        }
-        return null;
+        $markup = ImageTokens::resolve(
+            $rawMarkup,
+            self::imageBaseUrl(),
+            null,
+            static fn ( ?string $u, string $t ): ?string => apply_filters( 'jhmg_aied_image_token', $u, $t )
+        );
+        return self::resolveMarkup( $markup, $lang, $styleKit );
     }
 
     /**
