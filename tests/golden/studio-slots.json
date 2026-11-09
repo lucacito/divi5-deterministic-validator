@@ -919,8 +919,6 @@
         "text.0.body.0|body|text",
         "button.0.text|button_label|text",
         "button.0.link|link|link",
-        "image.0|picture|picture",
-        "image.0.alt|alt|alt",
         "button.1.text|button_label|text"
     ],
     "loop-products-grid": [
@@ -928,15 +926,11 @@
         "text.0.body.0|body|text",
         "button.0.text|button_label|text",
         "button.0.link|link|link",
-        "image.0|picture|picture",
-        "image.0.alt|alt|alt",
         "button.1.text|button_label|text"
     ],
     "loop-posts-paged": [
         "heading.0|eyebrow|text",
         "heading.1|headline|text",
-        "image.0|picture|picture",
-        "image.0.alt|alt|alt",
         "button.0.text|button_label|text"
     ],
     "loop-categories-grid": [

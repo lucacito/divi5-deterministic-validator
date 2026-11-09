@@ -225,12 +225,13 @@ final class StudioSlots
     /** @param callable(string,string,string,string,bool,string,?int=):void $add */
     private static function picture( \stdClass $attrs, callable $add, string $id, string $srcPath, string $altPath ): void
     {
+        // A loop's own picture or alt text ($variable(...)) belongs to the loop, never a slot.
         $src = self::get( $attrs, $srcPath );
-        if ( is_string( $src ) ) {
+        if ( is_string( $src ) && ! self::isDynamic( $src ) ) {
             $add( $id, 'picture', 'picture', $src, false, $srcPath );
         }
         $alt = self::get( $attrs, $altPath );
-        if ( is_string( $alt ) ) {
+        if ( is_string( $alt ) && ! self::isDynamic( $alt ) ) {
             $add( $id . '.alt', 'alt', 'alt', $alt, false, $altPath );
         }
     }

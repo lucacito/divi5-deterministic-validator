@@ -139,6 +139,16 @@ class StudioSlotsTest extends TestCase
         $this->assertSame( (string) file_get_contents( self::GOLDEN ), $json, 'slot table drifted; review the diff, then regenerate with AIED_UPDATE_GOLDEN=1' );
     }
 
+    /** Found by the whole-library proof: filling a loop image's alt overwrote the loop's own dynamic token. */
+    public function testNoSlotCarriesALoopsDynamicContent(): void
+    {
+        foreach ( self::names() as $name ) {
+            foreach ( StudioSlots::extract( (string) SectionRecipes::rawMarkup( $name ) ) as $s ) {
+                $this->assertStringNotContainsString( '$variable(', $s['sample'], "$name {$s['id']}" );
+            }
+        }
+    }
+
     public function testRecipesWithSlot(): void
     {
         $all = StudioSlots::recipesWithSlot( 'heading.0' );
