@@ -54,6 +54,7 @@ require_once __DIR__ . '/LanguageAdapters.php';
 require_once __DIR__ . '/LanguageResolver.php';
 require_once __DIR__ . '/SectionRecipes.php';
 require_once __DIR__ . '/StudioLinks.php';
+require_once __DIR__ . '/StudioSlots.php';
 require_once __DIR__ . '/SiteGuide.php';
 require_once __DIR__ . '/LandingGuide.php';
 require_once __DIR__ . '/ImageGuide.php';
