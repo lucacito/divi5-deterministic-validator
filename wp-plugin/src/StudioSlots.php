@@ -125,13 +125,13 @@ final class StudioSlots
             }
             if ( in_array( $short, self::HTML_BLOCKS, true ) ) {
                 $html = self::get( $attrs, self::HTML_BODY );
-                if ( is_string( $html ) && ! self::isDynamic( $html ) ) {
+                if ( is_string( $html ) ) {
                     $els = self::elements( $html );
                     foreach ( $els as $k => $el ) {
                         $add( $base . '.body.' . $k, 'text', self::elementRole( $el['tag'] ), $el['text'], $el['rich'], self::HTML_BODY, $k );
                     }
                     // Loose text with no paragraph or heading element is one slot for the whole field.
-                    if ( [] === $els && '' !== self::plain( $html ) ) {
+                    if ( [] === $els && ! self::isDynamic( $html ) && '' !== self::plain( $html ) ) {
                         $add( $base . '.body.0', 'text', 'body', self::plain( $html ), 1 === preg_match( '/<[a-z]/i', $html ), self::HTML_BODY, self::WHOLE );
                     }
                 }
@@ -179,14 +179,19 @@ final class StudioSlots
             return [];
         }
         foreach ( $m as $el ) {
-            $text = self::plain( $el[3] );
-            if ( '' === $text ) {
+            if ( ! self::countable( $el[3] ) ) {
                 continue;
             }
-            $out[] = [ 'tag' => strtolower( $el[1] ), 'text' => $text, 'rich' => 1 === preg_match( '/<[a-z]/i', $el[3] ) ];
+            $out[] = [ 'tag' => strtolower( $el[1] ), 'text' => self::plain( $el[3] ), 'rich' => 1 === preg_match( '/<[a-z]/i', $el[3] ) ];
         }
 
         return $out;
+    }
+
+    /** Whether an element counts as a slot: it has visible text and no dynamic-content token. */
+    private static function countable( string $inner ): bool
+    {
+        return '' !== self::plain( $inner ) && ! self::isDynamic( $inner );
     }
 
     /** Inner HTML as one line of plain text (tags dropped, entities decoded, spaces and non-breaking spaces trimmed). */
@@ -230,10 +235,190 @@ final class StudioSlots
         }
     }
 
-    /** A Divi dynamic-content token (a loop's own title, link, price ...): owned by the loop, never a slot. */
+    /**
+     * Fill slots of a raw recipe with supplied values. Text and alt values are data: trimmed, HTML-escaped, with `{` and
+     * `$` written as entities so no colour token, kit marker or Divi dynamic-content token can be formed from them (the
+     * serve pipeline runs after the fill). An empty or whitespace-only value counts as not supplied. A link must pass
+     * StudioLinks; a picture is `['pack'=>token]` or `['url'=>https address or site path]`. A refused value leaves the
+     * recipe's own sample in place. Blocks with no filled slot are returned byte for byte; a filled block is re-encoded
+     * (the same JSON value, written the way RecipeTokens::encodeJson writes it).
+     *
+     * @param array<string|int,mixed> $values slot id => value
+     * @return array{markup:string,filled:list<string>,unfilled:list<string>,unknown:list<string>,refused:array<string,string>}
+     */
+    public static function fill( string $rawMarkup, array $values ): array
+    {
+        $slots   = self::extract( $rawMarkup );
+        $ids     = array_column( $slots, 'id' );
+        $unknown = [];
+        foreach ( array_keys( $values ) as $id ) {
+            if ( ! in_array( (string) $id, $ids, true ) ) {
+                $unknown[] = (string) $id;
+            }
+        }
+        $refused = [];
+        $plan    = [];
+        foreach ( $slots as $s ) {
+            if ( ! array_key_exists( $s['id'], $values ) ) {
+                continue;
+            }
+            $r = self::prepare( $s['kind'], $values[ $s['id'] ] );
+            if ( isset( $r['refused'] ) ) {
+                $refused[ $s['id'] ] = $r['refused'];
+            } elseif ( isset( $r['value'] ) ) {
+                $plan[ $s['block'] . '#' . $s['index'] ][] = [ $s, $r['value'] ];
+            }
+        }
+        $done   = [];
+        $counts = [];
+        $markup = [] === $plan ? $rawMarkup : preg_replace_callback(
+            BlockAttrs::BLOCK,
+            static function ( array $m ) use ( &$counts, $plan, &$done ): string {
+                $i     = $counts[ $m[2] ] = ( $counts[ $m[2] ] ?? -1 ) + 1;
+                $edits = $plan[ $m[2] . '#' . $i ] ?? null;
+                $attrs = null === $edits ? null : BlockAttrs::decode( $m[3] );
+                if ( null === $attrs ) {
+                    return $m[0];
+                }
+                self::apply( $attrs, $edits );
+                $json = RecipeTokens::encodeJson( $attrs );
+                if ( '' === $json ) {
+                    return $m[0];
+                }
+                foreach ( $edits as [ $slot ] ) {
+                    $done[] = $slot['id'];
+                }
+
+                return $m[1] . $json . $m[4];
+            },
+            $rawMarkup
+        );
+        if ( null === $markup ) { // a PCRE failure: nothing was filled
+            $markup = $rawMarkup;
+            $done   = [];
+        }
+        $filled = array_values( array_filter( $ids, static fn ( string $id ): bool => in_array( $id, $done, true ) ) );
+
+        return [
+            'markup'   => $markup,
+            'filled'   => $filled,
+            'unfilled' => array_values( array_diff( $ids, $filled ) ),
+            'unknown'  => $unknown,
+            'refused'  => $refused,
+        ];
+    }
+
+    /** @return array{value?:string,refused?:string} empty array: the value counts as not supplied */
+    private static function prepare( string $kind, mixed $value ): array
+    {
+        if ( 'picture' === $kind ) {
+            return self::preparePicture( $value );
+        }
+        if ( ! is_string( $value ) ) {
+            return [ 'refused' => 'WRONG_TYPE' ];
+        }
+        if ( 1 !== preg_match( '//u', $value ) ) {
+            return [ 'refused' => 'INVALID_UTF8' ];
+        }
+        $text = preg_replace( '/^[\s\x{00A0}]+|[\s\x{00A0}]+$/u', '', $value ) ?? '';
+        if ( '' === $text ) {
+            return [];
+        }
+        if ( 'link' === $kind ) {
+            $code = StudioLinks::problem( $text );
+
+            return null === $code ? [ 'value' => $text ] : [ 'refused' => $code ];
+        }
+
+        return [ 'value' => str_replace( [ '{', '$' ], [ '&#123;', '&#36;' ], htmlspecialchars( $text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8' ) ) ];
+    }
+
+    /** @return array{value?:string,refused?:string} */
+    private static function preparePicture( mixed $value ): array
+    {
+        if ( ! is_array( $value ) ) {
+            return [ 'refused' => 'WRONG_TYPE' ];
+        }
+        if ( [ 'pack' ] === array_keys( $value ) ) {
+            $pack = $value['pack'];
+
+            return is_string( $pack ) && 1 === preg_match( '/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $pack )
+                ? [ 'value' => '{{aied:image:' . $pack . '}}' ]
+                : [ 'refused' => 'PICTURE_INVALID' ];
+        }
+        if ( [ 'url' ] === array_keys( $value ) && is_string( $value['url'] ) ) {
+            $url = trim( $value['url'] );
+            if ( '' === $url ) {
+                return [];
+            }
+            if ( 1 !== preg_match( '~^(https://|/)~i', $url ) ) {
+                return [ 'refused' => 'PICTURE_INVALID' ];
+            }
+            $code = StudioLinks::problem( $url );
+
+            return null === $code ? [ 'value' => $url ] : [ 'refused' => $code ];
+        }
+
+        return [ 'refused' => 'PICTURE_INVALID' ];
+    }
+
+    /** @param list<array{0:array<string,mixed>,1:string}> $edits */
+    private static function apply( \stdClass $attrs, array $edits ): void
+    {
+        $html = [];
+        foreach ( $edits as [ $slot, $value ] ) {
+            if ( null === $slot['element'] ) {
+                self::set( $attrs, $slot['path'], $value );
+            } else {
+                $html[ $slot['path'] ][ $slot['element'] ] = $value;
+            }
+        }
+        foreach ( $html as $path => $map ) {
+            $current = self::get( $attrs, (string) $path );
+            if ( ! is_string( $current ) ) {
+                continue;
+            }
+            self::set( $attrs, (string) $path, isset( $map[ self::WHOLE ] ) ? $map[ self::WHOLE ] : self::replaceElements( $current, $map ) );
+        }
+    }
+
+    /** @param array<int,string> $map element k => escaped text */
+    private static function replaceElements( string $html, array $map ): string
+    {
+        $k = -1;
+
+        return preg_replace_callback(
+            '~<(h[1-6]|p)(\s[^>]*)?>(.*?)</\1\s*>~is',
+            static function ( array $m ) use ( &$k, $map ): string {
+                if ( ! self::countable( $m[3] ) ) {
+                    return $m[0];
+                }
+                ++$k;
+
+                return isset( $map[ $k ] ) ? '<' . $m[1] . ( $m[2] ?? '' ) . '>' . $map[ $k ] . '</' . $m[1] . '>' : $m[0];
+            },
+            $html
+        ) ?? $html;
+    }
+
+    private static function set( \stdClass $attrs, string $path, string $value ): void
+    {
+        $keys = explode( '.', $path );
+        $last = array_pop( $keys );
+        $node = $attrs;
+        foreach ( $keys as $key ) {
+            if ( ! isset( $node->{$key} ) || ! $node->{$key} instanceof \stdClass ) {
+                $node->{$key} = new \stdClass();
+            }
+            $node = $node->{$key};
+        }
+        $node->{$last} = $value;
+    }
+
+    /** A value carrying a Divi dynamic-content token (a loop's own title, link, price ...): owned by the loop, never a slot. */
     public static function isDynamic( string $value ): bool
     {
-        return str_starts_with( ltrim( $value ), '$variable(' );
+        return str_contains( $value, '$variable(' );
     }
 
     /** The value at a dot-separated path inside decoded block attributes, or null. */

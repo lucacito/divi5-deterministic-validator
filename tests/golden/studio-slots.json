@@ -945,7 +945,6 @@
         "text.0.body.0|body|text",
         "button.0.text|button_label|text",
         "button.0.link|link|link",
-        "text.1.body.0|body|text",
         "button.1.text|button_label|text"
     ]
 }
