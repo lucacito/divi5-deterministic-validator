@@ -158,6 +158,15 @@ class StudioFillTest extends TestCase
         }
     }
 
+    public function testControlCharactersAndUnsafePictureAddressesAreRefusedAtFill(): void
+    {
+        $out = StudioSlots::fill( self::raw(), [ 'heading.1' => "a b" ] );
+        $this->assertSame( [ 'heading.1' => 'TEXT_INVALID' ], $out['refused'] );
+        $this->assertSame( self::raw(), $out['markup'] );
+        $pic = StudioSlots::fill( self::raw(), [ 'section.0.background' => [ 'url' => 'https://a.com/x).png' ] ] );
+        $this->assertSame( [ 'section.0.background' => 'PICTURE_INVALID' ], $pic['refused'] );
+    }
+
     public function testNonStringTextIsRefused(): void
     {
         $out = StudioSlots::fill( self::raw(), [ 'heading.1' => [ 'x' ] ] );

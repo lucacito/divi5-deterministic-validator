@@ -114,6 +114,45 @@ class StudioSlotsTest extends TestCase
         $this->assertSame( [], $uncovered, "copy-bearing leaves no slot reads:\n" . implode( "\n", array_slice( $uncovered, 0, 20 ) ) );
     }
 
+    /**
+     * Found by the branch review: testCoverage works per field, so one paragraph slot hid a `<div>` of copy beside it. Here every
+     * element slot of every HTML field is filled with "Q"; what is left in the field after removing those elements must hold
+     * no visible text (a loop's own dynamic content excepted).
+     */
+    public function testNoCopyIsLeftInsideAnHtmlField(): void
+    {
+        $left = [];
+        foreach ( self::names() as $name ) {
+            $raw    = (string) SectionRecipes::rawMarkup( $name );
+            $slots  = StudioSlots::extract( $raw );
+            $values = [];
+            $fields = [];
+            foreach ( $slots as $s ) {
+                if ( null !== $s['element'] ) {
+                    $values[ $s['id'] ] = 'Q';
+                    $fields[ $s['block'] . '#' . $s['index'] ][ $s['path'] ] = true;
+                }
+            }
+            $filled = StudioSlots::fill( $raw, $values )['markup'];
+            $counts = [];
+            preg_match_all( BlockAttrs::BLOCK, $filled, $m, PREG_SET_ORDER );
+            foreach ( $m as $block ) {
+                $i = $counts[ $block[2] ] = ( $counts[ $block[2] ] ?? -1 ) + 1;
+                foreach ( array_keys( $fields[ $block[2] . '#' . $i ] ?? [] ) as $path ) {
+                    $attrs = BlockAttrs::decode( $block[3] );
+                    $html  = (string) StudioSlots::get( $attrs, $path );
+                    $rest  = preg_replace( '~<(h[1-6]|p|div)(\s[^>]*)?>Q</\1\s*>~i', '', $html ) ?? $html;
+                    $rest  = html_entity_decode( strip_tags( str_replace( 'Q', '', $rest ) ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+                    $rest  = preg_replace( '/[\s\x{00A0}\x{200B}]+/u', '', $rest ) ?? $rest;
+                    if ( '' !== $rest && ! str_contains( $rest, '$variable(' ) ) {
+                        $left[] = "$name {$block[2]}#$i $path: " . substr( $rest, 0, 40 );
+                    }
+                }
+            }
+        }
+        $this->assertSame( [], $left, 'copy no slot reads' );
+    }
+
     public function testExemptionsCarryReasons(): void
     {
         foreach ( StudioSlots::EXEMPT_PATHS as $suffix => $reason ) {

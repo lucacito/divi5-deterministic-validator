@@ -168,6 +168,16 @@ class StudioCompilerTest extends TestCase
         $this->assertArrayNotHasKey( 'design_variety', $varied['advice'] );
     }
 
+    public function testAnythingButAnObjectIsAProblemNotAnError(): void
+    {
+        foreach ( [ 'x', null, 7, [ 'a', 'b' ], new \stdClass() ] as $in ) {
+            $r = StudioCompiler::compile( $in );
+            $this->assertFalse( $r['ok'] );
+            $this->assertNull( $r['markup'] );
+            $this->assertSame( 'NOT_AN_OBJECT', $r['problems'][0]['code'] );
+        }
+    }
+
     public function testResultShape(): void
     {
         $r = StudioCompiler::compile( self::brief() );

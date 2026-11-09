@@ -213,14 +213,18 @@ final class StudioBrief
 
             return null;
         }
-        $kinds = [];
-        $ids   = [];
+        $kinds   = [];
+        $ids     = [];
+        $figures = [];
         foreach ( StudioSlots::extract( (string) SectionRecipes::rawMarkup( $recipe ) ) as $slot ) {
             $kinds[ $slot['id'] ] = $slot['kind'];
             $ids[]                = $slot['id'];
+            if ( 'figure' === $slot['role'] ) {
+                $figures[ $slot['id'] ] = $slot['block'];
+            }
         }
         $out = [ 'recipe' => $recipe ];
-        $slots = self::slots( $section, $path, $recipe, $kinds, $ids, $problems );
+        $slots = self::slots( $section, $path, $recipe, $kinds, $ids, $figures, $problems );
         if ( [] !== $slots ) {
             $out['slots'] = $slots;
         }
@@ -235,10 +239,11 @@ final class StudioBrief
     /**
      * @param array<string,string> $kinds
      * @param list<string> $ids
+     * @param array<string,string> $figures slot id => block name of the counter figures
      * @param list<array{path:string,code:string,message:string}> $problems
      * @return array<string,string>
      */
-    private static function slots( array $section, string $path, string $recipe, array $kinds, array $ids, array &$problems ): array
+    private static function slots( array $section, string $path, string $recipe, array $kinds, array $ids, array $figures, array &$problems ): array
     {
         $map = self::map( $section, 'slots', $path, $problems );
         $out = [];
@@ -251,6 +256,10 @@ final class StudioBrief
             }
             $text = self::text( $value, $where, $problems );
             if ( null === $text || '' === $text ) {
+                continue;
+            }
+            if ( isset( $figures[ $id ] ) && ! self::figureOk( $text, $figures[ $id ] ) ) {
+                self::add( $problems, $where, 'FIGURE_NOT_NUMBER', 'A counter figure is a plain number such as 1250 or 98.6 (a circle counter: 0 to 100). The "%", "+" or "$" is not part of the figure: it comes from the counter\'s own settings.' );
                 continue;
             }
             if ( 'link' === $kinds[ $id ] ) {
@@ -299,13 +308,9 @@ final class StudioBrief
                 if ( '' === $url ) {
                     continue;
                 }
-                if ( 1 !== preg_match( '~^(https://|/)~i', $url ) ) {
-                    self::add( $problems, $where, 'PICTURE_INVALID', 'A picture address is an https:// address or a path on this site starting with /.' );
-                    continue;
-                }
-                $code = StudioLinks::problem( $url );
+                $code = StudioLinks::pictureProblem( $url );
                 if ( null !== $code ) {
-                    self::add( $problems, $where, $code, 'Not an allowed picture address.' );
+                    self::add( $problems, $where, $code, 'A picture address is an https:// address or a path on this site starting with /, using only letters, digits and - . _ ~ : / ? # @ ! & * + , = % (percent-encode anything else).' );
                     continue;
                 }
                 $out[ $id ] = [ 'url' => $url ];
@@ -315,6 +320,16 @@ final class StudioBrief
         }
 
         return $out;
+    }
+
+    /** Divi's counters read the figure as a number; anything else shows NaN. */
+    private static function figureOk( string $text, string $block ): bool
+    {
+        if ( 1 !== preg_match( '/^\d[\d,]*(\.\d+)?$/', $text ) ) {
+            return false;
+        }
+
+        return 'divi/circle-counter' !== $block || (float) str_replace( ',', '', $text ) <= 100.0;
     }
 
     /**
@@ -345,13 +360,18 @@ final class StudioBrief
 
             return null;
         }
-        if ( strlen( $value ) > self::MAX_TEXT * 4 ) {
+        if ( strlen( $value ) > self::MAX_TEXT * 4 + 64 ) { // margin for spaces that trimming removes
             self::add( $problems, $where, 'TEXT_TOO_LONG', 'At most ' . self::MAX_TEXT . ' characters.' );
 
             return null;
         }
         if ( 1 !== preg_match( '//u', $value ) ) {
             self::add( $problems, $where, 'INVALID_UTF8', 'The text must be valid UTF-8.' );
+
+            return null;
+        }
+        if ( 1 === preg_match( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', $value ) ) {
+            self::add( $problems, $where, 'TEXT_INVALID', 'The text holds an invisible control character (tabs and line breaks are fine).' );
 
             return null;
         }

@@ -49,6 +49,14 @@ class StudioLibraryProofTest extends TestCase
             if ( 'picture' === $slot['kind'] ) {
                 continue;
             }
+            if ( 'figure' === $slot['role'] ) {
+                // A counter figure must be a number (a circle counter 0 to 100, so it is not checked for being unique).
+                $values[ $slot['id'] ] = 'divi/circle-counter' === $slot['block'] ? '42' : sprintf( '9%03d%03d', $r, $n );
+                if ( 'divi/circle-counter' !== $slot['block'] ) {
+                    $markers[] = $values[ $slot['id'] ];
+                }
+                continue;
+            }
             $marker = 'link' === $slot['kind'] ? "https://example.com/l{$r}x{$n}z" : "Mk{$r}x{$n}z";
             $values[ $slot['id'] ] = $marker;
             $markers[]             = $marker;
@@ -104,7 +112,7 @@ class StudioLibraryProofTest extends TestCase
         return [
             '"', '\\', '-->', '<!--', '<!-- wp:divi/text {} /-->', '{', '}', '{{aied:color:bg}}', '{{aied:image:hero-blue-1}}',
             '"aied":{"kit":"control"}', '$variable({"a":1})$', '<script>alert(1)</script>', '<img src=x onerror=alert(1)>', '&amp;', '&#123;',
-            "\0", 'emoji 😀👩‍👩‍👧', 'مرحبا بالعالم', "line\nbreak\ttab", str_repeat( 'long ', 380 ), '\\u0022', "caf\u{00e9}", ' ',
+            'emoji 😀👩‍👩‍👧', 'مرحبا بالعالم', "line\nbreak\ttab", str_repeat( 'long ', 380 ), '\\u0022', "caf\u{00e9}", ' ',
         ];
     }
 
@@ -128,6 +136,10 @@ class StudioLibraryProofTest extends TestCase
                     }
                     if ( 'link' === $slot['kind'] ) {
                         $slots[ $slot['id'] ] = $links[ mt_rand( 0, count( $links ) - 1 ) ];
+                        continue;
+                    }
+                    if ( 'figure' === $slot['role'] ) { // a counter figure is a number or it is refused; NUL and the like are refused too (StudioBriefTest)
+                        $slots[ $slot['id'] ] = [ '5', '1,250', '98.6', '$2M' ][ mt_rand( 0, 3 ) ];
                         continue;
                     }
                     $value = '';

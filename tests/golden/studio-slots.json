@@ -94,7 +94,8 @@
         "image.1.alt|alt|alt",
         "image.2|picture|picture",
         "image.2.alt|alt|alt",
-        "text.2.body.0|subhead|text"
+        "text.2.body.0|subhead|text",
+        "text.2.body.1|body|text"
     ],
     "image-carousel": [
         "text.0.body.0|headline|text",

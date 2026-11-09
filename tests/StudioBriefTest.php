@@ -170,6 +170,97 @@ class StudioBriefTest extends TestCase
         $this->assertContains( 'sections.0.slots.heading.1=TEXT_TOO_LONG', self::codes( $brief ) );
     }
 
+    /** The first slot with role "figure" of a block type: [recipe, slot id]. */
+    private static function figureSlot( string $block ): array
+    {
+        foreach ( SectionRecipes::names() as $name ) {
+            foreach ( StudioSlots::extract( (string) SectionRecipes::rawMarkup( $name ) ) as $s ) {
+                if ( 'figure' === $s['role'] && $block === $s['block'] ) {
+                    return [ $name, $s['id'] ];
+                }
+            }
+        }
+        self::fail( "no $block figure in the library" );
+    }
+
+    public function testCounterFiguresMustBeNumbers(): void
+    {
+        [ $recipe, $id ] = self::figureSlot( 'divi/number-counter' );
+        foreach ( [ '$2M', 'N/A', '98%', '1,2,x', '', ] as $bad ) {
+            $r = StudioBrief::check( [ 'title' => 'T', 'goal' => 'sell', 'language' => 'editorial', 'sections' => [ [ 'recipe' => $recipe, 'slots' => [ $id => $bad ] ] ] ] );
+            if ( '' === $bad ) {
+                $this->assertTrue( $r['ok'], 'empty counts as not supplied' );
+                continue;
+            }
+            $this->assertContains( "sections.0.slots.$id=FIGURE_NOT_NUMBER", array_map( static fn ( array $p ): string => $p['path'] . '=' . $p['code'], $r['problems'] ), $bad );
+            $this->assertStringContainsString( '%', $r['problems'][0]['message'], 'the message says where the % sign comes from' );
+        }
+        foreach ( [ '1250', '1,250', '98.6', '0', ' 42 ' ] as $good ) {
+            $r = StudioBrief::check( [ 'title' => 'T', 'goal' => 'sell', 'language' => 'editorial', 'sections' => [ [ 'recipe' => $recipe, 'slots' => [ $id => $good ] ] ] ] );
+            $this->assertTrue( $r['ok'], $good . ' ' . json_encode( $r['problems'] ) );
+        }
+        [ $circle, $cid ] = self::figureSlot( 'divi/circle-counter' );
+        foreach ( [ '101' => false, '100' => true, '50.5' => true, '-1' => false ] as $value => $ok ) {
+            $r = StudioBrief::check( [ 'title' => 'T', 'goal' => 'sell', 'language' => 'editorial', 'sections' => [ [ 'recipe' => $circle, 'slots' => [ $cid => (string) $value ] ] ] ] );
+            $this->assertSame( $ok, $r['ok'], "circle counter $value" );
+        }
+    }
+
+    public function testControlCharactersRefusedButTabsAndLinesAllowed(): void
+    {
+        foreach ( [ "a b", "ab", "ab", "ab" ] as $bad ) {
+            $brief                                      = self::base();
+            $brief['sections'][0]['slots']['heading.1'] = $bad;
+            $this->assertContains( 'sections.0.slots.heading.1=TEXT_INVALID', self::codes( $brief ), bin2hex( $bad ) );
+        }
+        $brief                                      = self::base();
+        $brief['sections'][0]['slots']['heading.1'] = "two	parts
+and a line";
+        $this->assertTrue( StudioBrief::check( $brief )['ok'] );
+    }
+
+    public function testTrailingSpaceDoesNotTipTheLengthCheck(): void
+    {
+        $brief                                      = self::base();
+        $brief['sections'][0]['slots']['heading.1'] = str_repeat( '😀', 2000 ) . ' ';
+        $this->assertTrue( StudioBrief::check( $brief )['ok'] );
+    }
+
+    /** @return array<string,array{0:string,1:string}> */
+    public static function unsafeAddresses(): array
+    {
+        return [
+            'quote path'      => [ '/x"onmouseover="a', 'LINK_MALFORMED' ],
+            'tag in url'      => [ 'https://a.com/x"><script>alert(1)</script>', 'LINK_MALFORMED' ],
+            'empty host label' => [ 'https://a..b/x', 'LINK_MALFORMED' ],
+        ];
+    }
+
+    #[DataProvider( 'unsafeAddresses' )]
+    public function testUnsafeAddressesRefusedAsLinksAndPictures( string $url, string $code ): void
+    {
+        $brief                                                = self::base();
+        $brief['sections'][0]['slots']['button.0.link']       = $url;
+        $brief['sections'][0]['pictures']['section.0.background'] = [ 'url' => $url ];
+        $codes = self::codes( $brief );
+        $this->assertContains( "sections.0.slots.button.0.link=$code", $codes );
+        $this->assertContains( 'sections.0.pictures.section.0.background=' . $code, $codes );
+    }
+
+    public function testPictureAddressesAreStricterThanLinks(): void
+    {
+        foreach ( [ "https://a.com/it's.jpg", 'https://a.com/x).png', '/a);background:red', 'https://a.com/var(--x)', 'https://a.com/a b.jpg', 'https://a.com/é.jpg' ] as $url ) {
+            $brief                                                    = self::base();
+            $brief['sections'][0]['pictures']['section.0.background'] = [ 'url' => $url ];
+            $this->assertNotSame( [], StudioBrief::check( $brief )['problems'], $url );
+        }
+        foreach ( [ 'https://a.com/wp-content/uploads/2026/11/a-b_c.jpg', '/wp-content/uploads/a%20b.jpg', 'https://cdn.example.com/a.jpg?w=800&h=600' ] as $url ) {
+            $brief                                                    = self::base();
+            $brief['sections'][0]['pictures']['section.0.background'] = [ 'url' => $url ];
+            $this->assertTrue( StudioBrief::check( $brief )['ok'], $url );
+        }
+    }
+
     public function testInvalidUtf8TitleRefused(): void
     {
         $brief          = self::base();

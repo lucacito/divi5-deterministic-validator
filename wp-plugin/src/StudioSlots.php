@@ -30,6 +30,13 @@ final class StudioSlots
 
     private const BACKGROUND = 'module.decoration.background.desktop.value.image.url';
 
+    /**
+     * The elements of an HTML field that hold copy: headings, paragraphs, and a `div` that holds no heading, paragraph or
+     * other `div` (so a wrapper div is never one, but a div of loose text is). Named groups: t/a/i for h1-h6 and p,
+     * d/da/di for the div.
+     */
+    private const ELEMENT = '~<(?<t>h[1-6]|p)(?<a>\s[^>]*)?>(?<i>.*?)</\k<t>\s*>|<(?<d>div)(?<da>\s[^>]*)?>(?<di>(?:(?!<(?:div|p|h[1-6])[\s>/]|</div).)*+)</div\s*>~is';
+
     /** The `element` value of an HTML slot that is the whole field (loose text with no paragraph or heading element). */
     public const WHOLE = -1;
 
@@ -175,17 +182,24 @@ final class StudioSlots
     public static function elements( string $html ): array
     {
         $out = [];
-        if ( false === preg_match_all( '~<(h[1-6]|p)(\s[^>]*)?>(.*?)</\1\s*>~is', $html, $m, PREG_SET_ORDER ) ) {
+        if ( false === preg_match_all( self::ELEMENT, $html, $m, PREG_SET_ORDER ) ) {
             return [];
         }
         foreach ( $m as $el ) {
-            if ( ! self::countable( $el[3] ) ) {
+            [ $tag, , $inner ] = self::parts( $el );
+            if ( ! self::countable( $inner ) ) {
                 continue;
             }
-            $out[] = [ 'tag' => strtolower( $el[1] ), 'text' => self::plain( $el[3] ), 'rich' => 1 === preg_match( '/<[a-z]/i', $el[3] ) ];
+            $out[] = [ 'tag' => strtolower( $tag ), 'text' => self::plain( $inner ), 'rich' => 1 === preg_match( '/<[a-z]/i', $inner ) ];
         }
 
         return $out;
+    }
+
+    /** @param array<string|int,string> $m a match of ELEMENT @return array{0:string,1:string,2:string} tag, attributes, inner HTML */
+    private static function parts( array $m ): array
+    {
+        return '' !== ( $m['t'] ?? '' ) ? [ $m['t'], $m['a'] ?? '', $m['i'] ?? '' ] : [ $m['d'] ?? 'div', $m['da'] ?? '', $m['di'] ?? '' ];
     }
 
     /** Whether an element counts as a slot: it has visible text and no dynamic-content token. */
@@ -321,6 +335,9 @@ final class StudioSlots
         if ( 1 !== preg_match( '//u', $value ) ) {
             return [ 'refused' => 'INVALID_UTF8' ];
         }
+        if ( 1 === preg_match( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', $value ) ) {
+            return [ 'refused' => 'TEXT_INVALID' ]; // invisible control characters; tabs and line breaks are fine
+        }
         $text = preg_replace( '/^[\s\x{00A0}]+|[\s\x{00A0}]+$/u', '', $value ) ?? '';
         if ( '' === $text ) {
             return [];
@@ -352,10 +369,7 @@ final class StudioSlots
             if ( '' === $url ) {
                 return [];
             }
-            if ( 1 !== preg_match( '~^(https://|/)~i', $url ) ) {
-                return [ 'refused' => 'PICTURE_INVALID' ];
-            }
-            $code = StudioLinks::problem( $url );
+            $code = StudioLinks::pictureProblem( $url );
 
             return null === $code ? [ 'value' => $url ] : [ 'refused' => $code ];
         }
@@ -389,14 +403,15 @@ final class StudioSlots
         $k = -1;
 
         return preg_replace_callback(
-            '~<(h[1-6]|p)(\s[^>]*)?>(.*?)</\1\s*>~is',
+            self::ELEMENT,
             static function ( array $m ) use ( &$k, $map ): string {
-                if ( ! self::countable( $m[3] ) ) {
+                [ $tag, $attrs, $inner ] = self::parts( $m );
+                if ( ! self::countable( $inner ) ) {
                     return $m[0];
                 }
                 ++$k;
 
-                return isset( $map[ $k ] ) ? '<' . $m[1] . ( $m[2] ?? '' ) . '>' . $map[ $k ] . '</' . $m[1] . '>' : $m[0];
+                return isset( $map[ $k ] ) ? '<' . $tag . $attrs . '>' . $map[ $k ] . '</' . $tag . '>' : $m[0];
             },
             $html
         ) ?? $html;

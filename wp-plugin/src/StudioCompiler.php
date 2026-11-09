@@ -18,12 +18,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class StudioCompiler
 {
     /**
-     * @param array<string,mixed> $brief
+     * @param mixed $brief anything a request body can decode to; a non-object is a NOT_AN_OBJECT problem
      * @param ?callable(string):bool $pageExists true when a site path points at a page that exists; null skips the check
      * @param string $homeUrl the site's home URL, to recognise an https link to the site itself
      * @return array{ok:bool,markup:?string,problems:list<array{path:string,code:string,message:string}>,violations:list<array<string,mixed>>,unfilled:list<array{section:int,recipe:string,slot:string,role:string}>,refused:list<array{section:int,slot:string,code:string}>,warnings:list<array{section:int,slot:string,code:string,message:string}>,advice:array<string,mixed>}
      */
-    public static function compile( array $brief, ?callable $pageExists = null, string $homeUrl = '' ): array
+    public static function compile( mixed $brief, ?callable $pageExists = null, string $homeUrl = '' ): array
     {
         $result = [ 'ok' => false, 'markup' => null, 'problems' => [], 'violations' => [], 'unfilled' => [], 'refused' => [], 'warnings' => [], 'advice' => [] ];
         $check  = StudioBrief::check( $brief );

@@ -24,6 +24,7 @@ class StudioLinksTest extends TestCase
             'anchor'   => [ '#pricing' ],
             'path'     => [ '/contact/' ],
             'path q'   => [ '/shop/?cat=3' ],
+            'apostrophe' => [ "https://example.com/it's" ],
         ];
     }
 
@@ -53,6 +54,11 @@ class StudioLinksTest extends TestCase
             'bad mailto'     => [ 'mailto:not-an-address', 'LINK_MALFORMED' ],
             'bad tel'        => [ 'tel:call-me', 'LINK_MALFORMED' ],
             'empty'          => [ '', 'LINK_MALFORMED' ],
+            'quote'          => [ '/x"y', 'LINK_MALFORMED' ],
+            'angle'          => [ 'https://a.com/<b>', 'LINK_MALFORMED' ],
+            'backtick'       => [ 'https://a.com/`x', 'LINK_MALFORMED' ],
+            'brace'          => [ 'https://a.com/{x}', 'LINK_MALFORMED' ],
+            'empty label'    => [ 'https://a..b/x', 'LINK_MALFORMED' ],
             'too long'       => [ '/' . str_repeat( 'a', 2001 ), 'LINK_TOO_LONG' ],
         ];
     }
@@ -66,6 +72,28 @@ class StudioLinksTest extends TestCase
     public function testExactlyTheLimitIsAllowed(): void
     {
         $this->assertNull( StudioLinks::problem( '/' . str_repeat( 'a', 1999 ) ) );
+    }
+
+    public function testSitePathOnASubdirectoryInstall(): void
+    {
+        $home = 'https://example.com/blog';
+        $this->assertSame( '/x/', StudioLinks::sitePath( 'https://example.com/blog/x/', $home ) );
+        $this->assertSame( '/', StudioLinks::sitePath( 'https://example.com/blog', $home ) );
+        $this->assertSame( '/other/', StudioLinks::sitePath( 'https://example.com/other/', $home ), 'outside the install path: host-root path, unchanged' );
+        $this->assertSame( '/blogger/', StudioLinks::sitePath( 'https://example.com/blogger/', $home ), 'a longer name is not inside /blog' );
+    }
+
+    public function testPictureProblem(): void
+    {
+        $this->assertNull( StudioLinks::pictureProblem( 'https://a.com/wp-content/uploads/a.jpg?w=1&h=2' ) );
+        $this->assertNull( StudioLinks::pictureProblem( '/wp-content/uploads/a%20b.jpg' ) );
+        $this->assertSame( 'PICTURE_INVALID', StudioLinks::pictureProblem( 'mailto:a@b.co' ) );
+        $this->assertSame( 'PICTURE_INVALID', StudioLinks::pictureProblem( '#top' ) );
+        $this->assertSame( 'PICTURE_INVALID', StudioLinks::pictureProblem( 'https://a.com/x).png' ) );
+        $this->assertSame( 'PICTURE_INVALID', StudioLinks::pictureProblem( "https://a.com/it's.jpg" ) );
+        $this->assertSame( 'PICTURE_INVALID', StudioLinks::pictureProblem( 'https://a.com/é.jpg' ) );
+        $this->assertSame( 'LINK_MALFORMED', StudioLinks::pictureProblem( '//evil.com/a.jpg' ) );
+        $this->assertSame( 'LINK_TOO_LONG', StudioLinks::pictureProblem( '/' . str_repeat( 'a', 2001 ) ) );
     }
 
     public function testSitePath(): void

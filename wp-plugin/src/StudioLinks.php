@@ -26,7 +26,9 @@ final class StudioLinks
         if ( strlen( $url ) > self::MAX_LENGTH ) {
             return 'LINK_TOO_LONG';
         }
-        if ( 1 === preg_match( '/[\x00-\x1F\x7F]/', $url ) || str_contains( $url, '{{' ) || str_contains( $url, '$variable(' ) ) {
+        // Control characters, tokens, and the characters no address may carry unencoded (they would break a quoted
+        // attribute or a CSS url()): " < > ` { } | ^ and the backslash.
+        if ( 1 === preg_match( '/[\x00-\x1F\x7F"<>`{}|^\\\\]/', $url ) || str_contains( $url, '{{' ) || str_contains( $url, '$variable(' ) ) {
             return 'LINK_MALFORMED';
         }
         if ( '#' === $url[0] ) {
@@ -47,6 +49,24 @@ final class StudioLinks
         }
 
         return 'LINK_SCHEME_NOT_ALLOWED';
+    }
+
+    /**
+     * Null when $url is an allowed picture address: an https address or a site path, with only the characters a plain
+     * image address needs (letters, digits and - . _ ~ : / ? # @ ! & * + , = %). Stricter than a link because the
+     * address is written into a CSS url() for backgrounds. Non-ASCII, quotes, brackets and spaces must be percent-encoded.
+     */
+    public static function pictureProblem( string $url ): ?string
+    {
+        if ( 1 !== preg_match( '~^(https://|/)~i', $url ) ) {
+            return 'PICTURE_INVALID';
+        }
+        $code = self::problem( $url );
+        if ( null !== $code ) {
+            return $code;
+        }
+
+        return 1 === preg_match( '/^[A-Za-z0-9\-._~:\/?#@!&*+,=%]+$/', $url ) ? null : 'PICTURE_INVALID';
     }
 
     /**
@@ -73,9 +93,15 @@ final class StudioLinks
         if ( ! is_string( $host ) || ! is_string( $homeHost ) || 0 !== strcasecmp( $host, $homeHost ) ) {
             return null;
         }
-        $path = parse_url( $url, PHP_URL_PATH );
+        $path     = parse_url( $url, PHP_URL_PATH );
+        $path     = is_string( $path ) && '' !== $path ? $path : '/';
+        $homePath = rtrim( (string) parse_url( $homeUrl, PHP_URL_PATH ), '/' );
+        // A site in a subdirectory: the path is read from the install's own root (a longer name such as /blogger is not inside /blog).
+        if ( '' !== $homePath && ( $path === $homePath || str_starts_with( $path, $homePath . '/' ) ) ) {
+            $path = substr( $path, strlen( $homePath ) );
+        }
 
-        return is_string( $path ) && '' !== $path ? $path : '/';
+        return '' === $path ? '/' : $path;
     }
 
     private static function pathOnly( string $url ): string
@@ -95,7 +121,7 @@ final class StudioLinks
             return 'LINK_MALFORMED';
         }
         $host = $parts['host'] ?? '';
-        if ( ! is_string( $host ) || 1 !== preg_match( '/^[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?$/', $host ) ) {
+        if ( ! is_string( $host ) || str_contains( $host, '..' ) || 1 !== preg_match( '/^[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?$/', $host ) ) {
             return 'LINK_MALFORMED';
         }
 

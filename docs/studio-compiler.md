@@ -41,6 +41,11 @@ A **brief** (small JSON) goes in; valid Divi 5 markup and a report come out. Eac
 - Every `divi/button` has a `.link` slot; most recipe buttons carry no `linkUrl`, so filling adds the key beside `text` (the shape real exports write).
 - A filled block is re-encoded with `RecipeTokens::encodeJson` (same value, different escape style from some stored recipes); blocks with nothing filled keep their exact bytes.
 - Whole-field slot: an HTML field with no paragraph or heading element (loose text) is one slot, `element = StudioSlots::WHOLE`.
+- A `<div>` that holds only copy (no paragraph, heading or other div inside) is a slot like a paragraph; a wrapper div is not. `testNoCopyIsLeftInsideAnHtmlField` fills every element slot and fails if visible text remains in a field.
+- Counter figures (`number-counter`, `circle-counter` `number`) must be plain numbers (`1250`, `1,250`, `98.6`; a circle counter 0 to 100): Divi reads them with `parseFloat`, so "$2M" would show NaN. Refused with `FIGURE_NOT_NUMBER`; the %, + or $ sign comes from the counter's own settings.
+- Text may not hold control characters (NUL and the like, `TEXT_INVALID`); tabs and line breaks are fine.
+- Link addresses refuse `" < > \` { } | ^` and the backslash; picture addresses allow only `A-Za-z0-9 - . _ ~ : / ? # @ ! & * + , = %` (percent-encode anything else), because a background address is written into a CSS `url()`.
+- `StudioLinks::sitePath` strips the install's own path for an https address on a site in a subdirectory; a `/path` link is read from the host root, as a browser reads it.
 - Picture slots: `{"pack": token}` or `{"url": https address or /site-path}`; a loop's picture is not a slot.
 
 ## Proofs
