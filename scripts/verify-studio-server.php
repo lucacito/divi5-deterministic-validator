@@ -1,6 +1,6 @@
 <?php
 /**
- * The server half of the Divi 5 Lab (internal name Studio) live gate. Called by scripts/verify-studio.cjs, one command per call:
+ * The server half of the Lab (internal name Studio) live gate. Called by scripts/verify-studio.cjs, one command per call:
  *
  *   wp eval-file /scripts/verify-studio-server.php <command> <base64 JSON parameters> --user=1
  *
@@ -401,7 +401,7 @@ switch ( $cmd ) {
         $token = aied_token( $p );
         @unlink( WP_CONTENT_DIR . '/' . AIED_GATE_LOG );
         $log  = WP_CONTENT_DIR . '/' . AIED_GATE_LOG;
-        $code = "<?php\n// Temporary: written by the Divi 5 Lab live gate (scripts/verify-studio.cjs, run {$token}) and removed when it ends.\n"
+        $code = "<?php\n// Temporary: written by the Lab live gate (scripts/verify-studio.cjs, run {$token}) and removed when it ends.\n"
             . "// Logs every PHP warning, notice and deprecation (WP_DEBUG is off on this site) so the gate can show there are none.\n"
             . "set_error_handler( static function ( \$no, \$str, \$file, \$line ) { @file_put_contents( '{$log}', json_encode( [ \$no, \$str, \$file, \$line ] ) . \"\\n\", FILE_APPEND ); return false; } );\n"
             . "register_shutdown_function( static function () { \$e = error_get_last(); if ( \$e && in_array( \$e['type'], [ E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR ], true ) ) { @file_put_contents( '{$log}', json_encode( [ \$e['type'], \$e['message'], \$e['file'], \$e['line'] ] ) . \"\\n\", FILE_APPEND ); } } );\n"
@@ -546,8 +546,8 @@ switch ( $cmd ) {
             [ $mk( 'aied studio 123-abcdef G book', 1 ), $token, [ 50 ], true ],
             [ $mk( 'aied studio 999-zzzzzz G book', 1 ), $token, [ 50 ], false ],
             [ $mk( 'aied studio 999-zzzzzz G book', 1 ), null, [ 50 ], true ],
-            [ $mk( 'Divi 5 Lab preview (temporary) 50', 1 ), $token, [ 50 ], true ],
-            [ $mk( 'Divi 5 Lab preview (temporary) 1', 1 ), $token, [ 50 ], false ],
+            [ $mk( 'Lab preview (temporary) 50', 1 ), $token, [ 50 ], true ],
+            [ $mk( 'Lab preview (temporary) 1', 1 ), $token, [ 50 ], false ],
             [ $mk( 'About us', 50 ), $token, [ 50 ], true ],
             [ $mk( 'About us', 1 ), $token, [ 50 ], false ],
             [ $mk( 'aied studio', 1 ), $token, [ 50 ], false ],

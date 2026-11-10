@@ -20,7 +20,7 @@ require_once __DIR__ . '/WpAjaxShims.php';
 require_once __DIR__ . '/../wp-plugin/src/autoload.php';
 
 /**
- * Divi 5 Lab (Studio), plan 2 task 6: the admin-ajax handlers. Every action needs the nonce and manage_options; create
+ * Lab (Studio), plan 2 task 6: the admin-ajax handlers. Every action needs the nonce and manage_options; create
  * and rebuild also edit_pages; the user is always the signed-in one; answers are data only.
  */
 class StudioAjaxTest extends TestCase
@@ -310,7 +310,7 @@ class StudioAjaxTest extends TestCase
         $this->assertArrayNotHasKey( 'markup', $r->data, 'the markup itself is not sent' );
         // the preview draft belongs to the signed-in user
         $titles = array_map( static fn ( $p ) => $p->post_title, $GLOBALS['__wp_posts'] );
-        $this->assertSame( [ 'Divi 5 Lab preview (temporary) ' . self::ME ], array_values( $titles ) );
+        $this->assertSame( [ 'Lab preview (temporary) ' . self::ME ], array_values( $titles ) );
     }
 
     public function testPreviewOfAnInvalidBriefIs422WithTheReportAndNoDraft(): void
@@ -360,7 +360,7 @@ class StudioAjaxTest extends TestCase
         $this->assertNotNull( $page );
         $this->assertSame( 'draft', $page->post_status );
         $titles = array_map( static fn ( $p ) => $p->post_title, $GLOBALS['__wp_posts'] );
-        $this->assertNotContains( 'Divi 5 Lab preview (temporary) ' . self::ME, $titles, 'cleanup($user) ran after the create' );
+        $this->assertNotContains( 'Lab preview (temporary) ' . self::ME, $titles, 'cleanup($user) ran after the create' );
     }
 
     public function testCreateFromAStoredBriefAndRebuild(): void
@@ -439,7 +439,7 @@ class StudioAjaxTest extends TestCase
         $mk = static function ( int $id, int $author ) use ( $old ): void {
             $p = new \WP_Post();
             $p->ID = $id; $p->post_type = 'page'; $p->post_status = 'draft';
-            $p->post_title = 'Divi 5 Lab preview (temporary) ' . $author; $p->post_author = $author;
+            $p->post_title = 'Lab preview (temporary) ' . $author; $p->post_author = $author;
             $p->post_content = ''; $p->post_modified_gmt = $old;
             $GLOBALS['__wp_posts'][ $id ] = $p;
         };
@@ -462,7 +462,7 @@ class StudioAjaxTest extends TestCase
         $old = gmdate( 'Y-m-d H:i:s', time() - 30 * 3600 );
         $p = new \WP_Post();
         $p->ID = 301; $p->post_type = 'page'; $p->post_status = 'draft';
-        $p->post_title = 'Divi 5 Lab preview (temporary) 9'; $p->post_author = 9;
+        $p->post_title = 'Lab preview (temporary) 9'; $p->post_author = 9;
         $p->post_content = ''; $p->post_modified_gmt = $old;
         $GLOBALS['__wp_posts'][301] = $p;
         $this->call( 'stack', [ 'goal' => 'book' ] );
@@ -477,6 +477,6 @@ class StudioAjaxTest extends TestCase
         $this->assertStringNotContainsString( "\$_POST['user", $src );
         $this->assertStringNotContainsString( "\$_REQUEST", $src );
         $this->assertStringContainsString( 'home_url()', $src );
-        $this->assertDoesNotMatchRegularExpression( '/__\(\s*\'[^\']*Studio/', $src, 'people-facing strings say Divi 5 Lab' );
+        $this->assertDoesNotMatchRegularExpression( '/__\(\s*\'[^\']*Studio/', $src, 'people-facing strings say Lab' );
     }
 }

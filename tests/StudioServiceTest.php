@@ -44,7 +44,7 @@ require_once __DIR__ . '/../wp-plugin/src/HistoryStore.php';
 require_once __DIR__ . '/../wp-plugin/src/HistoryService.php';
 require_once __DIR__ . '/../wp-plugin/src/StudioService.php';
 
-/** Divi 5 Lab (internal name Studio), plan 2 task 4: the only code that saves a Studio page. */
+/** Lab (internal name Studio), plan 2 task 4: the only code that saves a Studio page. */
 class StudioServiceTest extends TestCase
 {
     private const OWNER = 5;

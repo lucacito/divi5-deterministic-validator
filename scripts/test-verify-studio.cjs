@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * Pure tests of scripts/lib/studio-gate.cjs, the expectation builders of the Divi 5 Lab live gate (scripts/verify-studio.cjs).
+ * Pure tests of scripts/lib/studio-gate.cjs, the expectation builders of the Lab live gate (scripts/verify-studio.cjs).
  * No site, no browser, no dependencies. `make verify-studio` runs these first.
  *
  *   node scripts/test-verify-studio.cjs
@@ -36,7 +36,7 @@ test('gate titles carry the prefix and the run token', () => {
   assert.ok(g.isGateTitle(t, '123-abc'));
   assert.ok(g.isGateTitle(t, null));
   assert.ok(!g.isGateTitle(t, '999-zzz'));
-  assert.ok(!g.isGateTitle('Divi 5 Lab preview (temporary) 1', null));
+  assert.ok(!g.isGateTitle('Lab preview (temporary) 1', null));
   assert.ok(!g.isGateTitle(undefined, null));
 });
 
@@ -127,9 +127,9 @@ test('first difference names the place two contents part', () => {
   assert.equal(g.firstDifference('ab', 'abc').at, 2);
 });
 
-test('the Dashboard row is found by its title and reads "Divi 5 Lab"', () => {
+test('the Dashboard row is found by its title and reads "Lab"', () => {
   const row = (title, src) => `<tr>\n<td><strong>${title}</strong></td><td>1 min ago</td><td><code>${src}</code></td></tr>`;
-  const html = '<table><tbody>' + row('aied studio 1 &amp; C', 'Divi 5 Lab') + row('Other', 'REST API') + '</tbody></table>';
+  const html = '<table><tbody>' + row('aied studio 1 &amp; C', 'Lab') + row('Other', 'REST API') + '</tbody></table>';
   assert.ok(g.dashboardShowsLab(html, 'aied studio 1 & C'));
   assert.ok(!g.dashboardShowsLab(html, 'Other'));
   assert.ok(!g.dashboardShowsLab('<table>' + row('X', 'studio') + '</table>', 'X'), 'the raw tool name is not the product name');

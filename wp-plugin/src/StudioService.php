@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * The only code that saves a Divi 5 Lab page (internal name Studio): preview a brief, create a draft from it, rebuild
+ * The only code that saves a Lab page (internal name Studio): preview a brief, create a draft from it, rebuild
  * the page a stored brief made, and write the hand-off instruction for an assistant.
  *
  * - Every page it makes is a DRAFT (DraftPage::insert) and every layout passed LayoutGate (StudioCompiler::compile).
@@ -54,7 +54,7 @@ final class StudioService
     public const REASON_NO_UNDO   = 'no_undo';
     public const REASON_NO_ACCESS = 'no_access';
 
-    private const INSTRUCTION = 'Use the %1$s tool%2$s to open Divi 5 Lab brief #%3$d. It lists the empty slots of every section. '
+    private const INSTRUCTION = 'Use the %1$s tool%2$s to open Lab brief #%3$d. It lists the empty slots of every section. '
         . 'Write words for those slots and send them back with the same tool; you can fill some now and the rest later. '
         . 'Do not invent facts, prices, names or numbers; leave a slot empty if unknown. '
         . 'The page stays a draft until the site owner publishes it.';

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * The live gate of the Divi 5 Lab screen (internal name Studio), on the Docker dev site (real WordPress, real MariaDB, real
+ * The live gate of the Lab screen (internal name Studio), on the Docker dev site (real WordPress, real MariaDB, real
  * Divi 5) and in a real browser (Playwright from ../layoutlab, or PLAYWRIGHT_PATH).
  *
  *   make verify-studio                       (runs scripts/test-verify-studio.cjs first)
@@ -17,7 +17,7 @@
  *      id, a removed recipe
  *   G  the screen in a real administrator session (reduced motion): two goals through the five steps (one by keyboard only),
  *      widths, the preview devices, the Media Library, the clipboard fallback, Create, Rebuild, a double click, the Pages list
- *   H  the Dashboard names a Divi 5 Lab history row "Divi 5 Lab" (Ruling 9)
+ *   H  the Dashboard names a Lab history row "Lab" (Ruling 9)
  *
  * Self-cleaning: every page, user, brief row, picture and option it creates is removed at the end, on a failure and on
  * SIGINT/SIGTERM. Throwaway pages are titled `aied studio <run>`, users are `aied_studio_<run>_<x>`; options and user 1's
@@ -351,7 +351,7 @@ async function main() {
   const sa = await signIn(state, U.a, 'second admin');
   const sn = await signIn(state, U.n, 'admin without unfiltered_html');
   const sr = await signIn(state, U.r, 'admin without edit_others_pages');
-  for (const s of [s1, sa, sn, sr]) check(s.screenStatus === 200 && !!s.nonce && s.printed.length === 0, `sessions: the Divi 5 Lab screen loads for the ${s.name} with a nonce and no PHP message`, { status: s.screenStatus, printed: s.printed });
+  for (const s of [s1, sa, sn, sr]) check(s.screenStatus === 200 && !!s.nonce && s.printed.length === 0, `sessions: the Lab screen loads for the ${s.name} with a nonce and no PHP message`, { status: s.screenStatus, printed: s.printed });
   const i18n = s1.cfg.i18n;
 
   const browser = await chromium.launch();
@@ -445,7 +445,7 @@ async function main() {
 
     // H: the Dashboard names the source of that row.
     const dash = await get(s1, DASHBOARD);
-    check(g.dashboardShowsLab(dash.html, title), 'H: the Dashboard\'s recent AI edits lists the rebuilt page with the source "Divi 5 Lab"');
+    check(g.dashboardShowsLab(dash.html, title), 'H: the Dashboard\'s recent AI edits lists the rebuilt page with the source "Lab"');
     check(g.printedPhpErrors(dash.html).length === 0, 'H: the Dashboard prints no PHP message');
 
     const rs = php('restore', { page: pageId, version: rows[0] ? rows[0].version_id : 0 });
@@ -657,7 +657,7 @@ async function main() {
       return row ? row.querySelector('code').textContent : null;
     }, name);
     await dp.close();
-    check(dashRow === 'Divi 5 Lab', 'H: the Dashboard screen shows the Divi 5 Lab rebuild with the source "Divi 5 Lab"', { source: dashRow });
+    check(dashRow === 'Lab', 'H: the Dashboard screen shows the Lab rebuild with the source "Lab"', { source: dashRow });
 
     // A double click on Rebuild after a builder edit makes at most one new draft.
     php('mutate', { page: labPageId, how: 'edit' });

@@ -1,8 +1,8 @@
-# Divi 5 Lab screen Implementation Plan (plan 2 of 3)
+# Lab screen Implementation Plan (plan 2 of 3)
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** A new free admin tab "Divi 5 Lab" (internally still "Studio"): five steps with a live preview that compile a brief (plan 1) into a Divi 5 draft page, save the brief, and rebuild the page from it without ever destroying content.
+**Goal:** A new free admin tab "Lab" (internally still "Studio"): five steps with a live preview that compile a brief (plan 1) into a Divi 5 draft page, save the brief, and rebuild the page from it without ever destroying content.
 
 **Architecture:** Pure units first (stack suggestion, brief merge, store), then a service that is the only thing that saves (`StudioService`: preview, create, rebuild, hand-off), then the screen (PHP render + `admin-ajax` handlers + `studio.js`). The preview approach is decided by a short live spike (Task 1); everything else is testable without a site. No new MCP/REST tool (plan 3). Compiling stays `StudioCompiler::compile`; saving stays `DraftPage::insert` / `HistoryService`; every result passes `LayoutGate`.
 
@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- **Naming (owner decision 2026-11-10).** The user-facing name is **Divi 5 Lab**: the tab label, the screen's headings and notices, the temporary preview draft's title (`Divi 5 Lab preview (temporary) <userId>`), the hand-off text and every string a person or assistant reads. Internal identifiers keep "Studio" (classes, files, the table, ajax actions, the tab slug `studio`, test names, `make verify-studio`), as the plugin already keeps `ai_editor_divi5_*` internally. "Studio" never appears in a translatable string. The Pro add-on is sold at divi5lab.com, so no string in the screen may suggest the Lab is paid or part of Pro (`testNoProMentionOutsideTheProCard` covers it).
+- **Naming (owner decision 2026-11-10).** The user-facing name is **Lab**: the tab label, the screen's headings and notices, the temporary preview draft's title (`Lab preview (temporary) <userId>`), the hand-off text and every string a person or assistant reads. Internal identifiers keep "Studio" (classes, files, the table, ajax actions, the tab slug `studio`, test names, `make verify-studio`), as the plugin already keeps `ai_editor_divi5_*` internally. "Studio" never appears in a translatable string. The Pro add-on is sold at divi5lab.com, so no string in the screen may suggest the Lab is paid or part of Pro (`testNoProMentionOutsideTheProCard` covers it).
 
 - Free plugin, no licence gating, no remote calls, no post-meta writes in `wp-plugin/` (`WpOrgComplianceTest` is never weakened; a justified explicit exception is the only way in). The only Pro mention in the UI stays `AdminPage::proCard()`.
 - Pages are always created as drafts; every save goes through `LayoutGate` and (for an existing page) `HistoryService`.
@@ -41,7 +41,7 @@
 **Interfaces:**
 - Produces: a decision recorded in `docs/studio-preview-evidence.md`: `PREVIEW_MODE = 'draft'` (a private draft rendered in an iframe) or `'approximation'`. Task 5 reads it.
 
-- [ ] **Step 1:** On the Docker dev site (Divi 5.15.1), compile three different briefs with `StudioCompiler`, save the markup into ONE draft titled `Divi 5 Lab preview (temporary) <userId>` (via `DraftPage::insert`, then `wp_update_post` for the next two), and open each version's preview URL (`get_preview_post_link`) in a real browser at 1280 and 400 px.
+- [ ] **Step 1:** On the Docker dev site (Divi 5.15.1), compile three different briefs with `StudioCompiler`, save the markup into ONE draft titled `Lab preview (temporary) <userId>` (via `DraftPage::insert`, then `wp_update_post` for the next two), and open each version's preview URL (`get_preview_post_link`) in a real browser at 1280 and 400 px.
 - [ ] **Step 2:** Record, per version: real theme header and footer present; the sections' styling matches the brief's language (Divi regenerated its CSS after each update, not the first version's); an iframe of the preview inside an admin page loads (no frame-blocking header); text containing `&`, `<`, `$` and `"` displays literally in heading, button label and counter number (this closes plan 1's open risk); the draft does not appear in the front-end, sitemap or search; it does appear in `list_divi_pages` (note how it is named so the owner can tell).
 - [ ] **Step 3:** Decide and write the decision, the measured evidence and the cleanup rule (delete on Create and when older than 24 h) into `docs/studio-preview-evidence.md`. If any of the first three checks fails, record `approximation` and why. Delete the spike draft(s). Commit.
 
@@ -111,7 +111,7 @@ Expected: the evidence file answers each check with PASS/FAIL and names the mode
 
 **Interfaces:**
 - Consumes: the decision in `docs/studio-preview-evidence.md`.
-- Produces: `StudioPreview::url(int $user, string $markup): array{mode:'draft'|'approximation',url:?string,html:?string}`. In `draft` mode it updates the one `Divi 5 Lab preview (temporary) <user>` draft (creating it if missing, always `draft`, never published) and returns its preview URL; in `approximation` mode it returns `html` (the compiled markup rendered by a minimal wrapper, clearly labelled "Approximate preview"). `StudioPreview::cleanup(int $user)` deletes the preview draft; `StudioPreview::cleanupStale()` removes any older than 24 h.
+- Produces: `StudioPreview::url(int $user, string $markup): array{mode:'draft'|'approximation',url:?string,html:?string}`. In `draft` mode it updates the one `Lab preview (temporary) <user>` draft (creating it if missing, always `draft`, never published) and returns its preview URL; in `approximation` mode it returns `html` (the compiled markup rendered by a minimal wrapper, clearly labelled "Approximate preview"). `StudioPreview::cleanup(int $user)` deletes the preview draft; `StudioPreview::cleanupStale()` removes any older than 24 h.
 
 - [ ] **Step 1: Write failing tests:** `testReusesTheSameDraftPerUser`, `testNeverPublishes`, `testCleanupDeletesIt`, `testStaleOnesAreRemoved`, `testApproximationIsLabelled` (the mode the spike chose is the one pinned; the other has a test too).
 - [ ] **Step 2-4:** Run to fail, implement, run to pass (filter then full suite).
@@ -132,7 +132,7 @@ Expected: the evidence file answers each check with PASS/FAIL and names the mode
 ### Task 7: The screen
 
 **Files:**
-- Create: `wp-plugin/src/StudioScreen.php`, `wp-plugin/assets/studio.js`, `wp-plugin/assets/studio.css`; Test: `tests/StudioScreenTest.php`; modify `AdminPage::render()` (a fourth core tab with slug `studio` labelled "Divi 5 Lab", between Features and Settings) and `AdminPage::enqueueAssets()` (studio assets only on that tab)
+- Create: `wp-plugin/src/StudioScreen.php`, `wp-plugin/assets/studio.js`, `wp-plugin/assets/studio.css`; Test: `tests/StudioScreenTest.php`; modify `AdminPage::render()` (a fourth core tab with slug `studio` labelled "Lab", between Features and Settings) and `AdminPage::enqueueAssets()` (studio assets only on that tab)
 
 **Interfaces:**
 - Produces: `StudioScreen::render(): void` the five steps (Goal and business; Look and feel; Sections; Words and pictures; Review and create) with the live preview beside them, as spec. `StudioScreen::config(int $user): array` the localized data (nonce, ajax URL, goals, the 10 languages with their one-line summaries, the kits, the stack per goal, i18n). Stepper is keyboard-operable (real `<button>`s, `aria-current="step"`, focus moves to the step heading), the preview iframe has a title, colour is never the only signal. Pictures: Media Library picker (`wp.media`) first, then the built-in pack list; a person-supplied URL is validated by the same `StudioLinks::pictureProblem`. Review shows the validator verdict, the unfilled list by section and role, the desktop/tablet/phone width switch, and Create as draft; after creating it offers Open in Divi, Rebuild and Copy instruction for my assistant.
@@ -147,7 +147,7 @@ Expected: the evidence file answers each check with PASS/FAIL and names the mode
 - Create: `scripts/verify-studio.cjs` (+ `scripts/test-verify-studio.cjs` pure tests), `Makefile` target `verify-studio`; modify `docs/studio-compiler.md` (new "Studio screen" section), `CLAUDE.md` (one paragraph), `docs/studio-preview-evidence.md` if the gate changes a finding
 
 **Interfaces:**
-- Produces `make verify-studio`: on the Docker dev site in a real administrator session (reduced motion, as `verify-pro-megamenu`): walks the five steps for two goals; checks the preview at 1280/900/400 (no overflow, no console or PHP error); creates a draft and checks the saved page equals the compiled markup, is a draft, renders with Divi, and text with `&`, `<`, `$` and `"` displays literally in heading, button label and counter number (closes plan 1's open risk, records the answer in the dev note); rebuild of an untouched page (overwritten, one history snapshot, undo restores bytes), of a builder-edited page and of a published page (new draft); another user's brief id refused; keyboard-only run through the stepper; self-cleaning (`Divi 5 Lab preview` and `aied studio` titles, `--clean-orphans`); refuses a non-local site (`scripts/dev-guard.php`).
+- Produces `make verify-studio`: on the Docker dev site in a real administrator session (reduced motion, as `verify-pro-megamenu`): walks the five steps for two goals; checks the preview at 1280/900/400 (no overflow, no console or PHP error); creates a draft and checks the saved page equals the compiled markup, is a draft, renders with Divi, and text with `&`, `<`, `$` and `"` displays literally in heading, button label and counter number (closes plan 1's open risk, records the answer in the dev note); rebuild of an untouched page (overwritten, one history snapshot, undo restores bytes), of a builder-edited page and of a published page (new draft); another user's brief id refused; keyboard-only run through the stepper; self-cleaning (`Lab preview` and `aied studio` titles, `--clean-orphans`); refuses a non-local site (`scripts/dev-guard.php`).
 
 - [ ] **Step 1:** Write the pure tests for the script's expectation builders; run, see them fail.
 - [ ] **Step 2:** Write the script; run the pure tests, then `make verify-studio` once; Expected: all PASS, 0 FAIL, no orphan pages.

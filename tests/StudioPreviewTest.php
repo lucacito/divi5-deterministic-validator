@@ -26,7 +26,7 @@ require_once __DIR__ . '/../wp-plugin/src/DraftPage.php';
 require_once __DIR__ . '/../wp-plugin/src/StudioPreview.php';
 
 /**
- * Divi 5 Lab (Studio), plan 2 task 5: the live preview. Mode "draft" (decision in docs/studio-preview-evidence.md) is
+ * Lab (Studio), plan 2 task 5: the live preview. Mode "draft" (decision in docs/studio-preview-evidence.md) is
  * ONE private draft per user, updated again and again; mode "approximation" is the labelled fallback.
  */
 class StudioPreviewTest extends TestCase
@@ -79,7 +79,7 @@ class StudioPreviewTest extends TestCase
 
     private static function title( int $user ): string
     {
-        return 'Divi 5 Lab preview (temporary) ' . $user;
+        return 'Lab preview (temporary) ' . $user;
     }
 
     /** Puts a post straight into the fake site (not through StudioPreview). */
@@ -112,7 +112,7 @@ class StudioPreviewTest extends TestCase
     /** @return list<int> */
     private function previewIds(): array
     {
-        return array_keys( array_filter( $GLOBALS['__wp_posts'], static fn ( $p ) => str_starts_with( $p->post_title, 'Divi 5 Lab preview (temporary) ' ) ) );
+        return array_keys( array_filter( $GLOBALS['__wp_posts'], static fn ( $p ) => str_starts_with( $p->post_title, 'Lab preview (temporary) ' ) ) );
     }
 
     // ---- draft mode ----------------------------------------------------------------------
@@ -357,7 +357,7 @@ class StudioPreviewTest extends TestCase
         $published   = $this->seed( self::title( self::A ), self::A, 'publish' );
         $isPost      = $this->seed( self::title( self::A ), self::A, 'draft', 'post' );
         $lookalike   = $this->seed( self::title( self::A ) . ' extra', self::A );
-        $prefixOnly  = $this->seed( 'Divi 5 Lab preview (temporary) ', self::A );
+        $prefixOnly  = $this->seed( 'Lab preview (temporary) ', self::A );
         $ordinary    = $this->seed( 'About us', self::A );
         $hisTitle    = $this->seed( self::title( self::B ), self::B );
 
@@ -389,7 +389,7 @@ class StudioPreviewTest extends TestCase
 
     public function testCleanupOfAnInvalidUserDoesNothing(): void
     {
-        $id = $this->seed( 'Divi 5 Lab preview (temporary) 0', 0 );
+        $id = $this->seed( 'Lab preview (temporary) 0', 0 );
         StudioPreview::cleanup( 0 );
         StudioPreview::cleanup( -3 );
         $this->assertArrayHasKey( $id, $GLOBALS['__wp_posts'] );
@@ -408,9 +408,9 @@ class StudioPreviewTest extends TestCase
         $published    = $this->seed( self::title( 9 ), 9, 'publish', 'page', self::old() );
         $isPost       = $this->seed( self::title( 10 ), 10, 'draft', 'post', self::old() );
         $withSuffix   = $this->seed( self::title( 11 ) . ' copy', 11, 'draft', 'page', self::old() );
-        $notNumeric   = $this->seed( 'Divi 5 Lab preview (temporary) abc', 12, 'draft', 'page', self::old() );
-        $noId         = $this->seed( 'Divi 5 Lab preview (temporary) ', 13, 'draft', 'page', self::old() );
-        $zero         = $this->seed( 'Divi 5 Lab preview (temporary) 0', 0, 'draft', 'page', self::old() );
+        $notNumeric   = $this->seed( 'Lab preview (temporary) abc', 12, 'draft', 'page', self::old() );
+        $noId         = $this->seed( 'Lab preview (temporary) ', 13, 'draft', 'page', self::old() );
+        $zero         = $this->seed( 'Lab preview (temporary) 0', 0, 'draft', 'page', self::old() );
         $ordinary     = $this->seed( 'Old draft about us', 14, 'draft', 'page', self::old() );
 
         $this->assertSame( 2, StudioPreview::cleanupStale() );

@@ -9,10 +9,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * The live preview of Divi 5 Lab (internal name Studio).
+ * The live preview of Lab (internal name Studio).
  *
  * Mode "draft" (the decision of docs/studio-preview-evidence.md): ONE private draft page per user, titled exactly
- * "Divi 5 Lab preview (temporary) <user id>", is created once and then updated with each new compiled layout; its
+ * "Lab preview (temporary) <user id>", is created once and then updated with each new compiled layout; its
  * preview address is shown in an iframe. The draft is NEVER published and never given a slug. Divi renders a draft's
  * preview with inline CSS, so nothing needs clearing after an update.
  *
@@ -37,7 +37,7 @@ final class StudioPreview
     public const MODE = self::MODE_DRAFT;
 
     /** The preview draft's title is this prefix followed by the numeric user id and nothing else. */
-    public const TITLE_PREFIX = 'Divi 5 Lab preview (temporary) ';
+    public const TITLE_PREFIX = 'Lab preview (temporary) ';
 
     /** A preview draft last modified before this many seconds ago is stale. */
     public const STALE_SECONDS = 86400;

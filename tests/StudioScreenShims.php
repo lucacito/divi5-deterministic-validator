@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * The few WordPress functions the Divi 5 Lab screen and AdminPage::enqueueAssets() call. Each one records what it was
+ * The few WordPress functions the Lab screen and AdminPage::enqueueAssets() call. Each one records what it was
  * given in $GLOBALS['__enqueued'] so a test can see which assets a tab loads. Guarded so they never clash with another shim.
  */
 

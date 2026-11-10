@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * The default section stack of a Divi 5 Lab page, per goal, and the same-role variants of a recipe. Pure.
+ * The default section stack of a Lab page, per goal, and the same-role variants of a recipe. Pure.
  *
  * The stacks are a data table of recipe ROLES (the `role` tag), never recipe ids: for each role the recipe whose
  * `density` tag is closest to the requested density is picked, ties by catalog order, so the result is deterministic

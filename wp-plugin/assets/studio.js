@@ -1,4 +1,4 @@
-/* JHMG AI Editor for Divi 5: Divi 5 Lab, the screen's behaviour.
+/* JHMG AI Editor for Divi 5: Lab, the screen's behaviour.
  *
  * Every text from the server or the person is written with textContent or value, never as HTML. The only markup that
  * reaches the page is preview.html (already escaped by the server) through the preview frame's srcdoc. The pure logic

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Stand-ins for the admin-ajax helpers the Divi 5 Lab (Studio) handlers use. In WordPress wp_send_json_* ends the request;
+ * Stand-ins for the admin-ajax helpers the Lab (Studio) handlers use. In WordPress wp_send_json_* ends the request;
  * here they throw AiedAjaxResponse so a test can read what would have been sent and so nothing after the call runs.
  * check_ajax_referer answers from $GLOBALS['__ajax_nonce_ok'] (default true) and records the action it was asked for in
  * $GLOBALS['__ajax_nonce_action']. Guarded like every other shim.

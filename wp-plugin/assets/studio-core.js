@@ -1,4 +1,4 @@
-/* JHMG AI Editor for Divi 5: Divi 5 Lab, the pure part.
+/* JHMG AI Editor for Divi 5: Lab, the pure part.
  *
  * Functions with no DOM and no requests: building the brief from the form state, merging words an assistant wrote,
  * moving sections, the item-count guard and the layout swap (the same rule as StudioMerge::swapRecipe on the server:

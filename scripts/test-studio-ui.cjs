@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * Pure tests of wp-plugin/assets/studio-core.js (the Divi 5 Lab screen's logic without the DOM). No dependencies.
+ * Pure tests of wp-plugin/assets/studio-core.js (the Lab screen's logic without the DOM). No dependencies.
  *
  *   node scripts/test-studio-ui.cjs                 run the tests (exit 1 on a failure)
  *   node scripts/test-studio-ui.cjs --swap <file>   read {catalog, pairs:[[from,to,{slots,pictures}]]} and print the

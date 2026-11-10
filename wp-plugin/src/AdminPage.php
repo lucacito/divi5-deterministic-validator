@@ -11,7 +11,7 @@ require_once __DIR__ . '/ExtensionGuard.php';
 
 /**
  * Top-level admin experience — a guided, outcome-focused app:
- * Dashboard · Features · Divi 5 Lab · Settings (one menu item, internal views).
+ * Dashboard · Features · Lab · Settings (one menu item, internal views).
  */
 final class AdminPage
 {
@@ -80,7 +80,7 @@ final class AdminPage
             ]
         );
 
-        // The Divi 5 Lab tab (internal name Studio) loads its own assets and nothing else does.
+        // The Lab tab (internal name Studio) loads its own assets and nothing else does.
         if ( 'studio' === self::currentTab( self::CORE_TABS ) ) {
             StudioScreen::enqueue();
         }
@@ -99,7 +99,7 @@ final class AdminPage
         $tabs = [
             'dashboard' => __( 'Dashboard', 'jhmg-ai-editor-for-divi-5' ),
             'features'  => __( 'Features', 'jhmg-ai-editor-for-divi-5' ),
-            'studio'    => __( 'Divi 5 Lab', 'jhmg-ai-editor-for-divi-5' ),
+            'studio'    => __( 'Lab', 'jhmg-ai-editor-for-divi-5' ),
             'settings'  => __( 'Settings', 'jhmg-ai-editor-for-divi-5' ),
         ];
         foreach ( ExtensionGuard::tabs( $filtered, self::CORE_TABS ) as $xslug => $xlabel ) {

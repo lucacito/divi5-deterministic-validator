@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /*
- * Dev-only SPIKE for the Divi 5 Lab (internal name Studio) screen, Task 1: can a LIVE PREVIEW be one private draft that is
+ * Dev-only SPIKE for the Lab (internal name Studio) screen, Task 1: can a LIVE PREVIEW be one private draft that is
  * updated again and again and shown in an iframe? Everything is measured on the real Divi (Docker dev site) in a real browser.
  *
  *   node scripts/spike-studio-preview.cjs        (needs `make up`; Playwright from ../layoutlab; dev site only)
  *
  * It compiles three different briefs (three design languages) with StudioCompiler, saves them into ONE draft titled
- * `Divi 5 Lab preview (temporary) 1` (DraftPage::insert, then wp_update_post twice), and for every version opens the preview
+ * `Lab preview (temporary) 1` (DraftPage::insert, then wp_update_post twice), and for every version opens the preview
  * address at 1280 and 400 px. A FRESH throwaway page with the same markup (first render, so no stale CSS is possible) is the control:
  * the updated draft must show the same computed styles. It also checks the escaping of & < $ " in a heading, a button label, a
  * counter title and a text, an iframe inside a real admin page, and that the draft is invisible to anonymous visitors.
@@ -33,7 +33,7 @@ const check = (ok, label, detail) => {
   if (!ok) fails.push(label);
 };
 
-const PREVIEW_TITLE = 'Divi 5 Lab preview (temporary) 1';
+const PREVIEW_TITLE = 'Lab preview (temporary) 1';
 const FRESH_PREFIX = 'aied studio fresh ';
 
 // The text under test: & < $ and " in one string (the counter NUMBER has to be a plain number, StudioBrief refuses anything else).
@@ -66,7 +66,7 @@ function save(v, id, title) {
     echo json_encode(['ok'=>true,'id'=>(int)$id,'preview'=>get_preview_post_link($id),'len'=>strlen($r['markup']),'status'=>get_post_status($id),'unfilled'=>count($r['unfilled']),'refused'=>count($r['refused'])]);`, '--user=1');
   return JSON.parse(out);
 }
-const countTitles = () => Number(wp('eval', `global $wpdb; echo $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_title LIKE 'Divi 5 Lab preview%' OR post_title LIKE 'aied studio%'");`));
+const countTitles = () => Number(wp('eval', `global $wpdb; echo $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_title LIKE 'Lab preview%' OR post_title LIKE 'aied studio%'");`));
 const deleteIds = (ids) => { if (ids.length) wp('eval', `foreach([${ids.join(',')}] as $i) wp_delete_post($i,true);`, '--user=1'); };
 
 /** Everything the checks need, measured in the page. `marker` = the version's text to find the headline. */
@@ -207,7 +207,7 @@ async function measure(p, v) {
 
     // Visibility to anonymous visitors (node fetch sends no cookies).
     const anon = async (u) => { const r2 = await fetch(SITE + u, { redirect: 'manual' }); return { status: r2.status, body: r2.status === 200 ? await r2.text() : '' }; };
-    const term = 'Divi 5 Lab preview';
+    const term = 'Lab preview';
     const probes = ['/', '/?s=preview+temporary', '/?s=Divi+5+Lab', '/feed/', '/wp-sitemap.xml', '/wp-sitemap-posts-page-1.xml', '/?post_type=page', '/wp-json/wp/v2/pages?per_page=5', '/wp-json/wp/v2/pages?search=preview&per_page=5', '/wp-json/wp/v2/search?search=preview&per_page=5', '/wp-json/wp/v2/pages?status=draft&per_page=5', `/?page_id=${draftId}`, `/?page_id=${draftId}&preview=true`, `/wp-json/wp/v2/pages/${draftId}`];
     const vis = {};
     for (const u of probes) {
@@ -230,9 +230,9 @@ async function measure(p, v) {
       $res = (new \\AiEditorDivi5\\WP\\McpHandler())->callTool('list_divi_pages', ['per_page'=>100]);
       echo json_encode($res);`, '--user=1'));
     const text = JSON.stringify(listed);
-    const mm = text.match(/\{[^{}]*Divi 5 Lab preview[^{}]*\}/);
+    const mm = text.match(/\{[^{}]*Lab preview[^{}]*\}/);
     results.listDiviPages = mm ? mm[0].replace(/\\"/g, '"').slice(0, 300) : null;
-    check(text.includes(PREVIEW_TITLE) || text.includes('Divi 5 Lab preview'), 'the draft appears in list_divi_pages with its title', results.listDiviPages);
+    check(text.includes(PREVIEW_TITLE) || text.includes('Lab preview'), 'the draft appears in list_divi_pages with its title', results.listDiviPages);
     results.historyRows = Number(wp('eval', `echo count(\\AiEditorDivi5\\WP\\HistoryStore::summaries(${draftId}));`, '--user=1'));
     console.log('History snapshots the two wp_update_post calls left on the preview draft: ' + results.historyRows);
     check(consoleErrors.length === 0, 'no uncaught page errors while previewing', consoleErrors);
@@ -245,7 +245,7 @@ async function measure(p, v) {
     wp('eval', `foreach (get_posts(['post_type'=>'any','post_status'=>'any','numberposts'=>-1,'s'=>'']) as $x) { if (strpos($x->post_title, ${phpStr(FRESH_PREFIX)}) === 0 || $x->post_title === ${phpStr(PREVIEW_TITLE)}) wp_delete_post($x->ID, true); }`, '--user=1');
   }
   const left = countTitles();
-  check(left === preCount, 'every draft the spike created was deleted (titles "Divi 5 Lab preview%" or "aied studio%" back to the starting count)', { before: preCount, after: left });
+  check(left === preCount, 'every draft the spike created was deleted (titles "Lab preview%" or "aied studio%" back to the starting count)', { before: preCount, after: left });
   fs.mkdirSync(path.join(ROOT, 'dist', 'studio-preview'), { recursive: true });
   fs.writeFileSync(path.join(ROOT, 'dist', 'studio-preview', 'results.json'), JSON.stringify(results, null, 2));
   if (fails.length) { console.log(`\n${fails.length} check(s) failed:\n - ` + fails.join('\n - ')); process.exit(1); }

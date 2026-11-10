@@ -124,9 +124,9 @@ final class HistorySources
         return array_key_exists( $tool, self::DEFAULTS );
     }
 
-    /** The tool name Divi 5 Lab's rebuild snapshots carry (StudioService::HISTORY_TOOL), and the name people read for it. */
+    /** The tool name Lab's rebuild snapshots carry (StudioService::HISTORY_TOOL), and the name people read for it. */
     public const LAB_TOOL = 'studio';
-    public const LAB_NAME = 'Divi 5 Lab';
+    public const LAB_NAME = 'Lab';
 
     /** One line for the Dashboard: where a saved version came from. */
     public static function describe( string $tool, ?string $label = null ): string

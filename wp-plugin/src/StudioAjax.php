@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * The admin-ajax handlers of the Divi 5 Lab screen (internal name Studio). Logged-in users only (never the logged-out variant of the hook).
+ * The admin-ajax handlers of the Lab screen (internal name Studio). Logged-in users only (never the logged-out variant of the hook).
  *
  * - Every action needs the nonce NONCE and the capability manage_options; preview, create and rebuild also need
  *   edit_pages (each of them inserts or updates a page: the preview its user's preview draft).
@@ -64,7 +64,7 @@ final class StudioAjax
             return;
         }
         if ( ! in_array( $goal, StudioBrief::GOALS, true ) ) {
-            self::fail( 400, 'BAD_REQUEST', __( 'That goal is not one Divi 5 Lab knows.', 'jhmg-ai-editor-for-divi-5' ) );
+            self::fail( 400, 'BAD_REQUEST', __( 'That goal is not one Lab knows.', 'jhmg-ai-editor-for-divi-5' ) );
 
             return;
         }
@@ -74,7 +74,7 @@ final class StudioAjax
         }
         $density ??= 'balanced';
         if ( ! in_array( $density, self::DENSITY, true ) ) {
-            self::fail( 400, 'BAD_REQUEST', __( 'That density is not one Divi 5 Lab knows.', 'jhmg-ai-editor-for-divi-5' ) );
+            self::fail( 400, 'BAD_REQUEST', __( 'That density is not one Lab knows.', 'jhmg-ai-editor-for-divi-5' ) );
 
             return;
         }

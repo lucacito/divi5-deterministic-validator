@@ -23,7 +23,7 @@ require_once __DIR__ . '/StudioScreenShims.php';
 require_once __DIR__ . '/../wp-plugin/src/autoload.php';
 
 /**
- * Divi 5 Lab (internal name Studio), plan 2 task 7: the admin screen. The markup is rendered by PHP, the behaviour is
+ * Lab (internal name Studio), plan 2 task 7: the admin screen. The markup is rendered by PHP, the behaviour is
  * added by assets/studio-core.js (pure functions, unit tested by scripts/test-studio-ui.cjs) and assets/studio.js.
  */
 class StudioScreenTest extends TestCase
@@ -141,13 +141,13 @@ class StudioScreenTest extends TestCase
     {
         $tabs = AdminPage::tabs( [] );
         $this->assertSame( [ 'dashboard', 'features', 'studio', 'settings' ], array_keys( $tabs ), 'a core tab between Features and Settings' );
-        $this->assertSame( 'Divi 5 Lab', $tabs['studio'] );
+        $this->assertSame( 'Lab', $tabs['studio'] );
 
         // An add-on cannot take the slug or add it a second time.
         $GLOBALS['__wp_filters']['jhmg_aied_admin_tabs'][] = static fn ( $t ) => $t + [ 'studio' => 'Hijack', 'extra' => 'Extra' ];
         $withExtra = AdminPage::tabs( apply_filters( 'jhmg_aied_admin_tabs', [] ) );
         $this->assertSame( [ 'dashboard', 'features', 'studio', 'settings', 'extra' ], array_keys( $withExtra ) );
-        $this->assertSame( 'Divi 5 Lab', $withExtra['studio'] );
+        $this->assertSame( 'Lab', $withExtra['studio'] );
 
         $php = $this->src( 'src/AdminPage.php' );
         $this->assertSame( 1, substr_count( $php, "case 'studio':" ) );
@@ -640,7 +640,7 @@ class StudioScreenTest extends TestCase
 
     /**
      * Found by the live gate (make verify-studio) at a 400px browser width: the plugin's tab bar (Dashboard, Features,
-     * Divi 5 Lab, Settings and any add-on tabs) is one line and ran 75px past the screen edge on every tab, so the whole
+     * Lab, Settings and any add-on tabs) is one line and ran 75px past the screen edge on every tab, so the whole
      * admin page scrolled sideways. The tabs wrap onto a second line instead.
      */
     public function testTheTabBarWrapsOnANarrowScreen(): void
@@ -719,7 +719,7 @@ class StudioScreenTest extends TestCase
     {
         $text = implode( ' ', $this->texts( $this->render() ) );
         $this->assertStringNotContainsString( 'or after a day', $text );
-        $this->assertSame( 2, substr_count( $text, 'the next time Divi 5 Lab makes a preview after a day' ) );
+        $this->assertSame( 2, substr_count( $text, 'the next time Lab makes a preview after a day' ) );
     }
 
     /** Final fix pass, S3: after Create the preview draft is gone, so the frame stops showing it. */

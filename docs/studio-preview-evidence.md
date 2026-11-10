@@ -1,14 +1,14 @@
-# Divi 5 Lab (Studio) live preview: spike evidence
+# Lab (Studio) live preview: spike evidence
 
 Task 1 of the Studio screen plan. Question: can the screen's live preview be ONE private draft page that is updated again and again and shown in an iframe, or must it fall back to an approximation?
 
 **Decision: `PREVIEW_MODE = 'draft'`**
 
-All checks below PASS. Measured on the Docker dev site (Divi 5.15.1, WordPress 6.7, PHP 8.3) with a real Chromium (Playwright) and a real administrator session. Script: `scripts/spike-studio-preview.cjs` (dev site only; raw numbers are written to `dist/studio-preview/results.json`). It ran three times: a first full green run, a second that failed only on a script defect in the later probes (a PHP string in the et-cache check; the browser checks had passed), and a third full green run; the numbers quoted are from the last. Every draft it creates is deleted: the count of pages titled `Divi 5 Lab preview%` or `aied studio%` was 0 before and 0 after.
+All checks below PASS. Measured on the Docker dev site (Divi 5.15.1, WordPress 6.7, PHP 8.3) with a real Chromium (Playwright) and a real administrator session. Script: `scripts/spike-studio-preview.cjs` (dev site only; raw numbers are written to `dist/studio-preview/results.json`). It ran three times: a first full green run, a second that failed only on a script defect in the later probes (a PHP string in the et-cache check; the browser checks had passed), and a third full green run; the numbers quoted are from the last. Every draft it creates is deleted: the count of pages titled `Lab preview%` or `aied studio%` was 0 before and 0 after.
 
 ## What was run
 
-Three briefs, three design languages (editorial, brutalist-flat, glass-dark), each three sections: `hero-cta`, `stats-counter-band`, `cta-band`. Each compiled with `StudioCompiler::compile($brief, null, home_url())` (valid on the first try, 11 sample-copy slots left unfilled by design, 0 refused). Version 1 was inserted with `DraftPage::insert('Divi 5 Lab preview (temporary) 1', $markup, '')`; versions 2 and 3 were saved into the SAME post with `wp_update_post(wp_slash(['ID'=>$id,'post_content'=>$markup]))`. For each version the preview address was opened at 1280 and at 400 px. As a control, the same markup was also saved as a brand-new draft (`aied studio fresh N`, never rendered before) and measured the same way.
+Three briefs, three design languages (editorial, brutalist-flat, glass-dark), each three sections: `hero-cta`, `stats-counter-band`, `cta-band`. Each compiled with `StudioCompiler::compile($brief, null, home_url())` (valid on the first try, 11 sample-copy slots left unfilled by design, 0 refused). Version 1 was inserted with `DraftPage::insert('Lab preview (temporary) 1', $markup, '')`; versions 2 and 3 were saved into the SAME post with `wp_update_post(wp_slash(['ID'=>$id,'post_content'=>$markup]))`. For each version the preview address was opened at 1280 and at 400 px. As a control, the same markup was also saved as a brand-new draft (`aied studio fresh N`, never rendered before) and measured the same way.
 
 ## Results
 
@@ -20,7 +20,7 @@ Three briefs, three design languages (editorial, brutalist-flat, glass-dark), ea
 | 4 | Iframe in an admin page loads | PASS | An `<iframe>` pointing at the preview address, injected into `wp-admin/index.php`, loads at 900 and 400 px wide: header, footer and sections present, same-origin `contentDocument` readable, no horizontal overflow at 400 px (phone layout). The response has no `X-Frame-Options` and no `Content-Security-Policy` header (WordPress sends the frame-blocking header only for admin and login screens) |
 | 5 | Literal text for `&`, `<`, `$`, `"` | PASS | See the table below |
 | 6 | Not in the front-end, sitemap, search | PASS | Anonymous requests (no cookies) to `/`, `/?s=preview+temporary`, `/?s=Divi+5+Lab`, `/feed/`, `/wp-sitemap.xml`, `/wp-sitemap-posts-page-1.xml`, `/?post_type=page`, `/wp-json/wp/v2/pages?per_page=5`, `.../pages?search=preview`, `.../search?search=preview` all answer 200 without the title, the id or the address; `/?page_id=<id>` and `/?page_id=<id>&preview=true` answer 404; `/wp-json/wp/v2/pages/<id>` answers 401 |
-| 7 | Shows in `list_divi_pages` | PASS | `{"id":<id>,"title":"Divi 5 Lab preview (temporary) 1","status":"draft","post_type":"page","link":"http://localhost:8181/?page_id=<id>"}`: the title as stored, with `status: draft`; nothing marks it as the Studio's draft except the title text |
+| 7 | Shows in `list_divi_pages` | PASS | `{"id":<id>,"title":"Lab preview (temporary) 1","status":"draft","post_type":"page","link":"http://localhost:8181/?page_id=<id>"}`: the title as stored, with `status: draft`; nothing marks it as the Studio's draft except the title text |
 | 8 | No uncaught page errors | PASS | none in any render |
 
 ### Escaping (closes plan 1's open risk)
@@ -40,7 +40,7 @@ No double-escaping (`&amp;amp;`) and no raw `&#36;` showed anywhere. The open it
 
 ## Facts for Task 5
 
-- **Draft:** one per user, title exactly `Divi 5 Lab preview (temporary) <userId>`. Create with `DraftPage::insert($title, $markup, '')` (draft, builder flags set). Update with `wp_update_post(wp_slash(['ID'=>$id,'post_content'=>$markup]), true)`. Both returned the same id every time.
+- **Draft:** one per user, title exactly `Lab preview (temporary) <userId>`. Create with `DraftPage::insert($title, $markup, '')` (draft, builder flags set). Update with `wp_update_post(wp_slash(['ID'=>$id,'post_content'=>$markup]), true)`. Both returned the same id every time.
 - **Preview URL:** `get_preview_post_link($id)` returns `home_url('/?page_id=<id>&preview=true')` (no nonce for a draft). It only works with the author's login cookie, which an iframe inside wp-admin sends. Anonymous requests get 404.
 - **CSS refresh:** Divi writes the page CSS INLINE in `<style>` tags (about 15 on this page, the first section's rule `et_pb_section_0` among them) for a draft preview; no `et-cache/<id>` file or directory is created (`glob(WP_CONTENT_DIR/et-cache/<id>*)` was empty), so there is nothing to go stale and **no cache-clear call is needed**. Version 3 showed version 3's styles directly after `wp_update_post`, with no extra step. The response is `Cache-Control: no-cache, must-revalidate, max-age=0, no-store, private`, so the browser does not keep an old copy; to make the iframe reload after an update, set `iframe.src` to the address again (the spike loaded a fresh iframe each time; a cache-busting query argument was not needed and was not tested).
 - **Iframe headers:** none block framing. Same-origin, so the screen may read `contentDocument` (for the height). The admin page's own `X-Frame-Options` does not matter (it is the parent). If a site adds a security plugin that sends `X-Frame-Options` on the front end, the iframe would be blank: the screen should show a plain "preview could not load, open it in a new tab" link next to the iframe.
@@ -52,7 +52,7 @@ No double-escaping (`&amp;amp;`) and no raw `&#36;` showed anywhere. The open it
 
 ## Cleanup rule
 
-The preview draft is temporary: delete it (`wp_delete_post($id, true)`, permanent, which also removes its history) when the owner clicks Create (after the real draft page exists), and delete any page whose title starts with `Divi 5 Lab preview (temporary)` and whose last modification is more than 24 hours old (a scheduled or on-load sweep for a user who closed the browser). Never delete by search; match the exact title prefix and `post_type=page`, `post_status=draft`. The spike's own control pages use the prefix `aied studio fresh ` and are deleted by the script.
+The preview draft is temporary: delete it (`wp_delete_post($id, true)`, permanent, which also removes its history) when the owner clicks Create (after the real draft page exists), and delete any page whose title starts with `Lab preview (temporary)` and whose last modification is more than 24 hours old (a scheduled or on-load sweep for a user who closed the browser). Never delete by search; match the exact title prefix and `post_type=page`, `post_status=draft`. The spike's own control pages use the prefix `aied studio fresh ` and are deleted by the script.
 
 ## What was NOT tested
 

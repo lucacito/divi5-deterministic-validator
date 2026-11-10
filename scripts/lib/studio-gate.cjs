@@ -1,6 +1,6 @@
 'use strict';
 /*
- * The pure parts of the Divi 5 Lab (internal name Studio) live gate, scripts/verify-studio.cjs: the briefs it sends, the
+ * The pure parts of the Lab (internal name Studio) live gate, scripts/verify-studio.cjs: the briefs it sends, the
  * text it expects to see, and the verdicts it draws from measurements. No requests, no DOM, no WordPress: tested by
  * scripts/test-verify-studio.cjs, which the Makefile target runs first.
  */
@@ -9,7 +9,7 @@
 const TITLE_PREFIX = 'aied studio ';
 
 /** The preview draft's title prefix (StudioPreview::TITLE_PREFIX). */
-const PREVIEW_PREFIX = 'Divi 5 Lab preview (temporary) ';
+const PREVIEW_PREFIX = 'Lab preview (temporary) ';
 
 /** The virtual width of each preview device (StudioScreen::DEVICES). */
 const DEVICE_WIDTH = { desktop: 1280, tablet: 768, phone: 390 };
@@ -173,11 +173,11 @@ function firstDifference(a, b) {
   return { at: i, lengthA: a.length, lengthB: b.length, a: a.slice(Math.max(0, i - 40), i + 80), b: b.slice(Math.max(0, i - 40), i + 80) };
 }
 
-/** Whether a Dashboard HTML has a recent-edits row for the page title whose source reads "Divi 5 Lab". */
+/** Whether a Dashboard HTML has a recent-edits row for the page title whose source reads "Lab". */
 function dashboardShowsLab(html, title) {
   const rows = String(html || '').split(/<tr[\s>]/).slice(1);
   const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  return rows.some((r) => r.includes('<strong>' + esc(title) + '</strong>') && /<code>Divi 5 Lab<\/code>/.test(r));
+  return rows.some((r) => r.includes('<strong>' + esc(title) + '</strong>') && /<code>Lab<\/code>/.test(r));
 }
 
 /** "N PASS, S SKIP, F FAIL" over the recorded checks ({ok, skip}); only a FAIL makes the run fail. */
