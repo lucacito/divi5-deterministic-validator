@@ -889,7 +889,7 @@ async function main() {
     const o2 = mcp('lab_build', { action: 'open', brief_id: 999999999 });
     const f1 = mcp('lab_build', { action: 'fill', brief_id: theirs, base_hash: frowBefore.brief_hash, sections: [{ section: 0, slots: { 'heading.1': 'Intruder' } }] });
     const f2 = mcp('lab_build', { action: 'fill', brief_id: 999999999, base_hash: frowBefore.brief_hash, sections: [{ section: 0, slots: { 'heading.1': 'Intruder' } }] });
-    check(theirs > 0 && g.toolRefusalProblems(o1, o2).length === 0 && o1.result.error === 'Brief not found.', 'I: another user\'s brief id in open is a plain "Brief not found." exactly like a missing id', g.toolRefusalProblems(o1, o2));
+    check(theirs > 0 && g.toolRefusalProblems(o1, o2).length === 0 && /^Brief not found\. It may belong to another WordPress user/.test(o1.result.error), 'I: another user\'s brief id in open is a plain "Brief not found" (with the other-user hint) exactly like a missing id', g.toolRefusalProblems(o1, o2));
     check(g.toolRefusalProblems(f1, f2).length === 0, 'I: another user\'s brief id in fill is refused exactly like a missing id, even with its real hash', g.toolRefusalProblems(f1, f2));
     check(JSON.stringify(php('brief', { user: U.a, id: theirs })) === JSON.stringify(frowBefore), 'I: that other user\'s brief was not touched');
 

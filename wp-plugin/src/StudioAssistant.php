@@ -27,6 +27,12 @@ final class StudioAssistant
 
     private const ACTIONS = [ 'catalog', 'open', 'fill', 'build' ];
 
+    /** The one answer for a brief that is missing or belongs to another user (the two must look the same). */
+    public const NOT_FOUND_MESSAGE = 'Brief not found. It may belong to another WordPress user than the one this connection signs in as.';
+
+    /** The answer when a build would save one brief too many. */
+    public const TOO_MANY_BRIEFS = 'TOO_MANY_BRIEFS';
+
     /** Slot ids (slots and pictures together) one entry of a fill may carry. */
     private const MAX_SLOT_IDS = 200;
 
@@ -58,7 +64,8 @@ final class StudioAssistant
     ];
 
     private const RULES = 'Fill only slots whose words you actually know. Leave the rest empty; they stay as placeholders and are listed as unfilled. '
-        . 'Links are https:// addresses, mailto:, tel:, #anchors or paths on this site starting with /. A picture is an object: {"pack": built-in pack token} or {"url": https:// address}. '
+        . 'fill needs the base_hash that open returned; a 409 CONFLICT means the person changed the brief, so open again. '
+        . 'Links are https:// addresses, mailto:, tel:, #anchors or paths on this site starting with /. A picture is an object: {"pack": built-in pack token} or {"url": address}, where the address is https:// or a path on this site starting with /. '
         . 'Do not invent facts. The result is always a draft.';
 
     /**
@@ -193,7 +200,7 @@ final class StudioAssistant
         if ( null === $stored ) {
             UsageTracker::log( self::ENDPOINT, null, 'error' );
 
-            return self::fail( 404, 'Brief not found.' );
+            return self::fail( 404, self::NOT_FOUND_MESSAGE );
         }
 
         $brief = $stored['brief'];
@@ -237,7 +244,7 @@ final class StudioAssistant
         if ( null === $stored ) {
             UsageTracker::log( self::ENDPOINT, null, 'error' );
 
-            return self::fail( 404, 'Brief not found.' );
+            return self::fail( 404, self::NOT_FOUND_MESSAGE );
         }
         $brief = $stored['brief'];
         $count = count( (array) ( $brief['sections'] ?? [] ) );
@@ -288,13 +295,13 @@ final class StudioAssistant
                 if ( StudioStore::CONFLICT === $saved['code'] ) {
                     $current = StudioStore::get( $user, $briefId );
                     if ( null === $current ) { // the brief was deleted in the meantime: the same answer as a missing brief
-                        return self::fail( 404, 'Brief not found.' );
+                        return self::fail( 404, self::NOT_FOUND_MESSAGE );
                     }
 
                     return self::conflict( $current['brief_hash'] );
                 }
                 if ( StudioStore::NOT_FOUND === $saved['code'] ) {
-                    return self::fail( 404, 'Brief not found.' );
+                    return self::fail( 404, self::NOT_FOUND_MESSAGE );
                 }
                 if ( StudioStore::TOO_LARGE === $saved['code'] ) {
                     return self::fail( 422, 'The brief would be too large; nothing was saved.' );
@@ -397,6 +404,16 @@ final class StudioAssistant
             ] ];
         }
 
+        if ( self::wouldPushOutABrief( $user, $brief ) ) {
+            UsageTracker::log( self::ENDPOINT, null, 'error' );
+
+            return [ 'status' => 422, 'body' => [
+                'code'    => self::TOO_MANY_BRIEFS,
+                'created' => false,
+                'message' => 'You already have ' . StudioStore::MAX_PER_USER . ' saved Lab briefs. Delete some in the Lab screen before the assistant saves another.',
+            ] ];
+        }
+
         $made = StudioService::create( $user, $brief, null );
         if ( ! $made['ok'] ) {
             UsageTracker::log( self::ENDPOINT, null, 'error' );
@@ -418,6 +435,33 @@ final class StudioAssistant
             'report'    => $made['report'],
             'message'   => $made['message'] . ' It is a draft: the owner reviews and publishes it.',
         ] ];
+    }
+
+    /**
+     * True when saving this brief as a NEW row would make the store drop the user's oldest brief (the store keeps
+     * MAX_PER_USER). An assistant retrying build in a loop must not be able to wipe a person's unfinished briefs, so the
+     * tool refuses instead. Not the case for: a brief that does not validate (the service refuses it on its own, writing
+     * nothing), and a repeat of a brief just turned into a live page (the service returns that page and saves nothing).
+     */
+    private static function wouldPushOutABrief( int $user, array $brief ): bool
+    {
+        if ( StudioStore::countFor( $user ) < StudioStore::MAX_PER_USER ) {
+            return false;
+        }
+        $checked = StudioBrief::check( $brief );
+        if ( ! $checked['ok'] ) {
+            return false;
+        }
+        $hash   = StudioStore::hashOf( (array) $checked['brief'] );
+        $recent = null === $hash ? null : StudioStore::recentlyLinked( $user, $hash, StudioService::DUPLICATE_SECONDS );
+        if ( null !== $recent && null !== $recent['page_id'] ) {
+            $post = get_post( $recent['page_id'] );
+            if ( $post && 'trash' !== (string) ( $post->post_status ?? '' ) ) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

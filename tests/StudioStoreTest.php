@@ -40,6 +40,17 @@ class StudioStoreTest extends TestCase
         return (int) $GLOBALS['wpdb']->get_var( 'SELECT COUNT(*) FROM ' . StudioTable::name() );
     }
 
+    public function testCountForCountsOnlyThatUsersBriefs(): void
+    {
+        $this->assertSame( 0, StudioStore::countFor( 5 ) );
+        StudioStore::save( 5, $this->brief( 'One' ) );
+        StudioStore::save( 5, $this->brief( 'Two' ) );
+        StudioStore::save( 6, $this->brief( 'Theirs' ) );
+        $this->assertSame( 2, StudioStore::countFor( 5 ) );
+        $this->assertSame( 1, StudioStore::countFor( 6 ) );
+        $this->assertSame( 0, StudioStore::countFor( 0 ) );
+    }
+
     public function testSaveAndGetRoundTrip(): void
     {
         $brief = $this->brief();

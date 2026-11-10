@@ -56,6 +56,7 @@ require_once __DIR__ . '/../wp-plugin/src/StudioAssistant.php';
 /** Lab (internal name Studio), plan 3 task 3: the lab_build tool's argument checks, catalog and open. */
 class StudioAssistantTest extends TestCase
 {
+    private const NOT_FOUND = 'Brief not found. It may belong to another WordPress user than the one this connection signs in as.';
     private const ME    = 5;
     private const OTHER = 6;
 
@@ -630,7 +631,7 @@ class StudioAssistantTest extends TestCase
         $r = $this->fill( $o, [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'Stale' ] ] ] );
         $db->beforeSelect = null;
         $this->assertSame( 404, $r['status'], (string) json_encode( $r['body'] ) );
-        $this->assertSame( [ 'error' => 'Brief not found.' ], $r['body'] );
+        $this->assertSame( [ 'error' => self::NOT_FOUND ], $r['body'] );
         $this->assertTrue( $armed, 'the compare-and-set UPDATE ran, so the conflict branch was reached' );
     }
 
@@ -991,5 +992,126 @@ class StudioAssistantTest extends TestCase
         $this->assertSame( 403, $this->fill( $o, [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'x' ] ] ] )['status'] );
         $GLOBALS['__wp_caps'] = [ 'edit_pages' => true ];
         $this->assertSame( self::brief(), $this->storedBrief( $o['id'] ) );
+    }
+
+    // ---- Final review: the cap on saved briefs, the not-found hint, the rules text ------------------------
+
+    public function testNotFoundSaysItMayBelongToAnotherUserAndLeaksNothingElse(): void
+    {
+        $theirs  = $this->stored( self::OTHER );
+        $hash    = (string) StudioStore::get( self::OTHER, $theirs )['brief_hash'];
+        $missing = StudioAssistant::run( [ 'action' => 'open', 'brief_id' => 9999 ] );
+        $foreign = StudioAssistant::run( [ 'action' => 'open', 'brief_id' => $theirs ] );
+        $this->assertSame( [ 'error' => self::NOT_FOUND ], $foreign['body'] );
+        $this->assertSame( $missing, $foreign );
+        $fill = $this->fill( [ 'id' => $theirs, 'hash' => $hash ], [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'x' ] ] ] );
+        $this->assertSame( 404, $fill['status'] );
+        $this->assertSame( [ 'error' => self::NOT_FOUND ], $fill['body'] );
+    }
+
+    public function testRulesExplainTheBaseHashAndThePictureForms(): void
+    {
+        $id    = $this->stored();
+        $rules = (string) StudioAssistant::run( [ 'action' => 'open', 'brief_id' => $id ] )['body']['rules'];
+        foreach ( [ 'base_hash', 'CONFLICT', 'open again', '"pack"', '"url"', 'https://', 'starting with /' ] as $needle ) {
+            $this->assertStringContainsString( $needle, $rules, $needle );
+        }
+    }
+
+    /** @return list<int> ids of the briefs ME holds, after filling up to $n unlinked ones. */
+    private function fillBriefsTo( int $n ): array
+    {
+        $ids = [];
+        for ( $i = 0; $i < $n; $i++ ) {
+            $b           = self::brief();
+            $b['title']  = 'Saved brief ' . $i;
+            $r           = StudioStore::save( self::ME, $b );
+            $this->assertTrue( $r['ok'] );
+            $ids[]       = $r['id'];
+        }
+
+        return $ids;
+    }
+
+    private function briefIds(): array
+    {
+        $ids = array_map( static fn ( array $r ): int => (int) $r['id'], $this->rows() );
+        sort( $ids );
+
+        return $ids;
+    }
+
+    public function testBuildCreateAtTheBriefCapIs422AndDeletesNothing(): void
+    {
+        $this->mayCreate();
+        $this->fillBriefsTo( StudioStore::MAX_PER_USER );
+        $this->assertSame( StudioStore::MAX_PER_USER, StudioStore::countFor( self::ME ) );
+        $ids    = $this->briefIds();
+        $before = $this->rows();
+        $r      = $this->build( self::brief(), true );
+        $this->assertSame( 422, $r['status'], (string) json_encode( $r['body'] ) );
+        $this->assertSame( 'TOO_MANY_BRIEFS', $r['body']['code'] );
+        $this->assertSame( 'You already have 50 saved Lab briefs. Delete some in the Lab screen before the assistant saves another.', $r['body']['message'] );
+        $this->assertFalse( $r['body']['created'] );
+        $this->assertSame( [], $GLOBALS['__wp_posts'], 'no page' );
+        $this->assertSame( $ids, $this->briefIds(), 'no brief deleted or added' );
+        $this->assertSame( $before, $this->rows() );
+    }
+
+    public function testBuildCreateUnderTheCapWorksAndOtherUsersBriefsDoNotCount(): void
+    {
+        $this->mayCreate();
+        $this->fillBriefsTo( StudioStore::MAX_PER_USER - 1 );
+        for ( $i = 0; $i < 5; $i++ ) { // someone else's briefs are not mine
+            $b          = self::brief();
+            $b['title'] = 'Theirs ' . $i;
+            StudioStore::save( self::OTHER, $b );
+        }
+        $r = $this->build( self::brief(), true );
+        $this->assertSame( 200, $r['status'], (string) json_encode( $r['body'] ) );
+        $this->assertTrue( $r['body']['created'] );
+        $this->assertSame( StudioStore::MAX_PER_USER, StudioStore::countFor( self::ME ) );
+        $this->assertCount( 1, $GLOBALS['__wp_posts'] );
+    }
+
+    public function testADuplicateCreateAtTheCapStillReturnsTheEarlierPage(): void
+    {
+        $this->mayCreate();
+        $this->fillBriefsTo( StudioStore::MAX_PER_USER - 1 );
+        $first = $this->build( self::brief(), true );
+        $this->assertSame( 200, $first['status'] );
+        $this->assertSame( StudioStore::MAX_PER_USER, StudioStore::countFor( self::ME ) );
+        $ids    = $this->briefIds();
+        $second = $this->build( self::brief(), true );
+        $this->assertSame( 200, $second['status'], (string) json_encode( $second['body'] ) );
+        $this->assertTrue( $second['body']['duplicate'] );
+        $this->assertSame( $first['body']['page']['id'], $second['body']['page']['id'] );
+        $this->assertSame( $ids, $this->briefIds() );
+        $this->assertCount( 1, $GLOBALS['__wp_posts'] );
+    }
+
+    public function testAnInvalidBriefAtTheCapGetsItsOwnRefusalAndAPreviewIsNeverCapped(): void
+    {
+        $this->mayCreate();
+        $this->fillBriefsTo( StudioStore::MAX_PER_USER );
+        $bad = self::brief();
+        $bad['language'] = 'no-such-language';
+        $r   = $this->build( $bad, true );
+        $this->assertSame( 422, $r['status'] );
+        $this->assertSame( 'INVALID_BRIEF', $r['body']['code'] );
+        $this->assertSame( 200, $this->build( self::brief(), false )['status'], 'a preview saves nothing, so the cap does not apply' );
+    }
+
+    public function testFillWithCreateAtTheCapStillWorksBecauseItReusesItsBrief(): void
+    {
+        $this->mayCreate();
+        $ids = $this->fillBriefsTo( StudioStore::MAX_PER_USER - 1 );
+        $id  = $this->stored();
+        $o   = [ 'id' => $id, 'hash' => (string) StudioStore::get( self::ME, $id )['brief_hash'] ];
+        $this->assertSame( StudioStore::MAX_PER_USER, StudioStore::countFor( self::ME ) );
+        $r = StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $id, 'base_hash' => $o['hash'], 'create' => true, 'sections' => [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'Words' ] ] ] ] );
+        $this->assertSame( 200, $r['status'], (string) json_encode( $r['body'] ) );
+        $this->assertSame( StudioStore::MAX_PER_USER, StudioStore::countFor( self::ME ) );
+        $this->assertSame( array_merge( $ids, [ $id ] ), $this->briefIds() );
     }
 }

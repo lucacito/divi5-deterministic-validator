@@ -202,7 +202,7 @@ function isGateTitle(title, token) {
 
 // ── The assistant round trip (section I) and the hand-off (section G) ──
 
-/** The size bound of a lab_build catalog answer in bytes (measured 4,031 on the 75-recipe library; twice that is the alarm). */
+/** The size bound of a lab_build catalog answer in bytes (about half of this on the shipped library; the alarm is a catalog that doubles). */
 const CATALOG_MAX_BYTES = 8000;
 
 const HASH = /^[0-9a-f]{64}$/;

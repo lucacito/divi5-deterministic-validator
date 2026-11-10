@@ -178,6 +178,22 @@ final class StudioStore
         return self::shape( is_array( $rows ) && isset( $rows[0] ) ? $rows[0] : null );
     }
 
+    /** How many briefs the user holds (the store keeps at most MAX_PER_USER, so this is what a new brief would push out). */
+    public static function countFor( int $user ): int
+    {
+        global $wpdb;
+
+        if ( $user <= 0 || ! StudioTable::ensureReady() ) {
+            return 0;
+        }
+        $table = StudioTable::name();
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $count = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE created_by = %d", $user ) );
+        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+
+        return max( 0, (int) $count );
+    }
+
     /** The brief_hash a brief is stored with (sha256 of its JSON), or null when it cannot be encoded. */
     public static function hashOf( array $brief ): ?string
     {

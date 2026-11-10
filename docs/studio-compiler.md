@@ -108,6 +108,7 @@ Result with the assistant tool (Divi 5.15.1, WordPress 7.1.2, MariaDB 11, `lab_b
 
 ### Known limits
 
+* A brief belongs to the WordPress user who started it in the screen; the assistant acts as the user of its API key or OAuth sign-in. On a site with more than one administrator, a connection signed in as a different user gets "Brief not found" for every `open` and `fill`. The 404 text and the hand-off instruction both say so, but the tool cannot tell the two cases apart (that would leak that the brief exists).
 - (Built, no longer a limit.) The hand-off to an assistant was hidden until the tool `lab_build` existed; it exists now, the box is offered on steps 4 and 5, and gate groups G and I exercise it (below). The screen's server-side compare-and-set against an assistant's concurrent change (Ruling 20) is built too and is covered by group I with a real 409 through the screen's own save.
 - The live kses check covers one brief of three recipes (hero-cta, stats-counter-band, cta-band); `StudioCompilerTest` covers the attribute values of all 75 recipes (two independent scans), not a live save of each.
 - Text typed with `&`, `<`, `$` or `"` is proven literal on the front end only; how the Divi Visual Builder shows and re-saves that escaped text is NOT verified (the review item "Visual Builder input" is open).
@@ -145,7 +146,7 @@ Plan: `docs/superpowers/plans/2026-11-10-lab-build-tool.md`. One MCP and REST to
 * `catalog`: goals, design languages, style kits, and the recipes by role, plus the rules in one `how` text. `recipe` returns one recipe's slots (id, kind, role, a sample cut to 80 characters); `role` filters the list. Read-only. One unfiltered answer is about 4 KB (bound 8,000 B in the live gate).
 * `open`: needs `brief_id`. Returns `base_hash` (the stored brief hash), the brief, every section with its slots and values, `unfilled_count`, the linked page (only if it exists and the user may edit it) and the rules. Read-only.
 * `fill`: needs `brief_id`, `base_hash` and `sections: [{section, slots?, pictures?}]` (at most 20 entries, 200 slot ids each; a slot id in both `slots` and `pictures` is refused). Everything is checked first; the one write is a compare-and-set on the brief's hash, so a brief the person saved in the meantime is never overwritten. A slot id the section does not have, or of the wrong kind, is listed in `ignored` and written nowhere. With `create` true it then builds the page from the STORED brief: a first build makes a draft (`StudioService::create`), a brief with a page goes through `StudioService::rebuild` (overwrites only an untouched draft, otherwise a new draft and the reason).
-* `build`: needs `brief` (the whole brief). Without `create` it previews: a report, no markup, nothing saved. With `create` true it saves the brief and makes one DRAFT page through `StudioService::create` (the same duplicate guard and `LayoutGate`).
+* `build`: needs `brief` (the whole brief). Without `create` it previews: a report, no markup, nothing saved. With `create` true it saves the brief and makes one DRAFT page through `StudioService::create` (the same duplicate guard and `LayoutGate`). Because the store keeps only 50 briefs per user and drops the oldest unlinked ones, a `build` with `create` true that would save a NEW brief while the user already holds 50 is refused first (422, code `TOO_MANY_BRIEFS`, nothing written), so a retry loop cannot wipe a person's unfinished briefs. The check is skipped for an invalid brief (the service refuses it on its own) and for a repeat of a brief just turned into a live page (the service returns that page and saves nothing). `fill` reuses its brief, so it is never capped.
 
 ### Compare-and-set
 
@@ -153,7 +154,7 @@ Plan: `docs/superpowers/plans/2026-11-10-lab-build-tool.md`. One MCP and REST to
 
 ### Status codes
 
-200 ok. 400 a bad argument (also the JSON-RPC error -32602 over MCP). 403 no `edit_pages`, or `create` true without `publish_pages` (checked before anything is written). 404 a missing or another user's brief (exactly alike). 409 `CONFLICT` (a normal tool result with `isError` true over MCP). 422 an invalid brief, a refused layout or a removed recipe (`INVALID_BRIEF`, `LAYOUT_INVALID`, `RECIPE_REMOVED`; a normal tool result with the problems listed). 500 a failure inside. When a `fill` saved its words but the build failed, the answer says `words_saved`, so the assistant does not write them again.
+200 ok. 400 a bad argument (also the JSON-RPC error -32602 over MCP). 403 no `edit_pages`, or `create` true without `publish_pages` (checked before anything is written). 404 a missing or another user's brief (exactly alike; the text says it may belong to another WordPress user than the one the connection signs in as, and says nothing else). 409 `CONFLICT` (a normal tool result with `isError` true over MCP). 422 an invalid brief, a refused layout or a removed recipe (`INVALID_BRIEF`, `LAYOUT_INVALID`, `RECIPE_REMOVED`; a normal tool result with the problems listed). 500 a failure inside. When a `fill` saved its words but the build failed, the answer says `words_saved`, so the assistant does not write them again.
 
 ### Rules
 
@@ -161,7 +162,7 @@ Plan: `docs/superpowers/plans/2026-11-10-lab-build-tool.md`. One MCP and REST to
 * No ability (the WordPress Abilities API) and no guide topic: the tool teaches itself through `catalog` and its description. The `get_style_guide` `topic` description has no headroom for a new topic name.
 * Text from the assistant is untrusted. It reaches a brief only through `StudioMerge::slots` and `StudioBrief::check`, and a page only through `StudioSlots::fill`, which escapes it (the live gate saves hostile text and Divi renders it literally).
 * Every page is a draft. Brief ownership is the acting user.
-* Live gate group I of `make verify-studio` runs the real MCP route; the whole gate is 223 PASS, 0 SKIP, 0 FAIL on Divi 5.15.1 / WordPress 7.1.2. Suites: 6962 PHP tests.
+* Live gate group I of `make verify-studio` runs the real MCP route; the whole gate is 223 PASS, 0 SKIP, 0 FAIL on Divi 5.15.1 / WordPress 7.1.2. Suites: 6980 PHP tests.
 
 ### Known limits
 

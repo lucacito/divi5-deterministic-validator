@@ -55,6 +55,7 @@ final class StudioService
     public const REASON_NO_ACCESS = 'no_access';
 
     private const INSTRUCTION = 'Use the %1$s tool%2$s to open Lab brief #%3$d. It lists the empty slots of every section. '
+        . 'Use the connection of the same WordPress user who started the brief; a "not found" answer usually means you are signed in as a different user. '
         . 'Write words for those slots and send them back with the same tool; you can fill some now and the rest later. '
         . 'Do not invent facts, prices, names or numbers; leave a slot empty if unknown. '
         . 'The page stays a draft until the site owner publishes it.';

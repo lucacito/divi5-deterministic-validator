@@ -605,6 +605,10 @@ class StudioScreenTest extends TestCase
         $conflict = StudioScreen::config( 5 )['i18n']['conflictReload'] ?? '';
         $this->assertStringContainsString( 'Reload this page', $conflict );
         $this->assertStringContainsString( 'Nothing you typed was sent.', $conflict );
+        $this->assertStringContainsString( 'another tab, another person or your assistant', $conflict, 'the wording does not blame the assistant' );
+        $again = StudioScreen::config( 5 )['i18n']['conflictAgain'] ?? '';
+        $this->assertStringNotContainsString( 'Your assistant', $again );
+        $this->assertStringContainsString( 'nothing was sent', $again );
         $this->assertStringNotContainsString( 'Studio', $conflict );
         $this->assertStringNotContainsString( 'innerHTML', $js );
     }

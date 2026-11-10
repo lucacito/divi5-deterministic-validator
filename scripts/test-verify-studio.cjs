@@ -240,12 +240,12 @@ test('a stale base_hash: tool refusal 409 CONFLICT carrying the current hash, no
 });
 
 test('a foreign brief id through the tool is refused exactly like a missing one', () => {
-  const a = { http: 200, error: null, isError: true, result: { error: 'Brief not found.' } };
+  const a = { http: 200, error: null, isError: true, result: { error: 'Brief not found. It may belong to another WordPress user than the one this connection signs in as.' } };
   assert.deepEqual(g.toolRefusalProblems(a, a), []);
-  assert.ok(g.toolRefusalProblems(a, { ...a, result: { error: 'Brief not found!' } }).length >= 1);
+  assert.ok(g.toolRefusalProblems(a, { ...a, result: { error: 'Brief not found. It may belong to another WordPress user than the one this connection signs in as!' } }).length >= 1);
   assert.ok(g.toolRefusalProblems({ ...a, isError: false }, { ...a, isError: false }).length >= 1, 'two successes are not a refusal');
   assert.ok(g.toolRefusalProblems(a, null).length >= 1);
-  assert.ok(g.toolRefusalProblems({ ...a, result: { error: 'Brief not found.', page: { id: 3 } } }, { ...a, result: { error: 'Brief not found.', page: { id: 3 } } }).length >= 1, 'a refusal carries nothing but its message');
+  assert.ok(g.toolRefusalProblems({ ...a, result: { error: 'Brief not found. It may belong to another WordPress user than the one this connection signs in as.', page: { id: 3 } } }, { ...a, result: { error: 'Brief not found.', page: { id: 3 } } }).length >= 1, 'a refusal carries nothing but its message');
 });
 
 test('the hand-off instruction names lab_build and the brief id, once, as a whole number', () => {
