@@ -14,7 +14,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * `catalog` (what the library offers) and `open` (a stored brief and what it still lacks) only read. `fill` writes words
  * into a stored brief, guarded by the brief's hash so it can never overwrite what a person saved in the meantime.
- * `build` is an accepted action name that answers "not built yet" until it lands.
+ * `build` previews a brief you hand it (nothing is saved) and, with `create` true, saves it and a draft page. `fill` with
+ * `create` true also builds (or rebuilds) the page after the words are saved. Building is always StudioService; this
+ * class repeats none of its overwrite rules.
  */
 final class StudioAssistant
 {
@@ -36,10 +38,11 @@ final class StudioAssistant
 
     private const HOW = 'Lab builds a page from a short brief: a design language, a goal and an ordered list of ready-made sections, each with its words, links and pictures. '
         . 'Four actions: catalog lists the goals, languages, style kits and sections by role (add recipe to see one section\'s slots); open reads a stored brief, returns its base_hash and shows which slots are still empty; '
-        . 'fill writes words into a brief (send brief_id, the base_hash from open and sections); build previews or creates a validated draft page from a brief. '
+        . 'fill writes words into a brief (send brief_id, the base_hash from open and sections); build previews a whole brief you send (nothing is saved), and with create true it saves the brief and a draft page. '
+        . 'fill also takes create true: after saving the words it builds the page, or rebuilds its draft when the owner has not edited it (an edited, published or deleted page is never overwritten; a new draft is made and the reason given). '
         . 'If fill answers 409 CONFLICT, the person changed the brief meanwhile and nothing was written: open again and fill again with the new base_hash. '
         . 'Write only real words you were given and never invent facts, prices, names or numbers; leave a slot empty when you do not know it, because an empty slot keeps its placeholder and is reported as unfilled. '
-        . 'Everything is saved as a draft that the owner reviews and publishes.';
+        . 'Everything is saved as a draft that the owner reviews and publishes; create true needs permission to publish pages.';
 
     private const RULES = 'Fill only slots whose words you actually know. Leave the rest empty; they stay as placeholders and are listed as unfilled. '
         . 'Links are https:// addresses, mailto:, tel:, #anchors or paths on this site starting with /. Pictures are a built-in pack token or an https:// address. '
@@ -83,7 +86,7 @@ final class StudioAssistant
                 }
             }
         }
-        // `brief` is only used by build (a later task): it must be an object.
+        // `brief` is only used by build: it must be an object.
         if ( array_key_exists( 'brief', $args ) && null !== $args['brief'] && ( ! is_array( $args['brief'] ) || ( array() !== $args['brief'] && self::isList( $args['brief'] ) ) ) ) {
             return self::fail( 400, 'brief must be an object.' );
         }
@@ -101,17 +104,27 @@ final class StudioAssistant
             return self::fail( 400, 'Unknown action. Use one of: ' . implode( ', ', self::ACTIONS ) . '.' );
         }
 
+        if ( $create ) {
+            if ( 'fill' !== $action && 'build' !== $action ) {
+                return self::fail( 400, 'create applies only to build and fill.' );
+            }
+            // Checked before anything is written, so a fill that cannot build does not save its words either.
+            if ( ! current_user_can( 'publish_pages' ) ) {
+                UsageTracker::log( self::ENDPOINT, null, 'error' );
+
+                return self::fail( 403, 'You do not have permission to create pages with Lab (publishing pages is required).' );
+            }
+        }
+
         switch ( $action ) {
             case 'catalog':
                 return self::catalog( $recipe, $role );
             case 'open':
                 return self::open( $briefId );
             case 'fill':
-                // `create` is a known key, but fill does not act on it yet: Task 5 makes `create:true` build the page after
-                // the words are saved (and checks publish_pages). Until then it is accepted and ignored.
-                return self::fill( $briefId, $baseHash, $args['sections'] ?? null );
+                return self::fill( $briefId, $baseHash, $args['sections'] ?? null, $create );
             default:
-                return self::fail( 400, 'This action is not built yet.' );
+                return self::build( $args['brief'] ?? null, $create );
         }
     }
 
@@ -192,7 +205,7 @@ final class StudioAssistant
      * @param mixed $sections the raw `sections` argument (already known to be a list of arrays, or null)
      * @return array{status:int, body:array<string,mixed>}
      */
-    private static function fill( ?int $briefId, string $baseHash, mixed $sections ): array
+    private static function fill( ?int $briefId, string $baseHash, mixed $sections, bool $create = false ): array
     {
         if ( null === $briefId ) {
             return self::fail( 400, 'brief_id is required for fill.' );
@@ -280,7 +293,46 @@ final class StudioAssistant
                 return self::fail( 500, 'The brief could not be read back.' );
             }
         }
-        $view    = self::sectionView( $fresh['brief'] );
+        $view  = self::sectionView( $fresh['brief'] );
+        $saved = 'Saved ' . count( $applied ) . ' slot(s)' . ( array() === $ignored ? '' : '; ' . count( $ignored ) . ' could not be used (see ignored)' ) . '. '
+            . $view['unfilled'] . ' slot(s) are still empty.';
+
+        if ( $create ) {
+            // The words are saved (or the stored brief was already current); now build the page from the STORED brief.
+            // StudioService decides overwrite versus a new draft; nothing of its rules is repeated here.
+            $built = null === $fresh['page_id']
+                ? StudioService::create( $user, $fresh['brief'], $briefId )
+                : StudioService::rebuild( $user, $briefId );
+            if ( ! $built['ok'] ) {
+                UsageTracker::log( self::ENDPOINT, null, 'error' );
+                $failure = self::serviceFailure( $built );
+                // Say plainly what the failed build did NOT undo, so the assistant does not write the words again.
+                $failure['body']['words_saved'] = array() !== $applied;
+                $failure['body']['brief_id']    = $fresh['id'];
+                $failure['body']['base_hash']   = $fresh['brief_hash'];
+                if ( array() !== $applied ) {
+                    $failure['body']['message'] .= ' Your words were saved; only the page was not built.';
+                }
+
+                return $failure;
+            }
+            $pageId = (int) $built['page_id'];
+            $mode   = isset( $built['mode'] ) ? (string) $built['mode'] : 'created';
+            UsageTracker::log( self::ENDPOINT, $pageId, 'valid' );
+
+            return [ 'status' => 200, 'body' => [
+                'brief_id'       => $fresh['id'],
+                'base_hash'      => $fresh['brief_hash'],
+                'applied'        => $applied,
+                'ignored'        => $ignored,
+                'unfilled_count' => $view['unfilled'],
+                'report'         => $built['report'],
+                'page'           => self::pageRef( $pageId, null ),
+                'build'          => [ 'mode' => $mode, 'reason' => $built['reason'] ?? null, 'page' => self::pageRef( $pageId, $built['edit_url'] ?? null ) ],
+                'message'        => $saved . ' ' . $built['message'],
+            ] ];
+        }
+
         $preview = StudioService::preview( $user, $fresh['brief'] );
         $page    = self::pageOf( $fresh['page_id'] );
         UsageTracker::log( self::ENDPOINT, null === $page ? null : $page['id'], 'valid' );
@@ -293,8 +345,64 @@ final class StudioAssistant
             'unfilled_count' => $view['unfilled'],
             'report'         => $preview['report'],
             'page'           => $page,
-            'message'        => 'Saved ' . count( $applied ) . ' slot(s)' . ( array() === $ignored ? '' : '; ' . count( $ignored ) . ' could not be used (see ignored)' ) . '. '
-                . $view['unfilled'] . ' slot(s) are still empty. The page itself was not changed.',
+            'message'        => $saved . ' The page itself was not changed.',
+        ] ];
+    }
+
+    /**
+     * Preview a whole brief (nothing is saved, the markup is never returned) or, with `create`, save it and make one
+     * draft page through StudioService::create.
+     *
+     * @return array{status:int, body:array<string,mixed>}
+     */
+    private static function build( mixed $brief, bool $create ): array
+    {
+        if ( ! is_array( $brief ) || array() === $brief ) {
+            return self::fail( 400, 'brief is required for build: the whole brief as an object (title, goal, language, sections).' );
+        }
+        $user = get_current_user_id();
+
+        if ( ! $create ) {
+            $preview = StudioService::preview( $user, $brief );
+            if ( ! $preview['ok'] ) {
+                UsageTracker::log( self::ENDPOINT, null, 'invalid' );
+                $failure = self::serviceFailure( $preview );
+                $failure['body'] = [ 'valid' => false, 'created' => false ] + $failure['body'] + [ 'report' => $preview['report'], 'markup_omitted' => true ];
+
+                return $failure;
+            }
+            UsageTracker::log( self::ENDPOINT, null, 'valid' );
+
+            return [ 'status' => 200, 'body' => [
+                'valid'          => true,
+                'created'        => false,
+                'report'         => $preview['report'],
+                'markup_omitted' => true,
+                'message'        => $preview['message'],
+                'next'           => 'Nothing was saved. Call build again with create true to save this brief and a draft page; or save the words in a Lab brief and use fill.',
+            ] ];
+        }
+
+        $made = StudioService::create( $user, $brief, null );
+        if ( ! $made['ok'] ) {
+            UsageTracker::log( self::ENDPOINT, null, 'error' );
+            $failure         = self::serviceFailure( $made );
+            $failure['body'] = [ 'created' => false ] + $failure['body'] + [ 'report' => $made['report'] ];
+
+            return $failure;
+        }
+        $pageId = (int) $made['page_id'];
+        $stored = null === $made['brief_id'] ? null : StudioStore::get( $user, (int) $made['brief_id'] );
+        UsageTracker::log( self::ENDPOINT, $pageId, 'valid' );
+
+        return [ 'status' => 200, 'body' => [
+            'created'   => true,
+            'page'      => self::pageRef( $pageId, $made['edit_url'] ),
+            'brief_id'  => $made['brief_id'],
+            'base_hash' => null === $stored ? null : $stored['brief_hash'],
+            'duplicate' => (bool) $made['duplicate'],
+            'report'    => $made['report'],
+            'message'   => $made['message'] . ' It is a draft: the owner reviews and publishes it.',
         ] ];
     }
 
@@ -427,6 +535,36 @@ final class StudioAssistant
         }
 
         return $out;
+    }
+
+    /**
+     * The page a build made, with its real status (a duplicate answer may point at a page that has been published since).
+     *
+     * @return array{id:int,status:string,link:?string}
+     */
+    private static function pageRef( int $pageId, ?string $link ): array
+    {
+        $post = get_post( $pageId );
+
+        return [ 'id' => $pageId, 'status' => $post ? (string) ( $post->post_status ?? 'draft' ) : 'draft', 'link' => $link ];
+    }
+
+    /** A service refusal as a tool answer: its code and message only (the callers add a report where it helps). */
+    private static function serviceFailure( array $result ): array
+    {
+        $code = (string) ( $result['code'] ?? StudioService::INTERNAL_ERROR );
+
+        return [ 'status' => self::serviceStatus( $code ), 'body' => [ 'code' => $code, 'message' => (string) ( $result['message'] ?? '' ) ] ];
+    }
+
+    /** INVALID_BRIEF, LAYOUT_INVALID and RECIPE_REMOVED are the caller's to fix (422), NOT_FOUND is 404, everything else 500. */
+    private static function serviceStatus( string $code ): int
+    {
+        return match ( $code ) {
+            StudioService::INVALID_BRIEF, StudioService::LAYOUT_INVALID, StudioService::RECIPE_REMOVED => 422,
+            StudioService::NOT_FOUND => 404,
+            default => 500,
+        };
     }
 
     /** @return array{status:int, body:array<string,mixed>} */

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Divi5Validator\Tests;
 
 use AiEditorDivi5\WP\DesignLanguages;
+use AiEditorDivi5\WP\HistoryService;
+use AiEditorDivi5\WP\HistoryTable;
 use AiEditorDivi5\WP\SectionRecipes;
 use AiEditorDivi5\WP\StudioAssistant;
 use AiEditorDivi5\WP\StudioBrief;
@@ -61,9 +63,16 @@ class StudioAssistantTest extends TestCase
     {
         $GLOBALS['wpdb'] = new FakeWpdb();
         $GLOBALS['wpdb']->createStudioTable();
-        $GLOBALS['__wp_options']         = [ StudioTable::DB_VERSION_OPTION => StudioTable::DB_VERSION ];
+        $GLOBALS['wpdb']->createHistoryTable();
+        $GLOBALS['__wp_options']         = [
+            StudioTable::DB_VERSION_OPTION  => StudioTable::DB_VERSION,
+            HistoryTable::DB_VERSION_OPTION => HistoryTable::STAGE_MIGRATED,
+        ];
+        $GLOBALS['__wp_transients']      = [];
         $GLOBALS['__wp_posts']           = [];
+        $GLOBALS['__wp_postmeta']        = [];
         $GLOBALS['__wp_inserts']         = [];
+        unset( $GLOBALS['__wp_update_calls'], $GLOBALS['__wp_insert_fail'], $GLOBALS['__wp_user_caps'] );
         $GLOBALS['__wp_current_user_id'] = self::ME;
         $GLOBALS['__wp_caps']            = [ 'edit_pages' => true ];
     }
@@ -71,10 +80,12 @@ class StudioAssistantTest extends TestCase
     protected function tearDown(): void
     {
         $GLOBALS['wpdb']         = null;
-        $GLOBALS['__wp_options'] = [];
-        $GLOBALS['__wp_posts']   = [];
-        $GLOBALS['__wp_inserts'] = [];
-        unset( $GLOBALS['__wp_caps'], $GLOBALS['__wp_current_user_id'] );
+        $GLOBALS['__wp_options']    = [];
+        $GLOBALS['__wp_transients'] = [];
+        $GLOBALS['__wp_posts']      = [];
+        $GLOBALS['__wp_postmeta']   = [];
+        $GLOBALS['__wp_inserts']    = [];
+        unset( $GLOBALS['__wp_caps'], $GLOBALS['__wp_current_user_id'], $GLOBALS['__wp_update_calls'], $GLOBALS['__wp_insert_fail'], $GLOBALS['__wp_user_caps'] );
     }
 
     /** @return array<string,mixed> */
@@ -126,13 +137,6 @@ class StudioAssistantTest extends TestCase
             $this->assertSame( 400, $r['status'], (string) json_encode( $args ) );
             $this->assertArrayHasKey( 'error', $r['body'] );
         }
-    }
-
-    public function testBuildIsAValidActionNotBuiltYet(): void
-    {
-        $r = StudioAssistant::run( [ 'action' => 'build' ] );
-        $this->assertSame( 400, $r['status'] );
-        $this->assertSame( 'This action is not built yet.', $r['body']['error'] );
     }
 
     public function testArgumentTypesAreChecked(): void
@@ -650,13 +654,311 @@ class StudioAssistantTest extends TestCase
         $this->assertSame( 'x', $GLOBALS['__wp_posts'][77]->post_content, 'fill never rebuilds the page' );
     }
 
-    public function testCreateIsAKnownKeyOnFillButIsNotActedOnYet(): void
+    // ---- build and create (Task 5) ------------------------------------------------------------------------
+
+    /** The user may also publish and edit pages (needed for create:true). */
+    private function mayCreate(): void
     {
-        $o = $this->open();
-        $r = StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $o['id'], 'base_hash' => $o['hash'], 'create' => true, 'sections' => [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'x' ] ] ] ] );
+        $GLOBALS['__wp_caps'] = [ 'edit_pages' => true, 'publish_pages' => true, 'edit_post' => true ];
+    }
+
+    private function postCount(): int
+    {
+        return count( $GLOBALS['__wp_posts'] );
+    }
+
+    private function build( array $brief, bool $create = false ): array
+    {
+        $args = [ 'action' => 'build', 'brief' => $brief ];
+        if ( $create ) {
+            $args['create'] = true;
+        }
+
+        return StudioAssistant::run( $args );
+    }
+
+    public function testBuildWithoutCreatePreviewsAndSavesNothing(): void
+    {
+        $r = $this->build( self::brief() );
         $this->assertSame( 200, $r['status'] );
+        $b = $r['body'];
+        $this->assertTrue( $b['valid'] );
+        $this->assertFalse( $b['created'] );
+        $this->assertTrue( $b['markup_omitted'] );
+        $this->assertArrayNotHasKey( 'markup', $b );
+        $this->assertStringNotContainsString( 'Fix leaks fast', (string) json_encode( $b ), 'no page text comes back' );
+        foreach ( [ 'problems', 'violations', 'unfilled', 'refused', 'warnings', 'advice' ] as $key ) {
+            $this->assertArrayHasKey( $key, $b['report'] );
+        }
+        $this->assertIsString( $b['message'] );
+        $this->assertStringContainsString( 'create', $b['next'] );
+        $this->assertStringNotContainsString( 'Studio', (string) json_encode( $b ) );
         $this->assertSame( [], $GLOBALS['__wp_posts'] );
         $this->assertSame( [], $GLOBALS['__wp_inserts'] );
+        $this->assertSame( [], $this->rows(), 'a preview stores no brief' );
+        $this->assertSame( 200, StudioAssistant::run( [ 'action' => 'build', 'brief' => self::brief(), 'create' => false ] )['status'] );
+    }
+
+    public function testBuildNeedsABriefObject(): void
+    {
+        $this->assertSame( 400, StudioAssistant::run( [ 'action' => 'build' ] )['status'] );
+        $this->assertSame( 400, StudioAssistant::run( [ 'action' => 'build', 'brief' => null ] )['status'] );
+        $this->assertSame( 400, StudioAssistant::run( [ 'action' => 'build', 'brief' => 'x' ] )['status'] );
+        $this->assertSame( 400, StudioAssistant::run( [ 'action' => 'build', 'brief' => [ 'a', 'b' ] ] )['status'] );
+        $this->assertSame( [], $GLOBALS['__wp_posts'] );
+    }
+
+    public function testBuildWithAnInvalidBriefIs422ListingTheProblemPaths(): void
+    {
+        $this->mayCreate();
+        $unknownRecipe = self::brief();
+        $unknownRecipe['sections'][1]['recipe'] = 'no-such-recipe';
+        $unknownLanguage = self::brief();
+        $unknownLanguage['language'] = 'no-such-language';
+        foreach ( [ [ $unknownRecipe, 'sections' ], [ $unknownLanguage, 'language' ] ] as [ $brief, $path ] ) {
+            foreach ( [ false, true ] as $create ) {
+                $r = $this->build( $brief, $create );
+                $this->assertSame( 422, $r['status'], $path . ( $create ? ' create' : ' preview' ) );
+                $this->assertSame( StudioService::INVALID_BRIEF, $r['body']['code'] );
+                $this->assertFalse( $r['body']['created'] );
+                $paths = array_map( static fn ( array $p ): string => (string) $p['path'], $r['body']['report']['problems'] );
+                $this->assertNotSame( [], $paths );
+                $this->assertStringContainsString( $path, implode( ' ', $paths ) );
+            }
+        }
+        $this->assertSame( [], $GLOBALS['__wp_posts'] );
+        $this->assertSame( [], $this->rows() );
+    }
+
+    public function testBuildCreateMakesExactlyOneDraftThatLinksTheBrief(): void
+    {
+        $this->mayCreate();
+        $r = $this->build( self::brief(), true );
+        $this->assertSame( 200, $r['status'], (string) json_encode( $r['body'] ) );
+        $b = $r['body'];
+        $this->assertTrue( $b['created'] );
+        $this->assertFalse( $b['duplicate'] );
+        $this->assertSame( 'draft', $b['page']['status'] );
+        $this->assertArrayHasKey( 'link', $b['page'] );
+        $this->assertArrayHasKey( 'report', $b );
+        $this->assertCount( 1, $GLOBALS['__wp_posts'] );
+        $pageId = (int) $b['page']['id'];
+        $post   = $GLOBALS['__wp_posts'][ $pageId ];
+        $this->assertSame( 'draft', $post->post_status );
+        $this->assertStringContainsString( 'Fix leaks fast', (string) $post->post_content );
+
+        $stored = StudioStore::get( self::ME, (int) $b['brief_id'] );
+        $this->assertNotNull( $stored );
+        $this->assertSame( $pageId, $stored['page_id'] );
+        $this->assertSame( $stored['brief_hash'], $b['base_hash'] );
+        $this->assertStringNotContainsString( 'Studio', (string) json_encode( $b ) );
+    }
+
+    public function testASecondIdenticalCreateIsADuplicateAndMakesNoSecondPage(): void
+    {
+        $this->mayCreate();
+        $first  = $this->build( self::brief(), true );
+        $second = $this->build( self::brief(), true );
+        $this->assertSame( 200, $second['status'] );
+        $this->assertTrue( $second['body']['created'] );
+        $this->assertTrue( $second['body']['duplicate'] );
+        $this->assertSame( $first['body']['page']['id'], $second['body']['page']['id'] );
+        $this->assertSame( $first['body']['brief_id'], $second['body']['brief_id'] );
+        $this->assertCount( 1, $GLOBALS['__wp_posts'] );
+        $this->assertCount( 1, $this->rows() );
+    }
+
+    public function testCreateNeedsPublishPagesAndMakesNothingWithout(): void
+    {
+        $GLOBALS['__wp_caps'] = [ 'edit_pages' => true, 'edit_post' => true ]; // no publish_pages
+        $r = $this->build( self::brief(), true );
+        $this->assertSame( 403, $r['status'] );
+        $this->assertArrayHasKey( 'error', $r['body'] );
+        $this->assertSame( [], $GLOBALS['__wp_posts'] );
+        $this->assertSame( [], $this->rows() );
+
+        // A preview needs only edit_pages.
+        $this->assertSame( 200, $this->build( self::brief() )['status'] );
+
+        // And so does fill with create:true: refused BEFORE the words are written.
+        $o = $this->open();
+        $r = StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $o['id'], 'base_hash' => $o['hash'], 'create' => true, 'sections' => [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'Nope' ] ] ] ] );
+        $this->assertSame( 403, $r['status'] );
+        $this->assertSame( self::brief(), $this->storedBrief( $o['id'] ), 'the words were not written either' );
+        $this->assertSame( [], $GLOBALS['__wp_posts'] );
+    }
+
+    public function testCreateIsRefusedOnActionsThatCannotBuild(): void
+    {
+        $this->mayCreate();
+        $id = $this->stored();
+        $this->assertSame( 400, StudioAssistant::run( [ 'action' => 'catalog', 'create' => true ] )['status'] );
+        $this->assertSame( 400, StudioAssistant::run( [ 'action' => 'open', 'brief_id' => $id, 'create' => true ] )['status'] );
+        $this->assertSame( [], $GLOBALS['__wp_posts'] );
+    }
+
+    public function testFillWithCreateOnABriefWithoutAPageMakesADraft(): void
+    {
+        $this->mayCreate();
+        $o = $this->open();
+        $r = StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $o['id'], 'base_hash' => $o['hash'], 'create' => true, 'sections' => [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'Plumbing, sorted' ] ] ] ] );
+        $this->assertSame( 200, $r['status'], (string) json_encode( $r['body'] ) );
+        $b = $r['body'];
+        $this->assertSame( 'created', $b['build']['mode'] );
+        $this->assertNull( $b['build']['reason'] );
+        $this->assertSame( 'draft', $b['build']['page']['status'] );
+        $this->assertCount( 1, $GLOBALS['__wp_posts'] );
+        $pageId = (int) $b['build']['page']['id'];
+        $this->assertStringContainsString( 'Plumbing, sorted', (string) $GLOBALS['__wp_posts'][ $pageId ]->post_content );
+        $this->assertSame( $pageId, $b['page']['id'], 'page now reports the built page' );
+        $this->assertSame( $pageId, StudioStore::get( self::ME, $o['id'] )['page_id'] );
+        $this->assertSame( StudioStore::get( self::ME, $o['id'] )['brief_hash'], $b['base_hash'] );
+        $this->assertStringNotContainsString( 'was not changed', $b['message'] );
+    }
+
+    public function testFillWithCreateOverwritesAnUntouchedPageAndKeepsOneHistoryRow(): void
+    {
+        $this->mayCreate();
+        $o  = $this->open();
+        $r1 = StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $o['id'], 'base_hash' => $o['hash'], 'create' => true, 'sections' => [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'First words' ] ] ] ] );
+        $pageId = (int) $r1['body']['build']['page']['id'];
+        $before = $GLOBALS['__wp_posts'][ $pageId ]->post_content;
+
+        $r2 = StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $o['id'], 'base_hash' => $r1['body']['base_hash'], 'create' => true, 'sections' => [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'Second words' ] ] ] ] );
+        $this->assertSame( 200, $r2['status'], (string) json_encode( $r2['body'] ) );
+        $this->assertSame( 'overwritten', $r2['body']['build']['mode'] );
+        $this->assertNull( $r2['body']['build']['reason'] );
+        $this->assertSame( $pageId, $r2['body']['build']['page']['id'] );
+        $this->assertCount( 1, $GLOBALS['__wp_posts'] );
+        $this->assertStringContainsString( 'Second words', (string) $GLOBALS['__wp_posts'][ $pageId ]->post_content );
+        $rows = HistoryService::listFor( $pageId );
+        $this->assertCount( 1, $rows );
+        $this->assertSame( 'studio', $rows[0]['tool'] ?? null );
+        $restored = HistoryService::restore( $pageId, (int) $rows[0]['id'] );
+        $this->assertTrue( $restored['ok'] );
+        $this->assertSame( $before, $GLOBALS['__wp_posts'][ $pageId ]->post_content );
+    }
+
+    public function testFillWithCreateOnAnEditedPageMakesANewDraftAndLeavesTheEditedOneAlone(): void
+    {
+        $this->mayCreate();
+        $o  = $this->open();
+        $r1 = StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $o['id'], 'base_hash' => $o['hash'], 'create' => true, 'sections' => [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'First words' ] ] ] ] );
+        $pageId = (int) $r1['body']['build']['page']['id'];
+        $GLOBALS['__wp_posts'][ $pageId ]->post_content .= "\n<!-- edited in Divi -->";
+        $edited = $GLOBALS['__wp_posts'][ $pageId ]->post_content;
+        unset( $GLOBALS['__wp_update_calls'] );
+
+        $r2 = StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $o['id'], 'base_hash' => $r1['body']['base_hash'], 'create' => true, 'sections' => [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'Second words' ] ] ] ] );
+        $this->assertSame( 200, $r2['status'] );
+        $b = $r2['body']['build'];
+        $this->assertSame( 'new_draft', $b['mode'] );
+        $this->assertSame( 'edited', $b['reason'] );
+        $this->assertNotSame( $pageId, $b['page']['id'] );
+        $this->assertSame( 'draft', $b['page']['status'] );
+        $this->assertSame( $edited, $GLOBALS['__wp_posts'][ $pageId ]->post_content, 'the edited page is byte-identical' );
+        $this->assertArrayNotHasKey( '__wp_update_calls', $GLOBALS );
+        $this->assertCount( 2, $GLOBALS['__wp_posts'] );
+        $this->assertStringContainsString( 'edited', $r2['body']['message'] );
+        $this->assertSame( (int) $b['page']['id'], StudioStore::get( self::ME, $o['id'] )['page_id'] );
+    }
+
+    public function testFillWithCreateThatAppliedNothingStillBuildsFromTheStoredBrief(): void
+    {
+        // Ruling: create:true is an explicit request for the page; the stored brief is current, so it is built, and
+        // `ignored` tells the assistant its words did not land.
+        $this->mayCreate();
+        $o = $this->open();
+        $r = StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $o['id'], 'base_hash' => $o['hash'], 'create' => true, 'sections' => [ [ 'section' => 0, 'slots' => [ 'no.such.slot' => 'x' ] ] ] ] );
+        $this->assertSame( 200, $r['status'] );
+        $this->assertSame( [], $r['body']['applied'] );
+        $this->assertNotSame( [], $r['body']['ignored'] );
+        $this->assertSame( 'created', $r['body']['build']['mode'] );
+        $this->assertSame( $o['hash'], $r['body']['base_hash'], 'the brief row was not touched' );
+        $this->assertCount( 1, $GLOBALS['__wp_posts'] );
+    }
+
+    public function testFillWithCreateAndAStaleHashBuildsNothing(): void
+    {
+        $this->mayCreate();
+        $o = $this->open();
+        $r = StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $o['id'], 'base_hash' => str_repeat( 'a', 64 ), 'create' => true, 'sections' => [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'x' ] ] ] ] );
+        $this->assertSame( 409, $r['status'] );
+        $this->assertSame( [], $GLOBALS['__wp_posts'] );
+        $this->assertSame( self::brief(), $this->storedBrief( $o['id'] ) );
+    }
+
+    public function testFillWithCreateOnARemovedRecipeIs422AndSaysWhetherTheWordsWereSaved(): void
+    {
+        $this->mayCreate();
+        // A brief whose section 1 names a retired layout, already linked to a page. Fill itself refuses to SAVE such a
+        // brief (the brief check names the layout), so only a fill that writes nothing reaches the rebuild.
+        $brief = self::brief();
+        $brief['sections'][1]['recipe'] = 'retired-layout';
+        $json = (string) json_encode( $brief );
+        $GLOBALS['wpdb']->insert( StudioTable::name(), [
+            'created_by' => self::ME, 'brief' => $json, 'brief_hash' => hash( 'sha256', $json ), 'plugin_version' => '4', 'created_at' => '2026-01-01 00:00:00', 'updated_at' => '2026-01-01 00:00:00',
+        ] );
+        $id = (int) $GLOBALS['wpdb']->insert_id;
+        $GLOBALS['__wp_posts'][77] = (object) [ 'ID' => 77, 'post_type' => 'page', 'post_status' => 'draft', 'post_content' => 'x' ];
+        StudioStore::link( self::ME, $id, 77, hash( 'sha256', 'x' ) );
+        $hash = (string) StudioStore::get( self::ME, $id )['brief_hash'];
+
+        $r = StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $id, 'base_hash' => $hash, 'create' => true, 'sections' => [ [ 'section' => 0, 'slots' => [ 'no.such.slot' => 'x' ] ] ] ] );
+        $this->assertSame( 422, $r['status'], (string) json_encode( $r['body'] ) );
+        $this->assertSame( StudioService::RECIPE_REMOVED, $r['body']['code'] );
+        $this->assertArrayHasKey( 'message', $r['body'] );
+        $this->assertFalse( $r['body']['words_saved'], 'nothing was written, so the words were not saved' );
+        $this->assertStringNotContainsString( 'words were saved', $r['body']['message'] );
+        $this->assertSame( 'x', $GLOBALS['__wp_posts'][77]->post_content );
+        $this->assertCount( 1, $GLOBALS['__wp_posts'] );
+    }
+
+    public function testAFailedBuildAfterAFillThatSavedWordsSaysTheWordsAreSaved(): void
+    {
+        $this->mayCreate();
+        $o = $this->open();
+        $GLOBALS['__wp_insert_fail'] = true; // the draft cannot be inserted
+        $r = StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $o['id'], 'base_hash' => $o['hash'], 'create' => true, 'sections' => [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'Kept words' ] ] ] ] );
+        $this->assertSame( 500, $r['status'], (string) json_encode( $r['body'] ) );
+        $this->assertSame( StudioService::SAVE_FAILED, $r['body']['code'] );
+        $this->assertTrue( $r['body']['words_saved'] );
+        $this->assertStringContainsString( 'words were saved', $r['body']['message'] );
+        $this->assertSame( 'Kept words', $this->storedBrief( $o['id'] )['sections'][0]['slots']['heading.1'] );
+        $this->assertSame( StudioStore::get( self::ME, $o['id'] )['brief_hash'], $r['body']['base_hash'] );
+        $this->assertSame( [], $GLOBALS['__wp_posts'] );
+    }
+
+    public function testServiceRefusalsMapToStatuses(): void
+    {
+        $map = new \ReflectionMethod( StudioAssistant::class, 'serviceStatus' );
+        foreach ( [ 'INVALID_BRIEF' => 422, 'LAYOUT_INVALID' => 422, 'RECIPE_REMOVED' => 422, 'NOT_FOUND' => 404, 'STORE_FAILED' => 500, 'SAVE_FAILED' => 500, 'INTERNAL_ERROR' => 500, 'SOMETHING_NEW' => 500 ] as $code => $status ) {
+            $this->assertSame( $status, $map->invoke( null, $code ), $code );
+        }
+    }
+
+    public function testNoPathEverMakesAnythingButADraft(): void
+    {
+        $this->mayCreate();
+        $this->build( self::brief(), true );
+        $o = $this->open();
+        StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $o['id'], 'base_hash' => $o['hash'], 'create' => true, 'sections' => [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'Another' ] ] ] ] );
+        $this->assertNotSame( [], $GLOBALS['__wp_posts'] );
+        foreach ( $GLOBALS['__wp_posts'] as $post ) {
+            $this->assertSame( 'draft', $post->post_status );
+        }
+        foreach ( $GLOBALS['__wp_inserts'] as $insert ) {
+            $this->assertSame( 'draft', $insert['post_status'] ?? 'draft' );
+        }
+    }
+
+    public function testCatalogHowSaysBuildPreviewsOrCreatesADraft(): void
+    {
+        $how = (string) StudioAssistant::run( [ 'action' => 'catalog' ] )['body']['how'];
+        $this->assertStringContainsString( 'create', $how );
+        $this->assertStringContainsString( 'true', $how );
+        $this->assertStringContainsString( 'draft', $how );
+        $this->assertLessThanOrEqual( 1500, strlen( $how ) );
     }
 
     public function testFillNeedsEditPages(): void
