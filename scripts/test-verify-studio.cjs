@@ -143,6 +143,20 @@ test('the small brief is three sections with plain values', () => {
   assert.equal(g.smallBrief('t').language, 'editorial');
 });
 
+test('the summary counts SKIP separately and fails only on FAIL', () => {
+  assert.deepEqual(g.summarize([{ ok: true }, { ok: true, skip: true }, { ok: false }]), { text: '1 PASS, 1 SKIP, 1 FAIL', failed: 1, skipped: 1 });
+  assert.deepEqual(g.summarize([{ ok: true }, { ok: true, skip: true }]), { text: '1 PASS, 1 SKIP, 0 FAIL', failed: 0, skipped: 1 });
+  assert.deepEqual(g.summarize([]), { text: '0 PASS, 0 SKIP, 0 FAIL', failed: 0, skipped: 0 });
+});
+
+test('the removed-recipe check needs a refused preview to have been seen', () => {
+  assert.equal(g.refusedPreviewSeen([]), false, 'an empty list proves nothing');
+  assert.equal(g.refusedPreviewSeen(['aied_studio_preview 422']), true);
+  assert.equal(g.refusedPreviewSeen(['aied_studio_preview 422', 'aied_studio_save 500']), false, 'any other failure is a failure');
+  assert.equal(g.refusedPreviewSeen(['aied_studio_preview 500']), false);
+  assert.equal(g.refusedPreviewSeen(undefined), false);
+});
+
 (async () => {
   let failed = 0;
   for (const [name, fn] of tests) {

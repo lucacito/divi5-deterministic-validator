@@ -71,8 +71,16 @@ function check(ok, label, detail) {
   results.push({ ok: !!ok, label, detail });
   if (!ok) fails.push(label);
 }
+/** A check that could not be run here: printed and counted as SKIP, never as PASS. */
+function skip(label, why) {
+  console.log('SKIP  ' + label + (why ? '  (' + why + ')' : ''));
+  results.push({ ok: true, skip: true, label, detail: why || null });
+}
 function serverChecks(list) {
-  for (const c of list) check(c.ok, c.label, c.ok ? undefined : c.detail);
+  for (const c of list) {
+    if (c.skip) skip(c.label);
+    else check(c.ok, c.label, c.ok ? undefined : c.detail);
+  }
 }
 function section(name) { console.log('\n== ' + name); }
 
@@ -133,6 +141,7 @@ function cleanup() {
   try {
     const r = php('cleanup', { token: state.token, pages: state.pages, previewOf1: state.snapshot ? state.snapshot.previewOf1 : [], rows: state.snapshot ? state.snapshot.rows : [], options: state.snapshot ? state.snapshot.options : undefined, meta1: state.snapshot ? state.snapshot.meta1 : undefined });
     console.log('cleanup: ' + JSON.stringify(r));
+    state.refused = r.refused || [];
   } catch (e) { console.log('WARNING cleanup failed: ' + e.message); ok = false; }
   return ok;
 }
@@ -316,6 +325,8 @@ async function main() {
     state.snapshot = null; // nothing of this run to clean up
     return 2;
   }
+  const guard = php('selftest-delete', {});
+  check(guard.cases >= 10 && guard.wrong.length === 0, 'setup: the cleanup only ever deletes a post of this run (title, a gate user\'s preview title, or a gate user as author)', guard);
   check(state.snapshot.hasCapture, 'setup: the universal history capture (pre_post_update) is registered on this site');
   const made = php('users', { token: state.token });
   state.users = made.ids;
@@ -675,7 +686,7 @@ async function main() {
     }, i18n);
     const previewState = await pg.textContent('#aied-lab-preview-state');
     check(goneUi.note && goneUi.first === i18n.pickReplacement && goneUi.options > 10, 'G: a brief whose layout left the library: step 3 marks the section and offers replacement layouts', goneUi);
-    const goneOk = (goneBag.ajax || []).every((a) => a === 'aied_studio_preview 422') && goneBag.every((e) => /status of 422/.test(e));
+    const goneOk = g.refusedPreviewSeen(goneBag.ajax) && goneBag.every((e) => /status of 422/.test(e));
     check(goneOk && previewState === i18n.previewFailed, 'G: on that brief the only failed request is the refused preview (422), and the screen says the preview failed', { ajax: goneBag.ajax, console: goneBag.slice(0, 3), previewState });
     await pg.close();
   }
@@ -713,13 +724,10 @@ async function main() {
       check(ok && await focusedId(p) === 'aied-lab-h' + n, `G keyboard: Next on step ${n - 1} (Tab, Enter) moves the focus to the step ${n} heading`);
     }
     await waitPreview(p);
-    // The clipboard is gone (as on a plain-http site): the hand-off shows and selects the instruction on step 4.
-    check(await tabTo(p, () => document.activeElement && document.activeElement.id === 'aied-lab-handoff'), 'G keyboard: Tab reaches "Copy instruction for my assistant"');
-    await p.keyboard.press('Enter');
-    await p.waitForSelector('#aied-lab-instruction-box:not([hidden])', { timeout: 30000 });
-    await waitIdle(p);
-    const sel4 = await p.evaluate(() => { const t = document.getElementById('aied-lab-instruction'); return { active: document.activeElement === t, all: t.selectionStart === 0 && t.selectionEnd === t.value.length && t.value.length > 50, step4: !document.querySelector('.aied-lab-panel[data-step="4"]').hidden, status: document.getElementById('aied-lab-status').textContent, text: t.value }; });
-    check(sel4.active && sel4.all && sel4.step4 && sel4.status === i18n.copyManual && /lab_build/.test(sel4.text), 'G clipboard fallback (step 4): the instruction is shown, focused and fully selected, and the status says to copy it', { ...sel4, text: sel4.text.slice(0, 80) });
+    // The hand-off names the assistant tool lab_build, which plan 3 adds: until it exists the screen shows none of it.
+    const handoffUi = await p.evaluate(() => ({ ready: window.aiedLabConfig.assistantReady, present: ['aied-lab-handoff', 'aied-lab-refresh', 'aied-lab-instruction-box', 'aied-lab-handoff-2'].filter((id) => document.getElementById(id)), assistantText: /assistant/i.test(document.getElementById('aied-lab-app').innerText) }));
+    check(!handoffUi.ready && handoffUi.present.length === 0 && !handoffUi.assistantText, 'G: the assistant hand-off is hidden while its tool does not exist (no buttons, no instruction box, no sentence about an assistant)', handoffUi);
+    skip('G clipboard fallback (steps 4 and 5): not run, the hand-off is hidden until the tool lab_build exists (plan 3)');
     const ok5 = await tabTo(p, () => document.activeElement && document.activeElement.matches('.aied-lab-panel[data-step="4"] [data-goto="5"]'));
     await p.keyboard.press('Enter');
     check(ok5 && await focusedId(p) === 'aied-lab-h5', 'G keyboard: Next on step 4 moves the focus to the step 5 heading');
@@ -735,13 +743,25 @@ async function main() {
     const link = php('brief-for-page', { user: 1, page: pageId });
     const cmp = link ? php('compare', { user: 1, id: link.id, page: pageId }) : { equal: false };
     check(post.status === 'draft' && post.title === name && sameLayout(cmp).ok && link.brief.goal === 'sell', `G keyboard (goal sell): Create made a draft whose content is the compiled stored brief (${sameLayout(cmp).how})`, { status: post.status, title: post.title, goal: link && link.brief.goal });
-    // From step 5 the hand-off goes back to step 4 and selects the text there.
-    check(await tabTo(p, () => document.activeElement && document.activeElement.id === 'aied-lab-handoff-2'), 'G keyboard: Tab reaches the step 5 hand-off button');
-    await p.keyboard.press('Enter');
-    await p.waitForFunction(() => !document.querySelector('.aied-lab-panel[data-step="4"]').hidden, null, { timeout: 30000 });
-    await waitIdle(p);
-    const sel5 = await p.evaluate(() => { const t = document.getElementById('aied-lab-instruction'); return { active: document.activeElement === t, all: t.selectionStart === 0 && t.selectionEnd === t.value.length && t.value.length > 50, visible: !document.getElementById('aied-lab-instruction-box').hidden, status: document.getElementById('aied-lab-status').textContent }; });
-    check(sel5.active && sel5.all && sel5.visible && sel5.status === i18n.copyManual, 'G clipboard fallback (from step 5): the screen goes to step 4 and shows the instruction selected', sel5);
+    // After Create: the frame no longer shows the deleted preview draft, the address names the brief, a reload reopens it.
+    const after = await p.evaluate(() => ({ src: document.getElementById('aied-lab-frame').getAttribute('src'), state: document.getElementById('aied-lab-preview-state').textContent, url: window.location.href, create: document.getElementById('aied-lab-create').hidden }));
+    check(after.src === 'about:blank' && after.state === i18n.previewRemoved, 'G (S3): after Create the frame stops showing the deleted preview draft and says why', after);
+    check(new URL(after.url).searchParams.get('brief') === String(link && link.id) && new URL(after.url).searchParams.get('tab') === 'studio' && after.create, 'G (I1): after Create the address carries &brief=<id> on the same tab, and Create gave way to Rebuild', { url: after.url, createHidden: after.create });
+    const dialogs = [];
+    p.on('dialog', (d) => { dialogs.push(d.type()); d.accept().catch(() => {}); });
+    await p.reload({ waitUntil: 'domcontentloaded' });
+    await p.waitForSelector('#aied-lab-app:not([hidden])', { timeout: 30000 });
+    await waitPreview(p);
+    const reopened = await p.evaluate(() => ({ created: !document.getElementById('aied-lab-created').hidden, rebuild: !!document.getElementById('aied-lab-rebuild') && !document.getElementById('aied-lab-rebuild').hidden, create: document.getElementById('aied-lab-create').hidden, open: document.getElementById('aied-lab-open').hidden ? null : document.getElementById('aied-lab-open').getAttribute('href'), name: document.getElementById('aied-lab-name').value, status: document.getElementById('aied-lab-status').textContent }));
+    check(dialogs.length === 0, 'G (I1): no leave warning for a reload right after Create (nothing unsaved)', dialogs);
+    check(reopened.created && reopened.rebuild && reopened.create && reopened.open === post.edit_url && reopened.name === name && reopened.status === i18n.reopened, 'G (I1): a reload of that address reopens the brief with Rebuild and Open in Divi, not Create', reopened);
+    // An unsaved change arms the warning.
+    await p.click('.aied-lab-step[data-goto="1"]');
+    await p.focus('#aied-lab-line');
+    await p.keyboard.type(' changed');
+    await p.reload({ waitUntil: 'domcontentloaded' }).catch(() => {});
+    await p.waitForTimeout(500);
+    check(dialogs.includes('beforeunload'), 'G (I1): with an unsaved change, leaving the page asks first (beforeunload)', dialogs);
     await ctx2.close();
   }
   check(consoleBag.length === 0 && !(consoleBag.ajax || []).length, 'G: no console error, uncaught exception or failed admin-ajax request on any screen', { console: consoleBag.slice(0, 5), ajax: consoleBag.ajax });
@@ -766,6 +786,7 @@ async function main() {
   } catch (e) {
     console.log('FAIL  the run stopped: ' + (e && e.stack ? e.stack.split('\n').slice(0, 4).join(' | ') : e));
     fails.push('the run stopped');
+    results.push({ ok: false, label: 'the run stopped' });
   } finally {
     try { if (state.browser) await state.browser.close(); } catch (e) { /* closing */ }
     if (!process.argv.includes('--clean-orphans') && state.snapshot) {
@@ -773,13 +794,15 @@ async function main() {
       cleanup();
       const left = php('leftovers', {});
       const clean = left.pages.length === 0 && left.previews.length === 0 && Object.keys(left.users).length === 0 && left.rows.length === 0 && !left.mu && left.attachments.length === 0 && left.table
-        && left.previewOf1.length === state.snapshot.previewOf1.length && left.allRows === state.snapshot.rows.length;
+        // User 1's own preview draft from before the run may be gone (the screen's Create deletes it); none of the run's may stay.
+        && left.previewOf1.every((id) => state.snapshot.previewOf1.some((b) => b.id === id)) && left.allRows === state.snapshot.rows.length;
+      check(!(state.refused || []).length, 'cleanup: the guard refused no id (every id the gate was handed was a page of this run)', state.refused);
       check(clean, 'cleanup: no `aied studio` page, gate user, gate brief row, picture, preview draft or error logger is left; the brief table is back with ' + state.snapshot.rows.length + ' row(s)', left);
     }
     fs.writeFileSync(path.join(OUT, 'results.json'), JSON.stringify({ token: state.token, results }, null, 2));
   }
   if (code) process.exit(code);
-  const passed = results.filter((r) => r.ok).length;
-  console.log(`\n${passed} PASS, ${fails.length} FAIL`);
-  process.exit(fails.length ? 1 : 0);
+  const sum = g.summarize(results);
+  console.log('\n' + sum.text);
+  process.exit(sum.failed ? 1 : 0);
 })();

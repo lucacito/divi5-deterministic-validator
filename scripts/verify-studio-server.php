@@ -215,6 +215,31 @@ function aied_backdate( int $id, int $seconds ): void
     clean_post_cache( $id );
 }
 
+/**
+ * Whether the gate may delete this post: its title starts with `aied studio <run token> ` (any run when $token is null),
+ * or it is exactly a gate user's preview draft title, or its author is a gate user. Nothing else is ever deleted, even
+ * when a plugin answer handed the gate its id (a product bug returning a wrong id must not delete a real page).
+ *
+ * @param list<int> $uids the gate users
+ */
+function aied_may_delete( $post, ?string $token, array $uids ): bool
+{
+    if ( ! is_object( $post ) ) {
+        return false;
+    }
+    $title = (string) ( $post->post_title ?? '' );
+    if ( str_starts_with( $title, 'aied studio ' . ( null === $token ? '' : $token . ' ' ) ) ) {
+        return true;
+    }
+    foreach ( $uids as $uid ) {
+        if ( $title === StudioPreview::TITLE_PREFIX . (int) $uid ) {
+            return true;
+        }
+    }
+
+    return in_array( (int) ( $post->post_author ?? 0 ), array_map( 'intval', $uids ), true );
+}
+
 /** The gate's users of this run: login => id. */
 function aied_gate_users( ?string $token ): array
 {
@@ -407,8 +432,18 @@ switch ( $cmd ) {
             $pages = array_merge( $pages, array_map( 'intval', $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_author = %d AND post_type IN ('page','revision')", $uid ) ) ) );
         }
         $deleted = 0;
+        $refused = [];
         foreach ( array_unique( $pages ) as $id ) {
-            if ( $id > 0 && get_post( $id ) && false !== wp_delete_post( $id, true ) ) {
+            $post = $id > 0 ? get_post( $id ) : null;
+            if ( ! $post ) {
+                continue;
+            }
+            if ( ! aied_may_delete( $post, $token, $uids ) ) {
+                $refused[] = [ 'id' => $id, 'title' => mb_substr( (string) $post->post_title, 0, 80 ) ];
+                WP_CLI::warning( 'Not deleting page ' . $id . ': it is not a page of this gate run.' );
+                continue;
+            }
+            if ( false !== wp_delete_post( $id, true ) ) {
                 ++$deleted;
             }
         }
@@ -494,12 +529,38 @@ switch ( $cmd ) {
         @unlink( WP_CONTENT_DIR . '/' . AIED_GATE_LOG );
         aied_out( [
             'deletedPages' => $deleted,
+            'refused'      => $refused,
             'deletedRows'  => count( $rows ),
             'deletedUsers' => count( $uids ),
             'restoredRows' => $restored,
             'options'      => $optFixed,
             'meta'         => $metaFixed,
         ] );
+        break;
+
+    case 'selftest-delete':
+        // The cleanup's guard, on made-up posts (nothing is read or written).
+        $token = '123-abcdef';
+        $mk    = static fn ( string $t, int $a ) => (object) [ 'post_title' => $t, 'post_author' => $a ];
+        $cases = [
+            [ $mk( 'aied studio 123-abcdef G book', 1 ), $token, [ 50 ], true ],
+            [ $mk( 'aied studio 999-zzzzzz G book', 1 ), $token, [ 50 ], false ],
+            [ $mk( 'aied studio 999-zzzzzz G book', 1 ), null, [ 50 ], true ],
+            [ $mk( 'Divi 5 Lab preview (temporary) 50', 1 ), $token, [ 50 ], true ],
+            [ $mk( 'Divi 5 Lab preview (temporary) 1', 1 ), $token, [ 50 ], false ],
+            [ $mk( 'About us', 50 ), $token, [ 50 ], true ],
+            [ $mk( 'About us', 1 ), $token, [ 50 ], false ],
+            [ $mk( 'aied studio', 1 ), $token, [ 50 ], false ],
+            [ $mk( 'My aied studio 123-abcdef page', 1 ), $token, [ 50 ], false ],
+            [ null, $token, [ 50 ], false ],
+        ];
+        $bad = [];
+        foreach ( $cases as $i => [ $post, $tok, $uids, $want ] ) {
+            if ( aied_may_delete( $post, $tok, $uids ) !== $want ) {
+                $bad[] = $i;
+            }
+        }
+        aied_out( [ 'cases' => count( $cases ), 'wrong' => $bad ] );
         break;
 
     case 'leftovers':
@@ -605,7 +666,8 @@ switch ( $cmd ) {
         } else {
             StudioStore::deleteAll();
             StudioTable::drop();
-            aied_check( $checks, ! StudioTable::exists(), 'A: uninstall\'s deleteAll + drop remove the table (cleanupAll SKIPPED: ' . $foreign . ' preview draft(s) of real users exist on this site and would be deleted)' );
+            aied_check( $checks, ! StudioTable::exists(), 'A: uninstall\'s deleteAll + drop remove the table' );
+            $checks[] = [ 'ok' => true, 'skip' => true, 'label' => 'A: uninstall\'s cleanupAll() was NOT run live: ' . $foreign . ' preview draft(s) of real users exist on this site and would be deleted', 'detail' => null ];
         }
         aied_check( $checks, StudioTable::ensureReady() && StudioTable::exists() && [] === aied_studio_rows(), 'A: after the drop, ensureReady() brings the table back, empty' );
         // Rows that were there before the run are put back with their ids.
@@ -705,7 +767,7 @@ switch ( $cmd ) {
             aied_check( $checks, [] === aied_preview_drafts( $x ) && [] === aied_preview_drafts( $y ) && $lookStay, 'B: cleanupAll() leaves no preview draft and keeps the look-alikes' );
         } else {
             StudioPreview::cleanup( $y );
-            aied_check( $checks, true, 'B: cleanupAll() SKIPPED: ' . $foreign . ' preview draft(s) of real users exist and would be deleted' );
+            $checks[] = [ 'ok' => true, 'skip' => true, 'label' => 'B: cleanupAll() was NOT run live: ' . $foreign . ' preview draft(s) of real users exist and would be deleted', 'detail' => null ];
         }
         foreach ( $look as $lid ) {
             wp_delete_post( $lid, true );

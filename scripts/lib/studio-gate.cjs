@@ -180,6 +180,21 @@ function dashboardShowsLab(html, title) {
   return rows.some((r) => r.includes('<strong>' + esc(title) + '</strong>') && /<code>Divi 5 Lab<\/code>/.test(r));
 }
 
+/** "N PASS, S SKIP, F FAIL" over the recorded checks ({ok, skip}); only a FAIL makes the run fail. */
+function summarize(results) {
+  const list = results || [];
+  const skipped = list.filter((r) => r.skip).length;
+  const failed = list.filter((r) => !r.ok && !r.skip).length;
+  const passed = list.length - skipped - failed;
+  return { text: `${passed} PASS, ${skipped} SKIP, ${failed} FAIL`, failed, skipped };
+}
+
+/** The failed admin-ajax requests of the removed-recipe screen: at least one refused preview (422) and nothing else. */
+function refusedPreviewSeen(ajax) {
+  const list = ajax || [];
+  return list.length > 0 && list.includes('aied_studio_preview 422') && list.every((a) => a === 'aied_studio_preview 422');
+}
+
 /** A gate title of this run (or any run when token is null). */
 function isGateTitle(title, token) {
   return typeof title === 'string' && title.startsWith(TITLE_PREFIX + (token ? token + ' ' : ''));
@@ -188,5 +203,5 @@ function isGateTitle(title, token) {
 module.exports = {
   TITLE_PREFIX, PREVIEW_PREFIX, DEVICE_WIDTH, STACK_AT, REBUILD_EXPECT,
   nasty, titled, smallBrief, escapingBrief, literalShown, rebuildProblems, sameRefusal, layoutProblems, frameProblems,
-  phpErrors, printedPhpErrors, labConfig, firstDifference, dashboardShowsLab, isGateTitle, collapse,
+  phpErrors, printedPhpErrors, summarize, refusedPreviewSeen, labConfig, firstDifference, dashboardShowsLab, isGateTitle, collapse,
 };
