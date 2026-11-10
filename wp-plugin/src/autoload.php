@@ -117,6 +117,7 @@ require_once __DIR__ . '/HistoryService.php';
 require_once __DIR__ . '/StudioService.php';
 require_once __DIR__ . '/StudioPreview.php';
 require_once __DIR__ . '/StudioAjax.php';
+require_once __DIR__ . '/StudioScreen.php';
 require_once __DIR__ . '/ExtensionGuard.php';
 require_once __DIR__ . '/PageAccess.php';
 require_once __DIR__ . '/ConnectionDiagnosis.php';

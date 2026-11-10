@@ -147,7 +147,8 @@ if ( ! function_exists( 'plugin_basename' ) ) {
     function plugin_basename( $file ) { return basename( dirname( $file ) ) . '/' . basename( $file ); }
 }
 if ( ! function_exists( 'get_bloginfo' ) ) {
-    function get_bloginfo( $key ) { return $key === 'version' ? '6.5' : ''; }
+    // A test may set $GLOBALS['__wp_bloginfo'][ $key ] (for example a site title with markup in it).
+    function get_bloginfo( $key ) { return $GLOBALS['__wp_bloginfo'][ $key ] ?? ( $key === 'version' ? '6.5' : '' ); }
 }
 if ( ! function_exists( 'wp_set_current_user' ) ) {
     function wp_set_current_user( $user_id = 0 ) {
