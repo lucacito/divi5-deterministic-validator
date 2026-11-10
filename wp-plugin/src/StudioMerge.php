@@ -68,8 +68,10 @@ final class StudioMerge
     }
 
     /**
-     * Change a section's recipe. Values whose slot id also exists in the new recipe are kept; the rest are dropped and
-     * listed. An unknown recipe or section changes nothing.
+     * Change a section's recipe. A value is kept only when the new recipe has a slot with the same id AND the same role
+     * and kind as the slot the value was written for (slot ids are positional: `heading.0` is an eyebrow in one recipe
+     * and the headline in another); every other value is dropped and listed. An unknown recipe or section changes
+     * nothing.
      *
      * @param array<string,mixed> $brief
      * @return array{brief:array<string,mixed>,kept:list<string>,dropped:list<string>}
@@ -81,7 +83,10 @@ final class StudioMerge
         if ( null === $name || null === $raw || ! isset( $brief['sections'][ $section ] ) || ! is_array( $brief['sections'][ $section ] ) ) {
             return [ 'brief' => $brief, 'kept' => [], 'dropped' => [] ];
         }
-        $ids      = array_column( StudioSlots::extract( $raw ), 'id' );
+        $new      = self::roleAndKind( $raw );
+        $oldName  = is_string( $brief['sections'][ $section ]['recipe'] ?? null ) ? StudioBrief::resolveRecipe( $brief['sections'][ $section ]['recipe'] ) : null;
+        $oldRaw   = null === $oldName ? null : SectionRecipes::rawMarkup( $oldName );
+        $oldSlots = null === $oldRaw ? [] : self::roleAndKind( $oldRaw );
         $old      = $brief['sections'][ $section ];
         $slots    = [];
         $pictures = [];
@@ -90,7 +95,7 @@ final class StudioMerge
         foreach ( [ 'slots' => &$slots, 'pictures' => &$pictures ] as $key => &$target ) {
             foreach ( (array) ( $old[ $key ] ?? [] ) as $id => $value ) {
                 $id = (string) $id;
-                if ( in_array( $id, $ids, true ) ) {
+                if ( isset( $new[ $id ], $oldSlots[ $id ] ) && $new[ $id ] === $oldSlots[ $id ] ) {
                     $target[ $id ] = $value;
                     $kept[]        = $id;
                 } else {
@@ -103,6 +108,21 @@ final class StudioMerge
         $brief['sections'][ $section ] = self::withMaps( $old, $slots, $pictures );
 
         return [ 'brief' => $brief, 'kept' => $kept, 'dropped' => $dropped ];
+    }
+
+    /**
+     * Slot id => "role/kind" of every slot of a raw recipe.
+     *
+     * @return array<string,string>
+     */
+    private static function roleAndKind( string $raw ): array
+    {
+        $out = [];
+        foreach ( StudioSlots::extract( $raw ) as $slot ) {
+            $out[ $slot['id'] ] = $slot['role'] . '/' . $slot['kind'];
+        }
+
+        return $out;
     }
 
     /**

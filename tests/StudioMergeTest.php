@@ -101,31 +101,38 @@ class StudioMergeTest extends TestCase
 
     public function testSwapRecipeKeepsMatchingSlotsAndReportsTheRest(): void
     {
-        $brief = self::brief();
-        $brief['sections'][0]['slots']['button.0.link'] = '/contact/';
+        // hero-cta -> hero-split-right: heading.1 is the headline in both, button.0.* are the same button, the
+        // background picture slot has no counterpart.
+        $brief                                           = self::brief();
+        $brief['sections'][0]['slots']['button.0.link']  = '/contact/';
         $brief['sections'][0]['pictures']                = [ 'section.0.background' => [ 'pack' => 'hero-blue-1' ] ];
-        $new                                             = 'hero-pattern-centered';
-        $newIds                                          = array_column( StudioSlots::extract( (string) SectionRecipes::rawMarkup( $new ) ), 'id' );
-        $r                                               = StudioMerge::swapRecipe( $brief, 0, $new );
-        $this->assertSame( $new, $r['brief']['sections'][0]['recipe'] );
-        $kept    = [];
-        $dropped = [];
-        foreach ( [ 'heading.1', 'button.0.text', 'button.0.link', 'section.0.background' ] as $id ) {
-            if ( in_array( $id, $newIds, true ) ) {
-                $kept[] = $id;
-            } else {
-                $dropped[] = $id;
-            }
-        }
-        $this->assertSame( $kept, $r['kept'] );
-        $this->assertSame( $dropped, $r['dropped'] );
-        $this->assertNotSame( [], $r['dropped'], 'the test needs a recipe that loses something' );
-        foreach ( $r['dropped'] as $id ) {
-            $this->assertArrayNotHasKey( $id, $r['brief']['sections'][0]['slots'] ?? [] );
-            $this->assertArrayNotHasKey( $id, $r['brief']['sections'][0]['pictures'] ?? [] );
-        }
+        $r = StudioMerge::swapRecipe( $brief, 0, 'hero-split-right' );
+        $this->assertSame( 'hero-split-right', $r['brief']['sections'][0]['recipe'] );
+        $this->assertSame( [ 'heading.1', 'button.0.text', 'button.0.link' ], $r['kept'] );
+        $this->assertSame( [ 'section.0.background' ], $r['dropped'] );
+        $this->assertSame( [ 'heading.1' => 'Fix leaks fast', 'button.0.text' => 'Book now', 'button.0.link' => '/contact/' ], $r['brief']['sections'][0]['slots'] );
+        $this->assertArrayNotHasKey( 'pictures', $r['brief']['sections'][0] );
         $this->assertTrue( StudioBrief::check( $r['brief'] )['ok'], json_encode( StudioBrief::check( $r['brief'] )['problems'] ) );
         $this->assertSame( self::brief()['sections'][1], $r['brief']['sections'][1] );
+    }
+
+    public function testSwapNeverMovesAnEyebrowIntoAHeadline(): void
+    {
+        // hero-cta: heading.0 = eyebrow, heading.1 = headline. hero-pattern-centered: heading.0 = headline.
+        $brief                                  = self::brief();
+        $brief['sections'][0]['slots']          = [ 'heading.0' => 'Local plumbers', 'heading.1' => 'Fix leaks fast', 'button.0.text' => 'Book now' ];
+        $roles = static function ( string $recipe ): array {
+            return array_column( StudioSlots::extract( (string) SectionRecipes::rawMarkup( $recipe ) ), 'role', 'id' );
+        };
+        $this->assertSame( 'eyebrow', $roles( 'hero-cta' )['heading.0'] );
+        $this->assertSame( 'headline', $roles( 'hero-pattern-centered' )['heading.0'] );
+        $r = StudioMerge::swapRecipe( $brief, 0, 'hero-pattern-centered' );
+        $this->assertContains( 'heading.0', $r['dropped'], 'the eyebrow text is dropped, not kept as a headline' );
+        $this->assertNotContains( 'heading.0', $r['kept'] );
+        $this->assertArrayNotHasKey( 'heading.0', $r['brief']['sections'][0]['slots'] ?? [], 'the new headline slot stays empty' );
+        $this->assertNotContains( 'Local plumbers', array_values( $r['brief']['sections'][0]['slots'] ?? [] ) );
+        $this->assertSame( 'Book now', $r['brief']['sections'][0]['slots']['button.0.text'] ?? null, 'the button label still carries over' );
+        $this->assertContains( 'heading.1', $r['dropped'], 'the old headline has no headline slot at heading.1 in the new recipe' );
     }
 
     public function testSwapToTheSameRecipeKeepsEverything(): void

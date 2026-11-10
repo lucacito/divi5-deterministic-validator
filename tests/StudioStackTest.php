@@ -112,4 +112,107 @@ class StudioStackTest extends TestCase
             }
         }
     }
+
+    /** The recipe picked per goal and density, pinned: a change here is a deliberate edit of the role table. */
+    private const PINNED = [
+        'sell'     => [
+            'airy'     => [ 'hero-cta', 'features-zigzag', 'blurb-grid', 'testimonial', 'pricing-three-tier', 'faq-accordion', 'cta-band' ],
+            'balanced' => [ 'hero-split-right', 'blurb-grid', 'split-image-text', 'testimonials-slider-quote', 'pricing-three-tier', 'faq-accordion', 'cta-band' ],
+            'compact'  => [ 'hero-bordered-cells', 'features-bento', 'list-icon-dividers', 'testimonials-slider-quote', 'pricing-comparison-table', 'faq-two-column', 'cta-band' ],
+        ],
+        'book'     => [
+            'airy'     => [ 'hero-cta', 'features-zigzag', 'steps-numbered', 'testimonial', 'faq-toggle-list', 'cta-band' ],
+            'balanced' => [ 'hero-split-right', 'blurb-grid', 'steps-numbered', 'testimonials-slider-quote', 'faq-accordion', 'cta-band' ],
+            'compact'  => [ 'hero-bordered-cells', 'features-bento', 'steps-numbered', 'testimonials-slider-quote', 'faq-two-column', 'cta-band' ],
+        ],
+        'signup'   => [
+            'airy'     => [ 'hero-cta', 'features-zigzag', 'testimonial', 'faq-toggle-list', 'cta-band' ],
+            'balanced' => [ 'hero-split-right', 'blurb-grid', 'testimonials-slider-quote', 'faq-accordion', 'cta-band' ],
+            'compact'  => [ 'hero-bordered-cells', 'features-bento', 'testimonials-slider-quote', 'faq-two-column', 'cta-band' ],
+        ],
+        'explain'  => [
+            'airy'     => [ 'hero-cta', 'values-list', 'features-zigzag', 'steps-numbered', 'faq-accordion' ],
+            'balanced' => [ 'hero-split-right', 'section-intro', 'blurb-grid', 'steps-numbered', 'faq-accordion' ],
+            'compact'  => [ 'hero-bordered-cells', 'section-intro', 'features-bento', 'steps-numbered', 'faq-two-column' ],
+        ],
+        'showcase' => [
+            'airy'     => [ 'hero-cta', 'portfolio-featured-grid', 'testimonial', 'team-grid', 'contact-form' ],
+            'balanced' => [ 'hero-split-right', 'portfolio-featured-grid', 'testimonials-slider-quote', 'team-grid', 'contact-form' ],
+            'compact'  => [ 'hero-bordered-cells', 'image-gallery', 'testimonials-slider-quote', 'team-grid', 'contact-details-form' ],
+        ],
+    ];
+
+    public function testThePickPerGoalAndDensityIsPinned(): void
+    {
+        $this->assertSame( StudioBrief::GOALS, array_keys( self::PINNED ) );
+        foreach ( self::PINNED as $goal => $byDensity ) {
+            foreach ( $byDensity as $density => $expected ) {
+                $this->assertSame( $expected, StudioStack::forGoal( $goal, $density ), "$goal $density" );
+            }
+        }
+    }
+
+    public function testNoRoleIsSilentlySkipped(): void
+    {
+        foreach ( StudioBrief::GOALS as $goal ) {
+            foreach ( [ 'airy', 'balanced', 'compact' ] as $density ) {
+                $stack = StudioStack::forGoal( $goal, $density );
+                $this->assertCount( count( StudioStack::roles( $goal ) ), $stack, "$goal $density" );
+                $this->assertSame( StudioStack::roles( $goal ), self::roles( $stack ), "$goal $density" );
+            }
+        }
+    }
+
+    public function testExcludedRecipesAreNeverUsedAndEachHasAReason(): void
+    {
+        $this->assertNotSame( [], StudioStack::EXCLUDED );
+        foreach ( StudioStack::EXCLUDED as $recipe => $reason ) {
+            $this->assertContains( $recipe, SectionRecipes::names(), "$recipe is a real recipe" );
+            $this->assertNotSame( '', trim( $reason ), "$recipe has a reason" );
+        }
+        foreach ( StudioBrief::GOALS as $goal ) {
+            foreach ( [ 'airy', 'balanced', 'compact' ] as $density ) {
+                foreach ( StudioStack::forGoal( $goal, $density ) as $id ) {
+                    $this->assertArrayNotHasKey( $id, StudioStack::EXCLUDED, "$goal $density uses $id" );
+                }
+            }
+        }
+        // The data that made the entries: the closing call to action is never a newsletter strip.
+        $this->assertArrayHasKey( 'newsletter-social', StudioStack::EXCLUDED );
+    }
+
+    public function testRestrictedStepsListOnlyRealRecipesOfTheStepsRole(): void
+    {
+        foreach ( StudioStack::STACKS as $goal => $steps ) {
+            foreach ( $steps as $step ) {
+                foreach ( $step['only'] ?? [] as $id ) {
+                    $this->assertSame( $step['role'], SectionRecipes::tags( $id )['role'] ?? null, "$goal: $id" );
+                    $this->assertArrayNotHasKey( $id, StudioStack::EXCLUDED, "$goal: $id" );
+                }
+            }
+        }
+    }
+
+    public function testAdjacentSectionsNeverShareALayout(): void
+    {
+        foreach ( StudioBrief::GOALS as $goal ) {
+            foreach ( [ 'airy', 'balanced', 'compact' ] as $density ) {
+                $layouts = array_map( static fn ( string $r ): string => (string) ( SectionRecipes::tags( $r )['layout'] ?? '' ), StudioStack::forGoal( $goal, $density ) );
+                for ( $i = 1; $i < count( $layouts ); $i++ ) {
+                    $this->assertNotSame( $layouts[ $i - 1 ], $layouts[ $i ], "$goal $density: sections " . ( $i - 1 ) . ' and ' . $i . ' are both ' . $layouts[ $i ] );
+                }
+            }
+        }
+    }
+
+    public function testTheClosingCallToActionIsABandWithAButton(): void
+    {
+        foreach ( [ 'sell', 'book', 'signup' ] as $goal ) {
+            foreach ( [ 'airy', 'balanced', 'compact' ] as $density ) {
+                $stack = StudioStack::forGoal( $goal, $density );
+                $last  = $stack[ count( $stack ) - 1 ];
+                $this->assertContains( $last, [ 'cta-band', 'cta-card-over-image' ], "$goal $density" );
+            }
+        }
+    }
 }
