@@ -513,24 +513,98 @@ class StudioAssistantTest extends TestCase
         $this->assertSame( $before, $this->rows() );
     }
 
-    public function testHostileWordsAreSavedButNeverReachThePageRaw(): void
+    public function testHostileWordsAreSavedAsGivenAndReachThePageOnlyEscaped(): void
     {
-        $o = $this->open();
-        $hostile = [ '{{aied:image:logo}}', '$variable(--x)$', '<script>alert(1)</script>', '</p><p>' ];
-        $slots   = [ 'heading.1' => $hostile[0], 'heading.0' => $hostile[1], 'button.0.text' => $hostile[2] ];
-        $this->assertSame( 200, $this->fill( $o, [ [ 'section' => 0, 'slots' => $slots ] ] )['status'] );
-        $o['hash'] = (string) StudioStore::get( self::ME, $o['id'] )['brief_hash'];
-        $this->assertSame( 200, $this->fill( $o, [ [ 'section' => 1, 'slots' => [ 'heading.1' => $hostile[3] ] ] ] )['status'] );
+        $o     = $this->open();
+        // Real slot ids, read from the recipes, so each word is really written (applied is asserted).
+        $card  = (string) array_column( array_filter( StudioSlots::extract( (string) SectionRecipes::rawMarkup( 'card-grid-3' ) ), static fn ( array $s ): bool => 'text' === $s['kind'] ), 'id' )[1];
+        $words = [
+            [ 0, 'heading.1', '{{aied:image:x}}' ],
+            [ 0, 'heading.0', '$variable(--x)$' ],
+            [ 0, 'button.0.text', '<script>alert(1)</script>' ],
+            [ 1, $card, '</p><p>' ],
+        ];
+        $hero  = [ 'heading.1' => $words[0][2], 'heading.0' => $words[1][2], 'button.0.text' => $words[2][2] ];
+        $r     = $this->fill( $o, [ [ 'section' => 0, 'slots' => $hero ], [ 'section' => 1, 'slots' => [ $card => $words[3][2] ] ] ] );
+        $this->assertSame( 200, $r['status'], (string) json_encode( $r['body'] ) );
+        $this->assertSame( [], $r['body']['ignored'] );
+        foreach ( $words as [ $section, $slot ] ) {
+            $this->assertContains( [ 'section' => $section, 'slot' => $slot ], $r['body']['applied'], "$slot is applied" );
+        }
         $saved = $this->storedBrief( $o['id'] );
-        $this->assertSame( $hostile[0], $saved['sections'][0]['slots']['heading.1'] );
+        $this->assertSame( $words[0][2], $saved['sections'][0]['slots']['heading.1'] );
+        $this->assertSame( $words[1][2], $saved['sections'][0]['slots']['heading.0'] );
+        $this->assertSame( $words[2][2], $saved['sections'][0]['slots']['button.0.text'] );
+        $this->assertSame( $words[3][2], $saved['sections'][1]['slots'][ $card ] );
         $this->assertTrue( StudioBrief::check( $saved )['ok'] );
+
         $preview = StudioService::preview( self::ME, $saved );
         $this->assertTrue( $preview['ok'], (string) json_encode( $preview['report'] ) );
         $markup = (string) $preview['markup'];
+        // Present, but only in escaped form (the markup is block JSON, so entities appear as \u0026...).
+        $this->assertStringContainsString( '\u0026#123;\u0026#123;aied:image:x}}', $markup );
+        $this->assertStringContainsString( '\u0026#36;variable(', $markup );
+        $this->assertStringContainsString( '\u0026lt;script\u0026gt;alert(1)\u0026lt;/script\u0026gt;', $markup );
+        $this->assertStringContainsString( '\u0026lt;/p\u0026gt;\u0026lt;p\u0026gt;', $markup );
+        // And never raw.
         $this->assertStringNotContainsString( '<script', $markup );
-        $this->assertStringNotContainsString( '{{aied:image:logo}}', $markup );
-        $this->assertStringNotContainsString( '$variable(--x)$', $markup );
+        $this->assertStringNotContainsString( '\u003cscript', $markup );
+        $this->assertStringNotContainsString( '{{aied:image:x}}', $markup );
+        $this->assertStringNotContainsString( '$variable(', $markup );
         $this->assertStringNotContainsString( '</p><p>', $markup );
+        $this->assertStringNotContainsString( '\u003c/p\u003e\u003cp\u003e', $markup );
+    }
+
+    public function testMoreThan200SlotIdsInOneSectionIs400AndNothingIsWritten(): void
+    {
+        $o     = $this->open();
+        $slots = [ 'heading.1' => 'Good words' ];
+        for ( $i = 0; $i < 200; $i++ ) {
+            $slots[ 'extra.' . $i ] = 'x';
+        }
+        $before = $this->rows();
+        $r      = $this->fill( $o, [ [ 'section' => 0, 'slots' => $slots ] ] );
+        $this->assertSame( 400, $r['status'] );
+        $this->assertSame( $before, $this->rows() );
+        // 200 in total (slots and pictures together) is still accepted.
+        $pictures = [ 'section.0.background' => [ 'pack' => 'hero-blue-1' ] ];
+        $ok       = array_slice( $slots, 0, 199, true );
+        $r        = $this->fill( $o, [ [ 'section' => 0, 'slots' => $ok, 'pictures' => $pictures ] ] );
+        $this->assertSame( 200, $r['status'], (string) json_encode( $r['body'] ) );
+        $o['hash'] = $r['body']['base_hash'];
+        $slots2    = array_slice( $slots, 0, 200, true );
+        $r2        = $this->fill( $o, [ [ 'section' => 0, 'slots' => $slots2, 'pictures' => $pictures ] ] );
+        $this->assertSame( 400, $r2['status'], 'slots and pictures are counted together' );
+    }
+
+    public function testARowThatVanishesDuringAConflictIs404NotAnEmptyConflict(): void
+    {
+        $o  = $this->open();
+        $id = $o['id'];
+        $this->assertSame( 200, $this->fill( $o, [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'Newer' ] ] ] )['status'] );
+        $db          = $GLOBALS['wpdb'];
+        $db->queries = []; // only the UPDATE of the call under test may arm the hook
+        $reads = 0;
+        $armed = false;
+        // After the stale compare-and-set UPDATE, let the store's own re-read see the row (so it reports CONFLICT) and
+        // delete the row before the next read (the tool's lookup of the current hash).
+        $db->beforeSelect = static function ( string $sql ) use ( $db, &$reads, &$armed, $id ): void {
+            if ( ! $armed ) {
+                foreach ( $db->queries as $q ) {
+                    if ( str_starts_with( $q, 'UPDATE' ) && str_contains( $q, 'AND brief_hash' ) ) {
+                        $armed = true;
+                    }
+                }
+            }
+            if ( $armed && str_contains( $sql, 'SELECT' ) && 2 === ++$reads ) {
+                $db->query( 'DELETE FROM ' . StudioTable::name() . ' WHERE id = ' . $id );
+            }
+        };
+        $r = $this->fill( $o, [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'Stale' ] ] ] );
+        $db->beforeSelect = null;
+        $this->assertSame( 404, $r['status'], (string) json_encode( $r['body'] ) );
+        $this->assertSame( [ 'error' => 'Brief not found.' ], $r['body'] );
+        $this->assertTrue( $armed, 'the compare-and-set UPDATE ran, so the conflict branch was reached' );
     }
 
     public function testTwoFillsInARowWithTheNewHashBothSucceed(): void

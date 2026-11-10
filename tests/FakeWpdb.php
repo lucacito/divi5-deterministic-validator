@@ -24,6 +24,8 @@ final class FakeWpdb
     public int $failSelects = 0;
     /** Runs once at the start of the next insert(): lets a test simulate another request writing first. */
     public ?\Closure $beforeInsert = null;
+    /** Runs before every get_results() with the SQL: lets a test change the data between two reads (receives the SQL). */
+    public ?\Closure $beforeSelect = null;
     /** Like wpdb::$last_error: '' after a successful query, a message after a failed one. */
     public string $last_error = '';
     /** @var list<string> every SQL string executed, for assertions */
@@ -113,6 +115,9 @@ final class FakeWpdb
     /** @return list<array<string,mixed>> */
     public function get_results( string $sql, mixed $output = null ): array
     {
+        if ( null !== $this->beforeSelect ) {
+            ( $this->beforeSelect )( $sql );
+        }
         $this->queries[] = $sql;
         $this->last_error = '';
         if ( $this->failSelects > 0 ) {

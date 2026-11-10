@@ -25,6 +25,9 @@ final class StudioAssistant
 
     private const ACTIONS = [ 'catalog', 'open', 'fill', 'build' ];
 
+    /** Slot ids (slots and pictures together) one entry of a fill may carry. */
+    private const MAX_SLOT_IDS = 200;
+
     /** A sample text is cut to this many characters. */
     private const SAMPLE_CHARS = 80;
 
@@ -257,8 +260,11 @@ final class StudioAssistant
                 UsageTracker::log( self::ENDPOINT, null, 'error' );
                 if ( StudioStore::CONFLICT === $saved['code'] ) {
                     $current = StudioStore::get( $user, $briefId );
+                    if ( null === $current ) { // the brief was deleted in the meantime: the same answer as a missing brief
+                        return self::fail( 404, 'Brief not found.' );
+                    }
 
-                    return self::conflict( null === $current ? '' : $current['brief_hash'] );
+                    return self::conflict( $current['brief_hash'] );
                 }
                 if ( StudioStore::NOT_FOUND === $saved['code'] ) {
                     return self::fail( 404, 'Brief not found.' );
@@ -336,6 +342,9 @@ final class StudioAssistant
                     }
                     $incoming[ (string) $id ] = $value;
                 }
+            }
+            if ( count( $incoming ) > self::MAX_SLOT_IDS ) {
+                return 'Section ' . $entry['section'] . ' has more than ' . self::MAX_SLOT_IDS . ' slot ids; send fewer per section.';
             }
             if ( array() === $incoming ) {
                 return 'Section ' . $entry['section'] . ' has no slots or pictures to write.';
