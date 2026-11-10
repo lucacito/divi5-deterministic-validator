@@ -121,6 +121,7 @@ require_once __DIR__ . '/Design/SwitchResult.php';
 require_once __DIR__ . '/Design/DesignSwitch.php';
 require_once __DIR__ . '/Design/Detector.php';
 require_once __DIR__ . '/Tools/SwitchDesign.php';
+require_once __DIR__ . '/Tools/LabRestyle.php';
 require_once __DIR__ . '/Lab/LabSupport.php';
 require_once __DIR__ . '/Lab/LabLook.php';
 require_once __DIR__ . '/Lab/LabCompile.php';

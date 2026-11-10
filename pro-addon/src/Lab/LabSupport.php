@@ -25,6 +25,7 @@ final class LabSupport
         'AiEditorDivi5\\WP\\PageHistory',
         'AiEditorDivi5\\WP\\HistoryService',
         'AiEditorDivi5\\WP\\DesignLanguages', // LabLook reads a language's own kit
+        'AiEditorDivi5\\WP\\StyleKits', // lab_restyle checks the kit ids it is given
     ];
 
     /** @var list<array{string,string}> [class, method] pairs the Lab features call. */
