@@ -10,7 +10,16 @@
 
 .aied-lab-status { min-height: 1.5em; margin: 0 0 12px; font-weight: 600; }
 
-.aied-lab-layout { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 20px; align-items: start; }
+/* Full width: on this tab the page wrap itself is not capped, so the stepper and the preview can use the whole of
+   #wpbody-content. Everything else (top bar, tabs, notices, intro, status line) keeps the 1120px column of the other tabs. */
+.aied.aied--lab { max-width: none; margin-left: 0; margin-right: 0; }
+.aied--lab > *:not(.aied-view),
+.aied--lab .aied-view > *:not(#aied-lab-app),
+.aied--lab .aied-lab-intro,
+.aied--lab .aied-lab-status { max-width: 1120px; margin-left: 2px; margin-right: 20px; }
+.aied--lab .aied-lab-intro { margin-bottom: 16px; }
+
+.aied-lab-layout { width: 100%; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 20px; align-items: start; }
 .aied-lab-form { min-width: 0; }
 
 /* Stepper: a real list of buttons; the current step is bold, underlined and numbered, not only coloured. */

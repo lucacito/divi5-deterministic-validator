@@ -551,7 +551,7 @@ final class AdminPage
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- set by our own nonce-verified redirects.
         $notice  = sanitize_key( $_GET['notice'] ?? '' );
         ?>
-        <div class="wrap aied">
+        <div class="wrap aied<?php echo 'studio' === $tab ? ' aied--lab' : ''; ?>">
             <div class="aied-topbar">
                 <div class="aied-topbar__brand">
                     <span class="aied-logo">&#10086;</span>

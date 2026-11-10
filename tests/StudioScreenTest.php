@@ -541,4 +541,21 @@ class StudioScreenTest extends TestCase
             }
         }
     }
+    /**
+     * The stepper and the preview use the whole of #wpbody-content while the page wrap keeps its normal width for the
+     * other blocks: the wrap gets a modifier on this tab only, and the stylesheet un-caps it and re-caps everything
+     * that is not the layout. (Measured in a real browser: the layout is as wide as #wpbody-content at 1600, 1280
+     * and 900 px, the top bar and tabs keep their 1120px column.)
+     */
+    public function testTheLayoutUsesTheFullWidthWhileTheRestKeepsItsColumn(): void
+    {
+        $page = (string) file_get_contents( __DIR__ . '/../wp-plugin/src/AdminPage.php' );
+        $css  = (string) file_get_contents( __DIR__ . '/../wp-plugin/assets/studio.css' );
+        $this->assertStringContainsString( "'studio' === \$tab ? ' aied--lab' : ''", $page );
+        $this->assertMatchesRegularExpression( '/\.aied\.aied--lab\s*\{[^}]*max-width:\s*none/', $css );
+        $this->assertMatchesRegularExpression( '/\.aied-lab-layout\s*\{[^}]*width:\s*100%/', $css );
+        // The blocks that are not the layout stay in the 1120px column.
+        $this->assertMatchesRegularExpression( '/\.aied--lab \.aied-lab-intro[^{]*\{[^}]*max-width:\s*1120px/', $css );
+        $this->assertMatchesRegularExpression( '/\.aied--lab > \*:not\(\.aied-view\)[^{]*\{[^}]*max-width:\s*1120px/s', $css );
+    }
 }
