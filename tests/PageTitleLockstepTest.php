@@ -148,9 +148,9 @@ class PageTitleLockstepTest extends TestCase
         foreach ( $paths as $methods ) {
             $ops += count( $methods );
         }
-        // The numbers pinned by OpenApiSpecTest (16 operations) and WpOrgComplianceTest (21 tools); this test never moves them.
+        // The numbers pinned by OpenApiSpecTest (16 operations) and WpOrgComplianceTest (22 tools); this test never moves them.
         $this->assertSame( 16, $ops );
-        $this->assertCount( 21, $this->mcpTools() );
+        $this->assertCount( 22, $this->mcpTools() );
     }
 
     public function testTheReadmeFaqSaysTitleChangesAreNotInTheRecentEditsList(): void

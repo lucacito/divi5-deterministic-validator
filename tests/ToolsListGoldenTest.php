@@ -54,10 +54,10 @@ class ToolsListGoldenTest extends TestCase
         $this->check( 'openapi-spec.json', $this->openApiJson() );
     }
 
-    public function testTheFreePluginStillOffers21ToolsAnd16Operations(): void
+    public function testTheFreePluginOffers22ToolsAnd16Operations(): void
     {
         $data = json_decode( $this->toolsListJson(), true );
-        $this->assertCount( 21, $data['result']['tools'] );
+        $this->assertCount( 22, $data['result']['tools'] );
         $ops = 0;
         foreach ( json_decode( $this->openApiJson(), true )['paths'] as $item ) {
             $ops += count( $item );

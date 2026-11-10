@@ -670,20 +670,23 @@ class StudioScreenTest extends TestCase
     }
 
     /**
-     * Final fix pass, I2 (ruling 22): the hand-off names the tool StudioService::TOOL, which plan 3 adds. Until the MCP
-     * tool catalog holds it, the screen shows no hand-off button, no instruction box, no "Get my assistant's words",
-     * no sentence about an assistant, and the script never polls.
+     * Final fix pass, I2 (ruling 22): the hand-off names the tool StudioService::TOOL. While the MCP tool catalog does
+     * not hold it, the screen shows no hand-off button, no instruction box, no "Get my assistant's words", no sentence
+     * about an assistant, and the script never polls. The tool exists now (plan 3, task 6), so the real catalog answers
+     * true; the "not there" case is tested with a lookup that finds nothing.
      */
-    public function testTheAssistantHandoffIsHiddenUntilItsToolExists(): void
+    public function testTheAssistantHandoffIsHiddenWhenItsToolIsNotInTheCatalog(): void
     {
-        $this->assertNull( \AiEditorDivi5\WP\ToolCatalog::get( \AiEditorDivi5\WP\StudioService::TOOL ), 'plan 3 has not added the tool on this branch' );
-        $this->assertFalse( StudioScreen::assistantReady() );
+        $this->assertNotNull( \AiEditorDivi5\WP\ToolCatalog::get( \AiEditorDivi5\WP\StudioService::TOOL ), 'plan 3 added the tool' );
+        $this->assertTrue( StudioScreen::assistantReady() );
+        $this->assertFalse( StudioScreen::assistantReady( static fn ( string $name ): ?array => null ) );
         $this->assertTrue( StudioScreen::assistantReady( static fn ( string $name ): ?array => [ 'name' => $name ] ) );
-        $this->assertFalse( StudioScreen::config( 5 )['assistantReady'] );
+        $this->assertTrue( StudioScreen::config( 5 )['assistantReady'] );
+        $this->assertFalse( StudioScreen::config( 5, false )['assistantReady'] );
         $this->assertTrue( StudioScreen::config( 5, true )['assistantReady'] );
 
         $ids  = [ 'aied-lab-handoff', 'aied-lab-refresh', 'aied-lab-instruction-box', 'aied-lab-instruction', 'aied-lab-handoff-2' ];
-        $off  = $this->render();
+        $off  = $this->render( false );
         $on   = $this->render( true );
         foreach ( $ids as $id ) {
             $this->assertSame( 0, $this->dom( $off )->query( '//*[@id="' . $id . '"]' )->length, $id . ' is not shown' );
