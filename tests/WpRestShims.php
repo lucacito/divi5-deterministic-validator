@@ -16,6 +16,8 @@ if ( ! class_exists( 'WP_Post' ) ) {
         public string $post_title = '';
         public string $post_content = '';
         public string $post_name = '';
+        public int $post_author = 0;
+        public string $post_modified_gmt = '';
         public ?string $_wp_trash_meta_status = null;
     }
 }
