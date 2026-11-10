@@ -61,6 +61,7 @@ require_once __DIR__ . '/Tools/BuildSite.php';
 require_once __DIR__ . '/Settings/PhpProposals.php';
 require_once __DIR__ . '/Tools/ProposePhpSnippet.php';
 require_once __DIR__ . '/Kinds/PostContentKind.php';
+require_once __DIR__ . '/Kinds/LabBriefKind.php';
 require_once __DIR__ . '/ThemeBuilder/ThemeLayouts.php';
 require_once __DIR__ . '/ThemeBuilder/LayoutTarget.php';
 require_once __DIR__ . '/ThemeBuilder/LayoutCaches.php';

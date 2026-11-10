@@ -81,7 +81,7 @@ class ThemeBuilderGuardTest extends TestCase
                 $isDesign = str_contains( str_replace( '\\', '/', $file->getPath() ), '/src/Design' );
                 $isSwitch = 'SwitchDesign.php' === $file->getFilename();
                 $isCompanion = str_contains( str_replace( '\\', '/', $file->getPath() ), '/src/Companion' ) || 'StrictModePanel.php' === $file->getFilename();
-                $isLab = str_contains( str_replace( '\\', '/', $file->getPath() ), '/src/Lab' );
+                $isLab = str_contains( str_replace( '\\', '/', $file->getPath() ), '/src/Lab' ) || 'LabBriefKind.php' === $file->getFilename();
                 foreach ( $m[1] as $name ) {
                     if ( $isLab ) {
                         $lab[ 'AiEditorDivi5\\WP\\' . $name ] = $file->getFilename();
