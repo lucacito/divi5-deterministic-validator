@@ -64,7 +64,7 @@ class StudioServiceTest extends TestCase
         $GLOBALS['__wp_postmeta']    = [];
         $GLOBALS['__wp_inserts']     = [];
         $GLOBALS['__wp_update_fail'] = false;
-        unset( $GLOBALS['__wp_update_calls'], $GLOBALS['__wp_insert_fail'] );
+        unset( $GLOBALS['__wp_update_calls'], $GLOBALS['__wp_insert_fail'], $GLOBALS['__wp_user_caps'] );
     }
 
     protected function tearDown(): void
@@ -75,7 +75,7 @@ class StudioServiceTest extends TestCase
         $GLOBALS['__wp_posts']      = [];
         $GLOBALS['__wp_postmeta']   = [];
         $GLOBALS['__wp_inserts']    = [];
-        unset( $GLOBALS['__wp_update_calls'], $GLOBALS['__wp_insert_fail'] );
+        unset( $GLOBALS['__wp_update_calls'], $GLOBALS['__wp_insert_fail'], $GLOBALS['__wp_user_caps'] );
     }
 
     /** @return array<string,mixed> */
@@ -230,6 +230,106 @@ class StudioServiceTest extends TestCase
         $this->assertSame( hash( 'sha256', $after ), StudioStore::get( self::OWNER, (int) $r['brief_id'] )['content_hash'] );
         $twice = StudioService::rebuild( self::OWNER, (int) $r['brief_id'] );
         $this->assertSame( 'overwritten', $twice['mode'] );
+    }
+
+    /** A created page whose stored content (and the brief's hash of it) is replaced by $content. @return array{0:int,1:int} brief id, page id */
+    private function linkedPageWith( string $content ): array
+    {
+        $r      = $this->created();
+        $pageId = (int) $r['page_id'];
+        $GLOBALS['__wp_posts'][ $pageId ]->post_content = $content;
+        $this->assertTrue( StudioStore::link( self::OWNER, (int) $r['brief_id'], $pageId, hash( 'sha256', $content ) ) );
+
+        return [ (int) $r['brief_id'], $pageId ];
+    }
+
+    /** @param array<string,mixed> $re */
+    private function assertNewDraftLeavingTheOldPage( array $re, string $reason, int $pageId, string $before ): void
+    {
+        $this->assertTrue( $re['ok'], (string) json_encode( $re ) );
+        $this->assertSame( 'new_draft', $re['mode'] );
+        $this->assertSame( $reason, $re['reason'] );
+        $this->assertNotSame( $pageId, $re['page_id'] );
+        $this->assertSame( $before, $GLOBALS['__wp_posts'][ $pageId ]->post_content, 'the old page is byte-identical' );
+        $this->assertArrayNotHasKey( '__wp_update_calls', $GLOBALS, 'the old page was never saved' );
+        $this->assertSame( 'draft', $GLOBALS['__wp_posts'][ (int) $re['page_id'] ]->post_status );
+    }
+
+    public function testRebuildOverContentTooLargeForHistoryMakesANewDraft(): void
+    {
+        $big = str_repeat( 'a', \AiEditorDivi5\WP\PageHistory::MAX_BYTES + 1 );
+        [ $briefId, $pageId ] = $this->linkedPageWith( $big );
+        $re = StudioService::rebuild( self::OWNER, $briefId );
+        $this->assertNewDraftLeavingTheOldPage( $re, StudioService::REASON_NO_UNDO, $pageId, $big );
+    }
+
+    public function testRebuildOverInvalidUtf8MakesANewDraft(): void
+    {
+        $bad = "<!-- wp:divi/placeholder -->\xC3\x28<!-- /wp:divi/placeholder -->";
+        [ $briefId, $pageId ] = $this->linkedPageWith( $bad );
+        $re = StudioService::rebuild( self::OWNER, $briefId );
+        $this->assertNewDraftLeavingTheOldPage( $re, StudioService::REASON_NO_UNDO, $pageId, $bad );
+    }
+
+    public function testRebuildWhenTheSnapshotCannotBeStoredMakesANewDraft(): void
+    {
+        $r      = $this->created();
+        $pageId = (int) $r['page_id'];
+        $before = $GLOBALS['__wp_posts'][ $pageId ]->post_content;
+        $GLOBALS['wpdb']->failInserts = true; // the history row cannot be written
+        $re = StudioService::rebuild( self::OWNER, (int) $r['brief_id'] );
+        $GLOBALS['wpdb']->failInserts = false;
+        $this->assertNewDraftLeavingTheOldPage( $re, StudioService::REASON_NO_UNDO, $pageId, $before );
+    }
+
+    public function testRebuildSnapshotRestoresByteForByteWithOneHistoryRow(): void
+    {
+        $r      = $this->created();
+        $pageId = (int) $r['page_id'];
+        $before = $GLOBALS['__wp_posts'][ $pageId ]->post_content;
+        StudioStore::save( self::OWNER, self::brief( 'Something new' ), (int) $r['brief_id'] );
+        $re = StudioService::rebuild( self::OWNER, (int) $r['brief_id'] );
+        $this->assertSame( 'overwritten', $re['mode'] );
+        $this->assertCount( 1, HistoryService::listFor( $pageId ), 'exactly one snapshot, no double capture' );
+        $this->assertSame( 1, $GLOBALS['__wp_update_calls'] );
+        $restored = HistoryService::restore( $pageId, (int) $re['history']['version_id'] );
+        $this->assertTrue( $restored['ok'] );
+        $this->assertSame( $before, $GLOBALS['__wp_posts'][ $pageId ]->post_content );
+
+        // A second rebuild over content already in the history (a duplicate snapshot) is still undoable: overwrite.
+        $this->assertTrue( StudioStore::link( self::OWNER, (int) $r['brief_id'], $pageId, hash( 'sha256', $before ) ) );
+        $GLOBALS['__wp_posts'][ $pageId ]->post_content = $before;
+        $again = StudioService::rebuild( self::OWNER, (int) $r['brief_id'] );
+        $this->assertSame( 'overwritten', $again['mode'] );
+    }
+
+    public function testRebuildWithoutEditRightsOnThePageMakesANewDraft(): void
+    {
+        $r      = $this->created();
+        $pageId = (int) $r['page_id'];
+        $before = $GLOBALS['__wp_posts'][ $pageId ]->post_content;
+        $GLOBALS['__wp_user_caps'][ self::OWNER ] = [ 'edit_post:' . $pageId => false, 'edit_post' => true ];
+        $re = StudioService::rebuild( self::OWNER, (int) $r['brief_id'] );
+        $this->assertNewDraftLeavingTheOldPage( $re, StudioService::REASON_NO_ACCESS, $pageId, $before );
+
+        // With rights on the (new) linked page, the rebuild overwrites as before.
+        $GLOBALS['__wp_user_caps'][ self::OWNER ] = [ 'edit_post' => true ];
+        $ok = StudioService::rebuild( self::OWNER, (int) $r['brief_id'] );
+        $this->assertSame( 'overwritten', $ok['mode'] );
+        $this->assertSame( $re['page_id'], $ok['page_id'] );
+    }
+
+    public function testRebuildNeverOverwritesPendingScheduledOrPrivatePages(): void
+    {
+        foreach ( [ 'pending', 'future', 'private' ] as $status ) {
+            $r      = $this->created( self::OWNER, self::brief( 'Status ' . $status ) );
+            $pageId = (int) $r['page_id'];
+            $before = $GLOBALS['__wp_posts'][ $pageId ]->post_content;
+            $GLOBALS['__wp_posts'][ $pageId ]->post_status = $status;
+            $re = StudioService::rebuild( self::OWNER, (int) $r['brief_id'] );
+            $this->assertNewDraftLeavingTheOldPage( $re, 'published', $pageId, $before );
+            $this->assertSame( $status, $GLOBALS['__wp_posts'][ $pageId ]->post_status );
+        }
     }
 
     public function testRebuildOfAnEditedPageMakesANewDraft(): void

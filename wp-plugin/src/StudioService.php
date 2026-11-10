@@ -14,9 +14,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * - Every page it makes is a DRAFT (DraftPage::insert) and every layout passed LayoutGate (StudioCompiler::compile).
  * - A rebuild overwrites a page only when the page is still a draft AND its stored content is exactly what this service
- *   last saved there (sha256 of the stored post content, re-read after the save so core's filtering is included); the
- *   old content is snapshotted first through HistoryService, so the overwrite is undoable. Otherwise a new draft is
- *   made and the reason given. Nothing is overwritten silently.
+ *   last saved there (sha256 of the stored post content, re-read after the save so core's filtering is included) AND
+ *   the acting user may edit it AND its old content was first snapshotted through HistoryService::capture (kept, or
+ *   already the newest snapshot), so the overwrite is undoable. Otherwise a new draft is made and the reason given
+ *   (edited, published, trashed, missing, no_access, no_undo). Nothing is overwritten silently.
  * - It checks that a stored brief belongs to the acting user (StudioStore: another user's brief is NOT_FOUND).
  *   Capability checks belong to the callers (the admin and REST handlers).
  * - Unfilled slots never block: they are listed in report.unfilled.
@@ -50,6 +51,8 @@ final class StudioService
     public const REASON_PUBLISHED = 'published';
     public const REASON_TRASHED   = 'trashed';
     public const REASON_MISSING   = 'missing';
+    public const REASON_NO_UNDO   = 'no_undo';
+    public const REASON_NO_ACCESS = 'no_access';
 
     private const INSTRUCTION = 'Use the %1$s tool%2$s to open Divi 5 Lab brief #%3$d. It lists the empty slots of every section. '
         . 'Write words for those slots and send them back with the same tool; you can fill some now and the rest later. '
@@ -170,29 +173,46 @@ final class StudioService
             $report = self::report( $compiled );
             $markup = (string) $compiled['markup'];
             $title  = (string) ( $stored['brief']['title'] ?? '' );
-            $reason = self::whyNotOverwrite( $stored['page_id'], $stored['content_hash'] );
+            $reason = self::whyNotOverwrite( $user, $stored['page_id'], $stored['content_hash'] );
+            $pageId = (int) $stored['page_id'];
 
-            if ( null === $reason && null !== $stored['page_id'] ) {
-                $pageId  = $stored['page_id'];
-                $written = HistoryService::write( $pageId, $markup, self::HISTORY_TOOL );
-                if ( ! $written['ok'] ) {
-                    return self::fail( self::SAVE_FAILED, 'The page could not be saved.' ) + $empty + [ 'history' => $written['snapshot'] ?? null, 'report' => $report ];
+            // Rule 1: the old content is snapshotted FIRST and the page is overwritten only when that snapshot is kept
+            // (or the identical content is already the newest snapshot). Anything else makes a new draft instead.
+            $snapshot = null;
+            if ( null === $reason ) {
+                $post   = get_post( $pageId );
+                $before = $post ? (string) $post->post_content : '';
+                if ( strlen( $before ) > PageHistory::MAX_BYTES || 1 !== preg_match( '//u', $before ) ) {
+                    $reason = self::REASON_NO_UNDO;
+                } else {
+                    $snapshot = HistoryService::capture( $pageId, $before, self::HISTORY_TOOL );
+                    if ( ! $snapshot['stored'] && 'duplicate' !== $snapshot['reason'] ) {
+                        $reason = self::REASON_NO_UNDO;
+                    }
+                }
+            }
+
+            if ( null === $reason && null !== $snapshot ) {
+                // The snapshot above is the undo point; the universal capture must not take a second one.
+                $updated = HistoryCapture::suspend( static fn () => wp_update_post( wp_slash( [ 'ID' => $pageId, 'post_content' => $markup ] ), true ) );
+                if ( is_wp_error( $updated ) || ! $updated ) {
+                    return self::fail( self::SAVE_FAILED, 'The page could not be saved; it was left as it was.' ) + $empty + [ 'history' => $snapshot, 'report' => $report ];
                 }
                 $hash = self::storedHash( $pageId );
                 if ( null === $hash || ! StudioStore::link( $user, $briefId, $pageId, $hash ) ) {
                     return self::fail( self::STORE_FAILED, 'The page was rebuilt, but the brief could not be linked to it, so the next rebuild will make a new draft.' )
-                        + $empty + [ 'mode' => self::MODE_OVERWRITTEN, 'page_id' => $pageId, 'history' => $written['snapshot'], 'report' => $report ];
+                        + $empty + [ 'mode' => self::MODE_OVERWRITTEN, 'page_id' => $pageId, 'history' => $snapshot, 'report' => $report ];
                 }
 
                 return [
                     'ok'       => true,
                     'code'     => null,
-                    'message'  => 'The draft was rebuilt.' . ( $written['snapshot']['stored'] || 'duplicate' === $written['snapshot']['reason'] ? ' Its earlier content can be restored from the page history.' : ' No undo point could be kept for its earlier content.' ) . self::placeholderNote( $compiled ),
+                    'message'  => 'The draft was rebuilt. Its earlier content can be restored from the page history.' . self::placeholderNote( $compiled ),
                     'mode'     => self::MODE_OVERWRITTEN,
                     'page_id'  => $pageId,
                     'reason'   => null,
                     'brief_id' => $briefId,
-                    'history'  => $written['snapshot'],
+                    'history'  => $snapshot,
                     'edit_url' => self::editUrl( $pageId ),
                     'report'   => $report,
                 ];
@@ -249,7 +269,7 @@ final class StudioService
      * Why a rebuild must not overwrite the linked page, or null when it may (a draft page whose stored content still has
      * the hash this service recorded).
      */
-    private static function whyNotOverwrite( ?int $pageId, ?string $contentHash ): ?string
+    private static function whyNotOverwrite( int $user, ?int $pageId, ?string $contentHash ): ?string
     {
         $post = null === $pageId ? null : get_post( $pageId );
         if ( ! $post || 'page' !== (string) ( $post->post_type ?? '' ) ) {
@@ -261,6 +281,12 @@ final class StudioService
         }
         if ( 'draft' !== $status ) {
             return self::REASON_PUBLISHED;
+        }
+        // Owning the brief is not owning the page: the page may have changed hands or the user lost rights since it
+        // was built. Without edit rights it is never overwritten. (Making the new draft instead needs edit_pages,
+        // which the calling handler checks.)
+        if ( ! function_exists( 'user_can' ) || ! user_can( $user, 'edit_post', $pageId ) ) {
+            return self::REASON_NO_ACCESS;
         }
         if ( null === $contentHash || ! hash_equals( $contentHash, hash( 'sha256', (string) $post->post_content ) ) ) {
             return self::REASON_EDITED;
@@ -276,6 +302,8 @@ final class StudioService
             self::REASON_PUBLISHED => 'the page is no longer a draft (it is published, scheduled, private or pending)',
             self::REASON_TRASHED   => 'the page is in the trash',
             self::REASON_MISSING   => 'the page it built no longer exists',
+            self::REASON_NO_UNDO   => 'the page\'s current content could not be kept in the page history, so overwriting it could not be undone',
+            self::REASON_NO_ACCESS => 'you are not allowed to edit the page it built',
         ][ $reason ] ?? 'the page could not be overwritten';
 
         return 'A new draft page was created, because ' . $why . '. The earlier page was left as it is.';

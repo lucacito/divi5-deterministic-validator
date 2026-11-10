@@ -59,6 +59,22 @@ if ( ! function_exists( 'current_user_can' ) ) {
         return $GLOBALS['__wp_can'] ?? true;
     }
 }
+if ( ! function_exists( 'user_can' ) ) {
+    // Per-user map like current_user_can's: $GLOBALS['__wp_user_caps'][ $user ][ 'edit_post:12' ] or [ 'edit_post' ]; a user
+    // with no map can do everything (so tests that do not care need no setup).
+    function user_can( $user, $cap, ...$args ) {
+        $map = $GLOBALS['__wp_user_caps'][ (int) $user ] ?? null;
+        if ( ! is_array( $map ) ) {
+            return true;
+        }
+        $perId = $cap . ':' . ( $args[0] ?? '' );
+        if ( array_key_exists( $perId, $map ) ) {
+            return (bool) $map[ $perId ];
+        }
+
+        return (bool) ( $map[ $cap ] ?? false );
+    }
+}
 if ( ! function_exists( 'get_the_title' ) ) {
     function get_the_title( $post = 0 ) { return is_object( $post ) ? $post->post_title : 'Title'; }
 }
