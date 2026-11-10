@@ -389,12 +389,13 @@ class WpOrgComplianceTest extends TestCase
         $this->assertSame([
             'create_page', 'edit_page_content', 'get_custom_fields', 'get_image_guide', 'get_landing_guide', 'get_page_history_entry',
             'get_page_layout', 'get_product', 'get_section_recipes', 'get_site_guide', 'get_site_structure', 'get_style_guide',
-            'html_to_divi', 'list_divi_pages', 'list_global_styles', 'list_media_images', 'list_page_history', 'list_products', 'restore_page_version',
+            'html_to_divi', 'lab_build', 'list_divi_pages', 'list_global_styles', 'list_media_images', 'list_page_history', 'list_products', 'restore_page_version',
             'update_page_layout', 'validate_layout',
         ], $tools);
         // 20 tools: 4.9.0 adds the READ-ONLY list_products and get_product (the WooCommerce catalogue). Nothing is gated and nothing writes anything; no rule of this test is loosened.
         // 21 tools: 4.10.0 adds html_to_divi (deterministic HTML to Divi 5 conversion). It is free, makes no remote call, reads nothing from the site's files, previews by default and saves only a new DRAFT page when asked, through the same validator gate as create_page. No rule of this test is loosened.
-        $this->assertCount(21, $tools);
+        // 22 tools: Lab's assistant tool lab_build (build a page from a short brief, or fill a brief a person started in the Lab screen). It is free, makes no remote call, calls no AI, never licence-gates and saves only a stored brief or a new DRAFT page, through the same validator gate as create_page. MCP and REST only. No rule of this test is loosened.
+        $this->assertCount(22, $tools);
     }
 
     public function testVisibleProductNameIsTheFullJhmgName(): void

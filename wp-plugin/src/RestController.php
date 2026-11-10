@@ -56,6 +56,13 @@ final class RestController
             'permission_callback' => [$this, 'require_edit_posts'],
         ]);
 
+        // POST /lab-build — build a page from a short brief, or read and fill a brief started in the Lab screen (MCP + REST only)
+        register_rest_route(self::NS, '/lab-build', [
+            'methods'             => WP_REST_Server::CREATABLE,
+            'callback'            => [$this, 'lab_build'],
+            'permission_callback' => [$this, 'require_edit_posts'],
+        ]);
+
         // GET /site-structure — read-only post types, taxonomies, image sizes and ACF field groups
         register_rest_route(self::NS, '/site-structure', [
             'methods'             => WP_REST_Server::READABLE,
@@ -805,6 +812,20 @@ final class RestController
             return new WP_Error('invalid_body', 'The request body must be a JSON object.', ['status' => 400]);
         }
         $out = HtmlToDiviService::run($body);
+        if ($out['status'] === 403) {
+            return new WP_Error('forbidden', (string) ($out['body']['error'] ?? 'Not allowed.'), ['status' => 403]);
+        }
+
+        return new WP_REST_Response($out['body'], $out['status']);
+    }
+
+    public function lab_build(WP_REST_Request $request): WP_REST_Response|WP_Error
+    {
+        $body = $request->get_json_params();
+        if (!is_array($body)) {
+            return new WP_Error('invalid_body', 'The request body must be a JSON object.', ['status' => 400]);
+        }
+        $out = StudioAssistant::run($body);
         if ($out['status'] === 403) {
             return new WP_Error('forbidden', (string) ($out['body']['error'] ?? 'Not allowed.'), ['status' => 403]);
         }

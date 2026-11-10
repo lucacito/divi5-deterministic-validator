@@ -455,6 +455,8 @@ final class StudioScreen
             'saving'            => __( 'Saving your brief...', 'jhmg-ai-editor-for-divi-5' ),
             'copied'            => __( 'Instruction copied. Paste it into your assistant. Its words appear here when you press "Get my assistant\'s words", or by themselves within a minute.', 'jhmg-ai-editor-for-divi-5' ),
             'copyManual'        => __( 'Your browser did not allow copying. The instruction is selected in the box "Instruction for your assistant" on this step: copy it yourself (Ctrl+C or Cmd+C).', 'jhmg-ai-editor-for-divi-5' ),
+            'conflictReload'    => __( 'This brief was changed elsewhere (another tab, another person or your assistant) while you were editing. Reload this page to see the change. Nothing you typed was sent.', 'jhmg-ai-editor-for-divi-5' ),
+            'conflictAgain'     => __( 'The brief was saved again elsewhere while you were editing, so nothing was sent. Try once more.', 'jhmg-ai-editor-for-divi-5' ),
             'syncFailed'        => __( 'Your assistant\'s latest words could not be read, so nothing was sent (sending now could replace them). Check that you are still logged in, then try again.', 'jhmg-ai-editor-for-divi-5' ),
             'checking'          => __( 'Looking for your assistant\'s words...', 'jhmg-ai-editor-for-divi-5' ),
             'mergedOne'         => __( 'One place was filled by your assistant.', 'jhmg-ai-editor-for-divi-5' ),
@@ -559,7 +561,7 @@ final class StudioScreen
         return $out;
     }
 
-    /** @return ?array{id:int,brief:array<string,mixed>,page_id:?int,edit_url:?string} the brief named by ?brief=<id>, when it is this user's */
+    /** @return ?array{id:int,brief:array<string,mixed>,hash:string,page_id:?int,edit_url:?string} the brief named by ?brief=<id>, when it is this user's */
     private static function storedBrief( int $user ): ?array
     {
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only: it only selects which of the user's own briefs to show.
@@ -584,6 +586,6 @@ final class StudioScreen
             $edit = is_string( $url ) && '' !== $url ? $url : null;
         }
 
-        return [ 'id' => (int) $row['id'], 'brief' => (array) $row['brief'], 'page_id' => $pageId, 'edit_url' => $edit ];
+        return [ 'id' => (int) $row['id'], 'brief' => (array) $row['brief'], 'hash' => (string) $row['brief_hash'], 'page_id' => $pageId, 'edit_url' => $edit ];
     }
 }

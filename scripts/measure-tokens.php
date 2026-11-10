@@ -106,5 +106,8 @@ if ( [] !== $kitRows ) {
     $md .= "\nEach style-kit:<id> topic describes the kit's cards and panels, shows an inverted panel with a panel button and a toggle, and points to the generated kit-rules topic, which holds the explanation every kit shares. The largest kit topic is " . substr( $kitRows[0][0], strlen( 'The style guide, topic ' ) ) . ' at ' . number_format( $kitRows[0][2] ) . ' bytes (the bound is 10,000, so ' . number_format( 10000 - $kitRows[0][2] ) . ' bytes of headroom; the shared explanation moved into the kit-rules topic, see its row above); the smallest is ' . number_format( $kitRows[ count( $kitRows ) - 1 ][2] ) . " bytes.\n";
 }
 $md .= "\nThe Pro add-on adds its own tool definitions on top of the first row.\n";
+// Building a page as a brief (lab_build) versus as Divi markup (create_page): the measurement lives in scripts/lib so the docs test can recompute it.
+require_once __DIR__ . '/lib/lab-build-measure.php';
+$md .= LabBuildMeasure::markdown( LabBuildMeasure::run() );
 file_put_contents( __DIR__ . '/../docs/token-usage.md', $md );
 echo $md;

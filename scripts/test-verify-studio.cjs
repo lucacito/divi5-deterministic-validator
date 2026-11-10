@@ -157,6 +157,126 @@ test('the removed-recipe check needs a refused preview to have been seen', () =>
   assert.equal(g.refusedPreviewSeen(undefined), false);
 });
 
+// ── The assistant round trip (section I) and the hand-off (section G) ──
+
+const HASH_A = 'a'.repeat(64);
+const HASH_B = 'b'.repeat(64);
+
+test('the round-trip brief starts with empty slots and the words the assistant sends are hostile and findable', () => {
+  const base = g.roundTripBrief('aied studio t I');
+  assert.equal(base.sections.length, 3);
+  for (const s of base.sections) assert.deepEqual(s.slots, {}, 'nothing is filled before the assistant writes');
+  const { sections, where, number } = g.assistantWords('Tg');
+  assert.deepEqual(where.map((w) => w.field), ['heading', 'button label', 'counter title', 'text body']);
+  for (const w of where) {
+    assert.equal(sections.find((s) => s.section === w.section).slots[w.slot], w.text);
+    for (const c of ['"', '\\', '&', '<b>', '$5', '\n']) assert.ok(w.text.includes(c), w.field + ' lacks ' + JSON.stringify(c));
+    assert.ok(w.text.includes('Tg'), 'findable on the rendered page');
+  }
+  assert.equal(sections.find((s) => s.section === 1).slots['number-counter.0.number'], number);
+  // The brief the assistant fills must have every slot it writes (recipes of the escaping brief).
+  assert.deepEqual(base.sections.map((s) => s.recipe), g.escapingBrief('t', 'T').brief.sections.map((s) => s.recipe));
+  assert.equal(g.assistantWords('A').where[0].text === g.assistantWords('B').where[0].text, false);
+});
+
+test('the catalog answer is judged by its shape and by a size bound', () => {
+  const ok = { goals: ['book', 'sell'], languages: [{ id: 'editorial', name: 'Editorial' }], kits: ['a'], recipes: { hero: ['hero-cta'] }, how: 'x' };
+  assert.deepEqual(g.catalogProblems(ok, 4031), []);
+  assert.equal(g.CATALOG_MAX_BYTES, 8000);
+  assert.ok(g.catalogProblems(ok, 8001).some((p) => /bytes/.test(p)));
+  assert.ok(g.catalogProblems({ ...ok, goals: [] }, 100).length >= 1);
+  assert.ok(g.catalogProblems({ ...ok, recipes: {} }, 100).length >= 1);
+  assert.ok(g.catalogProblems({ ...ok, how: '' }, 100).length >= 1);
+  assert.ok(g.catalogProblems({ ...ok, languages: [{ name: 'x' }] }, 100).length >= 1);
+  assert.ok(g.catalogProblems(null, 0).length >= 1);
+});
+
+test('open: the hash is the stored hash and every slot of every section is listed', () => {
+  const open = { brief_id: 7, base_hash: HASH_A, brief: {}, sections: [{ section: 0, recipe: 'hero-cta', slots: [{ id: 'heading.1', kind: 'text', role: 'headline', sample: 's', value: '', filled: false }] }], unfilled_count: 1, page: null, rules: 'r' };
+  assert.deepEqual(g.openProblems(open, { briefId: 7, hash: HASH_A, sections: 1 }), []);
+  assert.ok(g.openProblems(open, { briefId: 7, hash: HASH_B, sections: 1 }).some((p) => /hash/.test(p)));
+  assert.ok(g.openProblems(open, { briefId: 8, hash: HASH_A, sections: 1 }).length >= 1);
+  assert.ok(g.openProblems(open, { briefId: 7, hash: HASH_A, sections: 3 }).length >= 1);
+  assert.ok(g.openProblems({ ...open, unfilled_count: 0 }, { briefId: 7, hash: HASH_A, sections: 1 }).length >= 1, 'unfilled count must match the empty slots');
+  assert.ok(g.openProblems(null, { briefId: 7, hash: HASH_A, sections: 1 }).length >= 1);
+  assert.equal(g.slotOf(open, 0, 'heading.1').id, 'heading.1');
+  assert.equal(g.slotOf(open, 5, 'heading.1'), null);
+  assert.equal(g.slotOf(open, 0, 'nope'), null);
+});
+
+test('fill: every word is applied, none ignored, the hash moved, and the stored words equal the sent words exactly', () => {
+  const w = g.assistantWords('Fx');
+  const sent = w.where.length + 1; // four hostile fields plus the counter number
+  const applied = [{ section: 0, slot: 'heading.1' }, { section: 0, slot: 'button.0.text' }, { section: 1, slot: 'number-counter.0.number' }, { section: 1, slot: 'number-counter.0.title' }, { section: 1, slot: 'text.0.body.0' }];
+  const answer = { brief_id: 7, base_hash: HASH_B, applied, ignored: [], unfilled_count: 3, report: {}, page: null, message: 'm' };
+  assert.deepEqual(g.fillProblems(answer, { sent, oldHash: HASH_A }), []);
+  assert.ok(g.fillProblems({ ...answer, base_hash: HASH_A }, { sent, oldHash: HASH_A }).some((p) => /hash/.test(p)));
+  assert.ok(g.fillProblems({ ...answer, ignored: [{ section: 0, slot: 'x' }] }, { sent, oldHash: HASH_A }).length >= 1);
+  assert.ok(g.fillProblems({ ...answer, applied: applied.slice(1) }, { sent, oldHash: HASH_A }).length >= 1);
+  const open = { sections: [
+    { section: 0, slots: [{ id: 'heading.1', value: w.where[0].text }, { id: 'button.0.text', value: w.where[1].text }] },
+    { section: 1, slots: [{ id: 'number-counter.0.title', value: w.where[2].text }, { id: 'text.0.body.0', value: w.where[3].text }, { id: 'number-counter.0.number', value: w.number }] },
+  ] };
+  assert.deepEqual(g.storedWordsProblems(open, w), []);
+  open.sections[0].slots[0].value = w.where[0].text.replace('&', '&amp;');
+  const bad = g.storedWordsProblems(open, w);
+  assert.equal(bad.length, 1);
+  assert.match(bad[0], /heading/);
+});
+
+test('a stale base_hash: tool refusal 409 CONFLICT carrying the current hash, nothing else', () => {
+  const stale = { http: 200, error: null, isError: true, result: { code: 'CONFLICT', current_base_hash: HASH_B, message: 'm' } };
+  assert.deepEqual(g.staleFillProblems(stale, HASH_B), []);
+  assert.ok(g.staleFillProblems({ ...stale, isError: false }, HASH_B).length >= 1);
+  assert.ok(g.staleFillProblems(stale, HASH_A).some((p) => /current/.test(p)));
+  assert.ok(g.staleFillProblems({ ...stale, result: { error: 'x' } }, HASH_B).length >= 1);
+  assert.ok(g.staleFillProblems({ ...stale, error: { code: -32602 } }, HASH_B).length >= 1);
+  // The ajax save with a stale hash: HTTP 409, code CONFLICT, the message, and the CURRENT brief and hash.
+  const ajax = { status: 409, body: { success: false, data: { code: 'CONFLICT', message: 'The brief was changed while you were editing.', brief: { sections: [] }, hash: HASH_B } } };
+  assert.deepEqual(g.staleSaveProblems(ajax, HASH_B), []);
+  assert.ok(g.staleSaveProblems({ ...ajax, status: 200 }, HASH_B).length >= 1);
+  assert.ok(g.staleSaveProblems({ ...ajax, body: { success: false, data: { ...ajax.body.data, hash: HASH_A } } }, HASH_B).length >= 1);
+  assert.ok(g.staleSaveProblems({ ...ajax, body: { success: false, data: { ...ajax.body.data, message: '' } } }, HASH_B).length >= 1);
+});
+
+test('a foreign brief id through the tool is refused exactly like a missing one', () => {
+  const a = { http: 200, error: null, isError: true, result: { error: 'Brief not found. It may belong to another WordPress user than the one this connection signs in as.' } };
+  assert.deepEqual(g.toolRefusalProblems(a, a), []);
+  assert.ok(g.toolRefusalProblems(a, { ...a, result: { error: 'Brief not found. It may belong to another WordPress user than the one this connection signs in as!' } }).length >= 1);
+  assert.ok(g.toolRefusalProblems({ ...a, isError: false }, { ...a, isError: false }).length >= 1, 'two successes are not a refusal');
+  assert.ok(g.toolRefusalProblems(a, null).length >= 1);
+  assert.ok(g.toolRefusalProblems({ ...a, result: { error: 'Brief not found. It may belong to another WordPress user than the one this connection signs in as.', page: { id: 3 } } }, { ...a, result: { error: 'Brief not found.', page: { id: 3 } } }).length >= 1, 'a refusal carries nothing but its message');
+});
+
+test('the hand-off instruction names lab_build and the brief id, once, as a whole number', () => {
+  const text = 'Use the lab_build tool on http://localhost:8181 to open Lab brief #42. It lists the empty slots of every section. The page stays a draft until the site owner publishes it.';
+  assert.deepEqual(g.instructionProblems(text, 42), []);
+  assert.ok(g.instructionProblems(text, 43).length >= 1);
+  assert.ok(g.instructionProblems(text.replace('lab_build', 'studio'), 42).length >= 1);
+  assert.ok(g.instructionProblems('', 42).length >= 1);
+  assert.ok(g.instructionProblems(text.replace('#42', '#420'), 42).length >= 1, '#420 is not #42');
+  assert.ok(g.instructionProblems(undefined, 42).length >= 1);
+});
+
+test('the hand-off box of the screen: visible with a ready tool, absent without', () => {
+  const ui = { ready: true, present: ['aied-lab-handoff', 'aied-lab-refresh', 'aied-lab-instruction-box', 'aied-lab-handoff-2'], boxHidden: true, textareaReadonly: true };
+  assert.deepEqual(g.handoffUiProblems(ui), []);
+  assert.deepEqual(g.handoffUiProblems({ ...ui, ready: '1' }), [], 'wp_localize_script writes true as "1"');
+  assert.ok(g.handoffUiProblems({ ...ui, ready: false }).length >= 1);
+  assert.ok(g.handoffUiProblems({ ...ui, ready: '' }).length >= 1, 'false is written as an empty string');
+  assert.ok(g.handoffUiProblems({ ...ui, present: ['aied-lab-handoff'] }).length >= 1);
+  assert.ok(g.handoffUiProblems({ ...ui, textareaReadonly: false }).length >= 1);
+});
+
+test('the screen fields: an input loses line breaks, a textarea keeps them', () => {
+  const where = [{ field: 'heading', text: 'a\nb' }, { field: 'text body', text: 'c\nd' }];
+  assert.equal(g.fieldValueFor('a\nb', 'INPUT'), 'ab');
+  assert.equal(g.fieldValueFor('c\nd', 'TEXTAREA'), 'c\nd');
+  assert.deepEqual(g.fieldProblems(where, [{ tag: 'INPUT', value: 'ab' }, { tag: 'TEXTAREA', value: 'c\nd' }]), []);
+  assert.equal(g.fieldProblems(where, [{ tag: 'INPUT', value: 'a&amp;b' }, { tag: 'TEXTAREA', value: 'c\nd' }]).length, 1);
+  assert.equal(g.fieldProblems(where, [{ tag: 'INPUT', value: 'ab' }]).length, 1, 'a missing field is a problem');
+});
+
 (async () => {
   let failed = 0;
   for (const [name, fn] of tests) {

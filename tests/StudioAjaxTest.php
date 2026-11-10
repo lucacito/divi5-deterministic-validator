@@ -347,6 +347,71 @@ class StudioAjaxTest extends TestCase
         $this->assertSame( 'Renamed', StudioStore::get( self::ME, $id )['brief']['title'] );
     }
 
+    // ---- brief hash (compare-and-set), plan 3 task 2 ----
+
+    public function testSaveReturnsTheStoredHashAndAcceptsTheCurrentBaseHash(): void
+    {
+        $id   = $this->storedBrief();
+        $base = (string) StudioStore::get( self::ME, $id )['brief_hash'];
+        $r    = $this->call( 'save', [ 'brief' => json_encode( self::brief( 'Renamed' ) ), 'id' => (string) $id, 'base_hash' => $base ] );
+        $this->assertTrue( $r->success, json_encode( $r->data ) );
+        $stored = StudioStore::get( self::ME, $id );
+        $this->assertSame( 'Renamed', $stored['brief']['title'] );
+        $this->assertSame( $stored['brief_hash'], $r->data['hash'] );
+        $this->assertNotSame( $base, $r->data['hash'] );
+        $first = $this->call( 'save', [ 'brief' => json_encode( self::brief() ) ] );
+        $this->assertSame( StudioStore::get( self::ME, (int) $first->data['id'] )['brief_hash'], $first->data['hash'], 'a first save returns the hash too' );
+    }
+
+    public function testSaveWithAStaleBaseHashIs409WithTheCurrentBriefAndChangesNothing(): void
+    {
+        $id    = $this->storedBrief();
+        $stale = (string) StudioStore::get( self::ME, $id )['brief_hash'];
+        // Someone else (an assistant) saves in between.
+        StudioStore::save( self::ME, array_replace( self::brief(), [ 'title' => 'Assistant title' ] ), $id );
+        $current = StudioStore::get( self::ME, $id );
+        $r = $this->call( 'save', [ 'brief' => json_encode( self::brief( 'Mine' ) ), 'id' => (string) $id, 'base_hash' => $stale ] );
+        $this->assertFalse( $r->success );
+        $this->assertSame( 409, $r->status );
+        $this->assertSame( 'CONFLICT', $r->data['code'] );
+        $this->assertSame( 'Assistant title', $r->data['brief']['title'] );
+        $this->assertSame( $current['brief_hash'], $r->data['hash'] );
+        $after = StudioStore::get( self::ME, $id );
+        $this->assertSame( $current['brief_hash'], $after['brief_hash'], 'the store is unchanged' );
+        $this->assertSame( 'Assistant title', $after['brief']['title'] );
+    }
+
+    public function testMalformedBaseHashIs400(): void
+    {
+        $id = $this->storedBrief();
+        foreach ( [ 'abc', str_repeat( 'g', 64 ), str_repeat( 'a', 63 ), str_repeat( 'A', 64 ), '' ] as $bad ) {
+            $r = $this->call( 'save', [ 'brief' => json_encode( self::brief() ), 'id' => (string) $id, 'base_hash' => $bad ] );
+            $this->assertFalse( $r->success, $bad );
+            $this->assertSame( 400, $r->status, $bad );
+            $this->assertSame( 'BAD_REQUEST', $r->data['code'] );
+        }
+        $r = $this->call( 'save', [ 'brief' => json_encode( self::brief() ), 'id' => (string) $id, 'base_hash' => [ 'x' ] ] );
+        $this->assertSame( 400, $r->status, 'not text' );
+    }
+
+    public function testCreateFromAStoredBriefHonoursTheBaseHash(): void
+    {
+        $id    = $this->storedBrief();
+        $stale = (string) StudioStore::get( self::ME, $id )['brief_hash'];
+        StudioStore::save( self::ME, array_replace( self::brief(), [ 'title' => 'Assistant title' ] ), $id );
+        $before = StudioStore::get( self::ME, $id );
+        $r = $this->call( 'create', [ 'brief' => json_encode( self::brief( 'Mine' ) ), 'id' => (string) $id, 'base_hash' => $stale ] );
+        $this->assertFalse( $r->success );
+        $this->assertSame( 409, $r->status );
+        $this->assertSame( 'CONFLICT', $r->data['code'] );
+        $this->assertSame( $before['brief_hash'], $r->data['hash'] );
+        $this->assertSame( $before['brief_hash'], StudioStore::get( self::ME, $id )['brief_hash'] );
+        $this->assertCount( 0, $GLOBALS['__wp_inserts'], 'no page was made' );
+        $ok = $this->call( 'create', [ 'brief' => json_encode( self::brief( 'Mine' ) ), 'id' => (string) $id, 'base_hash' => $before['brief_hash'] ] );
+        $this->assertTrue( $ok->success, json_encode( $ok->data ) );
+        $this->assertSame( StudioStore::get( self::ME, $id )['brief_hash'], $ok->data['hash'] );
+    }
+
     public function testCreateMakesADraftAndRemovesThePreviewDraft(): void
     {
         $this->call( 'preview', [ 'brief' => json_encode( self::brief() ) ] );
@@ -393,6 +458,7 @@ class StudioAjaxTest extends TestCase
         $this->assertSame( $id, (int) $r->data['id'] );
         $this->assertSame( 'Acme plumbing', $r->data['brief']['title'] );
         $this->assertArrayHasKey( 'page_id', $r->data );
+        $this->assertSame( StudioStore::get( self::ME, $id )['brief_hash'], $r->data['hash'] );
     }
 
     public function testResponsesNeverEchoUnescapedHtml(): void

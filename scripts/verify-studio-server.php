@@ -920,6 +920,27 @@ switch ( $cmd ) {
         aied_out( [ 'gone' => ! get_post( $id ) ] );
         break;
 
+    case 'mcp':
+        // One tools/call through the REAL MCP route with the plugin's API key (the way an assistant calls it): the key's owner
+        // becomes the current user for the call, then user 1 again. Returns the JSON-RPC answer reduced to what the gate checks.
+        $req = new WP_REST_Request( 'POST', '/ai-editor-divi5/v1/mcp' );
+        $req->set_header( 'content-type', 'application/json' );
+        $req->set_body( wp_json_encode( [ 'jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call', 'params' => [ 'name' => (string) $p['tool'], 'arguments' => (object) ( $p['arguments'] ?? [] ) ] ] ) );
+        $_SERVER['HTTP_AUTHORIZATION'] = 'Bearer ' . (string) get_option( 'ai_editor_divi5_api_key', '' );
+        $res  = rest_do_request( $req );
+        unset( $_SERVER['HTTP_AUTHORIZATION'] );
+        $as   = get_current_user_id();
+        wp_set_current_user( 1 );
+        $data = (array) $res->get_data();
+        $text = isset( $data['result']['content'][0]['text'] ) ? (string) $data['result']['content'][0]['text'] : '';
+        aied_out( [ 'http' => $res->get_status(), 'as_user' => $as, 'error' => $data['error'] ?? null, 'isError' => (bool) ( $data['result']['isError'] ?? false ), 'text_bytes' => strlen( $text ), 'result' => '' === $text ? null : json_decode( $text, true ) ] );
+        break;
+
+    case 'tool-registered':
+        $defs = \AiEditorDivi5\WP\ToolCatalog::definitions();
+        aied_out( [ 'listed' => in_array( 'lab_build', array_column( $defs, 'name' ), true ), 'ready' => StudioScreen::assistantReady() ] );
+        break;
+
     default:
         WP_CLI::error( 'Unknown command ' . $cmd );
 }

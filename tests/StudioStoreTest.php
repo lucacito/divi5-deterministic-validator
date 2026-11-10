@@ -40,6 +40,17 @@ class StudioStoreTest extends TestCase
         return (int) $GLOBALS['wpdb']->get_var( 'SELECT COUNT(*) FROM ' . StudioTable::name() );
     }
 
+    public function testCountForCountsOnlyThatUsersBriefs(): void
+    {
+        $this->assertSame( 0, StudioStore::countFor( 5 ) );
+        StudioStore::save( 5, $this->brief( 'One' ) );
+        StudioStore::save( 5, $this->brief( 'Two' ) );
+        StudioStore::save( 6, $this->brief( 'Theirs' ) );
+        $this->assertSame( 2, StudioStore::countFor( 5 ) );
+        $this->assertSame( 1, StudioStore::countFor( 6 ) );
+        $this->assertSame( 0, StudioStore::countFor( 0 ) );
+    }
+
     public function testSaveAndGetRoundTrip(): void
     {
         $brief = $this->brief();
@@ -239,6 +250,73 @@ class StudioStoreTest extends TestCase
         $this->assertNull( StudioStore::recentlyLinked( 5, 'not-a-hash', 10 ) );
         $GLOBALS['wpdb']->query( 'UPDATE ' . StudioTable::name() . " SET updated_at = '2000-01-01 00:00:00'" );
         $this->assertNull( StudioStore::recentlyLinked( 5, $hash, 10 ), 'too old' );
+    }
+
+    public function testSaveWithTheCurrentHashSucceeds(): void
+    {
+        $r    = StudioStore::save( 5, $this->brief( 'v1' ) );
+        $hash = StudioStore::get( 5, $r['id'] )['brief_hash'];
+        $v2   = $this->brief( 'v2' );
+        $s    = StudioStore::save( 5, $v2, $r['id'], $hash );
+        $this->assertTrue( $s['ok'] );
+        $this->assertSame( $r['id'], $s['id'] );
+        $this->assertNull( $s['code'] );
+        $this->assertSame( $v2, StudioStore::get( 5, $r['id'] )['brief'] );
+    }
+
+    public function testSaveWithAStaleHashIsAConflictAndChangesNothing(): void
+    {
+        $r    = StudioStore::save( 5, $this->brief( 'v1' ) );
+        $hash = StudioStore::get( 5, $r['id'] )['brief_hash'];
+        $v2   = $this->brief( 'v2' );
+        $this->assertTrue( StudioStore::save( 5, $v2, $r['id'] )['ok'] );
+
+        $s = StudioStore::save( 5, $this->brief( 'v3' ), $r['id'], $hash );
+        $this->assertFalse( $s['ok'] );
+        $this->assertSame( StudioStore::CONFLICT, $s['code'] );
+        $this->assertSame( 0, $s['id'] );
+        $this->assertSame( $v2, StudioStore::get( 5, $r['id'] )['brief'] );
+    }
+
+    public function testSaveWithTheCurrentHashAndIdenticalContentIsNotAConflict(): void
+    {
+        $brief = $this->brief( 'same' );
+        $r     = StudioStore::save( 5, $brief );
+        $hash  = StudioStore::get( 5, $r['id'] )['brief_hash'];
+        $s     = StudioStore::save( 5, $brief, $r['id'], $hash );
+        $this->assertTrue( $s['ok'] );
+        $this->assertSame( $r['id'], $s['id'] );
+        $this->assertSame( $brief, StudioStore::get( 5, $r['id'] )['brief'] );
+    }
+
+    public function testSavingTheSameContentUnderAStaleHashIsIdempotent(): void
+    {
+        // Another writer already stored exactly this content: the update changes nothing, and that is not a conflict.
+        $r    = StudioStore::save( 5, $this->brief( 'v1' ) );
+        $hash = StudioStore::get( 5, $r['id'] )['brief_hash'];
+        $v2   = $this->brief( 'v2' );
+        StudioStore::save( 5, $v2, $r['id'] );
+        $s = StudioStore::save( 5, $v2, $r['id'], $hash );
+        $this->assertTrue( $s['ok'] );
+        $this->assertSame( $v2, StudioStore::get( 5, $r['id'] )['brief'] );
+    }
+
+    public function testSaveWithAHashForAnotherUsersBriefIsNotFound(): void
+    {
+        $r    = StudioStore::save( 5, $this->brief( 'mine' ) );
+        $hash = StudioStore::get( 5, $r['id'] )['brief_hash'];
+        $s    = StudioStore::save( 6, $this->brief( 'theirs' ), $r['id'], $hash );
+        $this->assertFalse( $s['ok'] );
+        $this->assertSame( StudioStore::NOT_FOUND, $s['code'] );
+        $this->assertSame( $this->brief( 'mine' ), StudioStore::get( 5, $r['id'] )['brief'] );
+    }
+
+    public function testExpectedHashWithoutAnIdIsIgnored(): void
+    {
+        $s = StudioStore::save( 5, $this->brief( 'new' ), null, str_repeat( 'a', 64 ) );
+        $this->assertTrue( $s['ok'] );
+        $this->assertGreaterThan( 0, $s['id'] );
+        $this->assertSame( 1, $this->rows() );
     }
 
     public function testSchemaHasNoPostMeta(): void

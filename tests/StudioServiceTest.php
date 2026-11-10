@@ -452,6 +452,15 @@ class StudioServiceTest extends TestCase
         $this->assertStringNotContainsString( 'alert', $odd['instruction'] );
     }
 
+    public function testHandoffTellsTheAssistantToUseTheSameWordPressUser(): void
+    {
+        $saved = StudioStore::save( self::OWNER, self::brief() );
+        $text  = StudioService::handoff( self::OWNER, $saved['id'], 'https://example.com' )['instruction'];
+        $this->assertStringContainsString( 'same WordPress user', $text );
+        $this->assertStringContainsString( 'not found', $text );
+        $this->assertLessThanOrEqual( 700, strlen( $text ), 'the instruction stays short' );
+    }
+
     public function testPlaceholdersNeverBlockACreate(): void
     {
         $brief = [ 'title' => 'Only placeholders', 'goal' => 'explain', 'language' => 'luxe', 'sections' => [ [ 'recipe' => 'hero-cta' ], [ 'recipe' => 'card-grid-3', 'slots' => [ 'text.0.body.0' => '   ' ] ] ] ];

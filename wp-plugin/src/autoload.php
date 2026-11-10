@@ -115,6 +115,7 @@ require_once __DIR__ . '/HistoryMigration.php';
 require_once __DIR__ . '/HistoryStore.php';
 require_once __DIR__ . '/HistoryService.php';
 require_once __DIR__ . '/StudioService.php';
+require_once __DIR__ . '/StudioAssistant.php';
 require_once __DIR__ . '/StudioPreview.php';
 require_once __DIR__ . '/StudioAjax.php';
 require_once __DIR__ . '/StudioScreen.php';

@@ -264,6 +264,8 @@ class StudioScreenTest extends TestCase
         $mine = StudioScreen::config( 5 );
         $this->assertSame( $saved['id'], $mine['brief']['id'] );
         $this->assertSame( 'Acme', $mine['brief']['brief']['title'] );
+        $this->assertSame( StudioStore::get( 5, $saved['id'] )['brief_hash'], $mine['brief']['hash'], 'the stored hash, for compare-and-set' );
+        $this->assertMatchesRegularExpression( '/^[0-9a-f]{64}$/', $mine['brief']['hash'] );
         $this->assertNull( StudioScreen::config( 6 )['brief'], 'another user\'s brief id gives nothing' );
 
         $_GET['brief'] = '1 OR 1=1';
@@ -589,6 +591,28 @@ class StudioScreenTest extends TestCase
         $this->assertArrayHasKey( 'syncFailed', StudioScreen::config( 5 )['i18n'] );
     }
 
+    /** Plan 3 task 2: every save and create carries the hash it was based on; a conflict is resolved once, never in a loop. */
+    public function testSendCarriesTheBaseHashAndHandlesAConflictOnce(): void
+    {
+        $js = $this->src( 'assets/studio.js' );
+        preg_match( '/function send\(.*?\n    \}/s', $js, $send );
+        $this->assertNotEmpty( $send );
+        $this->assertStringContainsString( 'base_hash', $send[0] );
+        $this->assertStringContainsString( 'core.resolveConflict(', $js );
+        $this->assertStringContainsString( "'CONFLICT'", $send[0] );
+        $this->assertStringContainsString( 't.conflictReload', $js );
+        $this->assertStringContainsString( 'cfg.brief.hash', $js );
+        $conflict = StudioScreen::config( 5 )['i18n']['conflictReload'] ?? '';
+        $this->assertStringContainsString( 'Reload this page', $conflict );
+        $this->assertStringContainsString( 'Nothing you typed was sent.', $conflict );
+        $this->assertStringContainsString( 'another tab, another person or your assistant', $conflict, 'the wording does not blame the assistant' );
+        $again = StudioScreen::config( 5 )['i18n']['conflictAgain'] ?? '';
+        $this->assertStringNotContainsString( 'Your assistant', $again );
+        $this->assertStringContainsString( 'nothing was sent', $again );
+        $this->assertStringNotContainsString( 'Studio', $conflict );
+        $this->assertStringNotContainsString( 'innerHTML', $js );
+    }
+
     /** Fix round 1, I3: one busy gate for create, rebuild and hand-off; the review never re-enables Create mid-request. */
     public function testEveryWritingActionGoesThroughTheOneBusyGate(): void
     {
@@ -650,20 +674,23 @@ class StudioScreenTest extends TestCase
     }
 
     /**
-     * Final fix pass, I2 (ruling 22): the hand-off names the tool StudioService::TOOL, which plan 3 adds. Until the MCP
-     * tool catalog holds it, the screen shows no hand-off button, no instruction box, no "Get my assistant's words",
-     * no sentence about an assistant, and the script never polls.
+     * Final fix pass, I2 (ruling 22): the hand-off names the tool StudioService::TOOL. While the MCP tool catalog does
+     * not hold it, the screen shows no hand-off button, no instruction box, no "Get my assistant's words", no sentence
+     * about an assistant, and the script never polls. The tool exists now (plan 3, task 6), so the real catalog answers
+     * true; the "not there" case is tested with a lookup that finds nothing.
      */
-    public function testTheAssistantHandoffIsHiddenUntilItsToolExists(): void
+    public function testTheAssistantHandoffIsHiddenWhenItsToolIsNotInTheCatalog(): void
     {
-        $this->assertNull( \AiEditorDivi5\WP\ToolCatalog::get( \AiEditorDivi5\WP\StudioService::TOOL ), 'plan 3 has not added the tool on this branch' );
-        $this->assertFalse( StudioScreen::assistantReady() );
+        $this->assertNotNull( \AiEditorDivi5\WP\ToolCatalog::get( \AiEditorDivi5\WP\StudioService::TOOL ), 'plan 3 added the tool' );
+        $this->assertTrue( StudioScreen::assistantReady() );
+        $this->assertFalse( StudioScreen::assistantReady( static fn ( string $name ): ?array => null ) );
         $this->assertTrue( StudioScreen::assistantReady( static fn ( string $name ): ?array => [ 'name' => $name ] ) );
-        $this->assertFalse( StudioScreen::config( 5 )['assistantReady'] );
+        $this->assertTrue( StudioScreen::config( 5 )['assistantReady'] );
+        $this->assertFalse( StudioScreen::config( 5, false )['assistantReady'] );
         $this->assertTrue( StudioScreen::config( 5, true )['assistantReady'] );
 
         $ids  = [ 'aied-lab-handoff', 'aied-lab-refresh', 'aied-lab-instruction-box', 'aied-lab-instruction', 'aied-lab-handoff-2' ];
-        $off  = $this->render();
+        $off  = $this->render( false );
         $on   = $this->render( true );
         foreach ( $ids as $id ) {
             $this->assertSame( 0, $this->dom( $off )->query( '//*[@id="' . $id . '"]' )->length, $id . ' is not shown' );

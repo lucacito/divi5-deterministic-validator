@@ -216,6 +216,57 @@ test('prepareSend takes the assistant\'s stored words before a save, so a save n
     assert.equal(plain.applied, 0);
 });
 
+test('resolveConflict: a words-only change is merged and retried, the person\'s own typing kept', () => {
+    const hero = core.newSection('hero-a');
+    hero.slots = { 'heading.1': 'Mine, edited' };
+    const base = { name: 'Acme', goal: 'book', language: 'editorial', kit: '', sections: [hero] };
+    const sent = core.buildBrief(Object.assign({}, base, { sections: [Object.assign({}, hero, { slots: { 'heading.1': 'Mine' } })] }), catalog, 'N');
+    const current = { version: 1, title: 'Acme', goal: 'book', language: 'editorial', sections: [{ recipe: 'hero-a', slots: { 'heading.1': 'Assistant headline', 'button.0.text': 'Book now' } }] };
+    const r = core.resolveConflict(base, current, sent.brief, [hero.key], catalog);
+    assert.equal(r.action, 'retry');
+    assert.deepEqual(r.state.sections[0].slots, { 'heading.1': 'Mine, edited', 'button.0.text': 'Book now' });
+    assert.deepEqual(base.sections[0].slots, { 'heading.1': 'Mine, edited' }, 'the input is not changed');
+    assert.equal(r.applied, 1);
+    assert.equal(r.kept, 1);
+});
+
+test('resolveConflict: identical to the last sync retries unchanged', () => {
+    const hero = core.newSection('hero-a');
+    hero.slots = { 'heading.1': 'Mine' };
+    const base = { name: 'Acme', goal: 'book', language: 'editorial', kit: '', sections: [hero] };
+    const sent = core.buildBrief(base, catalog, 'N');
+    const r = core.resolveConflict(base, sent.brief, sent.brief, sent.keys, catalog);
+    assert.equal(r.action, 'retry');
+    assert.deepEqual(r.state, base);
+});
+
+test('resolveConflict: a changed layout, order, language, goal, kit or title means reload, nothing merged', () => {
+    const hero = core.newSection('hero-a');
+    const cards = core.newSection('cards-3');
+    const base = { name: 'Acme', goal: 'book', language: 'editorial', kit: '', sections: [hero, cards] };
+    const sent = core.buildBrief(base, catalog, 'N');
+    const keys = sent.keys;
+    const change = (fn) => { const c = JSON.parse(JSON.stringify(sent.brief)); fn(c); return c; };
+    const cases = {
+        recipe: change((c) => { c.sections[1].recipe = 'cards-2'; }),
+        added: change((c) => { c.sections.push({ recipe: 'faq' }); }),
+        removed: change((c) => { c.sections.pop(); }),
+        order: change((c) => { c.sections.reverse(); }),
+        language: change((c) => { c.language = 'luxe'; }),
+        goal: change((c) => { c.goal = 'sell'; }),
+        kit: change((c) => { c.kit = 'quiet-solid'; }),
+        title: change((c) => { c.title = 'Renamed'; })
+    };
+    Object.keys(cases).forEach((name) => {
+        const r = core.resolveConflict(base, cases[name], sent.brief, keys, catalog);
+        assert.deepEqual(r, { action: 'reload' }, name);
+    });
+    // A word change beside an equal structure is not a reload; a missing kit equals an empty one.
+    const words = change((c) => { c.sections[0].slots = { 'heading.1': 'x' }; });
+    assert.equal(core.resolveConflict(base, words, sent.brief, keys, catalog).action, 'retry');
+    assert.equal(core.resolveConflict(base, Object.assign({}, sent.brief, { kit: '' }), sent.brief, keys, catalog).action, 'retry');
+});
+
 test('one busy gate: a second action while one runs does nothing, and the gate opens again after success or failure', async () => {
     const changes = [];
     const gate = core.makeGate((busy) => changes.push(busy));

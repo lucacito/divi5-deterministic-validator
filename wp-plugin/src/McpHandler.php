@@ -197,6 +197,7 @@ final class McpHandler
             'get_product'        => $this->toolGetProduct($id, $arguments),
             'create_page'        => $this->toolCreatePage($id, $arguments),
             'html_to_divi'       => $this->toolHtmlToDivi($id, $arguments),
+            'lab_build'          => $this->toolLabBuild($id, $arguments),
             default              => $this->extensionCall($id, $name, $arguments),
         };
     }
@@ -848,6 +849,21 @@ final class McpHandler
             return $this->rpcError($id, -32602, (string) ($out['body']['error'] ?? 'Not allowed.'));
         }
 
+        return $this->rpcResult($id, [
+            'content' => [['type' => 'text', 'text' => wp_json_encode($out['body'])]],
+            'isError' => $out['status'] >= 400,
+        ]);
+    }
+
+    private function toolLabBuild(mixed $id, array $args): WP_REST_Response
+    {
+        $out = StudioAssistant::run($args);
+        if ($out['status'] === 400 || $out['status'] === 403) {
+            // A bad argument or a missing right: the same JSON-RPC error every other tool uses.
+            return $this->rpcError($id, -32602, (string) ($out['body']['error'] ?? 'Invalid arguments.'));
+        }
+
+        // 404, 409, 422 and 500 are normal results the assistant can act on (isError true).
         return $this->rpcResult($id, [
             'content' => [['type' => 'text', 'text' => wp_json_encode($out['body'])]],
             'isError' => $out['status'] >= 400,
