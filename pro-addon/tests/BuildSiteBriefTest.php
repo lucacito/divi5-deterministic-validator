@@ -4,50 +4,59 @@ declare(strict_types=1);
 
 namespace AiEditorDivi5\Pro\Tests;
 
-use AiEditorDivi5\Pro\Batch\BatchLog;
+use AiEditorDivi5\Pro\Batch\BatchUndo;
+use AiEditorDivi5\Pro\Batch\Batches;
 use AiEditorDivi5\Pro\Lab\LabCompile;
 use AiEditorDivi5\Pro\Lab\LabLook;
 use AiEditorDivi5\Pro\Lab\LabSupport;
 use AiEditorDivi5\Pro\Site\BuildLock;
 use AiEditorDivi5\Pro\Tools\BuildSite;
+use AiEditorDivi5\Pro\Tools\LabRestyle;
 use AiEditorDivi5\WP\DesignLanguages;
 use AiEditorDivi5\WP\LayoutGate;
 use AiEditorDivi5\WP\SectionRecipes;
+use AiEditorDivi5\WP\StudioService;
 use AiEditorDivi5\WP\StudioSlots;
+use AiEditorDivi5\WP\StudioStore;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../../wp-plugin/src/autoload.php';
 require_once __DIR__ . '/../src/autoload.php';
 require_once __DIR__ . '/../../tests/WpInsertPostShims.php';
+require_once __DIR__ . '/../../tests/WpRestShims.php';
 require_once __DIR__ . '/InMemoryBatchRepository.php';
 require_once __DIR__ . '/WpSiteShims.php';
 require_once __DIR__ . '/WpBuildShims.php';
+require_once __DIR__ . '/LabFixture.php';
 
-/** build_site add_page with a Divi 5 Lab brief: the page is the direct compile, and one build has one look. */
+/**
+ * build_site add_page with a Divi 5 Lab brief: the page is the direct compile, one build has one look, and each brief
+ * page's brief is stored and linked in the free Lab store (the real StudioStore on the free FakeWpdb).
+ */
 final class BuildSiteBriefTest extends TestCase
 {
-    private InMemoryBatchRepository $repo;
-    private BatchLog $log;
+    use LabFixture;
+
     private BuildSite $tool;
 
     protected function setUp(): void
     {
-        $this->repo = new InMemoryBatchRepository();
-        $this->log  = new BatchLog( $this->repo );
+        $this->setUpLab();
+        $GLOBALS['wpdb'] = new BuildSiteBriefWpdb( $GLOBALS['wpdb'] );
         $this->tool = new BuildSite( $this->log, new BuildLock( 0 ) );
         $GLOBALS['__wp_posts']           = [];
         $GLOBALS['__wp_postmeta']        = [];
-        $GLOBALS['__wp_options']         = [];
         $GLOBALS['__wp_insert_fail']     = false;
         $GLOBALS['__wp_inserts']         = [];
-        $GLOBALS['__wp_current_user_id'] = 7;
-        $GLOBALS['__wp_caps']            = [ 'publish_pages' => true, 'edit_post' => true, 'delete_post' => true, 'edit_theme_options' => true, 'manage_options' => true ];
+        $GLOBALS['__wp_current_user_id'] = 1;
+        $GLOBALS['__wp_caps']            = [ 'publish_pages' => true, 'edit_post' => true, 'delete_post' => true, 'edit_theme_options' => true, 'manage_options' => true, 'edit_posts' => true, 'edit_pages' => true, 'edit_others_posts' => true ];
+        unset( $GLOBALS['__wp_user_caps'] );
     }
 
     protected function tearDown(): void
     {
-        unset( $GLOBALS['__wp_caps'], $GLOBALS['__wp_current_user_id'] );
         $GLOBALS['__wp_insert_fail'] = false;
+        $this->tearDownLab();
     }
 
     /**
@@ -119,9 +128,10 @@ final class BuildSiteBriefTest extends TestCase
         $items = $this->repo->rows[1]['items'];
         $this->assertCount( 1, $items );
         $this->assertSame( [ 'page_created', (string) $post->ID ], [ $items[0]['kind'], $items[0]['ref'] ] );
-        $this->assertSame( [ 'in_menu' => true, 'is_front' => false, 'menu_label' => 'Home', 'look' => [ 'language' => 'editorial', 'kit' => self::editorialKit() ] ], $items[0]['meta'] );
+        $this->assertIsInt( $r['lab']['brief_id'] );
+        $this->assertSame( [ 'in_menu' => true, 'is_front' => false, 'menu_label' => 'Home', 'look' => [ 'language' => 'editorial', 'kit' => self::editorialKit() ], 'brief_id' => $r['lab']['brief_id'] ], $items[0]['meta'] );
 
-        $this->assertSame( [ 'brief_id' => null, 'stored' => false, 'unfilled' => count( $expected['unfilled'] ), 'report' => [
+        $this->assertSame( [ 'brief_id' => $r['lab']['brief_id'], 'stored' => true, 'unfilled' => count( $expected['unfilled'] ), 'report' => [
             'problems'   => $expected['problems'],
             'violations' => $expected['violations'],
             'unfilled'   => $expected['unfilled'],
@@ -275,6 +285,7 @@ final class BuildSiteBriefTest extends TestCase
         // Two looks (only after a partial restyle) are "mixed" and no look is enforced.
         $row                                   = $this->repo->rows[1];
         $row['items'][1]['meta']['look']['kit'] = 'raw-frame';
+        unset( $row['items'][1]['meta']['brief_id'] ); // a page whose brief was not stored counts with meta.look
         $row['items'][]                        = [ 'kind' => 'page_created', 'ref' => '999', 'meta' => [ 'look' => $look ] ];
         $this->assertSame( 'mixed', BuildSite::buildLook( $row ) );
     }
@@ -282,13 +293,190 @@ final class BuildSiteBriefTest extends TestCase
     public function testAMixedBuildEnforcesNoLookButEveryBriefNamesItsLanguage(): void
     {
         $this->tool->run( self::page( self::brief( 'Home', 'luxe' ), 'home' ) );
-        $this->repo->rows[1]['items'][0]['meta']['look'] = [ 'language' => 'editorial', 'kit' => 'raw-frame' ];
+        $this->relook( 0, 'editorial', 'raw-frame' );
         $this->tool->run( self::page( self::brief( 'About', 'editorial', 'raw-frame' ), 'about', [ 'build_id' => 1 ] ) );
-        $this->repo->rows[1]['items'][1]['meta']['look'] = [ 'language' => 'luxe', 'kit' => 'raw-frame' ];
+        $this->relook( 1, 'luxe', 'raw-frame' );
         $this->assertSame( 'mixed', BuildSite::buildLook( $this->repo->rows[1] ) );
 
         $this->refused( self::page( self::brief( 'Team', null ), 'team', [ 'build_id' => 1 ] ), '"language"' );
         $r = $this->tool->run( self::page( self::brief( 'Team', 'tech-mono' ), 'team', [ 'build_id' => 1 ] ) );
         $this->assertSame( 'mixed', $r['build']['look'] );
+    }
+
+    // ---- Task 8: the brief of each brief page is stored and linked in the Lab store -----------------------------------
+
+    public function testABriefPageIsStoredAndLinkedForTheLabScreen(): void
+    {
+        $brief  = self::brief( 'Home', 'luxe' );
+        $r      = $this->tool->run( self::page( $brief, 'home' ) );
+        $pageId = $r['page']['id'];
+        $stored = $GLOBALS['__wp_posts'][ $pageId ]->post_content;
+
+        $row = StudioStore::forPage( 1, $pageId );
+        $this->assertNotNull( $row, 'Lab lists the page' );
+        $this->assertSame( LabCompile::clean( $brief ), $row['brief'], 'the clean brief' );
+        $this->assertSame( 'Home', $row['brief']['title'], 'the brief title is the page title' );
+        $this->assertSame( hash( 'sha256', $stored ), $row['content_hash'], 'linked with the content as stored' );
+        $this->assertSame( $row['id'], $r['lab']['brief_id'] );
+        $this->assertTrue( $r['lab']['stored'] );
+        $this->assertSame( $row['id'], $this->repo->rows[1]['items'][0]['meta']['brief_id'] );
+
+        // A later brief page stores the brief with the build's look filled in.
+        $b     = $this->tool->run( self::page( self::brief( 'About', null ), 'about', [ 'build_id' => 1 ] ) );
+        $about = StudioStore::forPage( 1, $b['page']['id'] );
+        $this->assertSame( LabCompile::clean( self::brief( 'About', 'luxe', (string) DesignLanguages::get( 'luxe' )['kit'] ) ), $about['brief'] );
+
+        // Lab owns the page: its rebuild overwrites the untouched draft in place.
+        $rebuild = StudioService::rebuild( 1, $row['id'] );
+        $this->assertTrue( $rebuild['ok'], (string) json_encode( $rebuild ) );
+        $this->assertSame( 'overwritten', $rebuild['mode'] );
+        $this->assertSame( $pageId, $rebuild['page_id'] );
+    }
+
+    public function testAUserAtTheBriefCapIsRefusedBeforeAnythingIsCreatedAndNothingIsPruned(): void
+    {
+        for ( $i = 0; $i < 45; $i++ ) {
+            $this->assertTrue( StudioStore::save( 1, self::brief( "Saved {$i}" ) )['ok'] );
+        }
+        $this->tool->run( self::page( self::brief( 'Page 1' ), 'page-1' ) );
+        for ( $i = 2; $i <= 5; $i++ ) {
+            $this->tool->run( self::page( self::brief( "Page {$i}", null ), "page-{$i}", [ 'build_id' => 1 ] ) );
+        }
+        $this->assertSame( 50, StudioStore::countFor( 1 ) );
+        $ids = $this->briefIds( 1 );
+
+        $inserts = count( $GLOBALS['__wp_inserts'] ?? [] );
+        $this->refused( self::page( self::brief( 'Page 6', null ), 'page-6', [ 'build_id' => 1 ] ), 'TOO_MANY_BRIEFS', '50' );
+        $this->assertSame( $inserts, count( $GLOBALS['__wp_inserts'] ?? [] ), 'no insert was tried' );
+        $this->assertCount( 5, $this->repo->rows[1]['items'] );
+        $this->assertSame( 50, StudioStore::countFor( 1 ) );
+        $this->assertSame( $ids, $this->briefIds( 1 ), 'nothing was pruned' );
+        $this->assertArrayNotHasKey( 'aied_pro_buildlock_1', $GLOBALS['__wp_options'] );
+
+        // A content page is not a brief page: the cap does not apply to it.
+        $r = $this->tool->run( [ 'action' => 'add_page', 'title' => 'Plain', 'slug' => 'plain', 'content' => (string) LabCompile::compile( self::brief( 'X' ) )['markup'], 'build_id' => 1 ] );
+        $this->assertSame( 6, $r['build']['pages'] );
+    }
+
+    public function testAStoreFailureKeepsThePageAndSaysSo(): void
+    {
+        $GLOBALS['wpdb']->failInserts = true;
+        $r = $this->tool->run( self::page( self::brief( 'Home' ), 'home' ) );
+        $GLOBALS['wpdb']->failInserts = false;
+
+        $this->assertTrue( $r['created'] );
+        $this->assertFalse( $r['lab']['stored'] );
+        $this->assertNull( $r['lab']['brief_id'] );
+        $this->assertStringContainsString( 'Lab', $r['lab']['note'] );
+        $this->assertArrayHasKey( $r['page']['id'], $GLOBALS['__wp_posts'], 'the page stays' );
+        $this->assertCount( 1, $this->repo->rows[1]['items'], 'and is in the build' );
+        $this->assertNull( $this->repo->rows[1]['items'][0]['meta']['brief_id'] );
+        $this->assertSame( 0, StudioStore::countFor( 1 ) );
+        $this->assertNull( StudioStore::forPage( 1, $r['page']['id'] ) );
+        $this->assertSame( [ 'language' => 'editorial', 'kit' => self::editorialKit() ], BuildSite::buildLook( $this->repo->rows[1] ), 'the look still comes from meta.look' );
+    }
+
+    public function testAnUnrecordablePageRemovesItsBriefToo(): void
+    {
+        $this->tool->run( self::page( self::brief( 'Home' ), 'home' ) );
+        $before = $this->briefIds( 1 );
+        $this->repo->failAppend = true;
+        try {
+            $this->tool->run( self::page( self::brief( 'About', null ), 'about', [ 'build_id' => 1 ] ) );
+            $this->fail( 'expected an InvalidArgumentException' );
+        } catch ( \InvalidArgumentException $e ) {
+            $this->assertStringContainsString( 'could not be recorded', $e->getMessage() );
+        }
+        $this->assertCount( 1, $GLOBALS['__wp_posts'], 'the unrecorded page was deleted' );
+        $this->assertSame( $before, $this->briefIds( 1 ), 'and its brief too' );
+    }
+
+    public function testARestyledBuildPageChangesTheBuildsLook(): void
+    {
+        $r       = $this->tool->run( self::page( self::brief( 'Home', 'editorial' ), 'home' ) );
+        $restyle = new LabRestyle( $this->log );
+        $p       = $restyle->run( [ 'page_id' => $r['page']['id'], 'to_language' => 'luxe', 'dry_run' => true ] );
+        $done    = $restyle->run( [ 'page_id' => $r['page']['id'], 'to_language' => 'luxe', 'token' => $p['token'] ] );
+        $this->assertSame( 1, $done['restyled'], (string) json_encode( $done ) );
+
+        $luxe = [ 'language' => 'luxe', 'kit' => (string) DesignLanguages::get( 'luxe' )['kit'] ];
+        $this->assertSame( $luxe, BuildSite::buildLook( $this->repo->rows[1] ), 'the live brief wins over meta.look' );
+        $this->assertSame( $luxe, $this->tool->run( [ 'action' => 'status', 'build_id' => 1 ] )['build']['look'] );
+
+        $later = self::brief( 'About', null );
+        $b     = $this->tool->run( self::page( $later, 'about', [ 'build_id' => 1 ] ) );
+        $this->assertSame( LabCompile::compile( LabLook::with( $later, 'luxe', $luxe['kit'] ) )['markup'], $GLOBALS['__wp_posts'][ $b['page']['id'] ]->post_content );
+        $this->refused( self::page( self::brief( 'Team', 'editorial' ), 'team', [ 'build_id' => 1 ] ), 'LOOK_MISMATCH' );
+    }
+
+    public function testUndoOfTheBuildKeepsTheBriefs(): void
+    {
+        $a = $this->tool->run( self::page( self::brief( 'Home' ), 'home' ) );
+        $b = $this->tool->run( self::page( self::brief( 'About', null ), 'about', [ 'build_id' => 1 ] ) );
+
+        $u = ( new BatchUndo( Batches::kinds(), $this->log ) )->undo( 1 );
+        $this->assertTrue( $u['fully_undone'], (string) json_encode( $u ) );
+        $this->assertSame( 'trash', $GLOBALS['__wp_posts'][ $a['page']['id'] ]->post_status );
+        $this->assertSame( 'trash', $GLOBALS['__wp_posts'][ $b['page']['id'] ]->post_status );
+        $this->assertNotNull( StudioStore::get( 1, $a['lab']['brief_id'] ) );
+        $this->assertNotNull( StudioStore::get( 1, $b['lab']['brief_id'] ) );
+    }
+
+    /** Gives the stored brief of the build's Nth page another look (as a partial restyle of the briefs would). */
+    private function relook( int $index, string $language, string $kit ): void
+    {
+        $id  = (int) $this->repo->rows[1]['items'][ $index ]['meta']['brief_id'];
+        $row = StudioStore::get( 1, $id );
+        $this->assertNotNull( $row );
+        $this->assertTrue( StudioStore::save( 1, LabLook::with( $row['brief'], $language, $kit ), $id )['ok'] );
+    }
+
+    /** @return list<int> the user's brief ids, sorted */
+    private function briefIds( int $user ): array
+    {
+        $ids = array_map( 'intval', (array) $GLOBALS['wpdb']->get_col( 'SELECT id FROM wp_ai_editor_divi5_studio WHERE created_by = ' . $user ) );
+        sort( $ids );
+
+        return $ids;
+    }
+}
+
+/**
+ * The free FakeWpdb (SQLite) with an options table, so the real BuildLock (INSERT IGNORE on the options table) runs next to
+ * the real StudioStore. Everything else is passed to the wrapped FakeWpdb.
+ */
+final class BuildSiteBriefWpdb
+{
+    public string $options = 'wp_options';
+
+    public function __construct( private \Divi5Validator\Tests\FakeWpdb $inner )
+    {
+        $inner->query( 'CREATE TABLE IF NOT EXISTS wp_options (option_name TEXT PRIMARY KEY, option_value TEXT, autoload TEXT)' );
+    }
+
+    public function __get( string $name ): mixed
+    {
+        return $this->inner->$name;
+    }
+
+    public function __set( string $name, mixed $value ): void
+    {
+        $this->inner->$name = $value;
+    }
+
+    public function __isset( string $name ): bool
+    {
+        return isset( $this->inner->$name );
+    }
+
+    /** @param list<mixed> $args */
+    public function __call( string $name, array $args ): mixed
+    {
+        return $this->inner->$name( ...$args );
+    }
+
+    public function query( string $sql ): int|false
+    {
+        return $this->inner->query( str_replace( 'INSERT IGNORE INTO', 'INSERT OR IGNORE INTO', $sql ) );
     }
 }

@@ -7,6 +7,7 @@ namespace AiEditorDivi5\Pro\Tools;
 use AiEditorDivi5\Pro\Args;
 use AiEditorDivi5\Pro\Batch\BatchLog;
 use AiEditorDivi5\Pro\Kinds\PageCreatedKind;
+use AiEditorDivi5\Pro\Lab\LabBriefs;
 use AiEditorDivi5\Pro\Lab\LabCompile;
 use AiEditorDivi5\Pro\Lab\LabLook;
 use AiEditorDivi5\Pro\Lab\LabSupport;
@@ -28,7 +29,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * `add_page` takes either `content` (a Divi 5 layout) or `brief` (a Divi 5 Lab brief, compiled exactly as Lab compiles it).
  * The brief pages of one build share one look (design language + style kit): the first names it, later ones may leave it
- * out and take it, and a brief that names another look is refused (`LOOK_MISMATCH`). The `content` path is unchanged.
+ * out and take it, and a brief that names another look is refused (`LOOK_MISMATCH`). Each brief page's brief is stored in
+ * the free Lab store and linked to the page, so the Lab screen lists it and can rebuild it; a person at the store's cap of
+ * briefs is refused (`TOO_MANY_BRIEFS`) before anything is created. The `content` path is unchanged.
  */
 final class BuildSite implements ProTool
 {
@@ -224,9 +227,13 @@ final class BuildSite implements ProTool
             throw new \InvalidArgumentException( 'Making a page the front page needs the manage_options permission, which you do not have. Leave out "is_front".' );
         }
 
+        // The cap is checked first, before the lock and before any insert: a stored brief is never pruned to make room
+        // (create() checks it again under the lock, right before the insert).
+        $userId = (int) get_current_user_id();
+        self::assertBriefRoom( $userId );
+
         // The build is read here to gate the brief before the lock (as the content path gates before the lock); create()
         // reads it again under the lock.
-        $userId = (int) get_current_user_id();
         $build  = $this->buildFor( $buildId, $userId );
         $brief  = self::fillLook( $brief, null === $build ? null : self::buildLook( $build ) );
 
@@ -245,14 +252,16 @@ final class BuildSite implements ProTool
         if ( ! $this->lock->acquire( $userId ) ) {
             throw new \InvalidArgumentException( 'Another add_page call is still running for you. Wait a moment and call again.' );
         }
+        $lab = null;
         try {
-            $result = $this->create( $userId, $buildId, $title, $slug, $markup, '' === $label ? $title : $label, $inMenu, $isFront, [ 'look' => $look ] );
+            $result = $this->create( $userId, $buildId, $title, $slug, $markup, '' === $label ? $title : $label, $inMenu, $isFront, [ 'look' => $look ], $clean, $lab );
         } finally {
             $this->lock->release( $userId );
         }
+        $stored        = is_array( $lab ) && true === $lab['stored'];
         $result['lab'] = [
-            'brief_id' => null,
-            'stored'   => false,
+            'brief_id' => $stored ? $lab['brief_id'] : null,
+            'stored'   => $stored,
             'unfilled' => count( (array) $compiled['unfilled'] ),
             'report'   => [
                 'problems'   => $compiled['problems'],
@@ -263,6 +272,9 @@ final class BuildSite implements ProTool
                 'advice'     => $compiled['advice'],
             ],
         ];
+        if ( ! $stored ) {
+            $result['lab']['note'] = 'The page was created and is in the build, but its brief could not be saved in Divi 5 Lab, so the Lab screen does not list this page.';
+        }
 
         return $result;
     }
@@ -323,8 +335,21 @@ final class BuildSite implements ProTool
             . ' lab_build (action catalog) lists the goals, languages, kits, recipes and slots.';
     }
 
-    /** @param array<string,mixed> $extraMeta added to the item's meta after the content path's keys (brief pages: `look`) */
-    private function create( int $userId, ?int $buildId, string $title, string $slug, string $content, string $label, bool $inMenu, bool $isFront, array $extraMeta = [] ): array
+    /** Refuses a brief page when the person already holds the Lab store's maximum of briefs (nothing is pruned). */
+    private static function assertBriefRoom( int $userId ): void
+    {
+        if ( LabBriefs::count( $userId ) >= LabBriefs::max() ) {
+            throw new \InvalidArgumentException( 'TOO_MANY_BRIEFS: the page was not created. You already have ' . LabBriefs::max()
+                . ' saved Divi 5 Lab briefs, the most Lab keeps. Delete briefs you no longer need in the Lab screen, then call again.' );
+        }
+    }
+
+    /**
+     * @param array<string,mixed>      $extraMeta added to the item's meta after the content path's keys (brief pages: `look`)
+     * @param array<string,mixed>|null $brief     brief pages: the clean brief, stored and linked after the insert, before the append
+     * @param array{brief_id:?int,stored:bool}|null $lab out: what happened to the brief
+     */
+    private function create( int $userId, ?int $buildId, string $title, string $slug, string $content, string $label, bool $inMenu, bool $isFront, array $extraMeta = [], ?array $brief = null, ?array &$lab = null ): array
     {
         $build = $this->buildFor( $buildId, $userId );
         $items = null === $build ? [] : self::pageItems( $build );
@@ -342,6 +367,10 @@ final class BuildSite implements ProTool
         if ( [] !== $taken ) {
             $holder = (int) $taken[0];
             throw new \InvalidArgumentException( 'The slug "' . $slug . '" is already used by ' . ( current_user_can( 'edit_post', $holder ) ? 'page #' . $holder : 'another page' ) . '. Choose a different slug.' );
+        }
+
+        if ( null !== $brief ) {
+            self::assertBriefRoom( $userId );
         }
 
         $fresh = null === $build;
@@ -372,9 +401,17 @@ final class BuildSite implements ProTool
             throw new \InvalidArgumentException( 'WordPress could not create the page. Nothing was changed; try again.' );
         }
         $post = get_post( (int) $id );
+        if ( null !== $brief ) {
+            // The content hash is of the page as WordPress stored it (re-read), never of the markup that was sent.
+            $lab                   = LabBriefs::storeAndLink( $userId, $brief, (int) $id, $post ? (string) $post->post_content : '' );
+            $extraMeta['brief_id'] = $lab['brief_id'];
+        }
         $item = PageCreatedKind::itemFor( $post, [ 'in_menu' => $inMenu, 'is_front' => $isFront, 'menu_label' => $label ] + $extraMeta );
         if ( ! $this->log->append( $buildId, [ $item ] ) ) {
             wp_delete_post( (int) $id, true );
+            if ( null !== ( $lab['brief_id'] ?? null ) ) {
+                LabBriefs::delete( $userId, (int) $lab['brief_id'] );
+            }
             if ( $fresh ) {
                 $this->log->close( $buildId, 'undone' );
             }
@@ -517,7 +554,8 @@ final class BuildSite implements ProTool
 
     /**
      * The look of a build's brief pages: `{language, kit}` when they share one, `'mixed'` when they do not (only after a
-     * partial restyle), null when the build has no brief page.
+     * partial restyle), null when the build has no brief page. Each page counts with the look of its brief as stored now
+     * (a `lab_restyle` changes it), or with the look recorded when it was added when that brief is gone or was not stored.
      *
      * @param array<string,mixed> $row
      * @return array{language:string,kit:string}|string|null
@@ -526,7 +564,15 @@ final class BuildSite implements ProTool
     {
         $looks = [];
         foreach ( self::pageItems( $row ) as $item ) {
-            $look = $item['meta']['look'] ?? null;
+            $look    = $item['meta']['look'] ?? null;
+            $briefId = $item['meta']['brief_id'] ?? null;
+            if ( null !== $look && is_int( $briefId ) && $briefId > 0 ) {
+                $live = LabBriefs::brief( (int) ( $row['user_id'] ?? 0 ), $briefId );
+                $live = null === $live ? null : LabLook::of( $live );
+                if ( null !== $live ) {
+                    $look = $live;
+                }
+            }
             if ( is_array( $look ) && is_string( $look['language'] ?? null ) && is_string( $look['kit'] ?? null ) ) {
                 $one                                         = [ 'language' => $look['language'], 'kit' => $look['kit'] ];
                 $looks[ $one['language'] . "\n" . $one['kit'] ] = $one;

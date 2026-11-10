@@ -125,6 +125,7 @@ require_once __DIR__ . '/Tools/LabRestyle.php';
 require_once __DIR__ . '/Lab/LabSupport.php';
 require_once __DIR__ . '/Lab/LabLook.php';
 require_once __DIR__ . '/Lab/LabCompile.php';
+require_once __DIR__ . '/Lab/LabBriefs.php';
 require_once __DIR__ . '/Rest/ProRest.php';
 require_once __DIR__ . '/Rest/ProOpenApi.php';
 require_once __DIR__ . '/Admin/AdminActions.php';
