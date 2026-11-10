@@ -59,6 +59,8 @@ require_once __DIR__ . '/StudioBrief.php';
 require_once __DIR__ . '/StudioCompiler.php';
 require_once __DIR__ . '/StudioStack.php';
 require_once __DIR__ . '/StudioMerge.php';
+require_once __DIR__ . '/StudioTable.php';
+require_once __DIR__ . '/StudioStore.php';
 require_once __DIR__ . '/SiteGuide.php';
 require_once __DIR__ . '/LandingGuide.php';
 require_once __DIR__ . '/ImageGuide.php';

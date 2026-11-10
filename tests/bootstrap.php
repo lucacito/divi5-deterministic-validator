@@ -319,6 +319,9 @@ if ( ! function_exists( 'dbDelta' ) ) {
         if ( isset( $GLOBALS['wpdb'] ) && method_exists( $GLOBALS['wpdb'], 'createHistoryTable' ) && str_contains( (string) $sql, 'ai_editor_divi5_history' ) ) {
             $GLOBALS['wpdb']->createHistoryTable();
         }
+        if ( isset( $GLOBALS['wpdb'] ) && method_exists( $GLOBALS['wpdb'], 'createStudioTable' ) && str_contains( (string) $sql, 'ai_editor_divi5_studio' ) && empty( $GLOBALS['wpdb']->denyCreate ) ) {
+            $GLOBALS['wpdb']->createStudioTable();
+        }
         return [];
     }
 }
