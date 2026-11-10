@@ -7,6 +7,8 @@ namespace AiEditorDivi5\Pro\Tools;
 use AiEditorDivi5\Pro\Args;
 use AiEditorDivi5\Pro\Batch\BatchLog;
 use AiEditorDivi5\Pro\Canon;
+use AiEditorDivi5\Pro\Kinds\LabBriefKind;
+use AiEditorDivi5\Pro\Kinds\PostContentKind;
 use AiEditorDivi5\Pro\Lab\LabCompile;
 use AiEditorDivi5\Pro\Lab\LabLook;
 use AiEditorDivi5\Pro\Lab\LabSupport;
@@ -14,6 +16,7 @@ use AiEditorDivi5\Pro\ProTool;
 use AiEditorDivi5\Pro\Site\PreviewToken;
 use AiEditorDivi5\WP\DesignLanguages;
 use AiEditorDivi5\WP\EditTarget;
+use AiEditorDivi5\WP\HistoryService;
 use AiEditorDivi5\WP\LayoutDiff;
 use AiEditorDivi5\WP\LayoutGate;
 use AiEditorDivi5\WP\PageHistory;
@@ -35,7 +38,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * The same pattern as `SwitchDesign`: strict arguments, a per-tool free-plugin guard (`LabSupport`), a per-page plan
  * (`EditTarget` first, nothing else is revealed about a page the user may not edit), a preview with a single-use
  * `PreviewToken` over `id => "stored16:new16:brief16"` (so a page, its new markup or its brief changing between the
- * preview and the run is skipped), and, in the next task, the apply with its undoable batch.
+ * preview and the run is skipped), and the apply: per page the page write through the free `HistoryService` (snapshotted),
+ * then the brief by compare-and-set and its link to the content as stored, recorded as ONE undoable batch with the items
+ * `[lab_brief, post_content]` per page (spec Findings 3 and 5).
  */
 final class LabRestyle implements ProTool
 {
@@ -132,7 +137,13 @@ final class LabRestyle implements ProTool
             return $this->preview( $plan, $argsHash, $user );
         }
 
-        return $this->apply( $plan, $args, $argsHash, $user );
+        $map = null === $args['token'] ? null : PreviewToken::open( $args['token'], $argsHash, ( $this->clock )(), $user );
+        if ( null === $map ) {
+            throw new \InvalidArgumentException( 'A real run needs the token from a dry run of the same arguments, made by you in the last 30 minutes and not used before. Call again with dry_run=true.' );
+        }
+        PreviewToken::spend( (string) $args['token'] );
+
+        return $this->apply( $plan, $map, $user );
     }
 
     /**
@@ -368,15 +379,106 @@ final class LabRestyle implements ProTool
     }
 
     /**
-     * The real run arrives with the next task (token, writes, brief update, batch).
+     * The real run (the token was opened and spent by `run()`). For each planned page, in this order:
+     * 1. skip it unless the preview saw exactly this plan (`not_in_preview`, `changed_since_preview`: the page, the new
+     *    markup or the brief moved since);
+     * 2. write the page through the free `HistoryService` (snapshotted); a failure is `save_failed` and nothing else is
+     *    touched;
+     * 3. save the restyled brief by compare-and-set on the brief hash the plan read; then link it to the sha256 of the
+     *    content RE-READ after the save (as stored, Finding 5). When either fails the page stays restyled, the brief is
+     *    left as it is (Lab then reads the page as edited) and the page is reported `brief_not_updated` with only its
+     *    `post_content` item;
+     * 4. record the items `[lab_brief, post_content]` (Finding 3: undo walks them last to first, the brief never reads
+     *    the page, so both directions restore).
+     * Everything is ONE batch.
      *
      * @param list<array<string,mixed>> $plan
-     * @param array<string,mixed> $args
+     * @param array<int,string> $map id => "stored16:new16:brief16" the preview saw
      * @return array<string,mixed>
      */
-    private function apply( array $plan, array $args, string $argsHash, int $user ): array
+    private function apply( array $plan, array $map, int $user ): array
     {
-        throw new \LogicException( 'lab_restyle can only preview (dry_run=true) in this build.' );
+        $write   = $this->write ?? static fn ( int $id, string $content, string $tool ): array => HistoryService::write( $id, $content, $tool );
+        $items   = [];
+        $done    = [];
+        $skipped = [];
+        $targets = [];
+        foreach ( $plan as $p ) {
+            if ( ! isset( $p['new'] ) ) {
+                $skipped[] = self::row( $p );
+                continue;
+            }
+            $base = [ 'id' => $p['id'], 'title' => $p['title'], 'kind' => $p['kind'] ];
+            if ( ! isset( $map[ $p['id'] ] ) ) {
+                $skipped[] = $base + [ 'reason' => 'not_in_preview' ];
+                continue;
+            }
+            if ( ! hash_equals( (string) $map[ $p['id'] ], (string) $p['hash'] ) ) {
+                $skipped[] = $base + [ 'reason' => 'changed_since_preview' ];
+                continue;
+            }
+
+            $result = $write( $p['id'], $p['new'], self::NAME );
+            if ( empty( $result['ok'] ) ) {
+                $skipped[] = $base + [ 'reason' => 'save_failed' ];
+                continue;
+            }
+            $snapshot = is_array( $result['snapshot'] ?? null ) ? $result['snapshot'] : [];
+            $now      = get_post( $p['id'] );
+            $stored   = $now ? (string) $now->post_content : $p['new'];
+
+            $old      = $p['old_brief'];
+            $briefId  = (int) $old['id'];
+            $briefRow = $this->updateBrief( $user, $briefId, $p['id'], $old, $p['new_brief'], $stored );
+
+            $page = [ 'id' => $p['id'], 'title' => $p['title'], 'from' => $p['from'], 'to' => $p['to'], 'brief_id' => $briefId ];
+            if ( null !== $briefRow ) {
+                $items[] = LabBriefKind::itemFor( $user, $old, $briefRow );
+            } else {
+                $page += [
+                    'warning' => 'brief_not_updated',
+                    'detail'  => 'The page was restyled, but its Lab brief changed in the meantime and was left as it is. Lab now treats the page as edited; undo this batch to go back.',
+                ];
+            }
+            $items[] = PostContentKind::itemFor( $p['id'], $p['title'], $stored, $snapshot );
+            $done[]  = $page;
+            $targets[ $p['to']['language'] . ' + ' . $p['to']['kit'] ] = true;
+        }
+        $restyled = count( $done );
+        if ( [] === $items ) {
+            return [ 'changed' => false, 'dry_run' => false, 'restyled' => 0, 'pages' => [], 'skipped' => $skipped, 'message' => 'Nothing was saved.' ];
+        }
+        $to    = 1 === count( $targets ) ? (string) array_key_first( $targets ) : 'their new looks';
+        $batch = $this->log->record( self::NAME, 'Restyled ' . $restyled . ' Lab page(s) to ' . $to, $items );
+
+        return BatchLog::attach( [ 'changed' => true, 'dry_run' => false, 'restyled' => $restyled, 'pages' => $done, 'skipped' => $skipped ], $batch );
+    }
+
+    /**
+     * Saves the restyled brief (compare-and-set on the hash the plan read) and links it to the content as stored. Returns
+     * the brief row after both, or null when the brief could not be updated; then the row is left as the other writer
+     * left it (a brief this call wrote but could not link is put back, again only by compare-and-set).
+     *
+     * @param array<string,mixed> $old the plan's `StudioStore::forPage()` row
+     * @param array<string,mixed> $newBrief
+     * @return array<string,mixed>|null
+     */
+    private function updateBrief( int $user, int $briefId, int $pageId, array $old, array $newBrief, string $stored ): ?array
+    {
+        $saved = StudioStore::save( $user, $newBrief, $briefId, (string) $old['brief_hash'] );
+        if ( empty( $saved['ok'] ) ) {
+            return null;
+        }
+        if ( ! StudioStore::link( $user, $briefId, $pageId, hash( 'sha256', $stored ) ) ) {
+            $written = StudioStore::get( $user, $briefId );
+            if ( null !== $written && is_array( $old['brief'] ?? null ) ) {
+                StudioStore::save( $user, $old['brief'], $briefId, (string) $written['brief_hash'] );
+            }
+
+            return null;
+        }
+
+        return StudioStore::get( $user, $briefId );
     }
 
     /**

@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace AiEditorDivi5\Pro\Tests;
 
+use AiEditorDivi5\Pro\Batch\BatchUndo;
 use AiEditorDivi5\Pro\Canon;
+use AiEditorDivi5\Pro\Kinds\LabBriefKind;
+use AiEditorDivi5\Pro\Kinds\PostContentKind;
 use AiEditorDivi5\Pro\Lab\LabCompile;
 use AiEditorDivi5\Pro\Lab\LabSupport;
+use AiEditorDivi5\Pro\Rest\ProRest;
+use AiEditorDivi5\Pro\ToolRegistry;
 use AiEditorDivi5\Pro\Tools\LabRestyle;
 use AiEditorDivi5\Pro\Tools\SwitchDesign;
 use AiEditorDivi5\WP\DesignLanguages;
+use AiEditorDivi5\WP\HistoryService;
 use AiEditorDivi5\WP\PageHistory;
 use AiEditorDivi5\WP\StudioStore;
 use PHPUnit\Framework\TestCase;
@@ -19,8 +25,8 @@ require_once __DIR__ . '/../src/autoload.php';
 require_once __DIR__ . '/LabFixture.php';
 
 /**
- * Pro Lab Task 4: `lab_restyle` arguments, plan and preview (spec 2026-11-10-pro-lab-design.md section A). No page is
- * written in a preview; the apply is Task 5.
+ * Pro Lab Tasks 4 and 5: `lab_restyle` arguments, plan, preview, apply and undo (spec 2026-11-10-pro-lab-design.md
+ * section A). No page is written in a preview; a real run writes the page and the brief as one undoable batch.
  */
 final class LabRestyleTest extends TestCase
 {
@@ -340,5 +346,304 @@ final class LabRestyleTest extends TestCase
         $this->themePost( 31, 'page', 'draft', [ '_et_pb_use_divi_5' => 'on' ], $GLOBALS['__wp_posts'][21]->post_content );
         $r = ( new SwitchDesign( $this->log ) )->run( [ 'page_id' => 31, 'from_language' => 'editorial', 'to_language' => 'luxe', 'dry_run' => true ] );
         $this->assertTrue( $r['dry_run'] );
+    }
+
+    // ---- Task 5: apply and undo -------------------------------------------------------------------------------------
+
+    /** @param array<string,mixed> $args @return array<string,mixed> */
+    private function applyRun( array $args, ?LabRestyle $tool = null ): array
+    {
+        $tool = $tool ?? $this->tool;
+        $p    = $tool->run( $args + [ 'dry_run' => true ] );
+        $this->assertIsString( $p['token'] );
+
+        return $tool->run( $args + [ 'token' => $p['token'] ] );
+    }
+
+    /** The compiled markup of a brief (what Lab would save). */
+    private function compiled( array $brief ): string
+    {
+        $r = LabCompile::compile( $brief );
+        $this->assertTrue( (bool) $r['ok'] );
+
+        return (string) $r['markup'];
+    }
+
+    /** @return array<string,mixed> the brief row of page 21 as stored, without the update time */
+    private function briefRow( int $briefId, int $user = 1 ): array
+    {
+        $row = StudioStore::get( $user, $briefId );
+        $this->assertNotNull( $row );
+        unset( $row['updated_at'] );
+
+        return $row;
+    }
+
+    private function engine(): BatchUndo
+    {
+        return new BatchUndo( [ 'post_content' => new PostContentKind(), LabBriefKind::NAME => new LabBriefKind() ], $this->log );
+    }
+
+    /** @return array<string,mixed> */
+    private function batchRow( array $r ): array
+    {
+        $this->assertIsArray( $r['batch'] ?? null );
+
+        return $this->repo->rows[ $r['batch']['id'] ];
+    }
+
+    /** What must stay the same when a run is refused or skips everything. @return array<int,mixed> */
+    private function state( int $briefId ): array
+    {
+        return [ $this->layoutContent( 21 ), $this->briefRow( $briefId ), $GLOBALS['__wp_update_calls'], count( $this->repo->rows ) ];
+    }
+
+    public function testARealRunSavesTheDirectCompileAndUpdatesTheBrief(): void
+    {
+        $briefId = $this->labPage( 21, 'draft', $this->labBrief( 'editorial' ) );
+        $r       = $this->applyRun( [ 'page_id' => 21, 'to_language' => 'luxe' ] );
+        $kit     = (string) DesignLanguages::get( 'luxe' )['kit'];
+
+        $this->assertTrue( $r['changed'] );
+        $this->assertFalse( $r['dry_run'] );
+        $this->assertSame( 1, $r['restyled'] );
+        $this->assertSame( [], $r['skipped'] );
+        $this->assertSame(
+            [ [ 'id' => 21, 'title' => 'Post 21', 'from' => [ 'language' => 'editorial', 'kit' => (string) DesignLanguages::get( 'editorial' )['kit'] ], 'to' => [ 'language' => 'luxe', 'kit' => $kit ], 'brief_id' => $briefId ] ],
+            $r['pages']
+        );
+
+        $stored = $this->layoutContent( 21 );
+        $this->assertSame( $this->compiled( $this->labBrief( 'luxe' ) ), $stored, 'the page is the direct compile of the restyled brief' );
+        $row = $this->briefRow( $briefId );
+        $this->assertSame( $this->labBrief( 'luxe' ), $row['brief'], 'only the language changed' );
+        $this->assertSame( StudioStore::hashOf( $this->labBrief( 'luxe' ) ), $row['brief_hash'] );
+        $this->assertSame( hash( 'sha256', $stored ), $row['content_hash'], 'linked with the content as stored' );
+        $this->assertSame( 21, $row['page_id'] );
+
+        $this->assertCount( 1, $this->repo->rows, 'ONE batch' );
+        $batch = $this->batchRow( $r );
+        $this->assertSame( 'lab_restyle', $batch['tool'] );
+        $this->assertSame( "Restyled 1 Lab page(s) to luxe + {$kit}", $batch['summary'] );
+        $this->assertSame( [ 'lab_brief', 'post_content' ], array_column( $batch['items'], 'kind' ) );
+        $this->assertSame( [ (string) $briefId, '21' ], array_column( $batch['items'], 'ref' ) );
+        $this->assertTrue( $r['batch']['undoable'] );
+        $this->assertSame( 1, $this->historyRows( 21 ), 'snapshotted by the free history' );
+        $this->assertStringNotContainsString( 'wp:divi/', (string) json_encode( $r ) );
+        $this->assertStringNotContainsString( 'Studio', (string) json_encode( $r ) );
+
+        // The Lab screen would now see an untouched page: a second restyle plans cleanly.
+        $again = $this->tool->run( [ 'page_id' => 21, 'to_language' => 'glass-dark', 'dry_run' => true ] );
+        $this->assertSame( 1, $again['would_change'] );
+    }
+
+    public function testTwoPagesToTheirNewLooksAreOneBatch(): void
+    {
+        $this->labPage( 21, 'draft', $this->labBrief( 'editorial' ) );
+        $this->labPage( 22, 'draft', $this->labBrief( 'editorial', 'heavy-block' ) );
+        $r = $this->applyRun( [ 'page_ids' => [ 22, 21 ], 'to_language' => 'luxe' ] );
+        $this->assertSame( 2, $r['restyled'] );
+        $batch = $this->batchRow( $r );
+        $this->assertSame( 'Restyled 2 Lab page(s) to their new looks', $batch['summary'] );
+        $this->assertSame( [ 'lab_brief', 'post_content', 'lab_brief', 'post_content' ], array_column( $batch['items'], 'kind' ) );
+    }
+
+    public function testATokenIsRequiredSingleUseAndBound(): void
+    {
+        $briefId = $this->labPage( 21, 'draft', $this->labBrief( 'editorial' ) );
+        $args    = [ 'page_id' => 21, 'to_language' => 'luxe' ];
+        $p       = $this->tool->run( $args + [ 'dry_run' => true ] );
+        $before  = $this->state( $briefId );
+
+        $this->refused( $args, 'needs the token' );
+        $this->refused( $args + [ 'token' => 'made-up' ], 'needs the token' );
+        $this->refused( $args + [ 'token' => $p['token'] . 'x' ], 'needs the token' );
+        $this->refused( [ 'page_id' => 21, 'to_language' => 'glass-dark', 'token' => $p['token'] ], 'needs the token' );
+        $GLOBALS['__wp_current_user_id'] = 2;
+        $this->refused( $args + [ 'token' => $p['token'] ], 'needs the token' );
+        $GLOBALS['__wp_current_user_id'] = 1;
+        $this->now += 1801;
+        $this->refused( $args + [ 'token' => $p['token'] ], 'needs the token' );
+        $this->now -= 1801;
+        $this->assertSame( $before, $this->state( $briefId ), 'nothing changed by a refused run' );
+
+        $r = $this->tool->run( $args + [ 'token' => $p['token'] ] );
+        $this->assertTrue( $r['changed'] );
+        $after = $this->state( $briefId );
+        $this->refused( $args + [ 'token' => $p['token'] ], 'needs the token' );
+        $this->assertSame( $after, $this->state( $briefId ), 'a second use changes nothing' );
+    }
+
+    public function testAPageEditedSinceThePreviewIsSkipped(): void
+    {
+        $briefId = $this->labPage( 21, 'draft', $this->labBrief( 'editorial' ) );
+        $args    = [ 'page_id' => 21, 'to_language' => 'luxe' ];
+
+        // A hand edit: the page no longer matches its brief, so it is "edited" now.
+        $p = $this->tool->run( $args + [ 'dry_run' => true ] );
+        $GLOBALS['__wp_posts'][21]->post_content .= "\n<!-- edited by hand -->";
+        $edited = $this->layoutContent( 21 );
+        $r      = $this->tool->run( $args + [ 'token' => $p['token'] ] );
+        $this->assertFalse( $r['changed'] );
+        $this->assertSame( 0, $r['restyled'] );
+        $this->assertSame( 'edited', $r['skipped'][0]['reason'] );
+        $this->assertSame( $edited, $this->layoutContent( 21 ), 'never overwritten' );
+        $this->assertSame( [], $this->repo->rows );
+        $this->assertArrayNotHasKey( 'batch', $r );
+
+        // A page that changed AND was relinked (as a Lab rebuild does) since the preview: changed_since_preview.
+        $p = $this->tool->run( $args + [ 'dry_run' => true ] );
+        $this->assertNull( $p['token'], 'an edited page is not planned' );
+        $this->assertTrue( StudioStore::link( 1, $briefId, 21, hash( 'sha256', $edited ) ) );
+        $p = $this->tool->run( $args + [ 'dry_run' => true ] );
+        $this->assertIsString( $p['token'] );
+        $GLOBALS['__wp_posts'][21]->post_content .= "\n<!-- rebuilt -->";
+        $this->assertTrue( StudioStore::link( 1, $briefId, 21, hash( 'sha256', $this->layoutContent( 21 ) ) ) );
+        $rebuilt = $this->layoutContent( 21 );
+        $r       = $this->tool->run( $args + [ 'token' => $p['token'] ] );
+        $this->assertSame( [ [ 'id' => 21, 'title' => 'Post 21', 'kind' => 'page', 'reason' => 'changed_since_preview' ] ], $r['skipped'] );
+        $this->assertSame( $rebuilt, $this->layoutContent( 21 ) );
+        $this->assertSame( [], $this->repo->rows );
+    }
+
+    public function testABriefEditedSinceThePreviewIsSkipped(): void
+    {
+        $briefId = $this->labPage( 21, 'draft', $this->labBrief( 'editorial' ) );
+        $args    = [ 'page_id' => 21, 'to_language' => 'luxe' ];
+        $p       = $this->tool->run( $args + [ 'dry_run' => true ] );
+
+        // An edit in the Lab screen between the preview and the run (the page itself is unchanged and still linked).
+        $row             = StudioStore::get( 1, $briefId );
+        $changed         = $this->labBrief( 'editorial' );
+        $changed['title'] = 'A new title typed in Lab';
+        $this->assertTrue( StudioStore::save( 1, $changed, $briefId, $row['brief_hash'] )['ok'] );
+        $before = $this->state( $briefId );
+
+        $r = $this->tool->run( $args + [ 'token' => $p['token'] ] );
+        $this->assertFalse( $r['changed'] );
+        $this->assertSame( [ [ 'id' => 21, 'title' => 'Post 21', 'kind' => 'page', 'reason' => 'changed_since_preview' ] ], $r['skipped'] );
+        $this->assertSame( $before, $this->state( $briefId ), 'page and brief bytes unchanged, no batch' );
+        $this->assertSame( [], $this->repo->rows );
+    }
+
+    public function testASaveFailureTouchesNothingElse(): void
+    {
+        $briefId = $this->labPage( 21, 'draft', $this->labBrief( 'editorial' ) );
+        $tool    = new LabRestyle( $this->log, static fn ( int $id, string $c, string $t ): array => [ 'ok' => false, 'error' => 'update_failed' ], fn (): int => $this->now );
+        $before  = $this->state( $briefId );
+
+        $r = $this->applyRun( [ 'page_id' => 21, 'to_language' => 'luxe' ], $tool );
+        $this->assertFalse( $r['changed'] );
+        $this->assertSame( 0, $r['restyled'] );
+        $this->assertSame( 'save_failed', $r['skipped'][0]['reason'] );
+        $this->assertSame( $before, $this->state( $briefId ), 'brief unchanged, nothing recorded' );
+    }
+
+    public function testABriefThatCannotBeUpdatedIsReportedAndThePageStaysRestyled(): void
+    {
+        $briefId = $this->labPage( 21, 'draft', $this->labBrief( 'editorial' ) );
+        $oldHash = (string) StudioStore::get( 1, $briefId )['content_hash'];
+        $other   = $this->labBrief( 'editorial' );
+        $other['title'] = 'Saved by someone else in the meantime';
+        $write = function ( int $id, string $content, string $tool ) use ( $briefId, $other ): array {
+            $r   = HistoryService::write( $id, $content, $tool );
+            $row = StudioStore::get( 1, $briefId );
+            $this->assertTrue( StudioStore::save( 1, $other, $briefId, $row['brief_hash'] )['ok'] );
+
+            return $r;
+        };
+        $tool = new LabRestyle( $this->log, $write, fn (): int => $this->now );
+
+        $r = $this->applyRun( [ 'page_id' => 21, 'to_language' => 'luxe' ], $tool );
+        $this->assertTrue( $r['changed'] );
+        $this->assertSame( 1, $r['restyled'] );
+        $this->assertSame( 'brief_not_updated', $r['pages'][0]['warning'] );
+        $this->assertStringContainsString( 'Lab', $r['pages'][0]['detail'] );
+        $this->assertSame( $this->compiled( $this->labBrief( 'luxe' ) ), $this->layoutContent( 21 ), 'the page stays restyled' );
+        $row = $this->briefRow( $briefId );
+        $this->assertSame( $other, $row['brief'], 'the other save is kept' );
+        $this->assertSame( $oldHash, $row['content_hash'], 'never linked to the restyled page, so Lab reads it as edited' );
+        $this->assertNotSame( hash( 'sha256', $this->layoutContent( 21 ) ), $row['content_hash'] );
+        $this->assertSame( [ 'post_content' ], array_column( $this->batchRow( $r )['items'], 'kind' ), 'no lab_brief item' );
+    }
+
+    public function testUndoRestoresPageAndBriefExactly(): void
+    {
+        $briefId = $this->labPage( 21, 'draft', $this->labBrief( 'editorial' ) );
+        $page    = $this->layoutContent( 21 );
+        $row     = $this->briefRow( $briefId );
+        $r       = $this->applyRun( [ 'page_id' => 21, 'to_language' => 'luxe' ] );
+        $this->assertNotSame( $page, $this->layoutContent( 21 ) );
+
+        $u = $this->engine()->undo( $r['batch']['id'] );
+        $this->assertTrue( $u['fully_undone'], (string) json_encode( $u ) );
+        $this->assertSame( $page, $this->layoutContent( 21 ), 'page bytes back' );
+        $this->assertSame( $row, $this->briefRow( $briefId ), 'brief JSON, brief hash and content hash back' );
+        $this->assertSame( hash( 'sha256', $page ), $this->briefRow( $briefId )['content_hash'] );
+    }
+
+    public function testUndoOfTheUndoPutsTheNewLookBackOnPageAndBrief(): void
+    {
+        $briefId = $this->labPage( 21, 'draft', $this->labBrief( 'editorial' ) );
+        $r       = $this->applyRun( [ 'page_id' => 21, 'to_language' => 'luxe' ] );
+        $page    = $this->layoutContent( 21 );
+        $row     = $this->briefRow( $briefId );
+
+        $u = $this->engine()->undo( $r['batch']['id'] );
+        $this->assertTrue( $u['fully_undone'] );
+        $this->assertIsArray( $u['undo_batch'] );
+        $uu = $this->engine()->undo( $u['undo_batch']['id'] );
+        $this->assertTrue( $uu['fully_undone'], (string) json_encode( $uu ) );
+        $this->assertSame( $page, $this->layoutContent( 21 ) );
+        $this->assertSame( $row, $this->briefRow( $briefId ) );
+        $this->assertSame( hash( 'sha256', $page ), $this->briefRow( $briefId )['content_hash'] );
+        $this->assertSame( 'luxe', $this->briefRow( $briefId )['brief']['language'] );
+    }
+
+    public function testAnUndoWhosePageWasEditedLeavesTheBriefUnmatched(): void
+    {
+        $briefId = $this->labPage( 21, 'draft', $this->labBrief( 'editorial' ) );
+        $row     = $this->briefRow( $briefId );
+        $r       = $this->applyRun( [ 'page_id' => 21, 'to_language' => 'luxe' ] );
+        $GLOBALS['__wp_posts'][21]->post_content .= "\n<!-- edited after the restyle -->";
+        $edited = $this->layoutContent( 21 );
+
+        $u = $this->engine()->undo( $r['batch']['id'] );
+        $this->assertFalse( $u['fully_undone'] );
+        $results = array_column( $u['items'], 'result', 'kind' );
+        $this->assertSame( 'changed_since', $results['post_content'] );
+        $this->assertSame( 'restored', $results['lab_brief'] );
+        $this->assertSame( $edited, $this->layoutContent( 21 ), 'the edit is never overwritten' );
+        $this->assertSame( $row, $this->briefRow( $briefId ), 'the brief is back with the OLD content hash' );
+        $this->assertNotSame( hash( 'sha256', $this->layoutContent( 21 ) ), $this->briefRow( $briefId )['content_hash'], 'so Lab reads the page as edited' );
+    }
+
+    public function testMcpAndRestGiveTheSamePayload(): void
+    {
+        $this->labPage( 21, 'draft', $this->labBrief( 'editorial' ) );
+        $registry = new ToolRegistry( [ $this->tool ], static fn (): bool => true );
+        $args     = [ 'page_id' => 21, 'to_language' => 'luxe', 'dry_run' => true ];
+        $mcp      = $registry->claim( null, 'lab_restyle', $args, 1 );
+        $this->assertInstanceOf( \WP_REST_Response::class, $mcp );
+        $fromMcp  = json_decode( (string) $mcp->get_data()['result']['content'][0]['text'], true );
+        $rest     = ( new ProRest( $registry ) )->handle( 'lab_restyle', new \WP_REST_Request( $args ) );
+        $this->assertInstanceOf( \WP_REST_Response::class, $rest );
+        $fromRest = json_decode( (string) json_encode( $rest->get_data() ), true );
+        $this->assertIsString( $fromMcp['token'] );
+        $this->assertIsString( $fromRest['token'] );
+        unset( $fromMcp['token'], $fromRest['token'] ); // each preview gets its own one-time nonce
+        $this->assertSame( $fromRest, $fromMcp );
+
+        // The real run gives the same shape through both doors.
+        $p    = $this->tool->run( $args );
+        $real = $registry->claim( null, 'lab_restyle', [ 'page_id' => 21, 'to_language' => 'luxe', 'token' => $p['token'] ], 3 );
+        $out  = json_decode( (string) $real->get_data()['result']['content'][0]['text'], true );
+        $this->assertTrue( $out['changed'] );
+        $this->assertSame( 1, $out['restyled'] );
+
+        $bad = $registry->claim( null, 'lab_restyle', [ 'page_id' => 21 ], 2 );
+        $this->assertSame( -32602, $bad->get_data()['error']['code'] );
+        $err = ( new ProRest( $registry ) )->handle( 'lab_restyle', new \WP_REST_Request( [ 'page_id' => 21 ] ) );
+        $this->assertInstanceOf( \WP_Error::class, $err );
     }
 }
