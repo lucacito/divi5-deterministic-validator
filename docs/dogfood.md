@@ -255,3 +255,15 @@ fit the number of facts). Run `scripts/dogfood-lab.sh <run> cleanup` afterwards;
 4. The built-in picture tokens were only reachable through `get_image_guide`, a tool the assistants did not have.
 5. Nothing said what `goal` does (it is only stored), that an unfilled slot keeps its sample copy, or that items cannot be removed.
 6. Open (not fixed): image alt samples that stay on a draft describe unrelated stock pictures; the contact form's recipient is not a slot.
+
+**Round 2 (2026-11-10, after the round 1 fixes):** scenario B (hand-off) took 3 calls with 0 failures and filled 38 of 40 slots; scenario A
+(from scratch) took 10 calls with 0 failures and built 4 sections, choosing layouts that avoid software-style sample copy. A needed 8
+per-recipe catalog calls only to learn what the recipes are, because the names mislead (`card-grid-3`, `icon-values`); so `catalog` with a
+`role` now lists title, description and slot count of that role's layouts (fixed on `fix/lab-build-dogfood-2`). Open findings, left to the
+owner as recipe or product decisions:
+1. Some recipes carry software-style sample copy (dashboards, security shield alt text), poor picks for other businesses because an
+   unfilled slot keeps its sample copy.
+2. Decorative numerals ("01" to "04") and similar show as unfilled although keeping them is right.
+3. A hero text-link has no link slot.
+4. The contact form's recipient is not a slot.
+5. FAQ items and form fields cannot be removed.

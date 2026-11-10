@@ -265,7 +265,7 @@ final class ToolCatalog
                     'properties' => [
                         'action'    => ['type' => 'string', 'enum' => ['catalog', 'open', 'fill', 'build'], 'description' => 'catalog: what Lab offers. open: read a stored brief. fill: write words into a stored brief. build: preview a brief, or save a draft page with create=true.'],
                         'recipe'    => ['type' => 'string', 'description' => 'Optional, catalog only: a section layout name; returns its slots.'],
-                        'role'      => ['type' => 'string', 'description' => 'Optional, catalog only: list only the section layouts of this role.'],
+                        'role'      => ['type' => 'string', 'description' => 'Optional, catalog only: list only the section layouts of this role, each with its title, description and slot count. Use it to choose layouts.'],
                         'brief_id'  => ['type' => 'integer', 'minimum' => 1, 'description' => 'open and fill: the id of a brief started in the Lab screen (it is in the hand-off text).'],
                         'base_hash' => ['type' => 'string', 'description' => 'fill: the base_hash from open or from the last fill. A changed brief answers CONFLICT and nothing is written.'],
                         'sections'  => ['type' => 'array', 'description' => 'fill: the words to write. Optional with create=true (the page is then built from the brief as stored).', 'items' => [
