@@ -637,4 +637,15 @@ class StudioScreenTest extends TestCase
         preg_match( '/function setFrame\(.*?\n    \}/s', $js, $set );
         $this->assertSame( 2, substr_count( $set[0] ?? '', 'layoutFrame()' ) );
     }
+
+    /**
+     * Found by the live gate (make verify-studio) at a 400px browser width: the plugin's tab bar (Dashboard, Features,
+     * Divi 5 Lab, Settings and any add-on tabs) is one line and ran 75px past the screen edge on every tab, so the whole
+     * admin page scrolled sideways. The tabs wrap onto a second line instead.
+     */
+    public function testTheTabBarWrapsOnANarrowScreen(): void
+    {
+        $css = (string) file_get_contents( __DIR__ . '/../wp-plugin/assets/admin.css' );
+        $this->assertMatchesRegularExpression( '/\.aied-nav\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*wrap/', $css );
+    }
 }

@@ -400,6 +400,26 @@ class StudioPreviewTest extends TestCase
         $this->assertSame( [ [ $stale, true ], [ $staleB, true ] ], $GLOBALS['__wp_deleted'] );
     }
 
+    /**
+     * Found by the live gate (make verify-studio): WordPress stores post_modified_gmt as 0000-00-00 00:00:00 for a draft
+     * that was inserted and never updated (a draft has no GMT date yet), so a preview draft made by its first preview
+     * looked older than any cutoff and the sweep deleted it while the person was still using it. Such a row is judged by
+     * its local post_modified instead.
+     */
+    public function testANeverUpdatedDraftIsJudgedByItsLocalModifiedTime(): void
+    {
+        $fresh = $this->seed( self::title( self::A ), self::A, 'draft', 'page', '0000-00-00 00:00:00' );
+        $GLOBALS['__wp_posts'][ $fresh ]->post_modified = gmdate( 'Y-m-d H:i:s' ); // the shim's site runs on UTC
+        $old = $this->seed( self::title( self::B ), self::B, 'draft', 'page', '0000-00-00 00:00:00' );
+        $GLOBALS['__wp_posts'][ $old ]->post_modified = self::old();
+        $unknown = $this->seed( self::title( 7 ), 7, 'draft', 'page', '0000-00-00 00:00:00' ); // no local time at all: kept
+
+        $this->assertSame( 1, StudioPreview::cleanupStale() );
+        $this->assertArrayHasKey( $fresh, $GLOBALS['__wp_posts'], 'a preview draft made a moment ago must stay' );
+        $this->assertArrayNotHasKey( $old, $GLOBALS['__wp_posts'] );
+        $this->assertArrayHasKey( $unknown, $GLOBALS['__wp_posts'] );
+    }
+
     public function testStaleSweepChecksEveryRowAgainEvenWhenTheQueryReturnsEverything(): void
     {
         $stale = $this->seed( self::title( self::A ), self::A, 'draft', 'page', self::old() );

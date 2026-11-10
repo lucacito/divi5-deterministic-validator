@@ -75,6 +75,32 @@ class StudioCompilerTest extends TestCase
         $this->assertStringContainsString( 'Fix leaks fast', (string) $a['markup'] );
     }
 
+    /**
+     * Found by the live gate (make verify-studio, Ruling 13): 62 of the 75 recipes keep raw HTML ("<p>...</p>") inside block
+     * attribute JSON, and for a user without unfiltered_html WordPress runs kses over the saved content, whose
+     * wp_pre_kses_less_than turns a block comment that holds a "<" before its first ">" into visible text
+     * ("&lt;!-- wp:divi/text {&quot;content..."): the module is gone and the page shows its code. The compiler therefore
+     * writes block attributes the way WordPress's own serializer does (serialize_block_attributes: "<", ">", "&" and "--"
+     * as \u escapes), which changes the bytes and never the values.
+     */
+    public function testBlockAttributesAreWrittenAsWordPressSerializesThem(): void
+    {
+        $opener = '/<!--\s+wp:[a-z][a-z0-9_-]*\/[a-z][a-z0-9_-]*\s+(\{(?:[^}]+|}+(?=})|(?!}\s+\/?-->).)*+\})\s+\/?-->/s';
+        foreach ( \AiEditorDivi5\WP\SectionRecipes::names() as $recipe ) {
+            $c = StudioCompiler::compile( [ 'title' => 'T', 'goal' => 'book', 'language' => 'editorial', 'sections' => [ [ 'recipe' => $recipe ] ] ] );
+            $this->assertTrue( $c['ok'], $recipe . ' ' . json_encode( [ $c['problems'], $c['violations'] ] ) );
+            $raw = (string) \AiEditorDivi5\WP\SectionRecipes::recipe( $recipe, 'editorial' );
+            preg_match_all( $opener, (string) $c['markup'], $got );
+            preg_match_all( $opener, $raw, $want );
+            $this->assertNotEmpty( $got[1], $recipe );
+            $this->assertCount( count( $want[1] ), $got[1], $recipe . ': every block is still there' );
+            foreach ( $got[1] as $i => $json ) {
+                $this->assertDoesNotMatchRegularExpression( '/[<>&]|--/', $json, $recipe . ' block ' . $i . ' carries a raw < > & or -- in its attributes' );
+                $this->assertSame( json_decode( $want[1][ $i ], true ), json_decode( $json, true ), $recipe . ' block ' . $i . ': the values are unchanged' );
+            }
+        }
+    }
+
     public function testLanguageChangesTheLook(): void
     {
         $a = StudioCompiler::compile( self::brief( 'editorial' ) );

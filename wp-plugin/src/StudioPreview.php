@@ -216,8 +216,11 @@ final class StudioPreview
                 if ( null === $named || ! self::isPreviewOf( $post, $named ) ) {
                     continue;
                 }
-                if ( null !== $cutoff && ! ( '' !== (string) ( $post->post_modified_gmt ?? '' ) && (string) $post->post_modified_gmt < $cutoff ) ) {
-                    continue;
+                if ( null !== $cutoff ) {
+                    $modified = self::modifiedGmt( $post );
+                    if ( '' === $modified || ! ( $modified < $cutoff ) ) {
+                        continue;
+                    }
                 }
                 $found[] = $post;
             }
@@ -228,6 +231,25 @@ final class StudioPreview
         }
 
         return $found;
+    }
+
+    /**
+     * When the post was last modified, in GMT, or '' when that is not known. WordPress keeps post_modified_gmt at
+     * 0000-00-00 00:00:00 for a draft that was inserted and never updated (a draft has no GMT date yet; found by the live
+     * gate), so such a row is judged by its local post_modified, converted to GMT.
+     */
+    private static function modifiedGmt( object $post ): string
+    {
+        $gmt = (string) ( $post->post_modified_gmt ?? '' );
+        if ( '' !== $gmt && '0000-00-00 00:00:00' !== $gmt ) {
+            return $gmt;
+        }
+        $local = (string) ( $post->post_modified ?? '' );
+        if ( '' === $local || '0000-00-00 00:00:00' === $local ) {
+            return '';
+        }
+
+        return function_exists( 'get_gmt_from_date' ) ? (string) get_gmt_from_date( $local ) : $local;
     }
 
     /** The id of the user's preview draft after putting $markup on it (made first if needed), or null on any failure. */
