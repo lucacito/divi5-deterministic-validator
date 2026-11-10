@@ -23,9 +23,16 @@ final class StudioStore
     public const NOT_FOUND    = 'NOT_FOUND';
     public const TOO_LARGE    = 'TOO_LARGE';
     public const STORE_FAILED = 'STORE_FAILED';
+    public const CONFLICT     = 'CONFLICT';
 
-    /** @return array{ok:bool, id:int, code:?string} */
-    public static function save( int $user, array $brief, ?int $id = null ): array
+    /**
+     * Saves a brief. With an id and $expectedHash the update is a compare-and-set: it only happens while the stored
+     * brief_hash is still $expectedHash, otherwise the answer is CONFLICT and nothing changes (unless the stored brief
+     * already equals the one being written, which is a success). $expectedHash without an id is ignored.
+     *
+     * @return array{ok:bool, id:int, code:?string}
+     */
+    public static function save( int $user, array $brief, ?int $id = null, ?string $expectedHash = null ): array
     {
         global $wpdb;
 
@@ -48,15 +55,38 @@ final class StudioStore
                 return self::fail( self::NOT_FOUND );
             }
             // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
-            $ok = $wpdb->query( $wpdb->prepare(
-                "UPDATE {$table} SET brief = %s, brief_hash = %s, plugin_version = %s, updated_at = %s WHERE id = %d AND created_by = %d",
-                $json,
-                $hash,
-                self::version(),
-                $now,
-                $id,
-                $user
-            ) );
+            if ( null !== $expectedHash ) {
+                $ok = $wpdb->query( $wpdb->prepare(
+                    "UPDATE {$table} SET brief = %s, brief_hash = %s, plugin_version = %s, updated_at = %s WHERE id = %d AND created_by = %d AND brief_hash = %s",
+                    $json,
+                    $hash,
+                    self::version(),
+                    $now,
+                    $id,
+                    $user,
+                    $expectedHash
+                ) );
+                if ( false !== $ok && 0 === (int) $ok ) {
+                    // No row changed: either someone else saved first (a conflict) or the stored brief already is this one.
+                    $stored = self::row( $user, $id );
+                    if ( null === $stored ) {
+                        return self::fail( self::NOT_FOUND );
+                    }
+                    if ( ! hash_equals( (string) ( $stored['brief_hash'] ?? '' ), $hash ) ) {
+                        return self::fail( self::CONFLICT );
+                    }
+                }
+            } else {
+                $ok = $wpdb->query( $wpdb->prepare(
+                    "UPDATE {$table} SET brief = %s, brief_hash = %s, plugin_version = %s, updated_at = %s WHERE id = %d AND created_by = %d",
+                    $json,
+                    $hash,
+                    self::version(),
+                    $now,
+                    $id,
+                    $user
+                ) );
+            }
             // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
 
             return false === $ok ? self::fail( self::STORE_FAILED ) : [ 'ok' => true, 'id' => $id, 'code' => null ];
