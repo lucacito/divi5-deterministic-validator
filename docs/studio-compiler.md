@@ -174,4 +174,4 @@ Plan: `docs/superpowers/plans/2026-11-10-lab-build-tool.md`. One MCP and REST to
 * No real assistant has used the tool: the words in the gate are the gate's own, so how well a model uses the actions is unknown.
 * The words are checked for form (links, pictures, length), not for truth; the tool tells the assistant not to invent facts and to leave unknown slots empty, and an empty slot keeps its placeholder and is reported unfilled.
 * The token comparison (`docs/token-usage.md`) is against the plugin's own compiled markup, not against what a model writes freehand.
-* Found while writing the docs and NOT changed here: the `brief` property description in the `lab_build` definition says "optional style_kit", but a brief's key is `kit` (`StudioBrief` refuses `style_kit` as an unknown key), and `catalog` returns the lists but no example brief. An assistant that follows the schema text will get a 422 on the first try.
+* The `brief` property description once said "optional style_kit" (the key is `kit`) and `catalog` had no example; fixed before release: the schema text names the real keys and `catalog` returns an `example_brief` that a test validates and builds.

@@ -44,8 +44,21 @@ final class StudioAssistant
         . 'Write only real words you were given and never invent facts, prices, names or numbers; leave a slot empty when you do not know it, because an empty slot keeps its placeholder and is reported as unfilled. '
         . 'Everything is saved as a draft that the owner reviews and publishes; create true needs permission to publish pages.';
 
+    /** One working brief for catalog (the tests check that it validates and builds; its words only show the format). */
+    private const EXAMPLE_BRIEF = [
+        'version'  => 1,
+        'title'    => 'Example page title',
+        'goal'     => 'explain',
+        'language' => 'editorial',
+        'kit'      => 'quiet-solid',
+        'sections' => [
+            [ 'recipe' => 'hero-cta', 'slots' => [ 'heading.1' => 'An example headline', 'button.0.text' => 'An example button' ] ],
+            [ 'recipe' => 'card-grid-3' ],
+        ],
+    ];
+
     private const RULES = 'Fill only slots whose words you actually know. Leave the rest empty; they stay as placeholders and are listed as unfilled. '
-        . 'Links are https:// addresses, mailto:, tel:, #anchors or paths on this site starting with /. Pictures are a built-in pack token or an https:// address. '
+        . 'Links are https:// addresses, mailto:, tel:, #anchors or paths on this site starting with /. A picture is an object: {"pack": built-in pack token} or {"url": https:// address}. '
         . 'Do not invent facts. The result is always a draft.';
 
     /**
@@ -161,11 +174,12 @@ final class StudioAssistant
         UsageTracker::log( self::ENDPOINT, null, 'read' );
 
         return [ 'status' => 200, 'body' => [
-            'goals'     => StudioBrief::GOALS,
-            'languages' => $languages,
-            'kits'      => StyleKits::ids(),
-            'recipes'   => $recipes,
-            'how'       => self::HOW,
+            'goals'         => StudioBrief::GOALS,
+            'languages'     => $languages,
+            'kits'          => StyleKits::ids(),
+            'recipes'       => $recipes,
+            'how'           => self::HOW,
+            'example_brief' => self::EXAMPLE_BRIEF,
         ] ];
     }
 

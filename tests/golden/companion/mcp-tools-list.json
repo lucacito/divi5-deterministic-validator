@@ -582,7 +582,7 @@
                         },
                         "brief": {
                             "type": "object",
-                            "description": "build: the whole brief (title, goal, language, optional style_kit, sections [{recipe, slots, pictures}]). catalog shows the shape."
+                            "description": "build: the whole brief (version 1, title, goal, language, optional kit, sections [{recipe, slots {slot id: text}, pictures {slot id: {pack|url}}}]). catalog returns an example_brief."
                         },
                         "create": {
                             "type": "boolean",

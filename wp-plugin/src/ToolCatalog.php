@@ -276,7 +276,7 @@ final class ToolCatalog
                                 'pictures' => ['type' => 'object', 'description' => 'Picture slot id to an object: {"pack": built-in pack token} or {"url": a secure web address or a site path}.'],
                             ],
                         ]],
-                        'brief'     => ['type' => 'object', 'description' => 'build: the whole brief (title, goal, language, optional style_kit, sections [{recipe, slots, pictures}]). catalog shows the shape.'],
+                        'brief'     => ['type' => 'object', 'description' => 'build: the whole brief (version 1, title, goal, language, optional kit, sections [{recipe, slots {slot id: text}, pictures {slot id: {pack|url}}}]). catalog returns an example_brief.'],
                         'create'    => ['type' => 'boolean', 'description' => 'Optional, build and fill. true = save the page as a new DRAFT (needs permission to publish pages). Default false.'],
                     ],
                     'required' => ['action'],

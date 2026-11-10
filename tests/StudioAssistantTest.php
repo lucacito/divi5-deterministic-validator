@@ -192,6 +192,29 @@ class StudioAssistantTest extends TestCase
         }
     }
 
+    /** The catalog shows one working brief, so an assistant never has to guess the key names (the schema once said style_kit; the key is kit). */
+    public function testCatalogShowsAnExampleBriefThatValidatesAndBuilds(): void
+    {
+        $b = StudioAssistant::run( [ 'action' => 'catalog' ] )['body'];
+        $this->assertArrayHasKey( 'example_brief', $b );
+        $example = $b['example_brief'];
+        $this->assertArrayHasKey( 'kit', $example );
+        $this->assertArrayNotHasKey( 'style_kit', $example );
+        $checked = StudioBrief::check( $example );
+        $this->assertTrue( $checked['ok'], json_encode( $checked['problems'] ) );
+        $built = StudioService::preview( 1, $example );
+        $this->assertTrue( $built['ok'], $built['message'] );
+        $this->assertStringNotContainsString( 'Studio', json_encode( $example ) );
+    }
+
+    public function testTheBriefSchemaTextNamesTheRealKeys(): void
+    {
+        $text = (string) ( \AiEditorDivi5\WP\ToolCatalog::get( 'lab_build' )['inputSchema']['properties']['brief']['description'] ?? '' );
+        $this->assertStringNotContainsString( 'style_kit', $text );
+        $this->assertStringContainsString( 'kit', $text );
+        $this->assertStringContainsString( 'example_brief', $text );
+    }
+
     public function testCatalogIsSmall(): void
     {
         $r = StudioAssistant::run( [ 'action' => 'catalog' ] );

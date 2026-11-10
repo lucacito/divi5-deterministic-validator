@@ -6,7 +6,7 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 
 | What | Detail | Bytes | Approx. tokens |
 | --- | --- | ---: | ---: |
-| Tool definitions | 22 tools, loaded once per conversation (free plugin only) | 25,066 | 6,267 |
+| Tool definitions | 22 tools, loaded once per conversation (free plugin only) | 25,118 | 6,280 |
 | Reading a page (smallest) | the page's layout content (get_page_layout adds a little wrapper), from page-17-variable-heading.json | 1,152 | 288 |
 | Reading a page's outline (smallest) | get_page_layout with view "outline" on the same page: 5 blocks, each with path, name, size and the start of its text | 358 | 90 |
 | Reading a page (median) | the page's layout content (get_page_layout adds a little wrapper), from page-45-layout-3.json | 49,842 | 12,461 |
@@ -121,12 +121,12 @@ The same 6-section page ("book" goal, editorial look, 59 filled slots) built two
 | A total, create only | create call plus its answer | 5,251 | 1,313 |
 | A total, preview then create | both calls and both answers | 10,427 | 2,607 |
 | B total | create_page call plus its answer | 40,666 | 10,167 |
-| lab_build overhead: tool definition | its entry in tools/list, read once per conversation | 2,724 | 681 |
-| lab_build overhead: one catalog answer | action "catalog" with no filter, read once before building | 4,031 | 1,008 |
-| lab_build catalog, role "hero" | action "catalog" filtered to one role, when asked for | 2,598 | 650 |
+| lab_build overhead: tool definition | its entry in tools/list, read once per conversation | 2,776 | 694 |
+| lab_build overhead: one catalog answer | action "catalog" with no filter, read once before building | 4,290 | 1,073 |
+| lab_build catalog, role "hero" | action "catalog" filtered to one role, when asked for | 2,857 | 715 |
 | lab_build catalog, one recipe | action "catalog" with recipe "hero-cta": its slot ids, kinds and sample text | 434 | 109 |
 
-What this shows: for this page the brief route writes and reads 5,251 bytes (about 1,313 tokens) and the markup route 40,666 bytes (about 10,167 tokens); the answers are small in both, so the difference is almost all in what the assistant has to WRITE. The one-time overhead of the brief route (the tool definition plus one catalog answer) is 6,755 bytes (about 1,689 tokens). The saving on this one page (35,415 bytes) is larger than that overhead.
+What this shows: for this page the brief route writes and reads 5,251 bytes (about 1,313 tokens) and the markup route 40,666 bytes (about 10,167 tokens); the answers are small in both, so the difference is almost all in what the assistant has to WRITE. The one-time overhead of the brief route (the tool definition plus one catalog answer) is 7,066 bytes (about 1,767 tokens). The saving on this one page (35,415 bytes) is larger than that overhead.
 
 What it does not show:
 
