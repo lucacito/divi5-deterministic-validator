@@ -8,6 +8,7 @@ use AiEditorDivi5\WP\DesignLanguages;
 use AiEditorDivi5\WP\SectionRecipes;
 use AiEditorDivi5\WP\StudioAssistant;
 use AiEditorDivi5\WP\StudioBrief;
+use AiEditorDivi5\WP\StudioService;
 use AiEditorDivi5\WP\StudioSlots;
 use AiEditorDivi5\WP\StudioStore;
 use AiEditorDivi5\WP\StudioTable;
@@ -16,6 +17,7 @@ use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/FakeWpdb.php';
 require_once __DIR__ . '/WpRestShims.php';
+require_once __DIR__ . '/WpInsertPostShims.php';
 require_once __DIR__ . '/../wp-plugin/src/UsageTracker.php';
 require_once __DIR__ . '/../wp-plugin/src/PageAccess.php';
 require_once __DIR__ . '/../wp-plugin/src/ImagePack.php';
@@ -34,6 +36,19 @@ require_once __DIR__ . '/../wp-plugin/src/StudioSlots.php';
 require_once __DIR__ . '/../wp-plugin/src/StudioBrief.php';
 require_once __DIR__ . '/../wp-plugin/src/StudioTable.php';
 require_once __DIR__ . '/../wp-plugin/src/StudioStore.php';
+require_once __DIR__ . '/../wp-plugin/src/CodePolicy.php';
+require_once __DIR__ . '/../wp-plugin/src/LayoutGate.php';
+require_once __DIR__ . '/../wp-plugin/src/DesignVariety.php';
+require_once __DIR__ . '/../wp-plugin/src/LoopAdvisory.php';
+require_once __DIR__ . '/../wp-plugin/src/PageTitle.php';
+require_once __DIR__ . '/../wp-plugin/src/StudioCompiler.php';
+require_once __DIR__ . '/../wp-plugin/src/StudioMerge.php';
+require_once __DIR__ . '/../wp-plugin/src/DraftPage.php';
+require_once __DIR__ . '/../wp-plugin/src/PageHistory.php';
+require_once __DIR__ . '/../wp-plugin/src/HistoryTable.php';
+require_once __DIR__ . '/../wp-plugin/src/HistoryStore.php';
+require_once __DIR__ . '/../wp-plugin/src/HistoryService.php';
+require_once __DIR__ . '/../wp-plugin/src/StudioService.php';
 require_once __DIR__ . '/../wp-plugin/src/StudioAssistant.php';
 
 /** Lab (internal name Studio), plan 3 task 3: the lab_build tool's argument checks, catalog and open. */
@@ -113,20 +128,18 @@ class StudioAssistantTest extends TestCase
         }
     }
 
-    public function testFillAndBuildAreValidActionsNotBuiltYet(): void
+    public function testBuildIsAValidActionNotBuiltYet(): void
     {
-        foreach ( [ 'fill', 'build' ] as $action ) {
-            $r = StudioAssistant::run( [ 'action' => $action ] );
-            $this->assertSame( 400, $r['status'] );
-            $this->assertSame( 'This action is not built yet.', $r['body']['error'] );
-        }
+        $r = StudioAssistant::run( [ 'action' => 'build' ] );
+        $this->assertSame( 400, $r['status'] );
+        $this->assertSame( 'This action is not built yet.', $r['body']['error'] );
     }
 
     public function testArgumentTypesAreChecked(): void
     {
         $bad = [
             [ 'recipe' => 3 ], [ 'role' => [ 'hero' ] ], [ 'base_hash' => 5 ], [ 'create' => 'true' ], [ 'create' => 1 ],
-            [ 'sections' => 'x' ], [ 'brief' => 'x' ],
+            [ 'sections' => 'x' ], [ 'brief' => 'x' ], [ 'sections' => [ 'a' ] ], [ 'sections' => [ 1, 2 ] ], [ 'sections' => [ 'a' => [ 'section' => 0 ] ] ],
         ];
         foreach ( $bad as $extra ) {
             $r = StudioAssistant::run( array_merge( [ 'action' => 'catalog' ], $extra ) );
@@ -244,6 +257,7 @@ class StudioAssistantTest extends TestCase
     {
         $id = $this->stored();
         $GLOBALS['__wp_posts'][77] = (object) [ 'ID' => 77, 'post_type' => 'page', 'post_status' => 'draft', 'post_content' => 'x' ];
+        $GLOBALS['__wp_caps']['edit_post'] = true;
         StudioStore::link( self::ME, $id, 77, hash( 'sha256', 'x' ) );
         $r = StudioAssistant::run( [ 'action' => 'open', 'brief_id' => $id ] );
         $this->assertSame( [ 'id' => 77, 'status' => 'draft' ], $r['body']['page'] );
@@ -267,5 +281,316 @@ class StudioAssistantTest extends TestCase
         $this->assertSame( $before, $this->rows() );
         $this->assertSame( [], $GLOBALS['__wp_inserts'] );
         $this->assertSame( [], $GLOBALS['__wp_posts'] );
+    }
+
+    // ---- Task 3 review items ------------------------------------------------------------------------------
+
+    public function testOpenHidesAPageTheUserCannotEdit(): void
+    {
+        $id = $this->stored();
+        $GLOBALS['__wp_posts'][77] = (object) [ 'ID' => 77, 'post_type' => 'page', 'post_status' => 'publish', 'post_content' => 'x', 'post_author' => self::OTHER ];
+        StudioStore::link( self::ME, $id, 77, hash( 'sha256', 'x' ) );
+        $GLOBALS['__wp_caps']['edit_post:77'] = false;
+        $GLOBALS['wpdb']->inserted = [];
+        $r = StudioAssistant::run( [ 'action' => 'open', 'brief_id' => $id ] );
+        $this->assertSame( 200, $r['status'] );
+        $this->assertNull( $r['body']['page'] );
+        $this->assertStringNotContainsString( '77', (string) json_encode( $r['body']['page'] ) );
+        foreach ( $GLOBALS['wpdb']->inserted as [ , $data ] ) {
+            if ( 'lab_build' === ( $data['endpoint'] ?? '' ) ) {
+                $this->assertNull( $data['page_id'], 'a page id the user cannot edit is not logged' );
+            }
+        }
+    }
+
+    public function testOpenLogsTheLinkedPageIdWhenTheUserCanEditIt(): void
+    {
+        $id = $this->stored();
+        $GLOBALS['__wp_posts'][77] = (object) [ 'ID' => 77, 'post_type' => 'page', 'post_status' => 'draft', 'post_content' => 'x' ];
+        StudioStore::link( self::ME, $id, 77, hash( 'sha256', 'x' ) );
+        $GLOBALS['__wp_caps']['edit_post'] = true;
+        $GLOBALS['wpdb']->inserted = [];
+        StudioAssistant::run( [ 'action' => 'open', 'brief_id' => $id ] );
+        $logged = [];
+        foreach ( $GLOBALS['wpdb']->inserted as [ , $data ] ) {
+            if ( 'lab_build' === ( $data['endpoint'] ?? '' ) ) {
+                $logged[] = $data['page_id'];
+            }
+        }
+        $this->assertSame( [ 77 ], $logged );
+    }
+
+    public function testOpenFlagsASectionWhoseRecipeNoLongerExists(): void
+    {
+        $brief = self::brief();
+        $brief['sections'][1]['recipe'] = 'gone-recipe';
+        $json  = (string) json_encode( $brief );
+        $GLOBALS['wpdb']->insert( \AiEditorDivi5\WP\StudioTable::name(), [
+            'created_by' => self::ME, 'brief' => $json, 'brief_hash' => hash( 'sha256', $json ), 'plugin_version' => '4', 'created_at' => '2026-01-01 00:00:00', 'updated_at' => '2026-01-01 00:00:00',
+        ] );
+        $id = (int) $GLOBALS['wpdb']->insert_id;
+        $r  = StudioAssistant::run( [ 'action' => 'open', 'brief_id' => $id ] );
+        $this->assertSame( 200, $r['status'] );
+        $this->assertCount( 2, $r['body']['sections'] );
+        $this->assertSame( 'gone-recipe', $r['body']['sections'][1]['recipe'] );
+        $this->assertTrue( $r['body']['sections'][1]['recipe_missing'] );
+        $this->assertSame( [], $r['body']['sections'][1]['slots'] );
+        $this->assertArrayNotHasKey( 'recipe_missing', $r['body']['sections'][0] );
+    }
+
+    public function testCatalogHowDescribesTheFillFlowAndTheConflict(): void
+    {
+        $how = (string) StudioAssistant::run( [ 'action' => 'catalog' ] )['body']['how'];
+        foreach ( [ 'base_hash', 'CONFLICT', 'open again' ] as $needle ) {
+            $this->assertStringContainsString( $needle, $how );
+        }
+        $this->assertLessThanOrEqual( 1400, strlen( $how ) );
+    }
+
+    // ---- fill ---------------------------------------------------------------------------------------------
+
+    /** @return array{id:int,hash:string} */
+    private function open(): array
+    {
+        $id = $this->stored();
+
+        return [ 'id' => $id, 'hash' => (string) StudioStore::get( self::ME, $id )['brief_hash'] ];
+    }
+
+    private function fill( array $o, array $sections, ?string $hash = null ): array
+    {
+        return StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $o['id'], 'base_hash' => $hash ?? $o['hash'], 'sections' => $sections ] );
+    }
+
+    private function storedBrief( int $id ): array
+    {
+        return StudioStore::get( self::ME, $id )['brief'];
+    }
+
+    public function testFillWithTheCurrentHashSavesAndReportsExactlyTheAppliedSlots(): void
+    {
+        $o = $this->open();
+        $r = $this->fill( $o, [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'Leaks fixed in an hour', 'heading.0' => 'Plumbers' ], 'pictures' => [ 'section.0.background' => [ 'pack' => 'hero-blue-1' ] ] ] ] );
+        $this->assertSame( 200, $r['status'], (string) json_encode( $r['body'] ) );
+        $b = $r['body'];
+        $this->assertSame( $o['id'], $b['brief_id'] );
+        $this->assertNotSame( $o['hash'], $b['base_hash'] );
+        $this->assertSame( StudioStore::get( self::ME, $o['id'] )['brief_hash'], $b['base_hash'] );
+        $this->assertEqualsCanonicalizing(
+            [ [ 'section' => 0, 'slot' => 'heading.1' ], [ 'section' => 0, 'slot' => 'heading.0' ], [ 'section' => 0, 'slot' => 'section.0.background' ] ],
+            $b['applied']
+        );
+        $this->assertSame( [], $b['ignored'] );
+        $this->assertIsInt( $b['unfilled_count'] );
+        $this->assertTrue( $b['report']['unfilled'] === array_values( $b['report']['unfilled'] ) );
+        $this->assertNull( $b['page'] );
+        $this->assertIsString( $b['message'] );
+        $this->assertStringNotContainsString( 'Studio', $b['message'] );
+        $saved = $this->storedBrief( $o['id'] );
+        $this->assertSame( 'Leaks fixed in an hour', $saved['sections'][0]['slots']['heading.1'] );
+        $this->assertSame( [ 'pack' => 'hero-blue-1' ], $saved['sections'][0]['pictures']['section.0.background'] );
+        $this->assertSame( 'Book now', $saved['sections'][0]['slots']['button.0.text'], 'words not sent stay' );
+        $this->assertArrayNotHasKey( 'slots', $saved['sections'][1] );
+    }
+
+    public function testFillWithAStaleHashIs409AndChangesNothing(): void
+    {
+        $o = $this->open();
+        $this->assertSame( 200, $this->fill( $o, [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'Second writer first' ] ] ] )['status'] );
+        $current = (string) StudioStore::get( self::ME, $o['id'] )['brief_hash'];
+        $before  = $this->rows();
+        $r       = $this->fill( $o, [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'Stale words' ] ] ] );
+        $this->assertSame( 409, $r['status'] );
+        $this->assertSame( 'CONFLICT', $r['body']['code'] );
+        $this->assertSame( $current, $r['body']['current_base_hash'] );
+        $this->assertIsString( $r['body']['message'] );
+        $this->assertArrayNotHasKey( 'brief', $r['body'] );
+        $this->assertStringNotContainsString( 'Second writer first', (string) json_encode( $r['body'] ) );
+        $this->assertSame( $before, $this->rows() );
+    }
+
+    public function testFillOnAnotherUsersBriefIs404(): void
+    {
+        $theirs = $this->stored( self::OTHER );
+        $hash   = (string) StudioStore::get( self::OTHER, $theirs )['brief_hash'];
+        $before = $this->rows();
+        $r      = $this->fill( [ 'id' => $theirs, 'hash' => $hash ], [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'x' ] ] ] );
+        $missing = $this->fill( [ 'id' => 9999, 'hash' => $hash ], [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'x' ] ] ] );
+        $this->assertSame( 404, $r['status'] );
+        $this->assertSame( $missing, $r );
+        $this->assertSame( $before, $this->rows() );
+    }
+
+    public function testFillListsWhatItCouldNotWriteAndWritesNone(): void
+    {
+        $o = $this->open();
+        $r = $this->fill( $o, [ [ 'section' => 0,
+            'slots'    => [ 'no.such.slot' => 'x', 'section.0.background' => 'a string for a picture' ],
+            'pictures' => [ 'heading.1' => [ 'pack' => 'hero-blue-1' ] ],
+        ] ] );
+        $this->assertSame( 200, $r['status'], (string) json_encode( $r['body'] ) );
+        $this->assertSame( [], $r['body']['applied'] );
+        $this->assertEqualsCanonicalizing(
+            [ [ 'section' => 0, 'slot' => 'no.such.slot' ], [ 'section' => 0, 'slot' => 'section.0.background' ], [ 'section' => 0, 'slot' => 'heading.1' ] ],
+            $r['body']['ignored']
+        );
+        $this->assertSame( self::brief(), $this->storedBrief( $o['id'] ) );
+    }
+
+    public function testAFillThatWritesNothingKeepsTheHashButStillRefusesAStaleOne(): void
+    {
+        $o = $this->open();
+        $r = $this->fill( $o, [ [ 'section' => 0, 'slots' => [ 'no.such.slot' => 'x' ] ] ] );
+        $this->assertSame( 200, $r['status'] );
+        $this->assertSame( $o['hash'], $r['body']['base_hash'] );
+        $this->fill( $o, [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'Newer' ] ] ] );
+        $stale = $this->fill( $o, [ [ 'section' => 0, 'slots' => [ 'no.such.slot' => 'x' ] ] ] );
+        $this->assertSame( 409, $stale['status'] );
+    }
+
+    public function testFillRefusesBadShapesForTheWholeCallAndWritesNothing(): void
+    {
+        $o   = $this->open();
+        $ok  = [ 'section' => 0, 'slots' => [ 'heading.1' => 'Good words' ] ];
+        $bad = [
+            'out of range'         => [ $ok, [ 'section' => 2, 'slots' => [ 'heading.1' => 'x' ] ] ],
+            'negative'             => [ $ok, [ 'section' => -1 ] ],
+            'duplicate'            => [ $ok, [ 'section' => 0, 'slots' => [ 'heading.0' => 'x' ] ] ],
+            'empty list'           => [],
+            'not an object entry'  => [ $ok, 'text' ],
+            'entry is a list'      => [ $ok, [ 1, 2 ] ],
+            'missing section'      => [ [ 'slots' => [ 'heading.1' => 'x' ] ] ],
+            'section as string'    => [ [ 'section' => '0', 'slots' => [ 'heading.1' => 'x' ] ] ],
+            'section as float'     => [ [ 'section' => 0.0, 'slots' => [ 'heading.1' => 'x' ] ] ],
+            'unknown entry key'    => [ [ 'section' => 0, 'words' => [ 'heading.1' => 'x' ] ] ],
+            'slots as a list'      => [ [ 'section' => 0, 'slots' => [ 'x', 'y' ] ] ],
+            'slots as a string'    => [ [ 'section' => 0, 'slots' => 'x' ] ],
+            'pictures as a string' => [ [ 'section' => 0, 'pictures' => 'x' ] ],
+            'same id twice'        => [ [ 'section' => 0, 'slots' => [ 'section.0.background' => 'a' ], 'pictures' => [ 'section.0.background' => [ 'pack' => 'hero-blue-1' ] ] ] ],
+            'nothing in it'        => [ [ 'section' => 0 ] ],
+            'too many'             => array_fill( 0, 21, $ok ),
+        ];
+        foreach ( $bad as $label => $sections ) {
+            $before = $this->rows();
+            $r      = $this->fill( $o, $sections );
+            $this->assertSame( 400, $r['status'], $label . ': ' . (string) json_encode( $r['body'] ) );
+            $this->assertArrayHasKey( 'error', $r['body'], $label );
+            $this->assertSame( $before, $this->rows(), $label );
+        }
+        foreach ( [ 'not a list' => 'x', 'object' => [ 'a' => $ok ], 'null' => null ] as $label => $sections ) {
+            $r = StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $o['id'], 'base_hash' => $o['hash'], 'sections' => $sections ] );
+            $this->assertSame( 400, $r['status'], $label );
+        }
+        $this->assertSame( 400, StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $o['id'], 'base_hash' => $o['hash'] ] )['status'], 'no sections' );
+        $this->assertSame( self::brief(), $this->storedBrief( $o['id'] ) );
+    }
+
+    public function testFillNeedsABriefIdAndAWellFormedHash(): void
+    {
+        $o  = $this->open();
+        $s  = [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'x' ] ] ];
+        $this->assertSame( 400, StudioAssistant::run( [ 'action' => 'fill', 'base_hash' => $o['hash'], 'sections' => $s ] )['status'] );
+        foreach ( [ null, '', 'abc', str_repeat( 'g', 64 ), str_repeat( 'a', 63 ), str_repeat( 'a', 65 ), $o['hash'] . "\n" ] as $hash ) {
+            $args = [ 'action' => 'fill', 'brief_id' => $o['id'], 'sections' => $s ];
+            if ( null !== $hash ) {
+                $args['base_hash'] = $hash;
+            }
+            $this->assertSame( 400, StudioAssistant::run( $args )['status'], var_export( $hash, true ) );
+        }
+        $this->assertSame( self::brief(), $this->storedBrief( $o['id'] ) );
+    }
+
+    public function testAValueOverTheLimitIs422AndNothingIsSaved(): void
+    {
+        $o      = $this->open();
+        $before = $this->rows();
+        $r      = $this->fill( $o, [ [ 'section' => 0, 'slots' => [ 'heading.1' => str_repeat( 'a', 2001 ) ] ] ] );
+        $this->assertSame( 422, $r['status'] );
+        $this->assertSame( 'INVALID_BRIEF', $r['body']['code'] );
+        $this->assertNotEmpty( $r['body']['problems'] );
+        $this->assertSame( 'TEXT_TOO_LONG', $r['body']['problems'][0]['code'] );
+        $this->assertStringNotContainsString( str_repeat( 'a', 300 ), (string) json_encode( $r['body'] ) );
+        $this->assertSame( $before, $this->rows() );
+    }
+
+    public function testHostileWordsAreSavedButNeverReachThePageRaw(): void
+    {
+        $o = $this->open();
+        $hostile = [ '{{aied:image:logo}}', '$variable(--x)$', '<script>alert(1)</script>', '</p><p>' ];
+        $slots   = [ 'heading.1' => $hostile[0], 'heading.0' => $hostile[1], 'button.0.text' => $hostile[2] ];
+        $this->assertSame( 200, $this->fill( $o, [ [ 'section' => 0, 'slots' => $slots ] ] )['status'] );
+        $o['hash'] = (string) StudioStore::get( self::ME, $o['id'] )['brief_hash'];
+        $this->assertSame( 200, $this->fill( $o, [ [ 'section' => 1, 'slots' => [ 'heading.1' => $hostile[3] ] ] ] )['status'] );
+        $saved = $this->storedBrief( $o['id'] );
+        $this->assertSame( $hostile[0], $saved['sections'][0]['slots']['heading.1'] );
+        $this->assertTrue( StudioBrief::check( $saved )['ok'] );
+        $preview = StudioService::preview( self::ME, $saved );
+        $this->assertTrue( $preview['ok'], (string) json_encode( $preview['report'] ) );
+        $markup = (string) $preview['markup'];
+        $this->assertStringNotContainsString( '<script', $markup );
+        $this->assertStringNotContainsString( '{{aied:image:logo}}', $markup );
+        $this->assertStringNotContainsString( '$variable(--x)$', $markup );
+        $this->assertStringNotContainsString( '</p><p>', $markup );
+    }
+
+    public function testTwoFillsInARowWithTheNewHashBothSucceed(): void
+    {
+        $o  = $this->open();
+        $r1 = $this->fill( $o, [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'One' ] ] ] );
+        $this->assertSame( 200, $r1['status'] );
+        $second = (string) array_column( StudioSlots::extract( (string) SectionRecipes::rawMarkup( 'card-grid-3' ) ), 'id' )[0];
+        $r2 = $this->fill( $o, [ [ 'section' => 1, 'slots' => [ $second => 'Two' ] ] ], $r1['body']['base_hash'] );
+        $this->assertSame( 200, $r2['status'], (string) json_encode( $r2['body'] ) );
+        $this->assertNotSame( $r1['body']['base_hash'], $r2['body']['base_hash'] );
+        $saved = $this->storedBrief( $o['id'] );
+        $this->assertSame( 'One', $saved['sections'][0]['slots']['heading.1'] );
+        $this->assertSame( 'Two', $saved['sections'][1]['slots'][ $second ] );
+    }
+
+    public function testTheEmptyStringClearsASlotAndTheUnfilledCountRises(): void
+    {
+        $o       = $this->open();
+        $opened  = StudioAssistant::run( [ 'action' => 'open', 'brief_id' => $o['id'] ] )['body'];
+        $r       = $this->fill( $o, [ [ 'section' => 0, 'slots' => [ 'heading.1' => '' ] ] ] );
+        $this->assertSame( 200, $r['status'] );
+        $this->assertSame( [ [ 'section' => 0, 'slot' => 'heading.1' ] ], $r['body']['applied'] );
+        $this->assertSame( $opened['unfilled_count'] + 1, $r['body']['unfilled_count'] );
+        $this->assertArrayNotHasKey( 'heading.1', $this->storedBrief( $o['id'] )['sections'][0]['slots'] );
+        $reopened = StudioAssistant::run( [ 'action' => 'open', 'brief_id' => $o['id'] ] )['body'];
+        $this->assertSame( $r['body']['unfilled_count'], $reopened['unfilled_count'] );
+        $this->assertSame( $r['body']['base_hash'], $reopened['base_hash'] );
+    }
+
+    public function testFillReportsTheLinkedPageOnlyWhenTheUserCanEditIt(): void
+    {
+        $o = $this->open();
+        $GLOBALS['__wp_posts'][77] = (object) [ 'ID' => 77, 'post_type' => 'page', 'post_status' => 'draft', 'post_content' => 'x' ];
+        StudioStore::link( self::ME, $o['id'], 77, hash( 'sha256', 'x' ) );
+        $o['hash'] = (string) StudioStore::get( self::ME, $o['id'] )['brief_hash'];
+        $GLOBALS['__wp_caps']['edit_post:77'] = false;
+        $this->assertNull( $this->fill( $o, [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'a' ] ] ] )['body']['page'] );
+        $o['hash'] = (string) StudioStore::get( self::ME, $o['id'] )['brief_hash'];
+        $GLOBALS['__wp_caps']['edit_post:77'] = true;
+        $this->assertSame( [ 'id' => 77, 'status' => 'draft' ], $this->fill( $o, [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'b' ] ] ] )['body']['page'] );
+        $this->assertCount( 1, $GLOBALS['__wp_posts'] );
+        $this->assertSame( 'x', $GLOBALS['__wp_posts'][77]->post_content, 'fill never rebuilds the page' );
+    }
+
+    public function testCreateIsAKnownKeyOnFillButIsNotActedOnYet(): void
+    {
+        $o = $this->open();
+        $r = StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $o['id'], 'base_hash' => $o['hash'], 'create' => true, 'sections' => [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'x' ] ] ] ] );
+        $this->assertSame( 200, $r['status'] );
+        $this->assertSame( [], $GLOBALS['__wp_posts'] );
+        $this->assertSame( [], $GLOBALS['__wp_inserts'] );
+    }
+
+    public function testFillNeedsEditPages(): void
+    {
+        $o = $this->open();
+        $GLOBALS['__wp_caps'] = [ 'edit_pages' => false ];
+        $this->assertSame( 403, $this->fill( $o, [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'x' ] ] ] )['status'] );
+        $GLOBALS['__wp_caps'] = [ 'edit_pages' => true ];
+        $this->assertSame( self::brief(), $this->storedBrief( $o['id'] ) );
     }
 }
