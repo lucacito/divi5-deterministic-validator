@@ -7,6 +7,9 @@ namespace AiEditorDivi5\Pro\Tools;
 use AiEditorDivi5\Pro\Args;
 use AiEditorDivi5\Pro\Batch\BatchLog;
 use AiEditorDivi5\Pro\Kinds\PageCreatedKind;
+use AiEditorDivi5\Pro\Lab\LabCompile;
+use AiEditorDivi5\Pro\Lab\LabLook;
+use AiEditorDivi5\Pro\Lab\LabSupport;
 use AiEditorDivi5\Pro\ProTool;
 use AiEditorDivi5\Pro\Site\BuildLaunch;
 use AiEditorDivi5\Pro\Site\BuildLock;
@@ -22,6 +25,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * growing batch (a "build"); an invalid page or a taken slug is refused at its own call and the build keeps every valid page.
  * `status` lists the build. Nothing becomes visible on the live site while pages are only added: the launch (publish, front
  * page, menu) is a separate, previewed step. Undo of the whole build is `undo_batch`.
+ *
+ * `add_page` takes either `content` (a Divi 5 layout) or `brief` (a Divi 5 Lab brief, compiled exactly as Lab compiles it).
+ * The brief pages of one build share one look (design language + style kit): the first names it, later ones may leave it
+ * out and take it, and a brief that names another look is refused (`LOOK_MISMATCH`). The `content` path is unchanged.
  */
 final class BuildSite implements ProTool
 {
@@ -31,14 +38,26 @@ final class BuildSite implements ProTool
 
     private const ACTIONS = [ 'add_page', 'status', 'launch' ];
 
+    /** The name the Lab guard gives this option in its refusal. */
+    public const BRIEF_OPTION = "build_site's brief option";
+
     private BuildLock $lock;
 
     /** @var \Closure():int */
     private \Closure $clock;
 
-    /** @param (\Closure():int)|null $clock the time in seconds (the tests move it) */
-    public function __construct( private BatchLog $log, ?BuildLock $lock = null, ?\Closure $clock = null )
-    {
+    /**
+     * @param (\Closure():int)|null               $clock        the time in seconds (the tests move it)
+     * @param (\Closure(string):bool)|null        $classExists  seam for the Lab guard: whether a class is installed
+     * @param (\Closure(string,string):bool)|null $methodExists seam for the Lab guard: whether a class has a method
+     */
+    public function __construct(
+        private BatchLog $log,
+        ?BuildLock $lock = null,
+        ?\Closure $clock = null,
+        private ?\Closure $classExists = null,
+        private ?\Closure $methodExists = null
+    ) {
         $this->lock  = $lock ?? new BuildLock();
         $this->clock = $clock ?? static fn (): int => time();
     }
@@ -62,9 +81,31 @@ final class BuildSite implements ProTool
                 'type'       => 'object',
                 'properties' => [
                     'action'     => [ 'type' => 'string', 'description' => 'add_page, status or launch', 'enum' => self::ACTIONS ],
-                    'title'      => [ 'type' => 'string', 'description' => 'add_page: the page title (plain text)' ],
+                    'title'      => [ 'type' => 'string', 'description' => 'add_page: the page title (plain text); not with brief' ],
                     'slug'       => [ 'type' => 'string', 'description' => 'add_page: the page slug; it must not be used by another page' ],
-                    'content'    => [ 'type' => 'string', 'description' => 'add_page: the Divi 5 layout (it must pass every check)' ],
+                    'content'    => [ 'type' => 'string', 'description' => 'add_page: the Divi 5 layout (it must pass every check), or pass brief instead' ],
+                    'brief'      => [
+                        'type'        => 'object',
+                        'description' => 'add_page: a Divi 5 Lab brief instead of content (the same brief lab_build takes); its title is the page title. Later brief pages may leave out language and kit: they take the build\'s look',
+                        'properties'  => [
+                            'version'  => [ 'type' => 'integer' ],
+                            'title'    => [ 'type' => 'string' ],
+                            'goal'     => [ 'type' => 'string' ],
+                            'language' => [ 'type' => 'string' ],
+                            'kit'      => [ 'type' => 'string' ],
+                            'sections' => [
+                                'type'  => 'array',
+                                'items' => [
+                                    'type'       => 'object',
+                                    'properties' => [
+                                        'recipe'   => [ 'type' => 'string' ],
+                                        'slots'    => [ 'type' => 'object', 'additionalProperties' => true ],
+                                        'pictures' => [ 'type' => 'object', 'additionalProperties' => true ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
                     'menu_label' => [ 'type' => 'string', 'description' => 'add_page: the menu label (default: the title), at most 100 bytes' ],
                     'in_menu'    => [ 'type' => 'boolean', 'description' => 'add_page: put the page in the primary menu at launch (default true if you may edit menus, else false)' ],
                     'is_front'   => [ 'type' => 'boolean', 'description' => 'add_page: make this the front page at launch (one page per build)' ],
@@ -94,6 +135,9 @@ final class BuildSite implements ProTool
     /** @param array<string,mixed> $a @return array<string,mixed> */
     private function addPage( array $a ): array
     {
+        if ( array_key_exists( 'brief', $a ) && null !== $a['brief'] ) {
+            return $this->addBriefPage( $a );
+        }
         $title = trim( sanitize_text_field( (string) Args::string( $a, 'title', true, 200 ) ) );
         if ( '' === $title ) {
             throw new \InvalidArgumentException( '"title" must contain text.' );
@@ -137,7 +181,150 @@ final class BuildSite implements ProTool
     }
 
     /** @return array<string,mixed> */
-    private function create( int $userId, ?int $buildId, string $title, string $slug, string $content, string $label, bool $inMenu, bool $isFront ): array
+    /**
+     * add_page with a Lab brief: guard, the build's look filled in or enforced, the brief compiled exactly as Lab compiles
+     * it, then the same lock, slug and insert path as a content page.
+     *
+     * @param array<string,mixed> $a
+     * @return array<string,mixed>
+     */
+    private function addBriefPage( array $a ): array
+    {
+        if ( array_key_exists( 'content', $a ) && null !== $a['content'] ) {
+            throw new \InvalidArgumentException( 'Pass either "content" or "brief", not both.' );
+        }
+        if ( array_key_exists( 'title', $a ) && null !== $a['title'] ) {
+            throw new \InvalidArgumentException( 'Leave out "title" when you pass "brief": the brief\'s own title is the page title.' );
+        }
+        $brief = $a['brief'];
+        if ( ! is_array( $brief ) || ( [] !== $brief && array_is_list( $brief ) ) ) {
+            throw new \InvalidArgumentException( '"brief" must be an object.' );
+        }
+        $why = LabSupport::unsupported( self::BRIEF_OPTION, $this->classExists, $this->methodExists );
+        if ( null !== $why ) {
+            throw new \InvalidArgumentException( $why );
+        }
+
+        $slug = sanitize_title( (string) Args::string( $a, 'slug', true, 200 ) );
+        if ( '' === $slug ) {
+            throw new \InvalidArgumentException( '"slug" must contain letters or digits.' );
+        }
+        if ( strlen( $slug ) > 200 ) {
+            throw new \InvalidArgumentException( '"slug" is too long: at most 200 characters once cleaned (accents and symbols count for several).' );
+        }
+        $label   = array_key_exists( 'menu_label', $a ) && null !== $a['menu_label'] ? trim( sanitize_text_field( (string) Args::string( $a, 'menu_label', true, 100 ) ) ) : '';
+        $canMenu = current_user_can( 'edit_theme_options' );
+        $inMenu  = ! array_key_exists( 'in_menu', $a ) || null === $a['in_menu'] ? $canMenu : Args::bool( $a, 'in_menu' );
+        $isFront = Args::bool( $a, 'is_front' );
+        $buildId = Args::int( $a, 'build_id', false );
+        if ( $inMenu && ! $canMenu ) {
+            throw new \InvalidArgumentException( 'Putting a page in the primary menu needs the edit_theme_options permission, which you do not have. Pass "in_menu": false.' );
+        }
+        if ( $isFront && ! current_user_can( 'manage_options' ) ) {
+            throw new \InvalidArgumentException( 'Making a page the front page needs the manage_options permission, which you do not have. Leave out "is_front".' );
+        }
+
+        // The build is read here to gate the brief before the lock (as the content path gates before the lock); create()
+        // reads it again under the lock.
+        $userId = (int) get_current_user_id();
+        $build  = $this->buildFor( $buildId, $userId );
+        $brief  = self::fillLook( $brief, null === $build ? null : self::buildLook( $build ) );
+
+        $compiled = LabCompile::compile( $brief );
+        if ( empty( $compiled['ok'] ) || ! is_string( $compiled['markup'] ?? null ) ) {
+            throw new \InvalidArgumentException( self::briefRefusal( $compiled ) );
+        }
+        $clean = LabCompile::clean( $brief );
+        $title = (string) ( $clean['title'] ?? '' );
+        $look  = LabLook::of( $brief );
+        if ( '' === $title || null === $look ) {
+            throw new \InvalidArgumentException( 'The page was not created: the brief could not be read. Check it with lab_build and try again.' );
+        }
+        $markup = $compiled['markup'];
+
+        if ( ! $this->lock->acquire( $userId ) ) {
+            throw new \InvalidArgumentException( 'Another add_page call is still running for you. Wait a moment and call again.' );
+        }
+        try {
+            $result = $this->create( $userId, $buildId, $title, $slug, $markup, '' === $label ? $title : $label, $inMenu, $isFront, [ 'look' => $look ] );
+        } finally {
+            $this->lock->release( $userId );
+        }
+        $result['lab'] = [
+            'brief_id' => null,
+            'stored'   => false,
+            'unfilled' => count( (array) $compiled['unfilled'] ),
+            'report'   => [
+                'problems'   => $compiled['problems'],
+                'violations' => $compiled['violations'],
+                'unfilled'   => $compiled['unfilled'],
+                'refused'    => $compiled['refused'],
+                'warnings'   => $compiled['warnings'],
+                'advice'     => $compiled['advice'],
+            ],
+        ];
+
+        return $result;
+    }
+
+    /**
+     * The brief with the build's look filled in, or a refusal. No look yet, or several (`'mixed'`): the brief must name its
+     * language and nothing is enforced. One look: a brief without a language takes the whole look; a brief that names the
+     * build's language without a kit takes the build's kit; any other look is `LOOK_MISMATCH`. An unknown language is left
+     * to the compile, which reports it.
+     *
+     * @param array<string,mixed>                           $brief
+     * @param array{language:string,kit:string}|string|null $look
+     * @return array<string,mixed>
+     */
+    private static function fillLook( array $brief, array|string|null $look ): array
+    {
+        $named = array_key_exists( 'language', $brief ) && null !== $brief['language'];
+        if ( ! is_array( $look ) ) {
+            if ( ! $named ) {
+                throw new \InvalidArgumentException( 'The page was not created: this brief must name its "language" (and may name its "kit"). '
+                    . ( null === $look ? 'The first brief page of a build sets the look the later ones take.' : 'This build\'s pages have several looks, so every brief names its own.' ) );
+            }
+
+            return $brief;
+        }
+        $hasKit = array_key_exists( 'kit', $brief ) && null !== $brief['kit'];
+        if ( ! $named ) {
+            $brief = LabLook::with( $brief, $look['language'], $hasKit ? null : $look['kit'] );
+        } elseif ( ! $hasKit && $brief['language'] === $look['language'] ) {
+            $brief = LabLook::with( $brief, null, $look['kit'] );
+        }
+        $mine = LabLook::of( $brief );
+        if ( null !== $mine && $mine !== $look ) {
+            throw new \InvalidArgumentException( 'LOOK_MISMATCH: the page was not created. This build\'s pages use the design language "' . $look['language']
+                . '" with the style kit "' . $look['kit'] . '", and this brief asks for another look. Leave out "language" and "kit" to use the build\'s look, '
+                . 'restyle the build\'s pages with lab_restyle first, or start another build.' );
+        }
+
+        return $brief;
+    }
+
+    /** @param array<string,mixed> $compiled a failed `StudioCompiler::compile()` result */
+    private static function briefRefusal( array $compiled ): string
+    {
+        $lines = [];
+        foreach ( [ 'problems', 'violations' ] as $key ) {
+            foreach ( (array) ( $compiled[ $key ] ?? [] ) as $p ) {
+                if ( is_array( $p ) && is_string( $p['code'] ?? null ) ) {
+                    $path    = substr( (string) ( $p['path'] ?? '' ), 0, 80 );
+                    $lines[] = $p['code'] . ( '' === $path ? '' : ' at ' . $path ) . ( 'violations' === $key && is_string( $p['message'] ?? null ) ? ': ' . $p['message'] : '' );
+                }
+            }
+        }
+        $more  = count( $lines ) > 10 ? ' (and ' . ( count( $lines ) - 10 ) . ' more)' : '';
+        $lines = array_slice( $lines, 0, 10 );
+
+        return 'The page was not created: the brief did not pass. ' . ( [] === $lines ? 'It could not be built.' : implode( '; ', $lines ) . $more )
+            . ' lab_build (action catalog) lists the goals, languages, kits, recipes and slots.';
+    }
+
+    /** @param array<string,mixed> $extraMeta added to the item's meta after the content path's keys (brief pages: `look`) */
+    private function create( int $userId, ?int $buildId, string $title, string $slug, string $content, string $label, bool $inMenu, bool $isFront, array $extraMeta = [] ): array
     {
         $build = $this->buildFor( $buildId, $userId );
         $items = null === $build ? [] : self::pageItems( $build );
@@ -185,7 +372,7 @@ final class BuildSite implements ProTool
             throw new \InvalidArgumentException( 'WordPress could not create the page. Nothing was changed; try again.' );
         }
         $post = get_post( (int) $id );
-        $item = PageCreatedKind::itemFor( $post, [ 'in_menu' => $inMenu, 'is_front' => $isFront, 'menu_label' => $label ] );
+        $item = PageCreatedKind::itemFor( $post, [ 'in_menu' => $inMenu, 'is_front' => $isFront, 'menu_label' => $label ] + $extraMeta );
         if ( ! $this->log->append( $buildId, [ $item ] ) ) {
             wp_delete_post( (int) $id, true );
             if ( $fresh ) {
@@ -312,13 +499,44 @@ final class BuildSite implements ProTool
             }
         }
 
-        return [
+        $summary = [
             'id'         => (int) $row['id'],
             'state'      => self::state( $row ),
             'pages'      => count( $items ),
             'in_menu'    => count( array_filter( $items, static fn ( $i ): bool => ! empty( $i['meta']['in_menu'] ) ) ),
             'front_page' => $front,
         ];
+        // Only builds with a brief page carry a look, so a content-only build answers exactly as before.
+        $look = self::buildLook( $row );
+        if ( null !== $look ) {
+            $summary['look'] = $look;
+        }
+
+        return $summary;
+    }
+
+    /**
+     * The look of a build's brief pages: `{language, kit}` when they share one, `'mixed'` when they do not (only after a
+     * partial restyle), null when the build has no brief page.
+     *
+     * @param array<string,mixed> $row
+     * @return array{language:string,kit:string}|string|null
+     */
+    public static function buildLook( array $row ): array|string|null
+    {
+        $looks = [];
+        foreach ( self::pageItems( $row ) as $item ) {
+            $look = $item['meta']['look'] ?? null;
+            if ( is_array( $look ) && is_string( $look['language'] ?? null ) && is_string( $look['kit'] ?? null ) ) {
+                $one                                         = [ 'language' => $look['language'], 'kit' => $look['kit'] ];
+                $looks[ $one['language'] . "\n" . $one['kit'] ] = $one;
+            }
+        }
+        if ( [] === $looks ) {
+            return null;
+        }
+
+        return 1 === count( $looks ) ? array_values( $looks )[0] : 'mixed';
     }
 
     /** A trashed page's slug carries core's `__trashed` suffix. */

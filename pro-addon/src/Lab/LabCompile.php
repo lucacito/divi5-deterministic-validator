@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AiEditorDivi5\Pro\Lab;
 
+use AiEditorDivi5\WP\StudioBrief;
 use AiEditorDivi5\WP\StudioCompiler;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -27,5 +28,18 @@ final class LabCompile
             : null;
 
         return StudioCompiler::compile( $brief, $exists, function_exists( 'home_url' ) ? (string) home_url() : '' );
+    }
+
+    /**
+     * The brief as Lab normalises it (`StudioBrief::check()`), or null when it does not pass.
+     *
+     * @param array<string,mixed> $brief
+     * @return array<string,mixed>|null
+     */
+    public static function clean( array $brief ): ?array
+    {
+        $check = StudioBrief::check( $brief );
+
+        return $check['ok'] ? $check['brief'] : null;
     }
 }

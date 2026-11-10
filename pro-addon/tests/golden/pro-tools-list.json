@@ -383,7 +383,7 @@
                 },
                 "title": {
                     "type": "string",
-                    "description": "add_page: the page title (plain text)"
+                    "description": "add_page: the page title (plain text); not with brief"
                 },
                 "slug": {
                     "type": "string",
@@ -391,7 +391,47 @@
                 },
                 "content": {
                     "type": "string",
-                    "description": "add_page: the Divi 5 layout (it must pass every check)"
+                    "description": "add_page: the Divi 5 layout (it must pass every check), or pass brief instead"
+                },
+                "brief": {
+                    "type": "object",
+                    "description": "add_page: a Divi 5 Lab brief instead of content (the same brief lab_build takes); its title is the page title. Later brief pages may leave out language and kit: they take the build's look",
+                    "properties": {
+                        "version": {
+                            "type": "integer"
+                        },
+                        "title": {
+                            "type": "string"
+                        },
+                        "goal": {
+                            "type": "string"
+                        },
+                        "language": {
+                            "type": "string"
+                        },
+                        "kit": {
+                            "type": "string"
+                        },
+                        "sections": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "recipe": {
+                                        "type": "string"
+                                    },
+                                    "slots": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                    },
+                                    "pictures": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                    }
+                                }
+                            }
+                        }
+                    }
                 },
                 "menu_label": {
                     "type": "string",
