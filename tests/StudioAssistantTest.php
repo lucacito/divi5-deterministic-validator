@@ -220,7 +220,7 @@ class StudioAssistantTest extends TestCase
     {
         $r = StudioAssistant::run( [ 'action' => 'catalog' ] );
         $bytes = strlen( (string) json_encode( $r['body'] ) );
-        $this->assertLessThanOrEqual( 9000, $bytes, 'the catalog is ' . $bytes . ' bytes' );
+        $this->assertLessThanOrEqual( 8000, $bytes, 'the catalog is ' . $bytes . ' bytes' );
     }
 
     public function testCatalogRoleFilter(): void
@@ -372,7 +372,7 @@ class StudioAssistantTest extends TestCase
         foreach ( [ 'base_hash', 'CONFLICT', 'open again' ] as $needle ) {
             $this->assertStringContainsString( $needle, $how );
         }
-        $this->assertLessThanOrEqual( 1400, strlen( $how ) );
+        $this->assertLessThanOrEqual( 1800, strlen( $how ) );
     }
 
     // ---- fill ---------------------------------------------------------------------------------------------
@@ -898,7 +898,8 @@ class StudioAssistantTest extends TestCase
         $this->assertSame( [], $r['body']['applied'] );
         $this->assertNotSame( [], $r['body']['ignored'] );
         $this->assertSame( 'created', $r['body']['build']['mode'] );
-        $this->assertSame( $o['hash'], $r['body']['base_hash'], 'the brief row was not touched' );
+        // The build saves the brief in its normalised form (the test brief was stored raw), so the answer carries the hash stored NOW.
+        $this->assertSame( StudioStore::get( self::ME, $o['id'] )['brief_hash'], $r['body']['base_hash'] );
         $this->assertCount( 1, $GLOBALS['__wp_posts'] );
     }
 
@@ -982,7 +983,7 @@ class StudioAssistantTest extends TestCase
         $this->assertStringContainsString( 'create', $how );
         $this->assertStringContainsString( 'true', $how );
         $this->assertStringContainsString( 'draft', $how );
-        $this->assertLessThanOrEqual( 1500, strlen( $how ) );
+        $this->assertLessThanOrEqual( 1800, strlen( $how ) );
     }
 
     public function testFillNeedsEditPages(): void
@@ -1113,5 +1114,135 @@ class StudioAssistantTest extends TestCase
         $this->assertSame( 200, $r['status'], (string) json_encode( $r['body'] ) );
         $this->assertSame( StudioStore::MAX_PER_USER, StudioStore::countFor( self::ME ) );
         $this->assertSame( array_merge( $ids, [ $id ] ), $this->briefIds() );
+    }
+
+    // ---- Blind dogfood round 1 ----------------------------------------------------------------------------
+
+    public function testFillWithCreateCanOmitSectionsAndJustBuilds(): void
+    {
+        $this->mayCreate();
+        $o = $this->open();
+        $r = StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $o['id'], 'base_hash' => $o['hash'], 'create' => true ] );
+        $this->assertSame( 200, $r['status'], (string) json_encode( $r['body'] ) );
+        $this->assertSame( [], $r['body']['applied'] );
+        $this->assertSame( 'created', $r['body']['build']['mode'] );
+        $this->assertCount( 1, $GLOBALS['__wp_posts'] );
+        $this->assertSame( StudioStore::get( self::ME, $o['id'] )['brief_hash'], $r['body']['base_hash'], 'the hash answered is the one stored now' );
+        $this->assertSame( (array) StudioBrief::check( self::brief() )['brief'], $this->storedBrief( $o['id'] ), 'the words are exactly the ones already stored' );
+        // An empty list means the same, and a second call (with the new hash) rebuilds the untouched draft in place.
+        $again = StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $o['id'], 'base_hash' => $r['body']['base_hash'], 'create' => true, 'sections' => [] ] );
+        $this->assertSame( 200, $again['status'], (string) json_encode( $again['body'] ) );
+        $this->assertSame( 'overwritten', $again['body']['build']['mode'] );
+        $this->assertCount( 1, $GLOBALS['__wp_posts'] );
+    }
+
+    public function testFillWithCreateAndNoSectionsStillNeedsTheCurrentHash(): void
+    {
+        $this->mayCreate();
+        $o = $this->open();
+        $this->fill( $o, [ [ 'section' => 0, 'slots' => [ 'heading.1' => 'Newer' ] ] ] );
+        $r = StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $o['id'], 'base_hash' => $o['hash'], 'create' => true ] );
+        $this->assertSame( 409, $r['status'] );
+        $this->assertSame( [], $GLOBALS['__wp_posts'], 'nothing was built' );
+        // Without create, sections stays required.
+        $this->assertSame( 400, StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $o['id'], 'base_hash' => $o['hash'] ] )['status'] );
+        $this->assertSame( 400, StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => $o['id'], 'base_hash' => $o['hash'], 'sections' => [] ] )['status'] );
+        // The brief still has to exist.
+        $this->assertSame( 404, StudioAssistant::run( [ 'action' => 'fill', 'brief_id' => 9999, 'base_hash' => $o['hash'], 'create' => true ] )['status'] );
+        $this->assertSame( 400, StudioAssistant::run( [ 'action' => 'fill', 'base_hash' => $o['hash'], 'create' => true ] )['status'] );
+    }
+
+    public function testSamplesAreCutAtAWordWithAnEllipsis(): void
+    {
+        $cut = 0;
+        foreach ( SectionRecipes::names() as $name ) {
+            $raw = StudioSlots::extract( (string) SectionRecipes::rawMarkup( $name ) );
+            $got = StudioAssistant::run( [ 'action' => 'catalog', 'recipe' => $name ] )['body']['slots'];
+            foreach ( $raw as $i => $slot ) {
+                if ( 'picture' === $slot['kind'] ) {
+                    continue;
+                }
+                $full   = trim( wp_strip_all_tags( (string) $slot['sample'] ) );
+                $sample = $got[ $i ]['sample'];
+                if ( mb_strlen( $full ) <= 80 ) {
+                    $this->assertSame( $full, $sample, "$name {$slot['id']} is short, so it is whole" );
+                    continue;
+                }
+                ++$cut;
+                $this->assertStringEndsWith( '…', $sample, "$name {$slot['id']}" );
+                $this->assertLessThanOrEqual( 81, mb_strlen( $sample ), "$name {$slot['id']}" );
+                $prefix = mb_substr( $sample, 0, -1 );
+                $this->assertSame( $prefix, mb_substr( $full, 0, mb_strlen( $prefix ) ), "$name {$slot['id']} is a prefix" );
+                $next = mb_substr( $full, mb_strlen( $prefix ), 1 );
+                $this->assertMatchesRegularExpression( '/^\s$/u', $next, "$name {$slot['id']} is cut at a word boundary" );
+                $this->assertSame( $prefix, rtrim( $prefix ), 'no trailing space before the ellipsis' );
+            }
+        }
+        $this->assertGreaterThan( 0, $cut, 'the library has samples longer than the cut' );
+    }
+
+    public function testRecipeCatalogCarriesTheTitleAndDescription(): void
+    {
+        foreach ( [ 'card-grid-3', 'hero-cta' ] as $name ) {
+            $r    = StudioAssistant::run( [ 'action' => 'catalog', 'recipe' => $name ] )['body'];
+            $info = SectionRecipes::describe( $name );
+            $this->assertNotNull( $info );
+            $this->assertNotSame( '', $info['title'] );
+            $this->assertNotSame( '', $info['description'] );
+            $this->assertSame( $info['title'], $r['title'] );
+            $this->assertSame( $info['description'], $r['description'] );
+        }
+        $this->assertNull( SectionRecipes::describe( 'no-such-recipe' ) );
+        $this->assertStringContainsString( 'image', strtolower( (string) StudioAssistant::run( [ 'action' => 'catalog', 'recipe' => 'card-grid-3' ] )['body']['description'] ) );
+    }
+
+    public function testCatalogListsTheBuiltInPicturesFromThePack(): void
+    {
+        $tokens = array_map( static fn ( array $i ): string => (string) $i['token'], \AiEditorDivi5\WP\ImagePack::manifest()['images'] );
+        $this->assertNotEmpty( $tokens );
+        foreach ( [ [], [ 'role' => 'hero' ] ] as $extra ) {
+            $b = StudioAssistant::run( array_merge( [ 'action' => 'catalog' ], $extra ) )['body'];
+            $this->assertSame( $tokens, $b['pictures']['pack'] );
+            $this->assertStringContainsString( '{"pack": token}', $b['pictures']['how'] );
+            $this->assertStringContainsString( '{"url": address}', $b['pictures']['how'] );
+        }
+        // A listed token really is accepted by a brief.
+        $brief = self::brief();
+        $brief['sections'][0]['pictures'] = [ 'section.0.background' => [ 'pack' => $tokens[0] ] ];
+        $this->assertTrue( StudioBrief::check( $brief )['ok'] );
+        $this->assertSame( 200, StudioAssistant::run( [ 'action' => 'build', 'brief' => $brief ] )['status'] );
+        $this->assertArrayNotHasKey( 'pictures', StudioAssistant::run( [ 'action' => 'catalog', 'recipe' => 'hero-cta' ] )['body'] );
+    }
+
+    public function testCatalogHowSaysWhatGoalSampleCopyAndKitsDo(): void
+    {
+        $how = (string) StudioAssistant::run( [ 'action' => 'catalog' ] )['body']['how'];
+        foreach ( [ 'goal', 'sample copy', 'cannot be removed', 'kit', 'style-kits', 'may be left out' ] as $needle ) {
+            $this->assertStringContainsString( $needle, $how, $needle );
+        }
+        $this->assertLessThanOrEqual( 1800, strlen( $how ) );
+    }
+
+    public function testTheClaimsInHowAreTrue(): void
+    {
+        // 1. goal does not change the page the tool builds.
+        $a = self::brief();
+        $b = self::brief();
+        $a['goal'] = 'sell';
+        $b['goal'] = 'explain';
+        $pa = \AiEditorDivi5\WP\StudioService::preview( self::ME, $a );
+        $pb = \AiEditorDivi5\WP\StudioService::preview( self::ME, $b );
+        $this->assertTrue( $pa['ok'] && $pb['ok'] );
+        $this->assertSame( $pa['markup'], $pb['markup'] );
+        // 2. an unfilled slot keeps its sample copy on the page.
+        $sample = '';
+        foreach ( StudioAssistant::run( [ 'action' => 'catalog', 'recipe' => 'card-grid-3' ] )['body']['slots'] as $slot ) {
+            if ( 'text' === $slot['kind'] && preg_match( '/^[A-Za-z ]{8,}$/', $slot['sample'] ) ) {
+                $sample = $slot['sample'];
+                break;
+            }
+        }
+        $this->assertNotSame( '', $sample );
+        $this->assertStringContainsString( $sample, (string) $pa['markup'] );
     }
 }

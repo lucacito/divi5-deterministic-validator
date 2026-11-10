@@ -122,11 +122,11 @@ The same 6-section page ("book" goal, editorial look, 59 filled slots) built two
 | A total, preview then create | both calls and both answers | 10,427 | 2,607 |
 | B total | create_page call plus its answer | 40,666 | 10,167 |
 | lab_build overhead: tool definition | its entry in tools/list, read once per conversation | 2,776 | 694 |
-| lab_build overhead: one catalog answer | action "catalog" with no filter, read once before building | 4,290 | 1,073 |
-| lab_build catalog, role "hero" | action "catalog" filtered to one role, when asked for | 2,857 | 715 |
-| lab_build catalog, one recipe | action "catalog" with recipe "hero-cta": its slot ids, kinds and sample text | 434 | 109 |
+| lab_build overhead: one catalog answer | action "catalog" with no filter, read once before building | 5,463 | 1,366 |
+| lab_build catalog, role "hero" | action "catalog" filtered to one role, when asked for | 4,030 | 1,008 |
+| lab_build catalog, one recipe | action "catalog" with recipe "hero-cta": its slot ids, kinds and sample text | 544 | 136 |
 
-What this shows: for this page the brief route writes and reads 5,251 bytes (about 1,313 tokens) and the markup route 40,666 bytes (about 10,167 tokens); the answers are small in both, so the difference is almost all in what the assistant has to WRITE. The one-time overhead of the brief route (the tool definition plus one catalog answer) is 7,066 bytes (about 1,767 tokens). The saving on this one page (35,415 bytes) is larger than that overhead.
+What this shows: for this page the brief route writes and reads 5,251 bytes (about 1,313 tokens) and the markup route 40,666 bytes (about 10,167 tokens); the answers are small in both, so the difference is almost all in what the assistant has to WRITE. The one-time overhead of the brief route (the tool definition plus one catalog answer) is 8,239 bytes (about 2,060 tokens). The saving on this one page (35,415 bytes) is larger than that overhead.
 
 What it does not show:
 

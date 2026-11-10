@@ -363,6 +363,17 @@ final class SectionRecipes
         return null;
     }
 
+    /** The title and the one-sentence description of a recipe, or null when there is no such recipe. @return array{title:string,description:string}|null */
+    public static function describe( string $name ): ?array
+    {
+        foreach ( self::all() as $r ) {
+            if ( $r['name'] === $name ) {
+                return [ 'title' => (string) ( $r['title'] ?? '' ), 'description' => (string) ( $r['description'] ?? '' ) ];
+            }
+        }
+        return null;
+    }
+
     /**
      * Names of recipes whose layout and role are not in the avoid lists, in catalog order
      * (deterministic), at most $limit. $onlyRoles and $onlyBackgrounds, when not empty, keep only recipes whose role /
