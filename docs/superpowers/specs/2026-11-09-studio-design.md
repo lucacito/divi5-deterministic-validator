@@ -12,7 +12,7 @@ Why this is different: every competitor in this space lets an AI write the outpu
 
 ## Goals
 
-1. A new admin tab **Studio** in the free plugin. A five-step screen with a live preview beside the questions. A person with no technical knowledge, and no AI connection, ends with a good-looking Divi 5 draft page in a few minutes.
+1. A new admin tab **Divi 5 Lab** (internal name Studio) in the free plugin. A five-step screen with a live preview beside the questions. A person with no technical knowledge, and no AI connection, ends with a good-looking Divi 5 draft page in a few minutes.
 2. A brief format and a compiler (pure PHP, deterministic, no network, no AI) that both the screen and the AI route use.
 3. An AI route (MCP and REST) where an assistant sends or completes a brief and gets a preview or a saved draft, instead of writing Divi markup. A button in Studio hands the saved brief to the person's assistant to write the words.
 4. A saved brief per Studio-made page, so the look or the words can be changed and the page rebuilt.
@@ -46,7 +46,7 @@ Why this is different: every competitor in this space lets an AI write the outpu
 
 ## The five steps (decided with the owner)
 
-The screen is a stepper on the left and a live preview on the right; every answer changes the preview. Tab name: **Studio**.
+The screen is a stepper on the left and a live preview on the right; every answer changes the preview. Tab name: **Divi 5 Lab** (owner decision 2026-11-10; "Studio" stays the internal code name).
 
 1. **Goal and business.** What the page is for (sell, book a call, collect sign-ups, explain, show work), who it is for, the one action wanted, business name and one line (pre-filled from the site title and tagline). Chooses the persuasion flow and the suggested section stack (`LandingGuide` stages, recipe `role`).
 2. **Look and feel.** One of the 10 design languages, shown on the person's own page skeleton; a button style from the kits; an airy-to-compact density control (recipe `density`). Switching re-skins the preview instantly.
