@@ -10,6 +10,9 @@ declare(strict_types=1);
  */
 if ( ! function_exists( 'get_posts' ) ) {
     function get_posts( $args = [] ) {
+        if ( isset( $GLOBALS['__get_posts_handler'] ) && is_callable( $GLOBALS['__get_posts_handler'] ) ) {
+            return ( $GLOBALS['__get_posts_handler'] )( $args ); // a test that needs real post queries (StudioPreviewTest) installs its own
+        }
         if ( isset( $args['meta_key'] ) ) {
             return ! empty( $GLOBALS['__wp_meta_keys'][ $args['meta_key'] ] ) ? [ 1 ] : [];
         }

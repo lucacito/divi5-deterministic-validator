@@ -16,6 +16,9 @@ if ( ! class_exists( 'WP_Post' ) ) {
         public string $post_title = '';
         public string $post_content = '';
         public string $post_name = '';
+        public int $post_author = 0;
+        public string $post_modified_gmt = '';
+        public string $post_modified = '';
         public ?string $_wp_trash_meta_status = null;
     }
 }
@@ -57,6 +60,22 @@ if ( ! function_exists( 'current_user_can' ) ) {
         }
 
         return $GLOBALS['__wp_can'] ?? true;
+    }
+}
+if ( ! function_exists( 'user_can' ) ) {
+    // Per-user map like current_user_can's: $GLOBALS['__wp_user_caps'][ $user ][ 'edit_post:12' ] or [ 'edit_post' ]; a user
+    // with no map can do everything (so tests that do not care need no setup).
+    function user_can( $user, $cap, ...$args ) {
+        $map = $GLOBALS['__wp_user_caps'][ (int) $user ] ?? null;
+        if ( ! is_array( $map ) ) {
+            return true;
+        }
+        $perId = $cap . ':' . ( $args[0] ?? '' );
+        if ( array_key_exists( $perId, $map ) ) {
+            return (bool) $map[ $perId ];
+        }
+
+        return (bool) ( $map[ $cap ] ?? false );
     }
 }
 if ( ! function_exists( 'get_the_title' ) ) {

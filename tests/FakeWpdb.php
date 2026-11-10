@@ -64,6 +64,24 @@ final class FakeWpdb
         );
     }
 
+    /** Stand-in for what dbDelta() does for the Studio brief table. */
+    public function createStudioTable(): void
+    {
+        $this->pdo->exec(
+            "CREATE TABLE IF NOT EXISTS {$this->prefix}ai_editor_divi5_studio (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                created_by INTEGER NOT NULL,
+                page_id INTEGER NULL,
+                brief TEXT NOT NULL,
+                brief_hash TEXT NOT NULL,
+                content_hash TEXT NULL,
+                plugin_version TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )"
+        );
+    }
+
     public function get_charset_collate(): string
     {
         return '';

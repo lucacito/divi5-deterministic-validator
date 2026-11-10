@@ -1,0 +1,113 @@
+/* JHMG AI Editor for Divi 5: the Lab tab. Uses the admin tokens of admin.css (.aied). */
+
+.aied-lab-nojs { font-size: 14px; margin: 16px 0; }
+.aied-lab[hidden], .aied-lab [hidden] { display: none !important; }
+
+.aied-lab-intro { margin-bottom: 16px; }
+.aied-lab-lead { font-size: 15px; margin: 0 0 8px; }
+.aied-lab-facts { margin: 0 0 0 18px; list-style: disc; color: var(--aied-muted); }
+.aied-lab-facts li { margin: 2px 0; }
+
+.aied-lab-status { min-height: 1.5em; margin: 0 0 12px; font-weight: 600; }
+
+/* Full width: on this tab the page wrap itself is not capped, so the stepper and the preview can use the whole of
+   #wpbody-content. Everything else (top bar, tabs, notices, intro, status line) keeps the 1120px column of the other tabs. */
+.aied.aied--lab { max-width: none; margin-left: 0; margin-right: 0; }
+.aied--lab > *:not(.aied-view),
+.aied--lab .aied-view > *:not(#aied-lab-app),
+.aied--lab .aied-lab-intro,
+.aied--lab .aied-lab-status { max-width: 1120px; margin-left: 2px; margin-right: 20px; }
+.aied--lab .aied-lab-intro { margin-bottom: 16px; }
+
+/* The steps column is narrow; the preview takes the rest and shows the page at a true device width, scaled to fit. */
+.aied-lab-layout { width: 100%; display: grid; grid-template-columns: minmax(340px, 420px) minmax(0, 1fr); gap: 20px; align-items: start; }
+.aied-lab-form { min-width: 0; }
+
+/* Stepper: a real list of buttons; the current step is bold, underlined and numbered, not only coloured. */
+.aied-lab-stepper { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0 0 14px; padding: 0; }
+.aied-lab-stepper li { margin: 0; }
+.aied-lab-step {
+    display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; cursor: pointer;
+    border: 1px solid var(--aied-line); border-radius: 999px; background: var(--aied-surface);
+    color: var(--aied-ink); font-size: 13px;
+}
+.aied-lab-step__num {
+    display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
+    border: 1px solid currentColor; font-size: 11px; font-weight: 700;
+}
+.aied-lab-step[aria-current="step"] { border-color: var(--aied-accent); color: var(--aied-accent); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.aied-lab-step[aria-current="step"] .aied-lab-step__num { background: var(--aied-accent); border-color: var(--aied-accent); color: #fff; }
+.aied-lab-step:focus-visible, .aied-lab button:focus-visible, .aied-lab select:focus-visible, .aied-lab input:focus-visible, .aied-lab textarea:focus-visible, .aied-lab a:focus-visible {
+    outline: 2px solid var(--aied-accent); outline-offset: 2px;
+}
+
+.aied-lab-panel h2 { margin-top: 0; font-size: 18px; }
+.aied-lab-panel h2:focus { outline: none; }
+.aied-lab-panel h2:focus-visible { outline: 2px solid var(--aied-accent); outline-offset: 4px; }
+.aied-lab-panel h3 { font-size: 14px; margin: 16px 0 6px; }
+
+.aied-lab-field { margin: 12px 0; }
+.aied-lab-field label, .aied-lab-picture > label { display: block; font-weight: 600; margin-bottom: 4px; }
+.aied-lab-field input[type="text"], .aied-lab-field select, .aied-lab-field textarea, .aied-lab-picture select, .aied-lab-picture input[type="text"] { width: 100%; max-width: 100%; }
+.aied-lab .description { margin: 4px 0 0; color: var(--aied-muted); }
+
+.aied-lab-choices { border: 0; margin: 12px 0; padding: 0; }
+.aied-lab-choices legend { font-weight: 600; margin-bottom: 6px; padding: 0; }
+.aied-lab-choice { display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; margin: 0 0 6px; border: 1px solid var(--aied-line); border-radius: 8px; cursor: pointer; }
+.aied-lab-choice input { margin-top: 3px; }
+.aied-lab-choice:has(input:checked) { border-color: var(--aied-accent); box-shadow: inset 3px 0 0 var(--aied-accent); }
+.aied-lab-choice__text strong { display: block; }
+.aied-lab-inline { display: flex; flex-wrap: wrap; gap: 6px; }
+.aied-lab-inline legend { width: 100%; }
+.aied-lab-inline .aied-lab-choice { flex: 1 1 140px; }
+.aied-lab-languages { max-height: 420px; overflow: auto; padding-right: 4px; }
+
+.aied-lab-sections { list-style: none; margin: 0; padding: 0; }
+.aied-lab-section { border: 1px solid var(--aied-line); border-radius: 8px; padding: 10px 12px; margin: 0 0 10px; }
+.aied-lab-section.is-off { border-style: dashed; opacity: .8; }
+.aied-lab-section__head { display: flex; gap: 8px; align-items: center; }
+.aied-lab-section__head h3 { margin: 0; }
+.aied-lab-section__tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0 0; }
+.aied-lab-tag { font-size: 12px; border: 1px solid var(--aied-muted); border-radius: 999px; padding: 0 8px; color: var(--aied-muted); }
+.aied-lab-note { color: var(--aied-warn); font-weight: 600; margin: 6px 0 0; }
+
+.aied-lab-handoff { background: #f6f7fb; border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; }
+.aied-lab-handoff .button { margin: 0 6px 6px 0; }
+.aied-lab-section-words { border: 1px solid var(--aied-line); border-radius: 8px; padding: 6px 12px 10px; margin: 0 0 12px; }
+.aied-lab-section-words > legend { font-weight: 700; padding: 0 4px; }
+.aied-lab-picture { border: 1px dashed var(--aied-line); border-radius: 8px; padding: 6px 10px 10px; margin: 12px 0; }
+.aied-lab-picture > legend { font-weight: 600; padding: 0 4px; }
+.aied-lab-picture > label { margin-top: 8px; }
+.aied-lab-picture .button { margin: 4px 0; }
+.aied-lab-chosen { margin: 4px 0; }
+.aied-lab-thumb { display: block; max-width: 160px; max-height: 90px; border-radius: 4px; border: 1px solid var(--aied-line); }
+
+.aied-lab-verdict { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--aied-line); }
+.aied-lab-verdict.is-ok { border-color: var(--aied-ok); border-left-width: 4px; }
+.aied-lab-verdict.is-bad { border-color: #b32d2e; border-left-width: 4px; }
+.aied-lab-problems ul, .aied-lab-unfilled ul { margin: 6px 0 6px 18px; list-style: disc; }
+.aied-lab-unfilled h4 { margin: 10px 0 2px; }
+.aied-lab-actions .button { margin: 0 6px 6px 0; }
+.aied-lab-created { border-top: 1px solid var(--aied-line); margin-top: 12px; padding-top: 8px; }
+.aied-lab-stepnav { display: flex; gap: 8px; justify-content: space-between; margin: 16px 0 0; }
+
+/* Preview */
+.aied-lab-preview { position: sticky; top: 46px; min-width: 0; }
+.aied-lab-preview__bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+.aied-lab-widths { display: inline-flex; gap: 4px; }
+.aied-lab-widths [aria-pressed="true"] { font-weight: 700; text-decoration: underline; border-color: var(--aied-accent); }
+.aied-lab-frame-wrap { margin: 0 auto; border: 1px solid var(--aied-line); border-radius: 8px; overflow: hidden; overflow: clip; background: #fff; max-width: 100%; box-sizing: content-box; }
+/* Width, height and scale are set by studio.js (frameBox): the frame keeps the device's own width and is scaled down. */
+.aied-lab-frame { display: block; width: 1280px; height: 600px; border: 0; transform-origin: 0 0; }
+
+@media (max-width: 1100px) {
+    .aied-lab-layout { grid-template-columns: 1fr; }
+    .aied-lab-preview { position: static; }
+}
+@media (max-width: 782px) {
+    .aied-lab-step { font-size: 12px; padding: 6px 8px; }
+    .aied-lab-languages { max-height: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .aied-lab * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}

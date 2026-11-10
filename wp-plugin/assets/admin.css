@@ -35,7 +35,7 @@
 
 /* ── Nav ───────────────────────────────────────────────── */
 .aied-nav {
-    display: flex; gap: 4px; margin: 14px 0 4px; border-bottom: 1px solid var(--aied-line);
+    display: flex; flex-wrap: wrap; gap: 4px; margin: 14px 0 4px; border-bottom: 1px solid var(--aied-line);
 }
 .aied-nav__item {
     text-decoration: none; color: var(--aied-muted); font-weight: 600; font-size: 14px;

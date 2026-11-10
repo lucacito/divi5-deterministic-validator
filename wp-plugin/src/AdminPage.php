@@ -11,7 +11,7 @@ require_once __DIR__ . '/ExtensionGuard.php';
 
 /**
  * Top-level admin experience — a guided, outcome-focused app:
- * Dashboard · Features · Settings (one menu item, internal views).
+ * Dashboard · Features · Lab · Settings (one menu item, internal views).
  */
 final class AdminPage
 {
@@ -33,6 +33,7 @@ final class AdminPage
         add_action('admin_post_ai_editor_divi5_history_sources', [$this, 'handleHistorySources']);
         add_action('admin_post_' . WhatsNew::ACTION, [$this, 'handleDismissWhatsNew']);
         add_action('wp_ajax_ai_editor_divi5_diagnose', [$this, 'handleDiagnose']);
+        StudioAjax::register();
         OAuthAdmin::registerHooks();
     }
 
@@ -78,6 +79,44 @@ final class AdminPage
                 ],
             ]
         );
+
+        // The Lab tab (internal name Studio) loads its own assets and nothing else does.
+        if ( 'studio' === self::currentTab( self::CORE_TABS ) ) {
+            StudioScreen::enqueue();
+        }
+    }
+
+    /** The core tab slugs, in order. An add-on can add tabs after them but never take one of these. */
+    private const CORE_TABS = [ 'dashboard', 'features', 'studio', 'settings' ];
+
+    /**
+     * The tabs of the screen (slug => label): the core tabs, then whatever the extension filter added and the guard allows.
+     *
+     * @return array<string,string>
+     */
+    public static function tabs( mixed $filtered ): array
+    {
+        $tabs = [
+            'dashboard' => __( 'Dashboard', 'jhmg-ai-editor-for-divi-5' ),
+            'features'  => __( 'Features', 'jhmg-ai-editor-for-divi-5' ),
+            'studio'    => __( 'Lab', 'jhmg-ai-editor-for-divi-5' ),
+            'settings'  => __( 'Settings', 'jhmg-ai-editor-for-divi-5' ),
+        ];
+        foreach ( ExtensionGuard::tabs( $filtered, self::CORE_TABS ) as $xslug => $xlabel ) {
+            $tabs[ $xslug ] = $xlabel;
+        }
+
+        return $tabs;
+    }
+
+    /** @param list<string|int> $allowed the slugs that exist; anything else is the dashboard */
+    private static function currentTab( array $allowed ): string
+    {
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display-only nav.
+        $raw = $_GET['tab'] ?? 'dashboard'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized on the next line.
+        $tab = is_string( $raw ) ? sanitize_key( wp_unslash( $raw ) ) : 'dashboard';
+
+        return in_array( $tab, array_map( 'strval', $allowed ), true ) ? $tab : 'dashboard';
     }
 
     // ---------------------------------------------------------------
@@ -504,26 +543,15 @@ final class AdminPage
         if (!current_user_can('manage_options')) {
             return;
         }
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display-only nav.
-        $tab = sanitize_key( $_GET['tab'] ?? 'dashboard' );
         // Extension point: add-ons may contribute extra tabs (slug => label).
-        $extra = ExtensionGuard::tabs( apply_filters( 'jhmg_aied_admin_tabs', [] ), [ 'dashboard', 'features', 'settings' ] );
-        if (!in_array($tab, array_merge(['dashboard', 'features', 'settings'], array_map('strval', array_keys($extra))), true)) {
-            $tab = 'dashboard';
-        }
+        $filtered = apply_filters( 'jhmg_aied_admin_tabs', [] );
+        $extra    = ExtensionGuard::tabs( $filtered, self::CORE_TABS );
+        $tabs     = self::tabs( $filtered );
+        $tab      = self::currentTab( array_keys( $tabs ) );
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- set by our own nonce-verified redirects.
         $notice  = sanitize_key( $_GET['notice'] ?? '' );
-
-        $tabs = [
-            'dashboard' => __( 'Dashboard', 'jhmg-ai-editor-for-divi-5' ),
-            'features'  => __( 'Features', 'jhmg-ai-editor-for-divi-5' ),
-            'settings'  => __( 'Settings', 'jhmg-ai-editor-for-divi-5' ),
-        ];
-        foreach ( $extra as $xslug => $xlabel ) {
-            $tabs[ $xslug ] = $xlabel;
-        }
         ?>
-        <div class="wrap aied">
+        <div class="wrap aied<?php echo 'studio' === $tab ? ' aied--lab' : ''; ?>">
             <div class="aied-topbar">
                 <div class="aied-topbar__brand">
                     <span class="aied-logo">&#10086;</span>
@@ -550,6 +578,7 @@ final class AdminPage
                 <?php
                 switch ( $tab ) {
                     case 'features': $this->viewFeatures(); break;
+                    case 'studio': StudioScreen::render(); break;
                     case 'settings': $this->viewSettings(); break;
                     default:
                         if ( isset( $extra[ $tab ] ) ) {

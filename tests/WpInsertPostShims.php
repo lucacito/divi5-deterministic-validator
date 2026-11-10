@@ -20,6 +20,8 @@ if ( ! function_exists( 'wp_insert_post' ) ) {
         $p->post_title   = (string) ( $arr['post_title'] ?? '' );
         $p->post_content = (string) ( $arr['post_content'] ?? '' );
         $p->post_name    = (string) ( $arr['post_name'] ?? '' );
+        $p->post_author  = (int) ( $arr['post_author'] ?? get_current_user_id() ); // like core: the current user
+        $p->post_modified_gmt = gmdate( 'Y-m-d H:i:s' );
         foreach ( (array) ( $arr['meta_input'] ?? [] ) as $k => $v ) {
             $GLOBALS['__wp_postmeta'][ $id ][ $k ] = $v;
         }

@@ -75,6 +75,83 @@ class StudioCompilerTest extends TestCase
         $this->assertStringContainsString( 'Fix leaks fast', (string) $a['markup'] );
     }
 
+    /**
+     * Found by the live gate (make verify-studio, Ruling 13): 62 of the 75 recipes keep raw HTML ("<p>...</p>") inside block
+     * attribute JSON, and for a user without unfiltered_html WordPress runs kses over the saved content, whose
+     * wp_pre_kses_less_than turns a block comment that holds a "<" before its first ">" into visible text
+     * ("&lt;!-- wp:divi/text {&quot;content..."): the module is gone and the page shows its code. The compiler therefore
+     * writes block attributes the way WordPress's own serializer does (serialize_block_attributes: "<", ">", "&" and "--"
+     * as \u escapes), which changes the bytes and never the values.
+     */
+    public function testBlockAttributesAreWrittenAsWordPressSerializesThem(): void
+    {
+        $opener = '/<!--\s+wp:[a-z][a-z0-9_-]*\/[a-z][a-z0-9_-]*\s+(\{(?:[^}]+|}+(?=})|(?!}\s+\/?-->).)*+\})\s+\/?-->/s';
+        foreach ( \AiEditorDivi5\WP\SectionRecipes::names() as $recipe ) {
+            $c = StudioCompiler::compile( [ 'title' => 'T', 'goal' => 'book', 'language' => 'editorial', 'sections' => [ [ 'recipe' => $recipe ] ] ] );
+            $this->assertTrue( $c['ok'], $recipe . ' ' . json_encode( [ $c['problems'], $c['violations'] ] ) );
+            $raw = (string) \AiEditorDivi5\WP\SectionRecipes::recipe( $recipe, 'editorial' );
+            preg_match_all( $opener, (string) $c['markup'], $got );
+            preg_match_all( $opener, $raw, $want );
+            $this->assertNotEmpty( $got[1], $recipe );
+            $this->assertCount( count( $want[1] ), $got[1], $recipe . ': every block is still there' );
+            foreach ( $got[1] as $i => $json ) {
+                $this->assertDoesNotMatchRegularExpression( '/[<>&]|--/', $json, $recipe . ' block ' . $i . ' carries a raw < > & or -- in its attributes' );
+                $this->assertSame( json_decode( $want[1][ $i ], true ), json_decode( $json, true ), $recipe . ' block ' . $i . ': the values are unchanged' );
+            }
+        }
+    }
+
+    /**
+     * Final fix pass, S6: an independent check of the same property, not by the production regex: every block comment
+     * of every recipe's compiled output, found by a plain scan from "<!-- wp:" to the next "-->", holds no raw "<",
+     * ">", "&" or "--" in its attribute JSON.
+     */
+    public function testNoBlockCommentHoldsARawAngleBracketAmpersandOrDoubleHyphen(): void
+    {
+        $seen = 0;
+        foreach ( \AiEditorDivi5\WP\SectionRecipes::names() as $recipe ) {
+            $markup = (string) StudioCompiler::compile( [ 'title' => 'T', 'goal' => 'book', 'language' => 'editorial', 'sections' => [ [ 'recipe' => $recipe ] ] ] )['markup'];
+            $at = 0;
+            while ( false !== ( $start = strpos( $markup, '<!-- wp:', $at ) ) ) {
+                $end = strpos( $markup, '-->', $start + 8 );
+                $this->assertNotFalse( $end, $recipe . ': an unclosed block comment' );
+                $inner = substr( $markup, $start + 4, $end - $start - 4 ); // between "<!--" and "-->"
+                $brace = strpos( $inner, '{' );
+                if ( false !== $brace ) {
+                    $json = substr( $inner, $brace );
+                    ++$seen;
+                    foreach ( [ '<', '>', '&', '--' ] as $raw ) {
+                        $this->assertStringNotContainsString( $raw, $json, $recipe . ' at byte ' . $start );
+                    }
+                }
+                $at = $end + 3;
+            }
+        }
+        $this->assertGreaterThan( 1000, $seen, 'the scan saw the blocks' );
+    }
+
+    /**
+     * Final fix pass, S5: when the attribute rewrite fails (a PCRE limit), the compiler fails closed: no markup with raw
+     * HTML in block JSON is ever handed out (it would bring the kses breakage back).
+     */
+    public function testTheAttributeRewriteFailsClosed(): void
+    {
+        $helper = new \ReflectionMethod( StudioCompiler::class, 'serializeAttributes' );
+        $jit    = ini_get( 'pcre.jit' );
+        $limit  = ini_get( 'pcre.backtrack_limit' );
+        ini_set( 'pcre.jit', '0' );
+        ini_set( 'pcre.backtrack_limit', '1' );
+        try {
+            $out = $helper->invoke( null, '<!-- wp:divi/text {"content":"<p>x</p>"} /-->' );
+        } finally {
+            ini_set( 'pcre.jit', (string) $jit );
+            ini_set( 'pcre.backtrack_limit', (string) $limit );
+        }
+        $this->assertNull( $out, 'a failed rewrite is null, never the unescaped markup' );
+        $src = (string) file_get_contents( __DIR__ . '/../wp-plugin/src/StudioCompiler.php' );
+        $this->assertMatchesRegularExpression( '/if \( null === \$markup \) \{\s*\$result\[\'problems\'\]\[\] = \[[^\]]*\'code\' => \'COMPILE_FAILED\'/', $src, 'compile() turns it into a problem' );
+    }
+
     public function testLanguageChangesTheLook(): void
     {
         $a = StudioCompiler::compile( self::brief( 'editorial' ) );

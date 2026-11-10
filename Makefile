@@ -1,4 +1,4 @@
-.PHONY: up down clean test test-pro verify-companion build-pro verify-pro-megamenu verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-switch-design verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-page-title verify-products verify-oauth verify-oauth-chatgpt verify-test-connection verify-html-to-divi verify-guide-shapes verify-shapes verify-recipes verify-kits verify-language-type verify-components verify-loop-builder verify-style-values card-report type-report rhythm-report dogfood-prepare dogfood-score dogfood-render divi-currency
+.PHONY: up down clean test test-pro verify-companion build-pro verify-pro-megamenu verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-switch-design verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-page-title verify-products verify-oauth verify-oauth-chatgpt verify-test-connection verify-html-to-divi verify-guide-shapes verify-shapes verify-recipes verify-kits verify-language-type verify-components verify-loop-builder verify-style-values verify-studio card-report type-report rhythm-report dogfood-prepare dogfood-score dogfood-render divi-currency
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -303,6 +303,13 @@ verify-loop-builder:
 
 verify-style-values:
 	@node scripts/verify-style-values.cjs
+
+# ---------------------------------------------------------------
+# verify-studio — real-site and real-browser check of the Lab screen (internal name Studio): the brief table on MariaDB, the preview draft (no history rows, no revisions, the stale sweep), a rebuild's single history row and its undo, kses for users without unfiltered_html, a slashed JSON brief through admin-ajax rendered literally by Divi, every rebuild reason, another user's brief id, a removed recipe, two goals through the five steps (one by keyboard only), widths 1600 to 400, the preview at true device widths, the Media Library, the clipboard fallback, Create and Rebuild, the Dashboard's "Lab" label. Runs the pure tests first. Dev site only; ONE gate at a time; self-cleaning (`aied studio` titles, `aied_studio_` users); `ARGS=--clean-orphans` removes leftovers
+# ---------------------------------------------------------------
+verify-studio:
+	@node scripts/test-verify-studio.cjs
+	@node scripts/verify-studio.cjs $(ARGS)
 
 # ---------------------------------------------------------------
 # divi-currency — react to a new Divi release in one command: `make divi-currency ZIP=divi/Divi-X-Y-Z.zip [OLD=divi/old.zip] [INSTALL=1] [GATES=1]`. Writes docs/divi-currency-<version>.md (new and removed modules, changed definitions, new server code, the changelog since the old version); INSTALL=1 upgrades the Docker theme and runs schema-gap + verify-modules; GATES=1 also runs the unit suite and every Divi-dependent real-site gate. It reports; it never promotes a module.

@@ -70,7 +70,13 @@ final class StudioCompiler
 
             return $result;
         }
-        $markup = implode( "\n\n", $parts );
+        $markup = self::serializeAttributes( implode( "\n\n", $parts ) );
+        if ( null === $markup ) {
+            $result['problems'][] = [ 'path' => '', 'code' => 'COMPILE_FAILED', 'message' => 'The page could not be built this time (an internal limit was reached). Nothing was saved; try again with fewer sections.' ];
+            $result['unfilled'] = $result['refused'] = $result['warnings'] = [];
+
+            return $result;
+        }
         $gate   = LayoutGate::check( $markup );
         $result['markup']     = $markup;
         $result['ok']         = $gate->isValid();
@@ -85,5 +91,35 @@ final class StudioCompiler
         }
 
         return $result;
+    }
+
+    /** A block opener and its attribute JSON (the shape WordPress's own block parser reads). */
+    private const OPENER = '/(<!--\s+wp:[a-z][a-z0-9_-]*\/[a-z][a-z0-9_-]*\s+)(\{(?:[^}]+|}+(?=})|(?!}\s+\/?-->).)*+\})(\s+\/?-->)/s';
+
+    /**
+     * Escapes "<", ">", "&" and "--" in every block's attribute JSON as \u escapes, the way WordPress's
+     * serialize_block_attributes() escapes them (core also writes \" as \u0022; this does not, so a later re-serialization
+     * by core or Divi can still change bytes, never values). Many recipes keep raw HTML in their JSON; for a user without unfiltered_html, kses (wp_pre_kses_less_than)
+     * turns such a block comment into visible text when the page is saved (found by the live gate, Ruling 13). Only bytes
+     * change: a block whose decoded attributes would differ is left as it was. Null when the rewrite failed (a PCRE
+     * limit): the caller fails closed and never hands out the markup unescaped.
+     */
+    private static function serializeAttributes( string $markup ): ?string
+    {
+        $out = preg_replace_callback(
+            self::OPENER,
+            static function ( array $m ): string {
+                if ( 1 !== preg_match( '/[<>&]|--/', $m[2] ) ) {
+                    return $m[0];
+                }
+                $json = str_replace( [ '--', '<', '>', '&' ], [ '\\u002d\\u002d', '\\u003c', '\\u003e', '\\u0026' ], $m[2] );
+                $was  = json_decode( $m[2], true );
+
+                return null !== $was && json_decode( $json, true ) === $was ? $m[1] . $json . $m[3] : $m[0];
+            },
+            $markup
+        );
+
+        return is_string( $out ) ? $out : null;
     }
 }

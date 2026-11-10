@@ -50,6 +50,7 @@ register_activation_hook(__FILE__, function (): void {
 
     AiEditorDivi5\WP\UsageTracker::createTable();
     AiEditorDivi5\WP\HistoryTable::ensureReady(true);
+    AiEditorDivi5\WP\StudioTable::ensureReady(true);
 
     if (get_option('ai_editor_divi5_api_key', '') === '') {
         AiEditorDivi5\WP\ApiKey::generate();
