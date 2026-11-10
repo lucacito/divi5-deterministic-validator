@@ -18,6 +18,12 @@
  *   G  the screen in a real administrator session (reduced motion): two goals through the five steps (one by keyboard only),
  *      widths, the preview devices, the Media Library, the clipboard fallback, Create, Rebuild, a double click, the Pages list
  *   H  the Dashboard names a Lab history row "Lab" (Ruling 9)
+ *   I  the assistant round trip through the REAL MCP handler (the tool lab_build, called with the plugin's API key as an
+ *      assistant does): catalog (size bound), a brief saved by the real admin-ajax, open (hash = the stored hash), fill with
+ *      hostile words (& <b> $5 quotes, a backslash, a line break), the screen showing them, a stale hash (409 through the tool
+ *      and through the screen's save), another user's brief id (a plain refusal), fill with create:true rendered by Divi
+ *      Group G also covers the hand-off box: visible, "Copy instruction" copies a text naming lab_build and the brief id, the
+ *      fallback textarea when the clipboard is refused
  *
  * Self-cleaning: every page, user, brief row, picture and option it creates is removed at the end, on a failure and on
  * SIGINT/SIGTERM. Throwaway pages are titled `aied studio <run>`, users are `aied_studio_<run>_<x>`; options and user 1's
@@ -60,6 +66,9 @@ function php(cmd, params) {
   if (at < 0) throw new Error(`server command ${cmd} printed no result: ${out.slice(-400)}`);
   return JSON.parse(out.slice(at + 8).split('\n')[0]);
 }
+
+/** One tools/call through the real MCP route with the plugin's API key (an assistant's call). */
+function mcp(tool, args) { return php('mcp', { tool, arguments: args || {} }); }
 
 // ── Checks ───────────────────────────────────────────────────────────
 
@@ -357,6 +366,7 @@ async function main() {
   const browser = await chromium.launch();
   state.browser = browser;
   const ctx1 = await newContext(browser, s1);
+  await ctx1.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: SITE });
 
   section('E. A slashed JSON brief through the real admin-ajax (Ruling 17)');
   {
@@ -570,6 +580,22 @@ async function main() {
       const input = first ? first.querySelector('input[type="text"]') : null;
       return Object.keys(cat).length && input ? input.id : '';
     });
+    // The hand-off to an assistant: the tool lab_build exists, so the box is offered; the button saves the brief and copies the instruction.
+    const hoUi = await p.evaluate(() => ({ ready: window.aiedLabConfig.assistantReady, present: ['aied-lab-handoff', 'aied-lab-refresh', 'aied-lab-instruction-box', 'aied-lab-handoff-2'].filter((id) => document.getElementById(id)), boxHidden: document.getElementById('aied-lab-instruction-box').hidden, textareaReadonly: document.getElementById('aied-lab-instruction').readOnly }));
+    const hoVisible = await p.isVisible('#aied-lab-handoff') && await p.isVisible('#aied-lab-refresh');
+    check(g.handoffUiProblems(hoUi).length === 0 && hoVisible, 'G book: the assistant hand-off is offered on step 4 now that the tool lab_build exists (both buttons visible, the instruction box hidden until needed, a read-only text)', { problems: g.handoffUiProblems(hoUi), visible: hoVisible });
+    await p.click('#aied-lab-handoff');
+    await p.waitForFunction((t) => document.getElementById('aied-lab-status').textContent === t, i18n.copied, { timeout: 60000 });
+    await waitIdle(p);
+    const hoBrief = Number(new URL(await p.evaluate(() => window.location.href)).searchParams.get('brief'));
+    const hoClip = await p.evaluate(() => navigator.clipboard.readText());
+    const hoBox = await p.evaluate(() => ({ value: document.getElementById('aied-lab-instruction').value, hidden: document.getElementById('aied-lab-instruction-box').hidden }));
+    check(hoBrief > 0 && g.instructionProblems(hoClip, hoBrief).length === 0, 'G book: "Copy instruction for my assistant" saved the brief (the address carries &brief=<id>) and copied a text that names lab_build and that brief id', { brief: hoBrief, problems: g.instructionProblems(hoClip, hoBrief), clipboard: hoClip.slice(0, 160) });
+    check(hoBox.value === hoClip && hoBox.hidden, 'G book: the clipboard worked, so the fallback box stays hidden, and the text in it is the copied one', hoBox.hidden);
+    const hoRow = hoBrief ? php('brief', { user: 1, id: hoBrief }) : null;
+    check(!!hoRow && hoRow.brief.title === name && hoRow.page_id === null, 'G book: the saved brief is the person\'s (their business name as the title) and no page exists yet', hoRow && { title: hoRow.brief.title, page: hoRow.page_id });
+    state.handoffBrief = hoBrief;
+
     await p.click('.aied-lab-panel[data-step="4"] [data-goto="5"]');
     check(await focusedId(p) === 'aied-lab-h5', 'G book: Next moves the focus to the step 5 heading');
     await waitPreview(p);
@@ -631,6 +657,12 @@ async function main() {
     check(php('preview-drafts', { user: 1 }).length === 0, 'G book: after Create the preview draft is gone');
     const createdMsg = await p.textContent('#aied-lab-status');
     check(createdMsg.includes(i18n.createdDraft), 'G book: the status region says the draft was created', { status: createdMsg });
+    check(labBriefId === state.handoffBrief, 'G book: Create built the page from the brief the hand-off had saved (one brief, not a second)', { handoff: state.handoffBrief, page: labBriefId });
+    await p.click('#aied-lab-handoff-2');
+    await p.waitForFunction((t) => document.getElementById('aied-lab-status').textContent === t, i18n.copied, { timeout: 60000 });
+    await waitIdle(p);
+    const hoClip2 = await p.evaluate(() => navigator.clipboard.readText());
+    check(g.instructionProblems(hoClip2, labBriefId).length === 0, 'G book: after Create, "Copy instruction" on step 5 copies the same kind of instruction for the brief of the page', g.instructionProblems(hoClip2, labBriefId));
 
     // Rebuild of the untouched page, after a changed word (Ruling 12 on the screen).
     await p.click('.aied-lab-step[data-goto="4"]');
@@ -724,10 +756,22 @@ async function main() {
       check(ok && await focusedId(p) === 'aied-lab-h' + n, `G keyboard: Next on step ${n - 1} (Tab, Enter) moves the focus to the step ${n} heading`);
     }
     await waitPreview(p);
-    // The hand-off names the assistant tool lab_build, which plan 3 adds: until it exists the screen shows none of it.
-    const handoffUi = await p.evaluate(() => ({ ready: window.aiedLabConfig.assistantReady, present: ['aied-lab-handoff', 'aied-lab-refresh', 'aied-lab-instruction-box', 'aied-lab-handoff-2'].filter((id) => document.getElementById(id)), assistantText: /assistant/i.test(document.getElementById('aied-lab-app').innerText) }));
-    check(!handoffUi.ready && handoffUi.present.length === 0 && !handoffUi.assistantText, 'G: the assistant hand-off is hidden while its tool does not exist (no buttons, no instruction box, no sentence about an assistant)', handoffUi);
-    skip('G clipboard fallback (steps 4 and 5): not run, the hand-off is hidden until the tool lab_build exists (plan 3)');
+    // The hand-off with the clipboard taken away: the screen falls back to the instruction box on step 4 and selects the text.
+    const hoUi = await p.evaluate(() => ({ ready: window.aiedLabConfig.assistantReady, present: ['aied-lab-handoff', 'aied-lab-refresh', 'aied-lab-instruction-box', 'aied-lab-handoff-2'].filter((id) => document.getElementById(id)), boxHidden: document.getElementById('aied-lab-instruction-box').hidden, textareaReadonly: document.getElementById('aied-lab-instruction').readOnly, clipboard: typeof navigator.clipboard }));
+    check(g.handoffUiProblems(hoUi).length === 0 && hoUi.clipboard === 'undefined', 'G keyboard: the hand-off is offered on step 4 and this browser has no clipboard (taken away for the check)', { problems: g.handoffUiProblems(hoUi), clipboard: hoUi.clipboard });
+    check(await tabTo(p, () => document.activeElement && document.activeElement.id === 'aied-lab-handoff'), 'G keyboard: Tab reaches "Copy instruction for my assistant"');
+    await p.keyboard.press('Enter');
+    await p.waitForFunction(() => !document.getElementById('aied-lab-instruction-box').hidden, null, { timeout: 60000 });
+    await waitIdle(p);
+    const fb = await p.evaluate(() => {
+      const ta = document.getElementById('aied-lab-instruction');
+      return { value: ta.value, focused: document.activeElement === ta, selectedAll: ta.selectionStart === 0 && ta.selectionEnd === ta.value.length && ta.value.length > 0, status: document.getElementById('aied-lab-status').textContent, step: (document.querySelector('.aied-lab-step[aria-current="step"]') || {}).textContent || '', url: window.location.href };
+    });
+    const fbBrief = Number(new URL(fb.url).searchParams.get('brief'));
+    check(fbBrief > 0 && g.instructionProblems(fb.value, fbBrief).length === 0, 'G keyboard (clipboard refused): the instruction box shows a text that names lab_build and the saved brief id', { brief: fbBrief, problems: g.instructionProblems(fb.value, fbBrief) });
+    check(fb.focused && fb.selectedAll && fb.status === i18n.copyManual && fb.step.trim().startsWith('4'), 'G keyboard (clipboard refused): the screen stays on step 4, selects the whole instruction in the box and says to copy it by hand', { focused: fb.focused, selectedAll: fb.selectedAll, status: fb.status.slice(0, 60), step: fb.step.trim() });
+    const fbRow = fbBrief ? php('brief', { user: 1, id: fbBrief }) : null;
+    check(!!fbRow && fbRow.brief.title === name, 'G keyboard (clipboard refused): the brief was saved before the instruction was offered', fbRow && fbRow.brief.title);
     const ok5 = await tabTo(p, () => document.activeElement && document.activeElement.matches('.aied-lab-panel[data-step="4"] [data-goto="5"]'));
     await p.keyboard.press('Enter');
     check(ok5 && await focusedId(p) === 'aied-lab-h5', 'G keyboard: Next on step 4 moves the focus to the step 5 heading');
@@ -763,6 +807,157 @@ async function main() {
     await p.waitForTimeout(500);
     check(dialogs.includes('beforeunload'), 'G (I1): with an unsaved change, leaving the page asks first (beforeunload)', dialogs);
     await ctx2.close();
+  }
+  section('I. The assistant round trip through the real MCP handler');
+  {
+    const tag = 'I' + crypto.randomBytes(2).toString('hex');
+    const fieldId = (i, slot) => 'aied-lab-f-' + i + '-' + slot.replace(/[^A-Za-z0-9_-]/g, '-');
+    const reg = php('tool-registered', {});
+    check(reg.listed && reg.ready, 'I: lab_build is in the tool list and the screen counts the assistant as ready', reg);
+
+    // catalog: what an assistant needs to choose, kept small.
+    const cat = mcp('lab_build', { action: 'catalog' });
+    check(cat.http === 200 && !cat.error && !cat.isError && cat.as_user === 1, 'I: catalog: the real MCP route answers as the API key\'s user (the one the screen belongs to)', { http: cat.http, as: cat.as_user, error: cat.error });
+    check(g.catalogProblems(cat.result, cat.text_bytes).length === 0, `I: catalog: goals, languages, kits and sections by role, a how text, ${cat.text_bytes} bytes (bound ${g.CATALOG_MAX_BYTES})`, g.catalogProblems(cat.result, cat.text_bytes));
+    const hero = mcp('lab_build', { action: 'catalog', recipe: 'hero-cta' });
+    check(!hero.isError && hero.result.slots.some((x) => x.id === 'heading.1' && x.role === 'headline'), 'I: catalog with a recipe lists its slots (heading.1 is the headline)');
+
+    // A brief saved by the person through the real admin-ajax, then opened by the assistant.
+    const base = g.roundTripBrief(T('I round trip'));
+    const sv = await ajax(s1, 'save', { brief: JSON.stringify(base) });
+    const briefId = sv.body && sv.body.success ? sv.body.data.id : 0;
+    check(briefId > 0 && /^[0-9a-f]{64}$/.test(sv.body.data.hash), 'I: the person\'s Save through admin-ajax stores the brief and answers its hash', { status: sv.status, body: sv.body && sv.body.data });
+    const row0 = php('brief', { user: 1, id: briefId });
+    check(row0 && row0.brief_hash === sv.body.data.hash, 'I: the hash the screen was given is the stored brief_hash');
+    const open0 = mcp('lab_build', { action: 'open', brief_id: briefId });
+    const op0 = g.openProblems(open0.result, { briefId, hash: row0.brief_hash, sections: 3 });
+    check(!open0.isError && op0.length === 0, 'I: open: the base_hash equals the stored hash, every section lists its slots and the unfilled count is right', op0);
+    check(open0.result.unfilled_count > 8 && open0.result.page === null, 'I: open: everything is still empty and no page exists yet', { unfilled: open0.result.unfilled_count, page: open0.result.page });
+
+    // The Lab screen open on that brief BEFORE the assistant writes (its hash is the old one afterwards).
+    const bagI = [];
+    bagI.ajax = [];
+    const pI = await ctx1.newPage();
+    watch(pI, bagI, 'assistant');
+    await openScreen(pI, '&brief=' + briefId);
+    await pI.click('.aied-lab-step[data-goto="4"]');
+    const before = await pI.$eval('#' + fieldId(0, 'heading.1'), (e) => e.value);
+    check(before === '', 'I: the screen opened on the brief shows the empty field before the assistant writes', before);
+
+    // fill with the hostile words.
+    const words = g.assistantWords(tag);
+    const sent = words.sections.reduce((n, x) => n + Object.keys(x.slots).length, 0);
+    const fill = mcp('lab_build', { action: 'fill', brief_id: briefId, base_hash: open0.result.base_hash, sections: words.sections });
+    const fp = g.fillProblems(fill.result, { sent, oldHash: row0.brief_hash });
+    check(fill.http === 200 && !fill.error && !fill.isError && fp.length === 0, `I: fill: ${sent} slots written (quotes, a backslash, &, <b>, $5 and a line break), none ignored, a new base_hash`, fp.length ? fp : fill.error);
+    const row1 = php('brief', { user: 1, id: briefId });
+    const exact = words.where.every((w) => row1.brief.sections[w.section].slots[w.slot] === w.text);
+    check(exact && row1.brief.sections[1].slots['number-counter.0.number'] === words.number, 'I: fill: the stored words equal the words sent, byte for byte', exact ? undefined : row1.brief.sections);
+    check(row1.brief_hash === fill.result.base_hash && row1.brief_hash !== row0.brief_hash, 'I: fill: the answer\'s base_hash is the new stored hash');
+    const open1 = mcp('lab_build', { action: 'open', brief_id: briefId });
+    const sw = g.storedWordsProblems(open1.result, words);
+    check(sw.length === 0 && open1.result.unfilled_count === open0.result.unfilled_count - sent, 'I: open after fill shows the words as the stored values (literal) and the unfilled count fell by the number written', sw.length ? sw : { was: open0.result.unfilled_count, now: open1.result.unfilled_count, sent });
+
+    // The open screen: "Get my assistant's words" brings them into the fields, literally.
+    await pI.click('#aied-lab-refresh');
+    await pI.waitForFunction((id) => document.getElementById(id) && document.getElementById(id).value !== '', fieldId(0, 'heading.1'), { timeout: 30000 });
+    await waitIdle(pI);
+    const readFields = (page) => page.evaluate((ids) => ids.map((id) => { const e = document.getElementById(id); return e ? { tag: e.tagName, value: e.value } : null; }), words.where.map((w) => fieldId(w.section, w.slot)));
+    const shown = await readFields(pI);
+    const fpr = g.fieldProblems(words.where, shown.map((o) => o || { tag: '', value: null }));
+    check(fpr.length === 0, 'I: the open screen shows the assistant\'s words in the field values after "Get my assistant\'s words" (an input drops the line break the browser cannot show; nothing else differs)', fpr);
+    const msg = await pI.textContent('#aied-lab-status');
+    const rx = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    check(new RegExp('^' + rx(i18n.mergedSome).replace('%d', '\\d+') + '|^' + rx(i18n.mergedOne)).test(msg), 'I: the screen says places were filled by the assistant', msg);
+
+    // A stale hash: the old base_hash is refused, through the tool and through the screen's own save, and nothing changes.
+    const stale = await ajax(s1, 'save', { brief: JSON.stringify(base), id: String(briefId), base_hash: row0.brief_hash });
+    const sp = g.staleSaveProblems(stale, row1.brief_hash);
+    check(sp.length === 0, 'I: a screen save with the OLD hash is HTTP 409 CONFLICT with the message and the current brief and hash', sp);
+    const lateWords = { section: 2, slots: { 'heading.0': 'Must not land' } };
+    const staleFill = mcp('lab_build', { action: 'fill', brief_id: briefId, base_hash: row0.brief_hash, sections: [lateWords] });
+    const sf = g.staleFillProblems(staleFill, row1.brief_hash);
+    check(sf.length === 0, 'I: fill with the OLD base_hash is refused as CONFLICT (a tool result the assistant can act on) and names the current hash', sf);
+    const row2 = php('brief', { user: 1, id: briefId });
+    check(row2.brief_hash === row1.brief_hash && JSON.stringify(row2.brief) === JSON.stringify(row1.brief), 'I: after both refusals the stored brief is unchanged (the assistant\'s words survive the person\'s stale save)');
+
+    // Another user's brief id is refused exactly like a missing one, in open and in fill.
+    const foreign = await ajax(sa, 'save', { brief: JSON.stringify(g.smallBrief(T('I foreign'), 'editorial', 'Theirs')) });
+    const theirs = foreign.body && foreign.body.success ? foreign.body.data.id : 0;
+    const frowBefore = php('brief', { user: U.a, id: theirs });
+    const o1 = mcp('lab_build', { action: 'open', brief_id: theirs });
+    const o2 = mcp('lab_build', { action: 'open', brief_id: 999999999 });
+    const f1 = mcp('lab_build', { action: 'fill', brief_id: theirs, base_hash: frowBefore.brief_hash, sections: [{ section: 0, slots: { 'heading.1': 'Intruder' } }] });
+    const f2 = mcp('lab_build', { action: 'fill', brief_id: 999999999, base_hash: frowBefore.brief_hash, sections: [{ section: 0, slots: { 'heading.1': 'Intruder' } }] });
+    check(theirs > 0 && g.toolRefusalProblems(o1, o2).length === 0 && o1.result.error === 'Brief not found.', 'I: another user\'s brief id in open is a plain "Brief not found." exactly like a missing id', g.toolRefusalProblems(o1, o2));
+    check(g.toolRefusalProblems(f1, f2).length === 0, 'I: another user\'s brief id in fill is refused exactly like a missing id, even with its real hash', g.toolRefusalProblems(f1, f2));
+    check(JSON.stringify(php('brief', { user: U.a, id: theirs })) === JSON.stringify(frowBefore), 'I: that other user\'s brief was not touched');
+
+    // A preview of a whole brief saves nothing.
+    const bt = T('I build preview');
+    const prev = mcp('lab_build', { action: 'build', brief: g.smallBrief(bt, 'editorial', 'Preview words') });
+    check(prev.result && prev.result.valid === true && prev.result.created === false && prev.result.markup_omitted === true && php('pages-titled', { title: bt }).length === 0, 'I: build without create previews a brief and creates no page', prev.result && { valid: prev.result.valid, created: prev.result.created });
+
+    // The screen, open on the old hash, saves while the assistant has written again: a REAL 409 through the screen, resolved.
+    const late = mcp('lab_build', { action: 'fill', brief_id: briefId, base_hash: row1.brief_hash, sections: [{ section: 2, slots: { 'heading.0': 'Assistant late headline' } }] });
+    const row3 = php('brief', { user: 1, id: briefId });
+    check(!late.isError && row3.brief_hash !== row1.brief_hash, 'I: the assistant writes again while the screen is open (the screen\'s hash is now old)', late.result && late.result.message);
+    let rewrote = 0;
+    await pI.route(AJAX, async (route) => {
+      let body = route.request().postData() || '';
+      if (!rewrote && /name="action"\r\n\r\naied_studio_save\r\n/.test(body)) {
+        const next = body.replace(/(name="base_hash"\r\n\r\n)[0-9a-f]{64}/, '$1' + row1.brief_hash);
+        if (next !== body) { rewrote++; body = next; }
+        await route.continue({ postData: body });
+        return;
+      }
+      await route.continue();
+    });
+    bagI.length = 0;
+    bagI.ajax = [];
+    await pI.fill('#' + fieldId(2, 'text.0.body.0'), 'The person wrote this note');
+    await pI.click('#aied-lab-handoff');
+    await pI.waitForFunction((t) => document.getElementById('aied-lab-status').textContent === t, i18n.copied, { timeout: 60000 });
+    await waitIdle(pI);
+    await pI.unroute(AJAX);
+    check(rewrote === 1 && bagI.ajax.join() === 'aied_studio_save 409' && bagI.every((e) => /status of 409/.test(e)), 'I: the screen\'s save carried the old hash, got HTTP 409 once, merged and sent again (the only failed request)', { rewrote, ajax: bagI.ajax, console: bagI.slice(0, 3) });
+    const row4 = php('brief', { user: 1, id: briefId });
+    const keptAll = words.where.every((w) => row4.brief.sections[w.section].slots[w.slot] === w.text) && row4.brief.sections[2].slots['heading.0'] === 'Assistant late headline';
+    check(keptAll && row4.brief.sections[2].slots['text.0.body.0'] === 'The person wrote this note', 'I: after the conflict the stored brief holds ALL of it: the first words, the late words of the assistant and the person\'s note', row4.brief.sections.map((x) => x.slots));
+    const lateField = await pI.$eval('#' + fieldId(2, 'heading.0'), (e) => e.value);
+    check(lateField === 'Assistant late headline', 'I: the screen now shows the assistant\'s late words in its field', lateField);
+    await pI.close();
+
+    // Reopened with ?brief=<id>: every word is in the fields.
+    const pR = await ctx1.newPage();
+    const bagR = [];
+    watch(pR, bagR, 'reopened');
+    await openScreen(pR, '&brief=' + briefId);
+    await pR.click('.aied-lab-step[data-goto="4"]');
+    const reShown = await readFields(pR);
+    const rfp = g.fieldProblems(words.where, reShown.map((o) => o || { tag: '', value: null }));
+    check(rfp.length === 0, 'I: the screen reopened with &brief=<id> shows the assistant\'s hostile words in the field values', rfp);
+    const reLate = await pR.evaluate((ids) => ids.map((id) => document.getElementById(id).value), [fieldId(2, 'heading.0'), fieldId(2, 'text.0.body.0')]);
+    check(reLate[0] === 'Assistant late headline' && reLate[1] === 'The person wrote this note', 'I: and the late words and the person\'s note', reLate);
+    await pR.close();
+
+    // fill with create:true builds the draft; the words render literally in Divi (as section E checks for the screen).
+    const cur = mcp('lab_build', { action: 'open', brief_id: briefId });
+    const built = mcp('lab_build', { action: 'fill', brief_id: briefId, base_hash: cur.result.base_hash, create: true, sections: [{ section: 2, slots: { 'button.0.text': 'Call us today' } }] });
+    const pageId = built.result && built.result.page ? built.result.page.id : 0;
+    if (pageId) state.pages.push(pageId);
+    check(!built.isError && pageId > 0 && built.result.build.mode === 'created' && built.result.page.status === 'draft', 'I: fill with create:true saves the words and builds one DRAFT page', built.result && { build: built.result.build, error: built.result.error, message: built.result.message });
+    if (pageId) {
+      const post = php('post', { id: pageId });
+      const cmp = php('compare', { user: 1, id: briefId, page: pageId });
+      check(post.status === 'draft' && sameLayout(cmp).ok && cmp.hash_matches, `I: the page holds the compiled layout of the stored brief (${sameLayout(cmp).how}) and the brief knows its hash`, sameLayout(cmp).ok ? undefined : cmp.diff);
+      await renderLiteral(ctx1, post.preview_url, words.where, tag, words.number, 'I (assistant words, render by Divi)');
+      // The same fill again: an untouched draft is rebuilt in place, with one undo point.
+      const cur2 = mcp('lab_build', { action: 'open', brief_id: briefId });
+      const again = mcp('lab_build', { action: 'fill', brief_id: briefId, base_hash: cur2.result.base_hash, create: true, sections: [{ section: 2, slots: { 'button.0.text': 'Call us now' } }] });
+      const rows = php('history', { id: pageId });
+      check(!again.isError && again.result.build.mode === 'overwritten' && again.result.build.page.id === pageId && rows.length === 1 && rows[0].tool === 'studio', 'I: a second fill with create:true rebuilds the untouched draft in place and writes exactly one history row', again.result && { build: again.result.build, rows: rows.length });
+    }
   }
   check(consoleBag.length === 0 && !(consoleBag.ajax || []).length, 'G: no console error, uncaught exception or failed admin-ajax request on any screen', { console: consoleBag.slice(0, 5), ajax: consoleBag.ajax });
   await ctx1.close();
