@@ -1,12 +1,12 @@
 # Token usage of the AI Editor for Divi 5 (free plugin)
 
-Measured 2026-10-25 by `scripts/measure-tokens.php`. Tokens are ESTIMATED as bytes / 4; the real count depends on the model.
+Measured 2026-11-10 by `scripts/measure-tokens.php`. Tokens are ESTIMATED as bytes / 4; the real count depends on the model.
 
 Checking a layout runs in PHP on your server and costs **0 tokens**. What costs tokens is what the assistant has to read.
 
 | What | Detail | Bytes | Approx. tokens |
 | --- | --- | ---: | ---: |
-| Tool definitions | 21 tools, loaded once per conversation (free plugin only) | 22,226 | 5,557 |
+| Tool definitions | 22 tools, loaded once per conversation (free plugin only) | 25,066 | 6,267 |
 | Reading a page (smallest) | the page's layout content (get_page_layout adds a little wrapper), from page-17-variable-heading.json | 1,152 | 288 |
 | Reading a page's outline (smallest) | get_page_layout with view "outline" on the same page: 5 blocks, each with path, name, size and the start of its text | 358 | 90 |
 | Reading a page (median) | the page's layout content (get_page_layout adds a little wrapper), from page-45-layout-3.json | 49,842 | 12,461 |
@@ -19,7 +19,7 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | A refusal: 96 badly nested blocks | 96 violations, as sent now | 8,085 | 2,022 |
 | A refusal: 96 badly nested blocks (before the compact form) | the same 96 violations, each with the full allowed list | 143,650 | 35,913 |
 | A preview (dry run) of a one-line text change | verdict plus a capped diff, on the median page | 394 | 99 |
-| The style guide (default) | get_style_guide with no topic, read once before building a layout | 28,975 | 7,244 |
+| The style guide (default) | get_style_guide with no topic, read once before building a layout | 28,982 | 7,246 |
 | The style guide, topic design-languages | get_style_guide with topic "design-languages", only when asked for | 2,588 | 647 |
 | The style guide, topic design-language:editorial | get_style_guide with topic "design-language:editorial", only when asked for | 2,532 | 633 |
 | The style guide, topic design-language:glass-dark | get_style_guide with topic "design-language:glass-dark", only when asked for | 2,617 | 655 |
@@ -43,6 +43,7 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | The style guide, topic toggles | get_style_guide with topic "toggles", only when asked for | 5,834 | 1,459 |
 | The style guide, topic forms | get_style_guide with topic "forms", only when asked for | 6,474 | 1,619 |
 | The style guide, topic composition | get_style_guide with topic "composition", only when asked for | 8,706 | 2,177 |
+| The style guide, topic loops | get_style_guide with topic "loops", only when asked for | 9,157 | 2,290 |
 | The style guide, topic style-kits | get_style_guide with topic "style-kits", only when asked for | 8,178 | 2,045 |
 | The style guide, topic kit-rules | get_style_guide with topic "kit-rules", only when asked for | 9,589 | 2,398 |
 | The style guide, topic kit-patterns | get_style_guide with topic "kit-patterns", only when asked for | 5,431 | 1,358 |
@@ -86,7 +87,7 @@ Checking a layout runs in PHP on your server and costs **0 tokens**. What costs 
 | The style guide, topic style-kit:underlined-label | get_style_guide with topic "style-kit:underlined-label", only when asked for | 8,849 | 2,213 |
 | The style guide, topic style-kit:pressable | get_style_guide with topic "style-kit:pressable", only when asked for | 9,532 | 2,383 |
 | The style guide, topic style-kit:hairline-halo | get_style_guide with topic "style-kit:hairline-halo", only when asked for | 9,251 | 2,313 |
-| The recipe catalog (default) | get_section_recipes with no filter: names under role headings, plus how to fetch one | 6,260 | 1,565 |
+| The recipe catalog (default) | get_section_recipes with no filter: names under role headings, plus how to fetch one | 6,547 | 1,637 |
 | The recipe catalog (filtered, role hero) | get_section_recipes with role "hero": the one-line description of each matching recipe | 3,895 | 974 |
 | A served recipe (hero-cta, default look) | get_section_recipes with name "hero-cta" and no design_language | 3,450 | 863 |
 | A served recipe (hero-cta, glass-dark) | the same recipe with design_language "glass-dark" (tokens filled in; the size is the markup alone) | 3,427 | 857 |
@@ -102,3 +103,36 @@ The style guide topics, the recipe catalog and a filtered catalog are read only 
 Each style-kit:<id> topic describes the kit's cards and panels, shows an inverted panel with a panel button and a toggle, and points to the generated kit-rules topic, which holds the explanation every kit shares. The largest kit topic is style-kit:neo-brutal at 9,556 bytes (the bound is 10,000, so 444 bytes of headroom; the shared explanation moved into the kit-rules topic, see its row above); the smallest is 7,982 bytes.
 
 The Pro add-on adds its own tool definitions on top of the first row.
+
+## Building a page: a brief or Divi markup
+
+The same 6-section page ("book" goal, editorial look, 59 filled slots) built two ways. A: the Lab tool `lab_build` takes a short brief (the design language, the ordered sections and the words, links and pictures for each) and the plugin builds the layout. B: the assistant sends the finished Divi markup to `create_page`. For B the markup is the compiled markup of the very same brief, so both make the same page.
+
+| What | Detail | Bytes | Approx. tokens |
+| --- | --- | ---: | ---: |
+| A: the brief alone | the brief object (title, goal, language, sections with their words) | 3,903 | 976 |
+| A: preview call written | lab_build action "build" with the brief (nothing saved) | 3,930 | 983 |
+| A: preview answer read | the report only, the markup is never sent back | 1,246 | 312 |
+| A: create call written | the same call with create true (saves the brief and one draft page) | 3,944 | 986 |
+| A: create answer read | the page reference and the report | 1,307 | 327 |
+| B: the Divi markup alone | the compiled markup of the same brief, as plain text | 33,864 | 8,466 |
+| B: create_page call written | title and post_content, as JSON (the markup is escaped inside it) | 39,626 | 9,907 |
+| B: create_page answer read | the page reference | 1,040 | 260 |
+| A total, create only | create call plus its answer | 5,251 | 1,313 |
+| A total, preview then create | both calls and both answers | 10,427 | 2,607 |
+| B total | create_page call plus its answer | 40,666 | 10,167 |
+| lab_build overhead: tool definition | its entry in tools/list, read once per conversation | 2,724 | 681 |
+| lab_build overhead: one catalog answer | action "catalog" with no filter, read once before building | 4,031 | 1,008 |
+| lab_build catalog, role "hero" | action "catalog" filtered to one role, when asked for | 2,598 | 650 |
+| lab_build catalog, one recipe | action "catalog" with recipe "hero-cta": its slot ids, kinds and sample text | 434 | 109 |
+
+What this shows: for this page the brief route writes and reads 5,251 bytes (about 1,313 tokens) and the markup route 40,666 bytes (about 10,167 tokens); the answers are small in both, so the difference is almost all in what the assistant has to WRITE. The one-time overhead of the brief route (the tool definition plus one catalog answer) is 6,755 bytes (about 1,689 tokens). The saving on this one page (35,415 bytes) is larger than that overhead.
+
+What it does not show:
+
+- The markup in B is the plugin's own compiled output. An assistant that writes Divi markup freehand writes something different: shorter and plainer, or longer when it styles every block itself. The comparison is the brief against the finished, styled, checked layout it stands for, not against what a given model would write.
+- Neither route counts the reading that comes before building. Writing styled markup usually needs the style guide (see its row above); writing a brief does not, but the assistant reads the catalog once, which is counted in the overhead rows.
+- The words, links and pictures are the same in both. The saving is the layout structure and styling, so it grows with the number of sections and shrinks for a page that is mostly long text. The words here are generic filler of about the length of the library's own sample copy, not a real business's copy.
+- Tokens are estimated as bytes / 4. The real count depends on the model, and escaped JSON usually costs more tokens per byte than plain English.
+- A brief that is previewed and changed pays for the preview call each time; markup that is sent and then fixed pays for the whole markup each time. Neither is counted.
+- Only the sizes are measured. Nothing here shows how well any assistant uses either route.

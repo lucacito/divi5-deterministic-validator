@@ -1,6 +1,6 @@
 # Studio compiler (dev note, unreleased)
 
-Plan 1 of 3 for Studio (spec `docs/superpowers/specs/2026-11-09-studio-design.md`, plan `docs/superpowers/plans/2026-11-09-studio-compiler.md`). Pure PHP in `wp-plugin/src/`. Plan 2 (the admin screen people see as **Lab**, with storage and a live preview) is built on branch `feat/studio-screen`: see "Lab screen" below. Plan 3 (the assistant tool and its guide) is not written yet. Product names: people read "Lab"; "Studio" is only the internal code name.
+Plan 1 of 3 for Studio (spec `docs/superpowers/specs/2026-11-09-studio-design.md`, plan `docs/superpowers/plans/2026-11-09-studio-compiler.md`). Pure PHP in `wp-plugin/src/`. Plan 2 (the admin screen people see as **Lab**, with storage and a live preview) is built on branch `feat/studio-screen`: see "Lab screen" below. Plan 3 (the assistant tool `lab_build`) is built on branch `feat/lab-build`: see "The assistant tool: `lab_build`" below. Product names: people read "Lab"; "Studio" is only the internal code name.
 
 ## What it does
 
@@ -121,8 +121,57 @@ Result with the assistant tool (Divi 5.15.1, WordPress 7.1.2, MariaDB 11, `lab_b
 
 - The tab is named just "Lab" (owner decision 2026-11-10, shortened from "Divi 5 Lab"). It no longer carries "Divi", but it still echoes the commercial store divi5lab.com; a WordPress.org reviewer might still read it as promoting the paid product, so keep it out of any text that names the store.
 - The kses breakage from raw HTML in recipe block JSON still affects the plugin's other write paths for users without `unfiltered_html`.
-- Merge and release; plan 3 (the `lab_build` tool and its guide).
+- Merge and release (plan 3's tool is built: see "The assistant tool: `lab_build`"); the free tool count becomes 22 at release (`docs/lab-build-release-notes-draft.md` lists every place).
 
 ### Not covered
 
 A plain Divi header without the mega menu (the desktop check reads the visible header links and the hidden menu button), a multisite install, a security plugin that blocks framing, a real AI assistant writing words (group I drives the real MCP route with the plugin's API key, but the words are the gate's own; no model is involved), the REST route of `lab_build` (the MCP route is what group I calls; REST is covered by the pure lockstep tests), reduced motion off, browsers other than Chromium, screen readers (the gate checks focus and the live region, not announcements).
+
+## The assistant tool: `lab_build` (plan 3, branch `feat/lab-build`, unreleased)
+
+Plan: `docs/superpowers/plans/2026-11-10-lab-build-tool.md`. One MCP and REST tool lets an assistant read a brief the person started in the Lab screen and fill in its words, or build a page from a brief it writes itself. Release wording and the list of places where the tool count 21 becomes 22: `docs/lab-build-release-notes-draft.md`. Measured size against writing Divi markup: `docs/token-usage.md`, section "Building a page: a brief or Divi markup".
+
+### Units
+
+| Unit | Job |
+|---|---|
+| `StudioAssistant` | the one implementation, `run( array $args ): array{status, body}`; `McpHandler` and `RestController` both call it, so the two cannot drift. Strict arguments (an unknown key is refused by name, a wrong type is refused, never cast), then one private method per action. It repeats none of `StudioService`'s overwrite rules |
+| `StudioStore::save( ..., $expectedHash )` | compare-and-set on the brief's hash; `StudioStore::CONFLICT`. An UPDATE that changes nothing is not a conflict (the row is re-read: same hash as the JSON being written means ok) |
+| `ToolCatalog` | the `lab_build` definition (so `tools/list` and the OpenAPI golden test see it) |
+| `StudioScreen`, `StudioAjax`, `studio-core.js` | the screen sends and honours the same `base_hash` (Ruling 20 above) |
+
+### The four actions
+
+* `catalog`: goals, design languages, style kits, and the recipes by role, plus the rules in one `how` text. `recipe` returns one recipe's slots (id, kind, role, a sample cut to 80 characters); `role` filters the list. Read-only. One unfiltered answer is about 4 KB (bound 8,000 B in the live gate).
+* `open`: needs `brief_id`. Returns `base_hash` (the stored brief hash), the brief, every section with its slots and values, `unfilled_count`, the linked page (only if it exists and the user may edit it) and the rules. Read-only.
+* `fill`: needs `brief_id`, `base_hash` and `sections: [{section, slots?, pictures?}]` (at most 20 entries, 200 slot ids each; a slot id in both `slots` and `pictures` is refused). Everything is checked first; the one write is a compare-and-set on the brief's hash, so a brief the person saved in the meantime is never overwritten. A slot id the section does not have, or of the wrong kind, is listed in `ignored` and written nowhere. With `create` true it then builds the page from the STORED brief: a first build makes a draft (`StudioService::create`), a brief with a page goes through `StudioService::rebuild` (overwrites only an untouched draft, otherwise a new draft and the reason).
+* `build`: needs `brief` (the whole brief). Without `create` it previews: a report, no markup, nothing saved. With `create` true it saves the brief and makes one DRAFT page through `StudioService::create` (the same duplicate guard and `LayoutGate`).
+
+### Compare-and-set
+
+`open` returns `base_hash`; every `fill` answer returns the new one. A `fill` with a stale hash writes nothing and answers `CONFLICT` with `current_base_hash`. A `fill` that applies no slot does not touch the row (a pointless save would change the hash and make an open screen see a conflict) but still refuses a stale hash.
+
+### Status codes
+
+200 ok. 400 a bad argument (also the JSON-RPC error -32602 over MCP). 403 no `edit_pages`, or `create` true without `publish_pages` (checked before anything is written). 404 a missing or another user's brief (exactly alike). 409 `CONFLICT` (a normal tool result with `isError` true over MCP). 422 an invalid brief, a refused layout or a removed recipe (`INVALID_BRIEF`, `LAYOUT_INVALID`, `RECIPE_REMOVED`; a normal tool result with the problems listed). 500 a failure inside. When a `fill` saved its words but the build failed, the answer says `words_saved`, so the assistant does not write them again.
+
+### Rules
+
+* MCP and REST only (`POST /wp-json/ai-editor-divi5/v1/lab-build`). It is not in the ChatGPT OpenAPI spec on purpose (16 free + 14 Pro = 30 operations are used up); `LabBuildLockstepTest` pins that. The ChatGPT custom MCP connector is offered the tool, the legacy Action is not.
+* No ability (the WordPress Abilities API) and no guide topic: the tool teaches itself through `catalog` and its description. The `get_style_guide` `topic` description has no headroom for a new topic name.
+* Text from the assistant is untrusted. It reaches a brief only through `StudioMerge::slots` and `StudioBrief::check`, and a page only through `StudioSlots::fill`, which escapes it (the live gate saves hostile text and Divi renders it literally).
+* Every page is a draft. Brief ownership is the acting user.
+* Live gate group I of `make verify-studio` runs the real MCP route; the whole gate is 223 PASS, 0 SKIP, 0 FAIL on Divi 5.15.1 / WordPress 7.1.2. Suites: 6962 PHP tests.
+
+### Known limits
+
+* If a draft page is created but linking it to the brief fails, the tool does not report the page id, so a retry can make a second draft.
+* The Lab screen can show a false "your assistant changed the brief" message after Create, in one race.
+* A brief that names a removed recipe makes `fill` answer 422 until the person fixes that section in the screen.
+* A `fill` whose merged brief equals the stored one succeeds even with a stale hash (nothing is written, so nothing is lost).
+* The create handler's hash compare is not atomic with the save (one compile window); `StudioStore::save` itself is.
+* The REST route is not exercised by the live gate (the MCP route is); REST is covered by the pure lockstep tests.
+* No real assistant has used the tool: the words in the gate are the gate's own, so how well a model uses the actions is unknown.
+* The words are checked for form (links, pictures, length), not for truth; the tool tells the assistant not to invent facts and to leave unknown slots empty, and an empty slot keeps its placeholder and is reported unfilled.
+* The token comparison (`docs/token-usage.md`) is against the plugin's own compiled markup, not against what a model writes freehand.
+* Found while writing the docs and NOT changed here: the `brief` property description in the `lab_build` definition says "optional style_kit", but a brief's key is `kit` (`StudioBrief` refuses `style_kit` as an unknown key), and `catalog` returns the lists but no example brief. An assistant that follows the schema text will get a 422 on the first try.
