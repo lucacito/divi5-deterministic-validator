@@ -96,7 +96,7 @@ After a successful save or create the screen rewrites its own address to `...&ta
 
 The summary reads "N PASS, S SKIP, F FAIL"; a SKIP is a check that could not run here (for example `cleanupAll()` while a real user's preview draft exists on the site, since it deletes every user's) and never counts as a PASS; only a FAIL fails the run. The cleanup deletes a post only when its title starts with `aied studio <run>`, it is exactly a gate user's preview title, or its author is a gate user (`aied_may_delete`, self-tested at setup); any other id it was handed is refused and fails the run.
 
-Result with the assistant tool (Divi 5.15.1, WordPress 7.1.2, MariaDB 11, `lab_build` built): 223 PASS, 0 SKIP, 0 FAIL, the old clipboard SKIP now a PASS. Result after the final fix pass of plan 2, before the tool existed: 176 PASS, 1 SKIP, 0 FAIL; the SKIP was the clipboard fallback of the hand-off, hidden until `lab_build` exists; `cleanupAll()` ran live (no real user's preview draft existed). Before that pass: 172 PASS, 0 FAIL, in four of five runs of the script; the fifth had one 404 for a preview-frame load (`/?page_id=<preview>&aied_v=2`, without `preview=true`) that did not come back in the next four runs. The gate now logs every failed request with its frame and redirect, so a repeat names its source.
+Result with the assistant tool (Divi 5.15.1, WordPress 7.1.2, MariaDB 11, `lab_build` built; last run at commit 58ac16a): 223 PASS, 0 SKIP, 0 FAIL, the old clipboard SKIP now a PASS. Result after the final fix pass of plan 2, before the tool existed: 176 PASS, 1 SKIP, 0 FAIL; the SKIP was the clipboard fallback of the hand-off, hidden until `lab_build` exists; `cleanupAll()` ran live (no real user's preview draft existed). Before that pass: 172 PASS, 0 FAIL, in four of five runs of the script; the fifth had one 404 for a preview-frame load (`/?page_id=<preview>&aied_v=2`, without `preview=true`) that did not come back in the next four runs. The gate now logs every failed request with its frame and redirect, so a repeat names its source.
 
 ### What the gate found (and what changed)
 
@@ -162,7 +162,7 @@ Plan: `docs/superpowers/plans/2026-11-10-lab-build-tool.md`. One MCP and REST to
 * No ability (the WordPress Abilities API) and no guide topic: the tool teaches itself through `catalog` and its description. The `get_style_guide` `topic` description has no headroom for a new topic name.
 * Text from the assistant is untrusted. It reaches a brief only through `StudioMerge::slots` and `StudioBrief::check`, and a page only through `StudioSlots::fill`, which escapes it (the live gate saves hostile text and Divi renders it literally).
 * Every page is a draft. Brief ownership is the acting user.
-* Live gate group I of `make verify-studio` runs the real MCP route; the whole gate is 223 PASS, 0 SKIP, 0 FAIL on Divi 5.15.1 / WordPress 7.1.2. Suites: 6980 PHP tests.
+* Live gate group I of `make verify-studio` runs the real MCP route; the whole gate is 223 PASS, 0 SKIP, 0 FAIL on Divi 5.15.1 / WordPress 7.1.2 (last run at commit 58ac16a). Suites: 6980 PHP tests.
 
 ### Known limits
 
