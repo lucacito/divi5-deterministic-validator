@@ -120,6 +120,42 @@ final class StudioStore
         return false !== $ok;
     }
 
+    /**
+     * The user's brief with this brief hash that was linked to a page within the last $seconds (newest first), or null.
+     * Lets a second identical "create" (a double click) find the page the first one made instead of making another.
+     */
+    public static function recentlyLinked( int $user, string $briefHash, int $seconds ): ?array
+    {
+        global $wpdb;
+
+        if ( $user <= 0 || 1 !== preg_match( '/^[0-9a-f]{64}$/', $briefHash ) || ! StudioTable::ensureReady() ) {
+            return null;
+        }
+        $table = StudioTable::name();
+        $since = gmdate( 'Y-m-d H:i:s', time() - max( 0, $seconds ) );
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $rows = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT * FROM {$table} WHERE created_by = %d AND brief_hash = %s AND page_id IS NOT NULL AND updated_at >= %s ORDER BY updated_at DESC, id DESC LIMIT 1",
+                $user,
+                $briefHash,
+                $since
+            ),
+            ARRAY_A
+        );
+        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+
+        return self::shape( is_array( $rows ) && isset( $rows[0] ) ? $rows[0] : null );
+    }
+
+    /** The brief_hash a brief is stored with (sha256 of its JSON), or null when it cannot be encoded. */
+    public static function hashOf( array $brief ): ?string
+    {
+        $json = wp_json_encode( $brief );
+
+        return is_string( $json ) ? hash( 'sha256', $json ) : null;
+    }
+
     /** The user's brief that built this page, or null. */
     public static function forPage( int $user, int $pageId ): ?array
     {

@@ -223,6 +223,24 @@ class StudioStoreTest extends TestCase
         $this->assertFalse( StudioStore::delete( 5, 1 ) );
     }
 
+    public function testRecentlyLinkedFindsOnlyTheUsersFreshLinkedBriefWithThatHash(): void
+    {
+        $brief = $this->brief();
+        $hash  = (string) StudioStore::hashOf( $brief );
+        $this->assertSame( hash( 'sha256', (string) json_encode( $brief ) ), $hash );
+        $r = StudioStore::save( 5, $brief );
+        $this->assertNull( StudioStore::recentlyLinked( 5, $hash, 10 ), 'not linked to a page yet' );
+        $this->assertTrue( StudioStore::link( 5, $r['id'], 42, str_repeat( 'b', 64 ) ) );
+        $found = StudioStore::recentlyLinked( 5, $hash, 10 );
+        $this->assertSame( $r['id'], $found['id'] );
+        $this->assertSame( 42, $found['page_id'] );
+        $this->assertNull( StudioStore::recentlyLinked( 6, $hash, 10 ), 'another user' );
+        $this->assertNull( StudioStore::recentlyLinked( 5, str_repeat( 'c', 64 ), 10 ), 'another brief' );
+        $this->assertNull( StudioStore::recentlyLinked( 5, 'not-a-hash', 10 ) );
+        $GLOBALS['wpdb']->query( 'UPDATE ' . StudioTable::name() . " SET updated_at = '2000-01-01 00:00:00'" );
+        $this->assertNull( StudioStore::recentlyLinked( 5, $hash, 10 ), 'too old' );
+    }
+
     public function testSchemaHasNoPostMeta(): void
     {
         $sql = StudioTable::schemaSql();

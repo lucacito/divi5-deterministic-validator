@@ -114,6 +114,7 @@ require_once __DIR__ . '/HistoryTable.php';
 require_once __DIR__ . '/HistoryMigration.php';
 require_once __DIR__ . '/HistoryStore.php';
 require_once __DIR__ . '/HistoryService.php';
+require_once __DIR__ . '/StudioService.php';
 require_once __DIR__ . '/ExtensionGuard.php';
 require_once __DIR__ . '/PageAccess.php';
 require_once __DIR__ . '/ConnectionDiagnosis.php';
