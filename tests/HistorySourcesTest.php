@@ -92,4 +92,12 @@ class HistorySourcesTest extends TestCase
             $this->assertStringNotContainsString( "\u{2014}", $name );
         }
     }
+
+    /** Ruling 9 (plan 2): the history rows Divi 5 Lab writes carry the internal tool name; people read the product name. */
+    public function testDivi5LabWritesReadAsDivi5LabNotTheInternalName(): void
+    {
+        $this->assertSame( 'Divi 5 Lab', HistorySources::describe( \AiEditorDivi5\WP\StudioService::HISTORY_TOOL ) );
+        $this->assertSame( 'Divi 5 Lab', HistorySources::describe( 'studio', 'ignored label' ) );
+        $this->assertStringNotContainsStringIgnoringCase( 'studio', HistorySources::describe( 'studio' ) );
+    }
 }
