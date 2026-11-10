@@ -11,6 +11,7 @@ use AiEditorDivi5\Pro\Tools\BuildSite;
 use AiEditorDivi5\Pro\Tools\CreateProduct;
 use AiEditorDivi5\Pro\Tools\EditThemeLayout;
 use AiEditorDivi5\Pro\Tools\FindReplaceSite;
+use AiEditorDivi5\Pro\Tools\LabRestyle;
 use AiEditorDivi5\Pro\Tools\ListBatches;
 use AiEditorDivi5\Pro\Tools\ListThemeLayouts;
 use AiEditorDivi5\Pro\Tools\ManageMegaMenu;
@@ -65,6 +66,7 @@ final class Tools
             new BulkAdjustPrices( $log ),
             new SwitchDesign( $log ),
             new ManageMegaMenu( new \AiEditorDivi5\Pro\MegaMenu\MegaMenuService( new \AiEditorDivi5\Pro\ThemeBuilder\LayoutWriter( $log ) ) ),
+            new LabRestyle( $log ),
         ];
     }
 }

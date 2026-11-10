@@ -75,7 +75,7 @@ class ManageMegaMenuTest extends TestCase
     {
         $names = array_map( static fn ( $t ) => $t->name(), Tools::all() );
         $this->assertContains( 'manage_mega_menu', $names );
-        $this->assertCount( 23, $names );
+        $this->assertCount( 24, $names );
         $this->assertContains( 'manage_mega_menu', ProOpenApi::MCP_REST_ONLY );
 
         $registry = new ToolRegistry( Tools::all(), static fn (): bool => true );
