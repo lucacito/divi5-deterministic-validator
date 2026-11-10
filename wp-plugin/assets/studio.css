@@ -19,7 +19,8 @@
 .aied--lab .aied-lab-status { max-width: 1120px; margin-left: 2px; margin-right: 20px; }
 .aied--lab .aied-lab-intro { margin-bottom: 16px; }
 
-.aied-lab-layout { width: 100%; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 20px; align-items: start; }
+/* The steps column is narrow; the preview takes the rest and shows the page at a true device width, scaled to fit. */
+.aied-lab-layout { width: 100%; display: grid; grid-template-columns: minmax(340px, 420px) minmax(0, 1fr); gap: 20px; align-items: start; }
 .aied-lab-form { min-width: 0; }
 
 /* Stepper: a real list of buttons; the current step is bold, underlined and numbered, not only coloured. */
@@ -95,17 +96,15 @@
 .aied-lab-preview__bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
 .aied-lab-widths { display: inline-flex; gap: 4px; }
 .aied-lab-widths [aria-pressed="true"] { font-weight: 700; text-decoration: underline; border-color: var(--aied-accent); }
-.aied-lab-frame-wrap { margin: 0 auto; border: 1px solid var(--aied-line); border-radius: 8px; overflow: hidden; background: #fff; max-width: 100%; }
-.aied-lab-frame-wrap[data-width="tablet"] { width: 768px; }
-.aied-lab-frame-wrap[data-width="phone"] { width: 390px; }
-.aied-lab-frame { display: block; width: 100%; height: 75vh; min-height: 480px; border: 0; }
+.aied-lab-frame-wrap { margin: 0 auto; border: 1px solid var(--aied-line); border-radius: 8px; overflow: hidden; overflow: clip; background: #fff; max-width: 100%; box-sizing: content-box; }
+/* Width, height and scale are set by studio.js (frameBox): the frame keeps the device's own width and is scaled down. */
+.aied-lab-frame { display: block; width: 1280px; height: 600px; border: 0; transform-origin: 0 0; }
 
 @media (max-width: 1100px) {
     .aied-lab-layout { grid-template-columns: 1fr; }
     .aied-lab-preview { position: static; }
 }
 @media (max-width: 782px) {
-    .aied-lab-frame { height: 60vh; min-height: 360px; }
     .aied-lab-step { font-size: 12px; padding: 6px 8px; }
     .aied-lab-languages { max-height: none; }
 }

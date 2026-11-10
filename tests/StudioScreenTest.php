@@ -613,4 +613,28 @@ class StudioScreenTest extends TestCase
         $this->assertMatchesRegularExpression( "/goTo\(4\);.*instruction-box'\)\.hidden = false;.*aied-lab-instruction'\)\.focus\(\)/s", $fallback[0] );
         $this->assertStringContainsString( 'Instruction for your assistant', StudioScreen::config( 5 )['i18n']['copyManual'], 'the status names the box by its label' );
     }
+
+    /**
+     * Owner request (fix round 1): the steps column is narrow and the preview renders at a true device width, scaled
+     * to fit. The widths the buttons mean are one table in PHP, in the config and in studio-core.js.
+     */
+    public function testThePreviewRendersAtATrueDeviceWidthBesideANarrowStepsColumn(): void
+    {
+        $this->assertSame( [ 'desktop' => 1280, 'tablet' => 768, 'phone' => 390 ], StudioScreen::DEVICES );
+        $this->assertSame( StudioScreen::DEVICES, StudioScreen::config( 5 )['devices'] );
+        $this->assertStringContainsString( 'var DEVICES = { desktop: 1280, tablet: 768, phone: 390 };', $this->src( 'assets/studio-core.js' ) );
+
+        $css = $this->src( 'assets/studio.css' );
+        $this->assertMatchesRegularExpression( '/\.aied-lab-layout\s*\{[^}]*grid-template-columns:\s*minmax\(340px,\s*420px\)\s+minmax\(0,\s*1fr\)/', $css );
+        $this->assertMatchesRegularExpression( '/@media \(max-width: 1100px\)\s*\{\s*\.aied-lab-layout\s*\{\s*grid-template-columns:\s*1fr;/', $css, 'stacked at 1100px and below' );
+        $this->assertDoesNotMatchRegularExpression( '/\.aied-lab-frame-wrap\[data-width/', $css, 'the device width is the frame\'s own, set by the script' );
+        $this->assertMatchesRegularExpression( '/\.aied-lab-frame\s*\{[^}]*transform-origin:\s*0 0/', $css );
+
+        $js = $this->src( 'assets/studio.js' );
+        $this->assertStringContainsString( 'core.frameBox(', $js );
+        $this->assertStringContainsString( 'ResizeObserver', $js );
+        // The same box for the real preview and the approximation: one layout function, called after both.
+        preg_match( '/function setFrame\(.*?\n    \}/s', $js, $set );
+        $this->assertSame( 2, substr_count( $set[0] ?? '', 'layoutFrame()' ) );
+    }
 }

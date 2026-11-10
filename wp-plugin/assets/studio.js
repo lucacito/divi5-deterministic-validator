@@ -191,6 +191,7 @@
             b.addEventListener('click', function () {
                 byId('aied-lab-frame-wrap').setAttribute('data-width', b.getAttribute('data-width'));
                 app.querySelectorAll('.aied-lab-widths [data-width]').forEach(function (o) { o.setAttribute('aria-pressed', o === b ? 'true' : 'false'); });
+                layoutFrame();
             });
         });
         byId('aied-lab-repreview').addEventListener('click', function () { preview(); });
@@ -528,6 +529,7 @@
             frame.removeAttribute('sandbox');
             var url = preview.url + (preview.url.indexOf('?') >= 0 ? '&' : '?') + 'aied_v=' + previewSeq;
             frame.setAttribute('src', url);
+            layoutFrame();
             return true;
         }
         if (preview && typeof preview.html === 'string') {
@@ -535,7 +537,25 @@
             frame.setAttribute('sandbox', '');
             frame.srcdoc = preview.html;
         }
+        layoutFrame();
         return false;
+    }
+
+    /**
+     * The frame at the true width of the chosen device (Desktop 1280, Tablet 768, Phone 390 CSS px), scaled down to fit
+     * the pane, never up; the wrapper takes the scaled size so the unscaled box makes no overflow.
+     */
+    function layoutFrame() {
+        var wrap = byId('aied-lab-frame-wrap');
+        var frame = byId('aied-lab-frame');
+        var pane = wrap.parentNode ? wrap.parentNode.clientWidth - 2 : 0; // the wrapper's 1px border on each side
+        var target = window.innerHeight * (window.innerWidth <= 782 ? 0.6 : 0.75);
+        var box = core.frameBox(pane, wrap.getAttribute('data-width'), target);
+        frame.style.width = box.width + 'px';
+        frame.style.height = box.height + 'px';
+        frame.style.transform = box.scale < 1 ? 'scale(' + box.scale + ')' : '';
+        wrap.style.width = box.wrapWidth + 'px';
+        wrap.style.height = box.wrapHeight + 'px';
     }
 
     function preview() {
@@ -837,6 +857,9 @@
         showKitSummary();
         bindControls();
         app.hidden = false;
+        layoutFrame();
+        window.addEventListener('resize', layoutFrame);
+        if (window.ResizeObserver) { new window.ResizeObserver(layoutFrame).observe(byId('aied-lab-frame-wrap').parentNode); }
         renderSections();
         preview();
     }

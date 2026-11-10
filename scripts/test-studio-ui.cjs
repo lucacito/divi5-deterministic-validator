@@ -235,6 +235,40 @@ test('one busy gate: a second action while one runs does nothing, and the gate o
     assert.deepEqual(changes, [true, false, true, false, true, false]);
 });
 
+test('frameBox renders the preview at a true device width and scales it down to fit the pane, never up', () => {
+    assert.deepEqual(core.DEVICES, { desktop: 1280, tablet: 768, phone: 390 });
+    const narrow = core.frameBox(760, 'desktop', 600);
+    assert.equal(narrow.width, 1280, 'the frame is a real desktop, past Divi\'s 981px breakpoint');
+    assert.ok(Math.abs(narrow.scale - 760 / 1280) < 1e-9 && narrow.scale > 0.59 && narrow.scale < 0.6, String(narrow.scale));
+    assert.equal(narrow.wrapWidth, 760, 'the wrapper is the scaled size: no overflow from the unscaled box');
+    assert.equal(narrow.height, Math.round(600 / narrow.scale), 'the frame is taller so that, scaled, it fills the target height');
+    assert.equal(narrow.wrapHeight, 600);
+    const wide = core.frameBox(1400, 'desktop', 700);
+    assert.deepEqual(wide, { width: 1280, scale: 1, height: 700, wrapWidth: 1280, wrapHeight: 700 }, 'never scaled up');
+    const tablet = core.frameBox(500, 'tablet', 600);
+    assert.equal(tablet.width, 768);
+    assert.ok(Math.abs(tablet.scale - 500 / 768) < 1e-9);
+    assert.equal(tablet.wrapWidth, 500);
+    assert.deepEqual(core.frameBox(760, 'phone', 600), { width: 390, scale: 1, height: 600, wrapWidth: 390, wrapHeight: 600 });
+    assert.equal(core.frameBox(300, 'phone', 600).wrapWidth, 300);
+    for (const pane of [0, -50, NaN, undefined]) {
+        const box = core.frameBox(pane, 'desktop', 600);
+        assert.equal(box.scale, 1, 'a pane with no width yet (hidden) is not scaled to nothing: ' + pane);
+        assert.equal(box.width, 1280);
+        assert.ok(box.height > 0 && box.wrapHeight > 0);
+    }
+    assert.equal(core.frameBox(760, 'tv', 600).width, 1280, 'an unknown device is the desktop');
+    assert.equal(core.frameBox(760, 'desktop', 0).wrapHeight, 360, 'a sensible minimum height');
+    for (let pane = 100; pane <= 2000; pane += 37) {
+        for (const d of ['desktop', 'tablet', 'phone']) {
+            const b = core.frameBox(pane, d, 640);
+            assert.ok(b.scale > 0 && b.scale <= 1);
+            assert.ok(b.wrapWidth <= Math.max(pane, 0) || b.scale === 1);
+            assert.ok(b.wrapWidth <= pane, `wrapper ${b.wrapWidth} fits pane ${pane} (${d})`);
+        }
+    }
+});
+
 test('problems and unfilled places are grouped by the section on the screen', () => {
     const p = core.problemsBySection([
         { path: 'title', code: 'MISSING', message: 'm1' },

@@ -29,6 +29,13 @@ final class StudioScreen
     /** The density control's choices, as the stack handler accepts them. */
     public const DENSITIES = [ 'airy', 'balanced', 'compact' ];
 
+    /**
+     * The width in CSS pixels the preview's Desktop, Tablet and Phone buttons mean. The preview frame is laid out at this
+     * width and scaled down to fit its pane (studio-core.js frameBox, which holds the same table), so a Desktop preview is
+     * past Divi's 981px breakpoint whatever the screen size.
+     */
+    public const DEVICES = [ 'desktop' => 1280, 'tablet' => 768, 'phone' => 390 ];
+
     /** A placeholder longer than this is cut in the form (the recipe keeps it whole). */
     private const SAMPLE_CHARS = 200;
 
@@ -92,6 +99,7 @@ final class StudioScreen
             'slotRoles' => self::slotRoleLabels(),
             'pack'      => self::pack(),
             'pages'     => self::pages(),
+            'devices'   => self::DEVICES,
             'brief'     => self::storedBrief( $user ),
             'i18n'      => self::i18n(),
         ];

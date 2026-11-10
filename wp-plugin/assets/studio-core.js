@@ -281,6 +281,26 @@
         };
     }
 
+    /** The width in CSS pixels each preview button means (StudioScreen::DEVICES says the same). */
+    var DEVICES = { desktop: 1280, tablet: 768, phone: 390 };
+    var MIN_HEIGHT = 360;
+
+    /**
+     * The preview box: the frame is laid out at the device's true width (so a desktop is past Divi's 981px breakpoint)
+     * and scaled down to fit the pane, never up. width/height are the frame's own size, wrapWidth/wrapHeight the scaled
+     * size the wrapper takes (so the unscaled box makes no overflow); wrapHeight is the target height. A pane with no
+     * width yet (hidden, not laid out) is not scaled.
+     */
+    function frameBox(paneWidth, device, targetHeight) {
+        var width = own(DEVICES, device) ? DEVICES[device] : DEVICES.desktop;
+        var pane = typeof paneWidth === 'number' && isFinite(paneWidth) ? paneWidth : 0;
+        var scale = pane > 0 ? Math.min(1, pane / width) : 1;
+        var target = Math.max(MIN_HEIGHT, typeof targetHeight === 'number' && isFinite(targetHeight) ? Math.round(targetHeight) : 0);
+        var wrapWidth = Math.round(width * scale);
+        if (pane > 0) { wrapWidth = Math.min(Math.floor(pane), wrapWidth); }
+        return { width: width, scale: scale, height: Math.round(target / scale), wrapWidth: wrapWidth, wrapHeight: target };
+    }
+
     /** Problems by state section ({path, code, message} lists); a path outside sections.N goes to page. */
     function problemsBySection(problems, map) {
         var out = { page: [], sections: {} };
@@ -374,6 +394,8 @@
         mergeAssistant: mergeAssistant,
         prepareSend: prepareSend,
         makeGate: makeGate,
+        DEVICES: DEVICES,
+        frameBox: frameBox,
         indexOfKey: indexOfKey,
         problemsBySection: problemsBySection,
         unfilledBySection: unfilledBySection,
