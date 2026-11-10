@@ -42,13 +42,16 @@ final class StudioAssistant
     /** A hash is 64 lowercase hex characters (sha256). */
     private const HASH_PATTERN = '/^[0-9a-f]{64}$/D';
 
-    private const HOW = 'Lab builds a page from a short brief: a design language, a goal and an ordered list of ready-made sections, each with its words, links and pictures. '
-        . 'Four actions: catalog lists the goals, languages, style kits and sections by role (add recipe to see one section\'s slots); open reads a stored brief, returns its base_hash and shows which slots are still empty; '
-        . 'fill writes words into a brief (send brief_id, the base_hash from open and sections); build previews a whole brief you send (nothing is saved), and with create true it saves the brief and a draft page. '
-        . 'fill also takes create true: after saving the words it builds the page, or rebuilds its draft when the owner has not edited it (an edited, published or deleted page is never overwritten; a new draft is made and the reason given). '
-        . 'If fill answers 409 CONFLICT, the person changed the brief meanwhile and nothing was written: open again and fill again with the new base_hash. '
-        . 'Write only real words you were given and never invent facts, prices, names or numbers; leave a slot empty when you do not know it, because an empty slot keeps its placeholder and is reported as unfilled. '
-        . 'Everything is saved as a draft that the owner reviews and publishes; create true needs permission to publish pages.';
+    private const HOW = 'Lab builds a page from a short brief: a design language, a goal and an ordered list of ready-made sections (recipes), each with its words, links and pictures. '
+        . 'Actions: catalog (this list; add recipe for one section\'s slots); open (read a stored brief: its base_hash and the empty slots); '
+        . 'fill (write words: brief_id, the base_hash from open and sections; with create true the sections may be left out and the page is built from the stored brief); '
+        . 'build (previews a whole brief you send, nothing is saved; with create true it saves the brief and a draft page). '
+        . 'fill with create true also rebuilds the brief\'s draft unless the owner edited, published or deleted it (then a new draft is made and the reason given). '
+        . 'If fill answers 409 CONFLICT the person changed the brief, nothing was written: open again and fill again with the new base_hash. '
+        . 'Never invent facts, prices, names or numbers; leave a slot empty if you do not know it (it is reported as unfilled). '
+        . 'An empty slot keeps its sample copy on the draft, and the items of a layout (cards, rows) cannot be removed or added, so pick layouts whose items you can fill; fill cannot add or remove sections (build with a new brief can). '
+        . 'goal is only stored: it picks the sections the Lab screen suggests and does not change the page built. The language sets the overall look; a kit refines buttons, cards, rules and forms (default: the language\'s own; get_style_guide topic=style-kits lists them, if you have that tool). '
+        . 'Everything is a draft the owner publishes; create true needs permission to publish pages.';
 
     /** One working brief for catalog (the tests check that it validates and builds; its words only show the format). */
     private const EXAMPLE_BRIEF = [
@@ -157,10 +160,14 @@ final class StudioAssistant
             }
             UsageTracker::log( self::ENDPOINT, null, 'read' );
 
+            $info = SectionRecipes::describe( $recipe ) ?? [ 'title' => '', 'description' => '' ];
+
             return [ 'status' => 200, 'body' => [
-                'recipe' => $recipe,
-                'role'   => self::roleOf( $recipe ),
-                'slots'  => self::slotList( $recipe ),
+                'recipe'      => $recipe,
+                'title'       => $info['title'],
+                'description' => $info['description'],
+                'role'        => self::roleOf( $recipe ),
+                'slots'       => self::slotList( $recipe ),
             ] ];
         }
 
@@ -185,6 +192,10 @@ final class StudioAssistant
             'languages'     => $languages,
             'kits'          => StyleKits::ids(),
             'recipes'       => $recipes,
+            'pictures'      => [
+                'pack' => array_values( array_filter( array_map( static fn ( array $i ): string => (string) ( $i['token'] ?? '' ), ImagePack::manifest()['images'] ), static fn ( string $t ): bool => '' !== $t ) ),
+                'how'  => 'A picture slot takes {"pack": token} or {"url": address}; the address is https:// or a path on this site starting with /. Picture slots are listed with kind "picture".',
+            ],
             'how'           => self::HOW,
             'example_brief' => self::EXAMPLE_BRIEF,
         ] ];
@@ -234,7 +245,8 @@ final class StudioAssistant
         if ( 1 !== preg_match( self::HASH_PATTERN, $baseHash ) ) {
             return self::fail( 400, 'base_hash is required for fill: the 64-character base_hash that open returned.' );
         }
-        $entries = self::fillEntries( $sections );
+        // With create true the words may all be written already: no sections then means "write nothing, build the page".
+        $entries = $create && ( null === $sections || array() === $sections ) ? [] : self::fillEntries( $sections );
         if ( is_string( $entries ) ) {
             return self::fail( 400, $entries );
         }
@@ -339,11 +351,13 @@ final class StudioAssistant
             }
             $pageId = (int) $built['page_id'];
             $mode   = isset( $built['mode'] ) ? (string) $built['mode'] : 'created';
+            // The build may have saved the brief in its normalised form: answer with the hash that is stored NOW.
+            $after = StudioStore::get( $user, $briefId );
             UsageTracker::log( self::ENDPOINT, $pageId, 'valid' );
 
             return [ 'status' => 200, 'body' => [
                 'brief_id'       => $fresh['id'],
-                'base_hash'      => $fresh['brief_hash'],
+                'base_hash'      => null === $after ? $fresh['brief_hash'] : $after['brief_hash'],
                 'applied'        => $applied,
                 'ignored'        => $ignored,
                 'unfilled_count' => $view['unfilled'],
@@ -588,11 +602,26 @@ final class StudioAssistant
     {
         $out = [];
         foreach ( StudioSlots::extract( (string) SectionRecipes::rawMarkup( $recipe ) ) as $slot ) {
-            $sample = 'picture' === $slot['kind'] ? '' : mb_substr( trim( wp_strip_all_tags( (string) $slot['sample'] ) ), 0, self::SAMPLE_CHARS );
+            $sample = 'picture' === $slot['kind'] ? '' : self::sampleOf( (string) $slot['sample'] );
             $out[]  = [ 'id' => $slot['id'], 'kind' => $slot['kind'], 'role' => $slot['role'], 'sample' => $sample ];
         }
 
         return $out;
+    }
+
+    /** A sample text cut to SAMPLE_CHARS at a word boundary, with an ellipsis when something was left out. */
+    private static function sampleOf( string $html ): string
+    {
+        $text = trim( wp_strip_all_tags( $html ) );
+        if ( mb_strlen( $text ) <= self::SAMPLE_CHARS ) {
+            return $text;
+        }
+        $cut = mb_substr( $text, 0, self::SAMPLE_CHARS );
+        if ( 1 !== preg_match( '/^\s$/u', mb_substr( $text, self::SAMPLE_CHARS, 1 ) ) && 1 === preg_match( '/^(.{20,})\s\S*$/us', $cut, $m ) ) {
+            $cut = $m[1];
+        }
+
+        return rtrim( $cut ) . '…';
     }
 
     /**

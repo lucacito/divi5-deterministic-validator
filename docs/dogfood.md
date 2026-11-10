@@ -225,3 +225,33 @@ The ten "Spec issues found" of the plan, one line each:
 8. The edit base's images stay `example.com` placeholders.
 9. Exit codes: 0 after measuring, 1 only with `--min`, 2 for a usage error or a page that does not parse (the spec's "always 0" is amended).
 10. The edit task's default output directory gets a `-edit` suffix so it never collides with a freehand run.
+
+## Lab assistant tool (`lab_build`)
+
+A blind test of the Lab assistant tool with fresh assistants that know only the tool definition (what `tools/list` shows) and an owner's
+facts list. Dev site only; no model is called by the repo, the tester starts the assistants.
+
+**The harness** (dev only, not shipped): `scripts/dogfood-lab.sh <run> <command>` drives the REAL MCP route on the Docker dev site
+(`docker compose exec wpcli ... wp eval-file scripts/dogfood-lab-server.php`, guarded by `scripts/dev-guard.php`, acting as user 1 with
+the plugin's API key) and logs every call and answer to `dist/dogfood-lab/<run>/calls.jsonl`. Commands: `tools-list` (the `lab_build`
+entry as an MCP client sees it), `call lab_build '<arguments JSON>'`, `seed '<brief JSON>'` (saves a brief for user 1 the way the Lab
+screen does and prints the hand-off instruction the screen would copy), `cleanup` (deletes the pages and briefs of that run, by id, only
+when the title starts with `aied dogfood lab `). Give each assistant one run name (`lab-a`, `lab-b`), tell it to use only these commands,
+and ask for a written report: (a) what it did, (b) unclear or misleading points, (c) slots left empty on purpose, (d) any claim not in the
+facts list.
+
+**The two scenarios:** A, from scratch: a facts list and the instruction to build a page with the tool (catalog, build preview, build
+create). B, the hand-off: a brief seeded with `seed` (several sections, every slot empty) and the printed instruction, so the assistant
+starts with `open`, fills and builds the draft with `fill`.
+
+**What to look for:** invented facts (anything on the page that is not in the facts list, including soft wording), failed calls and why,
+every point the assistant says it had to guess, and the draft itself (open it in Divi: placeholders that stay, a layout that does not
+fit the number of facts). Run `scripts/dogfood-lab.sh <run> cleanup` afterwards; the gate `make verify-studio` also deletes its own pages.
+
+**Round 1 findings (2026-11-10, fixed on `fix/lab-build-dogfood-1`):**
+1. `fill` with `create` true and no `sections` was a 400, so a finished assistant re-sent a dummy slot to get the page built.
+2. Catalog sample texts were cut mid-word at 80 characters, so the real copy length could not be judged.
+3. A recipe's slots were listed without its title or description: `card-grid-3` is one text card and two images, not three cards.
+4. The built-in picture tokens were only reachable through `get_image_guide`, a tool the assistants did not have.
+5. Nothing said what `goal` does (it is only stored), that an unfilled slot keeps its sample copy, or that items cannot be removed.
+6. Open (not fixed): image alt samples that stay on a draft describe unrelated stock pictures; the contact form's recipient is not a slot.

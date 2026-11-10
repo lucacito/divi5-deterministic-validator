@@ -259,7 +259,7 @@ final class ToolCatalog
             ],
             [
                 'name'        => 'lab_build',
-                'description' => 'Build a Divi 5 page from a short brief instead of writing Divi markup. A brief is a design language, an optional style kit and an ordered list of proven section layouts (recipes), each with the words and pictures to fill in; the plugin builds valid Divi 5 from it, deterministically, always as a DRAFT. Start with action "catalog" (goals, languages, kits, recipes by role, and the rules). Action "open" reads a brief the site owner started in the Lab screen (brief_id) and lists every slot, with the sample copy it shows now. Action "fill" writes words into those slots (sections: [{section, slots:{slot id: text}}]) and needs the base_hash you got from open or the last fill; if the owner changed the brief meanwhile you get CONFLICT and nothing is written: open it again. Action "build" takes a whole brief and previews it, or saves a new draft page with create=true. Never invent facts, prices, names or numbers: leave a slot out if you do not know it. Pictures come from the Media Library or the built-in pack (see get_image_guide).',
+                'description' => 'Build a Divi 5 page from a short brief instead of writing Divi markup. A brief is a design language, an optional style kit and an ordered list of proven section layouts (recipes), each with the words and pictures to fill in; the plugin builds valid Divi 5 from it, deterministically, always as a DRAFT. Start with action "catalog" (goals, languages, kits, recipes by role, and the rules). Action "open" reads a brief the site owner started in the Lab screen (brief_id) and lists every slot, with the sample copy it shows now. Action "fill" writes words into those slots (sections: [{section, slots:{slot id: text}}]) and needs the base_hash you got from open or the last fill; if the owner changed the brief meanwhile you get CONFLICT and nothing is written: open it again. Action "build" takes a whole brief and previews it, or saves a new draft page with create=true. Never invent facts, prices, names or numbers: leave a slot out if you do not know it. Pictures come from the Media Library or the built-in pack (catalog lists the pack tokens).',
                 'inputSchema' => [
                     'type'       => 'object',
                     'properties' => [
@@ -268,7 +268,7 @@ final class ToolCatalog
                         'role'      => ['type' => 'string', 'description' => 'Optional, catalog only: list only the section layouts of this role.'],
                         'brief_id'  => ['type' => 'integer', 'minimum' => 1, 'description' => 'open and fill: the id of a brief started in the Lab screen (it is in the hand-off text).'],
                         'base_hash' => ['type' => 'string', 'description' => 'fill: the base_hash from open or from the last fill. A changed brief answers CONFLICT and nothing is written.'],
-                        'sections'  => ['type' => 'array', 'description' => 'fill: the words to write.', 'items' => [
+                        'sections'  => ['type' => 'array', 'description' => 'fill: the words to write. Optional with create=true (the page is then built from the brief as stored).', 'items' => [
                             'type'       => 'object',
                             'properties' => [
                                 'section'  => ['type' => 'integer', 'description' => 'Section number, counted from 0.'],
