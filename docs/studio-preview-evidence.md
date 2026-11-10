@@ -62,3 +62,10 @@ The preview draft is temporary: delete it (`wp_delete_post($id, true)`, permanen
 - Scroll-triggered animations beyond the 2.5 s wait; reduced-motion.
 - Whether the browser's back button or two parallel browser tabs updating the same user's draft behave well (one draft per user means the last write wins).
 - Dev-site note: `GET /wp-json/wp/v2/pages?per_page=100` answers HTTP 500 for an anonymous visitor on this dev site (the site holds many large Divi pages and the response renders each). It happens without the spike's draft, so it is unrelated; the spike uses `per_page=5`.
+
+## Later: what the screen's live gate (`make verify-studio`) changed
+
+- **User rights (was not tested):** for a user without `unfiltered_html` the preview draft and a created page WERE broken by kses (block comments with raw `<` in their JSON became visible text). Fixed in `StudioCompiler` (block attributes written as WordPress serializes them); now the same blocks and values are stored, and the page renders the typed text literally. Details in `docs/studio-compiler.md` ("What the gate found").
+- **History pollution:** handled as planned. With the real `HistoryCapture` hook registered, two preview updates write no history row and no revision (a control save of the same draft outside the preview path IS captured).
+- **Cleanup rule:** a draft that was inserted and never updated has `post_modified_gmt` 0000-00-00 00:00:00, which made every new preview draft "stale". The sweep now reads the local `post_modified` for such a row.
+- **Counter number:** Divi starts the count-up when the counter scrolls into view; a counter below the fold shows an empty number until then.
