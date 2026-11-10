@@ -35,13 +35,12 @@ final class LabSupportTest extends TestCase
 
     public function testNoneOfItIsInCompat(): void
     {
-        // HistoryService (and maybe PageHistory) are in Compat already: they exist in every free version Pro supports. The Lab
-        // classes are new in the free plugin, so none of them may be there (that would switch every Pro tool off on an older one).
-        foreach ( LabSupport::REQUIRED_CLASSES as $class ) {
-            if ( str_contains( $class, '\\Studio' ) ) {
-                $this->assertNotContains( $class, Compat::REQUIRED_CLASSES, $class . ' must not switch every Pro tool off' );
-            }
-        }
+        // Only HistoryService is in both: it exists in every free version Pro supports. Every other Lab class is new in the free
+        // plugin, so none of them may be in Compat (that would switch every Pro tool off on an older one).
+        $this->assertSame(
+            [ 'AiEditorDivi5\\WP\\HistoryService' ],
+            array_values( array_intersect( LabSupport::REQUIRED_CLASSES, Compat::REQUIRED_CLASSES ) )
+        );
         $this->assertContains( 'AiEditorDivi5\\WP\\StudioCompiler', LabSupport::REQUIRED_CLASSES );
     }
 

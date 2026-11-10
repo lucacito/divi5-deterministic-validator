@@ -122,6 +122,47 @@ final class LabBriefKindTest extends TestCase
         $this->assertSame( $new['brief_hash'], StudioStore::get( 1, $id )['brief_hash'], 'nothing changed' );
     }
 
+    public function testAnUnlinkedOldRowIsRefusedBeforeAnythingIsWritten(): void
+    {
+        [ $id, $old, $new ] = $this->restyled();
+        $kind               = new LabBriefKind();
+        $before             = $this->rowSnapshot( $id );
+        foreach ( [ [ 'content_hash', null ], [ 'content_hash', '' ], [ 'content_hash', 'not-a-hash' ], [ 'page_id', 0 ] ] as [ $key, $value ] ) {
+            $item                   = LabBriefKind::itemFor( 1, $old, $new );
+            $item['before'][ $key ] = $value;
+            $this->assertSame( [ 'ok' => false, 'reason' => 'link_failed' ], $kind->restore( $item ), "{$key}" );
+            $this->assertSame( $before, $this->rowSnapshot( $id ), "{$key}: the row must be untouched" );
+        }
+    }
+
+    public function testALinkFailureAfterTheSavePutsTheBriefBack(): void
+    {
+        [ $id, $old, $new ] = $this->restyled();
+        $before             = $this->rowSnapshot( $id );
+        $kind               = new LabBriefKind( static fn (): bool => false );
+
+        $this->assertSame( [ 'ok' => false, 'reason' => 'link_failed' ], $kind->restore( LabBriefKind::itemFor( 1, $old, $new ) ) );
+        $this->assertSame( $before, $this->rowSnapshot( $id ) );
+    }
+
+    public function testAnItemWithoutABriefArrayIsInvalid(): void
+    {
+        [ , $old, $new ] = $this->restyled();
+        $item            = LabBriefKind::itemFor( 1, $old, $new );
+        $item['before']['brief'] = 'oops';
+        $this->assertSame( [ 'ok' => false, 'reason' => 'invalid_item' ], ( new LabBriefKind() )->restore( $item ) );
+    }
+
+    /** @return array<string,mixed> */
+    private function rowSnapshot( int $id ): array
+    {
+        $row = StudioStore::get( 1, $id );
+        $this->assertNotNull( $row );
+        unset( $row['updated_at'] );
+
+        return $row;
+    }
+
     public function testTheInverseRestoresTheNewRow(): void
     {
         [ $id, $old, $new ] = $this->restyled();

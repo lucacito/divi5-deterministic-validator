@@ -23,6 +23,11 @@ final class LabBriefKind implements ItemKind
 {
     public const NAME = 'lab_brief';
 
+    /** @param (\Closure(int,int,int,string):bool)|null $linker test seam: fn(user, id, pageId, contentHash): `StudioStore::link()`'s result */
+    public function __construct( private ?\Closure $linker = null )
+    {
+    }
+
     public function name(): string
     {
         return self::NAME;
@@ -97,13 +102,27 @@ final class LabBriefKind implements ItemKind
             return [ 'ok' => false, 'reason' => 'missing' ];
         }
         if ( ! is_array( $before['brief'] ?? null ) ) {
-            return [ 'ok' => false, 'reason' => 'conflict' ];
+            return [ 'ok' => false, 'reason' => 'invalid_item' ];
+        }
+        // Check the link BEFORE writing anything: an old row that was never linked cannot be restored as it was, and the brief
+        // must not change in that case.
+        $pageId      = (int) ( $before['page_id'] ?? 0 );
+        $contentHash = (string) ( $before['content_hash'] ?? '' );
+        if ( $pageId <= 0 || 1 !== preg_match( '/^[0-9a-f]{64}$/', $contentHash ) ) {
+            return [ 'ok' => false, 'reason' => 'link_failed' ];
         }
         $saved = StudioStore::save( $user, $before['brief'], $ref, $current['brief_hash'] );
         if ( empty( $saved['ok'] ) ) {
             return [ 'ok' => false, 'reason' => 'conflict' ];
         }
-        if ( ! StudioStore::link( $user, $ref, (int) ( $before['page_id'] ?? 0 ), (string) ( $before['content_hash'] ?? '' ) ) ) {
+        $link = $this->linker ?? static fn ( int $u, int $i, int $p, string $h ): bool => StudioStore::link( $u, $i, $p, $h );
+        if ( ! $link( $user, $ref, $pageId, $contentHash ) ) {
+            // Put the pre-restore brief back, but only if the row still holds what we just wrote.
+            $written = StudioStore::get( $user, $ref );
+            if ( null !== $written ) {
+                StudioStore::save( $user, $current['brief'], $ref, $written['brief_hash'] );
+            }
+
             return [ 'ok' => false, 'reason' => 'link_failed' ];
         }
         $after = StudioStore::get( $user, $ref );
