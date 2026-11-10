@@ -39,15 +39,19 @@ final class StudioAssistant
     /** A sample text is cut to this many characters. */
     private const SAMPLE_CHARS = 80;
 
+    /** A recipe description in a role listing is cut to this many characters (then an ellipsis). */
+    private const DESCRIPTION_CHARS = 110;
+
     /** A hash is 64 lowercase hex characters (sha256). */
     private const HASH_PATTERN = '/^[0-9a-f]{64}$/D';
 
     private const HOW = 'Lab builds a page from a short brief: a design language, a goal and an ordered list of ready-made sections (recipes), each with its words, links and pictures. '
-        . 'Actions: catalog (this list; add recipe for one section\'s slots); open (read a stored brief: its base_hash and the empty slots); '
+        . 'Actions: catalog (this list; add role to see each layout\'s title, description and slot count, add recipe for one layout\'s slots); open (read a stored brief: its base_hash and the empty slots); '
         . 'fill (write words: brief_id, the base_hash from open and sections; with create true the sections may be left out and the page is built from the stored brief); '
         . 'build (previews a whole brief you send, nothing is saved; with create true it saves the brief and a draft page). '
         . 'fill with create true also rebuilds the brief\'s draft unless the owner edited, published or deleted it (then a new draft is made and the reason given). '
         . 'If fill answers 409 CONFLICT the person changed the brief, nothing was written: open again and fill again with the new base_hash. '
+        . 'Call catalog with a role before choosing layouts, and skip a layout whose sample copy does not suit the business, because an unfilled slot keeps it. '
         . 'Never invent facts, prices, names or numbers; leave a slot empty if you do not know it (it is reported as unfilled). '
         . 'An empty slot keeps its sample copy on the draft, and the items of a layout (cards, rows) cannot be removed or added, so pick layouts whose items you can fill; fill cannot add or remove sections (build with a new brief can). '
         . 'goal is only stored: it picks the sections the Lab screen suggests and does not change the page built. The language sets the overall look; a kit refines buttons, cards, rules and forms (default: the language\'s own; get_style_guide topic=style-kits lists them, if you have that tool). '
@@ -179,7 +183,27 @@ final class StudioAssistant
             if ( ! isset( $recipes[ $role ] ) ) {
                 return self::fail( 400, 'Unknown role "' . SectionRecipes::plain( $role ) . '". Use one of: ' . implode( ', ', array_keys( $recipes ) ) . '.' );
             }
-            $recipes = [ $role => $recipes[ $role ] ];
+            $rows = [];
+            foreach ( $recipes[ $role ] as $name ) {
+                $info   = SectionRecipes::describe( $name ) ?? [ 'title' => '', 'description' => '' ];
+                $rows[] = [
+                    'name'        => $name,
+                    'title'       => $info['title'],
+                    'description' => self::cutAtWord( $info['description'], self::DESCRIPTION_CHARS ),
+                    'slots'       => count( StudioSlots::extract( (string) SectionRecipes::rawMarkup( $name ) ) ),
+                ];
+            }
+            $recipes = [ $role => $rows ];
+        }
+        $pictures = [
+            'pack' => array_values( array_filter( array_map( static fn ( array $i ): string => (string) ( $i['token'] ?? '' ), ImagePack::manifest()['images'] ), static fn ( string $t ): bool => '' !== $t ) ),
+            'how'  => 'A picture slot takes {"pack": token} or {"url": address}; the address is https:// or a path on this site starting with /. Picture slots are listed with kind "picture".',
+        ];
+        if ( '' !== $role ) {
+            // A role listing is a second look at the library (the assistant has the goals, languages and kits from the first call).
+            UsageTracker::log( self::ENDPOINT, null, 'read' );
+
+            return [ 'status' => 200, 'body' => [ 'recipes' => $recipes, 'pictures' => $pictures, 'how' => self::HOW ] ];
         }
         $languages = [];
         foreach ( DesignLanguages::ids() as $id ) {
@@ -192,10 +216,7 @@ final class StudioAssistant
             'languages'     => $languages,
             'kits'          => StyleKits::ids(),
             'recipes'       => $recipes,
-            'pictures'      => [
-                'pack' => array_values( array_filter( array_map( static fn ( array $i ): string => (string) ( $i['token'] ?? '' ), ImagePack::manifest()['images'] ), static fn ( string $t ): bool => '' !== $t ) ),
-                'how'  => 'A picture slot takes {"pack": token} or {"url": address}; the address is https:// or a path on this site starting with /. Picture slots are listed with kind "picture".',
-            ],
+            'pictures'      => $pictures,
             'how'           => self::HOW,
             'example_brief' => self::EXAMPLE_BRIEF,
         ] ];
@@ -612,12 +633,17 @@ final class StudioAssistant
     /** A sample text cut to SAMPLE_CHARS at a word boundary, with an ellipsis when something was left out. */
     private static function sampleOf( string $html ): string
     {
-        $text = trim( wp_strip_all_tags( $html ) );
-        if ( mb_strlen( $text ) <= self::SAMPLE_CHARS ) {
+        return self::cutAtWord( trim( wp_strip_all_tags( $html ) ), self::SAMPLE_CHARS );
+    }
+
+    /** $text whole when it has at most $keep characters, otherwise cut at a word boundary to at most $keep characters plus an ellipsis. */
+    private static function cutAtWord( string $text, int $keep ): string
+    {
+        if ( mb_strlen( $text ) <= $keep ) {
             return $text;
         }
-        $cut = mb_substr( $text, 0, self::SAMPLE_CHARS );
-        if ( 1 !== preg_match( '/^\s$/u', mb_substr( $text, self::SAMPLE_CHARS, 1 ) ) && 1 === preg_match( '/^(.{20,})\s\S*$/us', $cut, $m ) ) {
+        $cut  = mb_substr( $text, 0, $keep );
+        if ( 1 !== preg_match( '/^\s$/u', mb_substr( $text, $keep, 1 ) ) && 1 === preg_match( '/^(.{20,})\s\S*$/us', $cut, $m ) ) {
             $cut = $m[1];
         }
 

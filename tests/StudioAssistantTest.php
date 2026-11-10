@@ -229,7 +229,8 @@ class StudioAssistantTest extends TestCase
         $role = (string) array_key_first( $all );
         $r    = StudioAssistant::run( [ 'action' => 'catalog', 'role' => $role ] );
         $this->assertSame( 200, $r['status'] );
-        $this->assertSame( [ $role => $all[ $role ] ], $r['body']['recipes'] );
+        $this->assertSame( [ $role ], array_keys( $r['body']['recipes'] ) );
+        $this->assertSame( $all[ $role ], array_column( $r['body']['recipes'][ $role ], 'name' ) );
         $this->assertSame( 400, StudioAssistant::run( [ 'action' => 'catalog', 'role' => 'nonsense' ] )['status'] );
     }
 
@@ -1244,5 +1245,63 @@ class StudioAssistantTest extends TestCase
         }
         $this->assertNotSame( '', $sample );
         $this->assertStringContainsString( $sample, (string) $pa['markup'] );
+    }
+
+    // ---- Blind dogfood round 2 ----------------------------------------------------------------------------
+
+    public function testRoleCatalogListsTitleDescriptionAndSlotCountForEveryRecipe(): void
+    {
+        $all     = StudioAssistant::run( [ 'action' => 'catalog' ] )['body']['recipes'];
+        $largest = 0;
+        $cutOne  = false;
+        foreach ( $all as $role => $names ) {
+            $r = StudioAssistant::run( [ 'action' => 'catalog', 'role' => $role ] );
+            $this->assertSame( 200, $r['status'] );
+            $bytes   = strlen( (string) json_encode( $r['body'] ) );
+            $largest = max( $largest, $bytes );
+            $this->assertSame( [ $role ], array_keys( $r['body']['recipes'] ) );
+            $rows = $r['body']['recipes'][ $role ];
+            $this->assertSame( $names, array_column( $rows, 'name' ), "$role lists every recipe of the role" );
+            foreach ( $rows as $row ) {
+                $this->assertSame( [ 'name', 'title', 'description', 'slots' ], array_keys( $row ), $row['name'] );
+                $info = SectionRecipes::describe( $row['name'] );
+                $this->assertSame( $info['title'], $row['title'] );
+                $this->assertGreaterThan( 0, $row['slots'] );
+                $this->assertSame( count( StudioSlots::extract( (string) SectionRecipes::rawMarkup( $row['name'] ) ) ), $row['slots'] );
+                $this->assertNotSame( '', $row['description'] );
+                $this->assertLessThanOrEqual( 111, mb_strlen( $row['description'] ), $row['name'] . ' (110 characters and an ellipsis at most)' );
+                if ( mb_strlen( $info['description'] ) <= 110 ) {
+                    $this->assertSame( $info['description'], $row['description'] );
+                } else {
+                    $cutOne = true;
+                    $this->assertStringEndsWith( '…', $row['description'] );
+                    $prefix = mb_substr( $row['description'], 0, -1 );
+                    $this->assertSame( $prefix, mb_substr( $info['description'], 0, mb_strlen( $prefix ) ), 'a prefix' );
+                    $this->assertMatchesRegularExpression( '/^\s$/u', mb_substr( $info['description'], mb_strlen( $prefix ), 1 ), $row['name'] . ' is cut at a word' );
+                }
+            }
+        }
+        $this->assertTrue( $cutOne, 'some description is longer than the cut' );
+        $this->assertLessThanOrEqual( 6000, $largest, 'the largest role answer is ' . $largest . ' bytes' );
+        fwrite( STDERR, "\nlargest role catalog answer: $largest bytes\n" );
+    }
+
+    public function testTheCatalogWithoutARoleIsStillOnlyNames(): void
+    {
+        foreach ( StudioAssistant::run( [ 'action' => 'catalog' ] )['body']['recipes'] as $names ) {
+            foreach ( $names as $name ) {
+                $this->assertIsString( $name );
+            }
+        }
+    }
+
+    public function testHowTellsToAskForARoleBeforeChoosing(): void
+    {
+        $how = (string) StudioAssistant::run( [ 'action' => 'catalog' ] )['body']['how'];
+        $this->assertStringContainsString( 'catalog with a role', $how );
+        $this->assertStringContainsString( 'sample copy does not suit', $how );
+        $role = (string) \AiEditorDivi5\WP\ToolCatalog::get( 'lab_build' )['inputSchema']['properties']['role']['description'];
+        $this->assertStringContainsString( 'title', $role );
+        $this->assertStringContainsString( 'description', $role );
     }
 }

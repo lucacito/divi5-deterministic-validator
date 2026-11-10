@@ -548,7 +548,7 @@
                         },
                         "role": {
                             "type": "string",
-                            "description": "Optional, catalog only: list only the section layouts of this role."
+                            "description": "Optional, catalog only: list only the section layouts of this role, each with its title, description and slot count. Use it to choose layouts."
                         },
                         "brief_id": {
                             "type": "integer",
