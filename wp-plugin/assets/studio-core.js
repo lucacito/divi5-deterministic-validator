@@ -247,6 +247,39 @@
         return { state: next, applied: applied, kept: kept };
     }
 
+    /** The list of layouts of a brief, in order. */
+    function recipesOf(brief) {
+        return ((brief && brief.sections) || []).map(function (s) { return String((s && s.recipe) || ''); });
+    }
+
+    /**
+     * True when two stored briefs differ in anything but words: title, goal, language, kit (none equals empty) or the list
+     * and order of layouts. A missing side is not a difference (nothing to compare with).
+     */
+    function structureChanged(current, synced) {
+        if (!current || !synced) { return false; }
+        var fields = ['title', 'goal', 'language', 'kit'];
+        for (var i = 0; i < fields.length; i++) {
+            var a = current[fields[i]] === undefined || current[fields[i]] === null ? '' : String(current[fields[i]]);
+            var b = synced[fields[i]] === undefined || synced[fields[i]] === null ? '' : String(synced[fields[i]]);
+            if (a !== b) { return true; }
+        }
+        return !same(recipesOf(current), recipesOf(synced));
+    }
+
+    /**
+     * A save was refused because the stored brief changed since the screen last synced (an assistant saved). current is
+     * the stored brief now. When it differs from synced only in slot or picture words, the answer is { action: 'retry',
+     * state, applied, kept }: the state has the assistant's words merged by the mergeAssistant rules, the person's own
+     * typing kept. When goal, language, kit, title or the list or order of layouts differ, { action: 'reload' }: nothing is
+     * merged and nothing should be sent.
+     */
+    function resolveConflict(state, current, synced, keys, catalog) {
+        if (structureChanged(current, synced)) { return { action: 'reload' }; }
+        var m = mergeAssistant(state, current, synced, keys, catalog);
+        return { action: 'retry', state: m.state, applied: m.applied, kept: m.kept };
+    }
+
     /**
      * What to send for a save, a create, a rebuild or a hand-off (controller ruling 19): the stored brief is merged in
      * first, so words an assistant wrote since the last sync are kept unless the person changed that field here.
@@ -425,6 +458,8 @@
         buildBrief: buildBrief,
         applyStepOne: applyStepOne,
         mergeAssistant: mergeAssistant,
+        structureChanged: structureChanged,
+        resolveConflict: resolveConflict,
         prepareSend: prepareSend,
         makeGate: makeGate,
         DEVICES: DEVICES,

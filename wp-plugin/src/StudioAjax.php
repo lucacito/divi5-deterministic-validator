@@ -22,6 +22,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  *   field that holds markup, preview.html, is already escaped inert text and is meant ONLY for an iframe srcdoc, never
  *   for innerHTML. Error messages never repeat brief text; the problem list's paths and messages have angle brackets
  *   removed as a second guard for a screen that might ever show them as HTML.
+ * - A save or create of a stored brief may carry base_hash, the brief_hash the screen last saw (64 lowercase hex, else
+ *   400). If the stored brief has changed since (an assistant saved), nothing is written and the answer is 409 CONFLICT
+ *   with the CURRENT brief and hash, so the screen can merge the words and try once more. Without base_hash the old
+ *   behaviour holds (a new brief has no hash yet).
  * - The stale preview sweep runs at most once an hour (a per-site transient), on the preview action only; a successful
  *   create removes the user's own preview draft.
  */
@@ -44,6 +48,7 @@ final class StudioAjax
         StudioService::SAVE_FAILED    => 500,
         StudioService::INTERNAL_ERROR => 500,
         StudioStore::TOO_LARGE        => 413,
+        StudioStore::CONFLICT         => 409,
     ];
 
     public static function register(): void
@@ -137,19 +142,33 @@ final class StudioAjax
         if ( false === $id ) {
             return;
         }
+        $base = self::baseHash();
+        if ( false === $base ) {
+            return;
+        }
         $checked = StudioBrief::check( $brief );
         if ( ! $checked['ok'] ) {
             self::fail( 422, StudioService::INVALID_BRIEF, __( 'The brief has problems. Fix them and try again.', 'jhmg-ai-editor-for-divi-5' ), [ 'problems' => self::cleanProblems( $checked['problems'] ) ] );
 
             return;
         }
-        $saved = StudioStore::save( get_current_user_id(), (array) $checked['brief'], $id );
+        $user  = get_current_user_id();
+        $saved = StudioStore::save( $user, (array) $checked['brief'], $id, $base );
         if ( ! $saved['ok'] ) {
+            if ( StudioStore::CONFLICT === $saved['code'] && null !== $id ) {
+                self::conflict( $user, $id );
+
+                return;
+            }
             self::fail( self::STATUS[ (string) $saved['code'] ] ?? 500, (string) $saved['code'], self::storeMessage( (string) $saved['code'] ) );
 
             return;
         }
-        wp_send_json_success( [ 'id' => (int) $saved['id'], 'message' => __( 'Brief saved.', 'jhmg-ai-editor-for-divi-5' ) ] );
+        wp_send_json_success( [
+            'id'      => (int) $saved['id'],
+            'hash'    => self::hashOfStored( $user, (int) $saved['id'] ),
+            'message' => __( 'Brief saved.', 'jhmg-ai-editor-for-divi-5' ),
+        ] );
     }
 
     /** brief (+ optional stored brief id) -> a new DRAFT page. Also needs edit_pages. */
@@ -166,7 +185,16 @@ final class StudioAjax
         if ( false === $id ) {
             return;
         }
+        $base = self::baseHash();
+        if ( false === $base ) {
+            return;
+        }
         $user = get_current_user_id();
+        if ( null !== $id && null !== $base && self::staleBase( $user, $id, $base, $brief ) ) {
+            self::conflict( $user, $id );
+
+            return;
+        }
         $made = StudioService::create( $user, $brief, $id );
         if ( ! $made['ok'] ) {
             self::serviceFailure( $made );
@@ -178,6 +206,7 @@ final class StudioAjax
             'message'   => (string) $made['message'],
             'page_id'   => $made['page_id'],
             'brief_id'  => $made['brief_id'],
+            'hash'      => null === $made['brief_id'] ? null : self::hashOfStored( $user, (int) $made['brief_id'] ),
             'edit_url'  => $made['edit_url'],
             'duplicate' => (bool) $made['duplicate'],
             'report'    => self::cleanReport( (array) $made['report'] ),
@@ -250,6 +279,7 @@ final class StudioAjax
         wp_send_json_success( [
             'id'         => $row['id'],
             'brief'      => $row['brief'], // data for the screen to show with textContent
+            'hash'       => $row['brief_hash'],
             'page_id'    => $row['page_id'],
             'updated_at' => $row['updated_at'],
         ] );
@@ -351,9 +381,70 @@ final class StudioAjax
         return (int) $raw;
     }
 
+    /**
+     * The optional base_hash: the brief_hash the screen last saw, 64 lowercase hex characters. string when given; null when
+     * missing; false after answering 400.
+     */
+    private static function baseHash(): string|false|null
+    {
+        $raw = self::text( 'base_hash', false );
+        if ( null === $raw ) {
+            return self::present( 'base_hash' ) ? false : null;
+        }
+        if ( 1 !== preg_match( '/^[0-9a-f]{64}\z/', $raw ) ) {
+            self::fail( 400, 'BAD_REQUEST', __( 'The brief hash is not valid.', 'jhmg-ai-editor-for-divi-5' ) );
+
+            return false;
+        }
+
+        return $raw;
+    }
+
+    /**
+     * True when the stored brief has changed since $base AND is not already the brief about to be written (the same
+     * rule StudioStore::save applies). The create path checks here, before the service saves.
+     *
+     * @param array<mixed> $brief
+     */
+    private static function staleBase( int $user, int $id, string $base, array $brief ): bool
+    {
+        $row = StudioStore::get( $user, $id );
+        if ( null === $row || hash_equals( (string) $row['brief_hash'], $base ) ) {
+            return false;
+        }
+        $checked = StudioBrief::check( $brief );
+        $hash    = $checked['ok'] ? StudioStore::hashOf( (array) $checked['brief'] ) : null;
+
+        return null === $hash || ! hash_equals( (string) $row['brief_hash'], $hash );
+    }
+
+    private static function hashOfStored( int $user, int $id ): ?string
+    {
+        $row = StudioStore::get( $user, $id );
+
+        return null === $row ? null : (string) $row['brief_hash'];
+    }
+
     // ---------------------------------------------------------------
     // Answers
     // ---------------------------------------------------------------
+
+    /** 409: the stored brief changed since the screen last saw it. Carries the CURRENT brief and hash (data for the screen to merge). */
+    private static function conflict( int $user, int $id ): void
+    {
+        $row = StudioStore::get( $user, $id );
+        if ( null === $row ) {
+            self::fail( 404, StudioService::NOT_FOUND, __( 'That saved brief was not found.', 'jhmg-ai-editor-for-divi-5' ) );
+
+            return;
+        }
+        self::fail(
+            409,
+            StudioStore::CONFLICT,
+            __( 'The brief was changed while you were editing.', 'jhmg-ai-editor-for-divi-5' ),
+            [ 'brief' => $row['brief'], 'hash' => $row['brief_hash'] ]
+        );
+    }
 
     /** @param array<string,mixed> $extra */
     private static function fail( int $status, string $code, string $message, array $extra = [] ): void
@@ -377,6 +468,7 @@ final class StudioAjax
         return match ( $code ) {
             StudioStore::NOT_FOUND => __( 'That saved brief was not found.', 'jhmg-ai-editor-for-divi-5' ),
             StudioStore::TOO_LARGE => __( 'The brief is too large to save.', 'jhmg-ai-editor-for-divi-5' ),
+            StudioStore::CONFLICT  => __( 'The brief was changed while you were editing.', 'jhmg-ai-editor-for-divi-5' ),
             default                => __( 'The brief could not be saved. Try again.', 'jhmg-ai-editor-for-divi-5' ),
         };
     }

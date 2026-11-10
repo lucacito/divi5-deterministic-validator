@@ -264,6 +264,8 @@ class StudioScreenTest extends TestCase
         $mine = StudioScreen::config( 5 );
         $this->assertSame( $saved['id'], $mine['brief']['id'] );
         $this->assertSame( 'Acme', $mine['brief']['brief']['title'] );
+        $this->assertSame( StudioStore::get( 5, $saved['id'] )['brief_hash'], $mine['brief']['hash'], 'the stored hash, for compare-and-set' );
+        $this->assertMatchesRegularExpression( '/^[0-9a-f]{64}$/', $mine['brief']['hash'] );
         $this->assertNull( StudioScreen::config( 6 )['brief'], 'another user\'s brief id gives nothing' );
 
         $_GET['brief'] = '1 OR 1=1';
@@ -587,6 +589,24 @@ class StudioScreenTest extends TestCase
         $this->assertStringContainsString( "api('brief'", $send[0] );
         $this->assertStringContainsString( 't.syncFailed', $send[0], 'a failed read is told plainly and nothing is sent' );
         $this->assertArrayHasKey( 'syncFailed', StudioScreen::config( 5 )['i18n'] );
+    }
+
+    /** Plan 3 task 2: every save and create carries the hash it was based on; a conflict is resolved once, never in a loop. */
+    public function testSendCarriesTheBaseHashAndHandlesAConflictOnce(): void
+    {
+        $js = $this->src( 'assets/studio.js' );
+        preg_match( '/function send\(.*?\n    \}/s', $js, $send );
+        $this->assertNotEmpty( $send );
+        $this->assertStringContainsString( 'base_hash', $send[0] );
+        $this->assertStringContainsString( 'core.resolveConflict(', $js );
+        $this->assertStringContainsString( "'CONFLICT'", $send[0] );
+        $this->assertStringContainsString( 't.conflictReload', $js );
+        $this->assertStringContainsString( 'cfg.brief.hash', $js );
+        $conflict = StudioScreen::config( 5 )['i18n']['conflictReload'] ?? '';
+        $this->assertStringContainsString( 'Reload this page', $conflict );
+        $this->assertStringContainsString( 'Nothing you typed was sent.', $conflict );
+        $this->assertStringNotContainsString( 'Studio', $conflict );
+        $this->assertStringNotContainsString( 'innerHTML', $js );
     }
 
     /** Fix round 1, I3: one busy gate for create, rebuild and hand-off; the review never re-enables Create mid-request. */

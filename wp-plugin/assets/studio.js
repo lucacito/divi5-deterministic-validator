@@ -26,6 +26,7 @@
     var briefId = null;
     var synced = null;          // the brief as last known to be stored (sent by a save or create, or read back)
     var syncedKeys = [];        // the section key of each section of that brief
+    var baseHash = null;        // the brief_hash the screen last saw, sent with a save so a change behind its back is a conflict
     var lastMap = [];           // state index of each brief section, from the last build
     var report = null;          // the last report (preview or create)
     var previewOk = null;       // true, false, or null when not checked
@@ -684,18 +685,45 @@
         return read.then(function (got) {
             if (got && !got.ok) { status(t.syncFailed); return null; }
             var stored = got ? (got.data.brief || {}) : null;
-            var out = core.prepareSend(state, stored, synced, syncedKeys, catalog, t.untitled);
-            state = out.state;
-            if (stored) { synced = stored; }
-            if (out.applied && step === 4) { renderWords(); }
-            lastMap = out.map;
-            var fields = { brief: JSON.stringify(out.brief) };
-            Object.keys(extra || {}).forEach(function (k) { fields[k] = extra[k]; });
-            if (briefId) { fields.id = String(briefId); }
-            return api(action, fields).then(function (r) {
-                if (r.ok) { synced = out.brief; syncedKeys = out.keys; }
-                return { r: r, map: out.map, sent: out.brief };
-            });
+            // The look or the sections changed behind the screen's back: send nothing (a save would overwrite them).
+            if (stored && core.structureChanged(stored, synced)) { status(t.conflictReload); return null; }
+            if (got && got.data.hash) { baseHash = got.data.hash; }
+            /** One post of the brief. A 409 (the stored brief changed since the read) is merged and sent ONCE more. */
+            function transmit(storedNow, retried) {
+                var out = core.prepareSend(state, storedNow, synced, syncedKeys, catalog, t.untitled);
+                state = out.state;
+                if (storedNow) { synced = storedNow; }
+                if (out.applied && step === 4) { renderWords(); }
+                lastMap = out.map;
+                var fields = { brief: JSON.stringify(out.brief) };
+                Object.keys(extra || {}).forEach(function (k) { fields[k] = extra[k]; });
+                if (briefId) {
+                    fields.id = String(briefId);
+                    if (baseHash) { fields.base_hash = baseHash; }
+                }
+                return api(action, fields).then(function (r) {
+                    if (r.ok) {
+                        synced = out.brief;
+                        syncedKeys = out.keys;
+                        if (r.data.hash) { baseHash = r.data.hash; }
+                        return { r: r, map: out.map, sent: out.brief };
+                    }
+                    if (r.status === 409 && r.data.code === 'CONFLICT' && briefId) {
+                        var current = r.data.brief || {};
+                        var rc = core.resolveConflict(state, current, synced, syncedKeys, catalog);
+                        if (rc.action === 'reload') { status(t.conflictReload); return null; }
+                        if (retried) { status(t.conflictAgain); return null; }
+                        state = rc.state;
+                        synced = current;
+                        baseHash = r.data.hash || baseHash;
+                        if (rc.applied && step === 4) { renderWords(); }
+                        return transmit(null, true);
+                    }
+                    return { r: r, map: out.map, sent: out.brief };
+                });
+            }
+
+            return transmit(stored, false);
         });
     }
 
@@ -765,9 +793,11 @@
         api('brief', { id: String(briefId) }).then(function (r) {
             if (!r.ok) { if (loud) { status(failText(r)); } return; }
             var stored = r.data.brief || {};
+            if (core.structureChanged(stored, synced)) { status(t.conflictReload); return; }
             var m = core.mergeAssistant(state, stored, synced, syncedKeys, catalog);
             state = m.state;
             synced = stored;
+            if (r.data.hash) { baseHash = r.data.hash; }
             if (m.applied) {
                 if (step === 4) { renderWords(); }
                 if (step === 3) { renderSections(); }
@@ -874,6 +904,7 @@
             state.touched = true;
             briefId = cfg.brief.id;
             synced = cfg.brief.brief;
+            baseHash = cfg.brief.hash || null;
             syncedKeys = state.sections.map(function (x) { return x.key; });
             loaded.gone.forEach(function (i) { notes[i] = [t.recipeGone]; });
             Object.keys(loaded.stale).forEach(function (i) {
