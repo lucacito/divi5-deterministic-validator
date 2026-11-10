@@ -61,7 +61,7 @@ final class StudioScreen
      *
      * @return array<string,mixed>
      */
-    public static function config( int $user ): array
+    public static function config( int $user, ?bool $assistant = null ): array
     {
         $languages = [];
         foreach ( DesignLanguages::ids() as $id ) {
@@ -101,6 +101,8 @@ final class StudioScreen
             'pages'     => self::pages(),
             'devices'   => self::DEVICES,
             'brief'     => self::storedBrief( $user ),
+            // The hand-off is offered only when its tool exists (plan 3); the script also never polls without it.
+            'assistantReady' => $assistant ?? self::assistantReady(),
             'i18n'      => self::i18n(),
         ];
     }
@@ -111,8 +113,23 @@ final class StudioScreen
         return ucfirst( str_replace( '-', ' ', $id ) );
     }
 
-    public static function render(): void
+    /**
+     * True when the assistant tool the hand-off names (StudioService::TOOL, added by plan 3) is in the MCP tool catalog.
+     * Until then the hand-off is hidden: an instruction an assistant cannot follow must not be offered.
+     *
+     * @param ?callable(string):?array $lookup the catalog lookup (ToolCatalog::get); tests pass their own
+     */
+    public static function assistantReady( ?callable $lookup = null ): bool
     {
+        $lookup ??= [ ToolCatalog::class, 'get' ];
+
+        return null !== $lookup( StudioService::TOOL );
+    }
+
+    /** @param ?bool $assistant whether the hand-off is offered (null: assistantReady()); tests pass true to see it */
+    public static function render( ?bool $assistant = null ): void
+    {
+        $assistant ??= self::assistantReady();
         $site      = self::site();
         $languages = DesignLanguages::ids();
         $first     = $languages[0] ?? '';
@@ -124,7 +141,7 @@ final class StudioScreen
             <div class="aied-card aied-lab-intro">
                 <p class="aied-lab-lead"><?php esc_html_e( 'Build a Divi 5 page in five steps. Every answer updates the preview on the right.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
                 <ul class="aied-lab-facts">
-                    <li><?php esc_html_e( 'The preview is a temporary private draft page. It appears in your Pages list while it exists and is deleted when you create the page, or after a day.', 'jhmg-ai-editor-for-divi-5' ); ?></li>
+                    <li><?php esc_html_e( 'The preview is a temporary private draft page. It appears in your Pages list while it exists. It is deleted when you create the page, or the next time Divi 5 Lab makes a preview after a day without use.', 'jhmg-ai-editor-for-divi-5' ); ?></li>
                     <li><?php esc_html_e( 'Created pages are always drafts. Nothing is published until you publish it.', 'jhmg-ai-editor-for-divi-5' ); ?></li>
                     <li><?php esc_html_e( 'Nothing is permanent: every change to a page can be undone from the page history on the Dashboard.', 'jhmg-ai-editor-for-divi-5' ); ?></li>
                     <li><?php esc_html_e( 'Placeholders mark where your own words are needed. The plugin never invents prices, names or claims; it keeps the sample text until you replace it.', 'jhmg-ai-editor-for-divi-5' ); ?></li>
@@ -208,6 +225,7 @@ final class StudioScreen
 
                     <section class="aied-card aied-lab-panel" data-step="4" aria-labelledby="aied-lab-h4" hidden>
                         <h2 id="aied-lab-h4" tabindex="-1"><?php echo esc_html( $steps[4] ); ?></h2>
+                        <?php if ( $assistant ) : ?>
                         <p class="aied-muted"><?php esc_html_e( 'Type your own words, or let your connected AI assistant write them. Anything you leave empty keeps the sample text and is listed as a placeholder on the last step.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
                         <div class="aied-lab-handoff">
                             <button type="button" class="button" id="aied-lab-handoff"><?php esc_html_e( 'Copy instruction for my assistant', 'jhmg-ai-editor-for-divi-5' ); ?></button>
@@ -218,6 +236,9 @@ final class StudioScreen
                                 <textarea id="aied-lab-instruction" class="large-text" rows="4" readonly></textarea>
                             </div>
                         </div>
+                        <?php else : ?>
+                        <p class="aied-muted"><?php esc_html_e( 'Type your own words. Anything you leave empty keeps the sample text and is listed as a placeholder on the last step.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+                        <?php endif; ?>
                         <datalist id="aied-lab-pages"></datalist>
                         <div id="aied-lab-words" class="aied-lab-words"></div>
                         <?php self::stepNav( 4 ); ?>
@@ -238,7 +259,9 @@ final class StudioScreen
                             <p class="aied-lab-actions">
                                 <a id="aied-lab-open" class="button button-primary" href="#"><?php esc_html_e( 'Open in Divi', 'jhmg-ai-editor-for-divi-5' ); ?></a>
                                 <button type="button" class="button" id="aied-lab-rebuild"><?php esc_html_e( 'Rebuild', 'jhmg-ai-editor-for-divi-5' ); ?></button>
+                                <?php if ( $assistant ) : ?>
                                 <button type="button" class="button" id="aied-lab-handoff-2"><?php esc_html_e( 'Copy instruction for my assistant', 'jhmg-ai-editor-for-divi-5' ); ?></button>
+                                <?php endif; ?>
                             </p>
                             <p class="description"><?php esc_html_e( 'Rebuild saves your latest answers and builds the page again. It replaces the draft only if nobody changed it since; otherwise it makes a new draft and leaves the old page as it is.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
                         </div>
@@ -260,7 +283,7 @@ final class StudioScreen
                     <div id="aied-lab-frame-wrap" class="aied-lab-frame-wrap" data-width="desktop">
                         <iframe id="aied-lab-frame" class="aied-lab-frame" title="<?php esc_attr_e( 'Preview of your page', 'jhmg-ai-editor-for-divi-5' ); ?>"></iframe>
                     </div>
-                    <p class="description"><?php esc_html_e( 'The preview shows a private draft named "Divi 5 Lab preview (temporary)". It is removed when you create the page, or after a day.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
+                    <p class="description"><?php esc_html_e( 'The preview shows a private draft named "Divi 5 Lab preview (temporary)". It is deleted when you create the page, or the next time Divi 5 Lab makes a preview after a day without use.', 'jhmg-ai-editor-for-divi-5' ); ?></p>
                 </div>
             </div>
         </div>
@@ -457,6 +480,8 @@ final class StudioScreen
             'rebuiltOverwritten' => __( 'The draft was rebuilt from your latest answers. Its page title was kept as it was (change it in the page editor if you want). The earlier content can be restored from the page history on the Dashboard.', 'jhmg-ai-editor-for-divi-5' ),
             'requestFailed'     => __( 'That did not work. Check that you are still logged in, then try again.', 'jhmg-ai-editor-for-divi-5' ),
             'leaveWarning'      => __( 'Your answers are not saved yet.', 'jhmg-ai-editor-for-divi-5' ),
+            'reopened'          => __( 'This brief built a draft page. Rebuild it with your latest answers, or open it in Divi.', 'jhmg-ai-editor-for-divi-5' ),
+            'previewRemoved'    => __( 'The preview was removed because the page now exists. Open it in Divi to see it.', 'jhmg-ai-editor-for-divi-5' ),
         ];
     }
 
@@ -534,7 +559,7 @@ final class StudioScreen
         return $out;
     }
 
-    /** @return ?array{id:int,brief:array<string,mixed>,page_id:?int} the brief named by ?brief=<id>, when it is this user's */
+    /** @return ?array{id:int,brief:array<string,mixed>,page_id:?int,edit_url:?string} the brief named by ?brief=<id>, when it is this user's */
     private static function storedBrief( int $user ): ?array
     {
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only: it only selects which of the user's own briefs to show.
@@ -551,6 +576,14 @@ final class StudioScreen
             return null;
         }
 
-        return [ 'id' => (int) $row['id'], 'brief' => (array) $row['brief'], 'page_id' => null === $row['page_id'] ? null : (int) $row['page_id'] ];
+        $pageId = null === $row['page_id'] ? null : (int) $row['page_id'];
+        $edit   = null;
+        // A link back to the page it built, only while the page exists and this user may edit it.
+        if ( null !== $pageId && function_exists( 'get_post' ) && get_post( $pageId ) && current_user_can( 'edit_post', $pageId ) && function_exists( 'get_edit_post_link' ) ) {
+            $url  = get_edit_post_link( $pageId, 'raw' );
+            $edit = is_string( $url ) && '' !== $url ? $url : null;
+        }
+
+        return [ 'id' => (int) $row['id'], 'brief' => (array) $row['brief'], 'page_id' => $pageId, 'edit_url' => $edit ];
     }
 }

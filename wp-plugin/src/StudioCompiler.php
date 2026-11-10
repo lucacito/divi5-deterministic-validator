@@ -71,6 +71,12 @@ final class StudioCompiler
             return $result;
         }
         $markup = self::serializeAttributes( implode( "\n\n", $parts ) );
+        if ( null === $markup ) {
+            $result['problems'][] = [ 'path' => '', 'code' => 'COMPILE_FAILED', 'message' => 'The page could not be built this time (an internal limit was reached). Nothing was saved; try again with fewer sections.' ];
+            $result['unfilled'] = $result['refused'] = $result['warnings'] = [];
+
+            return $result;
+        }
         $gate   = LayoutGate::check( $markup );
         $result['markup']     = $markup;
         $result['ok']         = $gate->isValid();
@@ -91,12 +97,14 @@ final class StudioCompiler
     private const OPENER = '/(<!--\s+wp:[a-z][a-z0-9_-]*\/[a-z][a-z0-9_-]*\s+)(\{(?:[^}]+|}+(?=})|(?!}\s+\/?-->).)*+\})(\s+\/?-->)/s';
 
     /**
-     * Writes every block's attribute JSON as WordPress's serialize_block_attributes() does: "<", ">", "&" and "--" as \u
-     * escapes. Many recipes keep raw HTML in their JSON; for a user without unfiltered_html, kses (wp_pre_kses_less_than)
+     * Escapes "<", ">", "&" and "--" in every block's attribute JSON as \u escapes, the way WordPress's
+     * serialize_block_attributes() escapes them (core also writes \" as \u0022; this does not, so a later re-serialization
+     * by core or Divi can still change bytes, never values). Many recipes keep raw HTML in their JSON; for a user without unfiltered_html, kses (wp_pre_kses_less_than)
      * turns such a block comment into visible text when the page is saved (found by the live gate, Ruling 13). Only bytes
-     * change: a block whose decoded attributes would differ is left as it was.
+     * change: a block whose decoded attributes would differ is left as it was. Null when the rewrite failed (a PCRE
+     * limit): the caller fails closed and never hands out the markup unescaped.
      */
-    private static function serializeAttributes( string $markup ): string
+    private static function serializeAttributes( string $markup ): ?string
     {
         $out = preg_replace_callback(
             self::OPENER,
@@ -112,6 +120,6 @@ final class StudioCompiler
             $markup
         );
 
-        return is_string( $out ) ? $out : $markup;
+        return is_string( $out ) ? $out : null;
     }
 }

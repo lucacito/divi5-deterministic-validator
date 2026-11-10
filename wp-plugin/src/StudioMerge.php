@@ -9,7 +9,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Edits of one section of a Divi 5 Lab brief: merge slot values in, or swap the section's recipe. Pure: a brief goes
+ * Edits of one section of a Divi 5 Lab brief: merge slot values in, or swap the section's recipe.
+ *
+ * No production code calls this yet: it is the server-side twin of the screen's merge and swap (studio-core.js, pinned
+ * against it by StudioScreenTest), kept for plan 3's assistant tool, which edits stored briefs on the server.
+ *
+ * Pure: a brief goes
  * in, a new brief comes out, nothing else is touched (other sections, language, kit, title and goal stay as given).
  * The result is not validated here; StudioBrief::check() does that, so a value that is too long or a link that is not
  * allowed is reported there with its own code.

@@ -50,11 +50,11 @@ class StudioScreenTest extends TestCase
         unset( $GLOBALS['__enqueued'], $GLOBALS['__wp_bloginfo'], $GLOBALS['__wp_caps'], $GLOBALS['__wp_current_user_id'] );
     }
 
-    private function render(): string
+    private function render( ?bool $assistant = null ): string
     {
         ob_start();
         try {
-            StudioScreen::render();
+            StudioScreen::render( $assistant );
         } finally {
             $html = (string) ob_get_clean();
         }
@@ -604,7 +604,7 @@ class StudioScreenTest extends TestCase
     /** Fix round 1, I4: the instruction box is on step 4 and the fallback goes there, so "the box" in the status is visible. */
     public function testTheHandoffFallbackIsShownOnTheStepThatHoldsIt(): void
     {
-        $xpath = $this->dom( $this->render() );
+        $xpath = $this->dom( $this->render( true ) );
         $this->assertSame( 1, $xpath->query( '//section[@data-step="4"]//*[@id="aied-lab-instruction-box"]' )->length );
         $this->assertSame( 1, $xpath->query( '//section[@data-step="5"]//*[@id="aied-lab-handoff-2"]' )->length );
         $js = $this->src( 'assets/studio.js' );
@@ -647,5 +647,86 @@ class StudioScreenTest extends TestCase
     {
         $css = (string) file_get_contents( __DIR__ . '/../wp-plugin/assets/admin.css' );
         $this->assertMatchesRegularExpression( '/\.aied-nav\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*wrap/', $css );
+    }
+
+    /**
+     * Final fix pass, I2 (ruling 22): the hand-off names the tool StudioService::TOOL, which plan 3 adds. Until the MCP
+     * tool catalog holds it, the screen shows no hand-off button, no instruction box, no "Get my assistant's words",
+     * no sentence about an assistant, and the script never polls.
+     */
+    public function testTheAssistantHandoffIsHiddenUntilItsToolExists(): void
+    {
+        $this->assertNull( \AiEditorDivi5\WP\ToolCatalog::get( \AiEditorDivi5\WP\StudioService::TOOL ), 'plan 3 has not added the tool on this branch' );
+        $this->assertFalse( StudioScreen::assistantReady() );
+        $this->assertTrue( StudioScreen::assistantReady( static fn ( string $name ): ?array => [ 'name' => $name ] ) );
+        $this->assertFalse( StudioScreen::config( 5 )['assistantReady'] );
+        $this->assertTrue( StudioScreen::config( 5, true )['assistantReady'] );
+
+        $ids  = [ 'aied-lab-handoff', 'aied-lab-refresh', 'aied-lab-instruction-box', 'aied-lab-instruction', 'aied-lab-handoff-2' ];
+        $off  = $this->render();
+        $on   = $this->render( true );
+        foreach ( $ids as $id ) {
+            $this->assertSame( 0, $this->dom( $off )->query( '//*[@id="' . $id . '"]' )->length, $id . ' is not shown' );
+            $this->assertSame( 1, $this->dom( $on )->query( '//*[@id="' . $id . '"]' )->length, $id . ' is kept for plan 3' );
+        }
+        foreach ( $this->texts( $off ) as $text ) {
+            $this->assertStringNotContainsStringIgnoringCase( 'assistant', $text, 'no sentence about an assistant while there is no tool' );
+        }
+        $js = $this->src( 'assets/studio.js' );
+        $this->assertMatchesRegularExpression( '/function startPoll\(\) \{\s*if \(!cfg\.assistantReady\) \{ return; \}/', $js );
+        $this->assertMatchesRegularExpression( "/if \(cfg\.assistantReady\) \{[^}]*addEventListener\('click', handoff\)/s", $js, 'the buttons are wired only when they exist' );
+    }
+
+    /**
+     * Final fix pass, I1: a saved brief can be reopened. After a save or a create the address gets &brief=<id> (no
+     * reload), a warning guards unsaved answers, and opening a brief that built a page gives Rebuild and Open in Divi
+     * instead of Create.
+     */
+    public function testASavedBriefCanBeReopenedAndUnsavedAnswersAreGuarded(): void
+    {
+        $GLOBALS['wpdb'] = new FakeWpdb();
+        $GLOBALS['wpdb']->createStudioTable();
+        $GLOBALS['__wp_options'] = [ StudioTable::DB_VERSION_OPTION => StudioTable::DB_VERSION ];
+        $saved = StudioStore::save( 5, [ 'version' => 1, 'title' => 'Acme', 'goal' => 'book', 'language' => 'editorial', 'sections' => [ [ 'recipe' => 'hero-cta' ] ] ] );
+        $page            = new \WP_Post();
+        $page->ID        = 321;
+        $page->post_type = 'page';
+        $GLOBALS['__wp_posts'][321] = $page;
+        StudioStore::link( 5, $saved['id'], 321, str_repeat( 'a', 64 ) );
+        $_GET['brief'] = (string) $saved['id'];
+        $GLOBALS['__wp_caps']['edit_post:321'] = true;
+        $brief = StudioScreen::config( 5 )['brief'];
+        $this->assertSame( 321, $brief['page_id'] );
+        $this->assertStringContainsString( 'post=321', (string) $brief['edit_url'] );
+        $GLOBALS['__wp_caps']['edit_post:321'] = false;
+        $this->assertNull( StudioScreen::config( 5 )['brief']['edit_url'], 'no link to a page the user may not edit' );
+        unset( $GLOBALS['__wp_posts'][321] );
+        $this->assertNull( StudioScreen::config( 5 )['brief']['edit_url'], 'no link to a page that is gone' );
+        $GLOBALS['__wp_options'] = [];
+
+        $js = $this->src( 'assets/studio.js' );
+        $this->assertStringContainsString( "window.addEventListener('beforeunload'", $js );
+        $this->assertMatchesRegularExpression( '/beforeunload[\s\S]{0,400}e\.preventDefault\(\);[\s\S]{0,120}e\.returnValue = t\.leaveWarning;/', $js );
+        $this->assertStringContainsString( 'function remember(b)', $js );
+        $this->assertSame( 2, substr_count( $js, "remember(x.sent);\n" ), 'the answers count as saved after a save and after a create' );
+        $this->assertStringContainsString( "remember();\n        window.addEventListener('beforeunload'", $js, 'and as loaded at the start' );
+        $this->assertStringContainsString( 'window.history.replaceState(null, \'\', core.briefUrl(window.location.href, briefId))', $js );
+        $this->assertMatchesRegularExpression( "/function showCreated\([^)]*\) \{[\s\S]*?byId\('aied-lab-create'\)\.hidden = true;/", $js, 'once a page exists Create gives way to Rebuild' );
+    }
+
+    /** Final fix pass, I4a: the screen says honestly when the preview draft goes (the sweep runs only when the screen is used). */
+    public function testThePreviewCleanupIsDescribedHonestly(): void
+    {
+        $text = implode( ' ', $this->texts( $this->render() ) );
+        $this->assertStringNotContainsString( 'or after a day', $text );
+        $this->assertSame( 2, substr_count( $text, 'the next time Divi 5 Lab makes a preview after a day' ) );
+    }
+
+    /** Final fix pass, S3: after Create the preview draft is gone, so the frame stops showing it. */
+    public function testTheFrameIsClearedAfterCreate(): void
+    {
+        $js = $this->src( 'assets/studio.js' );
+        $this->assertStringContainsString( "core.frameAfter('create', true) === 'clear'", $js );
+        $this->assertArrayHasKey( 'previewRemoved', StudioScreen::config( 5 )['i18n'] );
     }
 }

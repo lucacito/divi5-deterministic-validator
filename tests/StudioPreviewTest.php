@@ -305,6 +305,28 @@ class StudioPreviewTest extends TestCase
         $this->assertStringContainsString( 'cut', $html );
     }
 
+    /** Final fix pass, S1: the cut never splits a character, or esc_html would return '' and the text would vanish. */
+    public function testApproximationCutKeepsMultibyteTextIntact(): void
+    {
+        // 'x' then 'é' (2 bytes) repeated: a byte cut at the limit lands inside a character.
+        $markup = 'x' . str_repeat( 'é', StudioPreview::APPROXIMATION_LIMIT );
+        $html   = (string) StudioPreview::url( self::A, $markup, StudioPreview::MODE_APPROXIMATION )['html'];
+        preg_match( '#<pre[^>]*>(.*)</pre>#s', $html, $m );
+        $this->assertNotEmpty( $m[1] ?? '', 'the cut text is still shown' );
+        $this->assertSame( 1, preg_match( '//u', $m[1] ), 'valid UTF-8' );
+        $this->assertLessThanOrEqual( StudioPreview::APPROXIMATION_LIMIT, strlen( html_entity_decode( $m[1] ) ) );
+    }
+
+    /** Final fix pass, S4: the words of the approximation are translatable. */
+    public function testApproximationWordsAreTranslatable(): void
+    {
+        $src = (string) file_get_contents( __DIR__ . '/../wp-plugin/src/StudioPreview.php' );
+        $this->assertDoesNotMatchRegularExpression( "/esc_html\(\s*'/", $src, 'no esc_html of a literal: use esc_html__' );
+        foreach ( [ 'Approximate preview', 'Nothing to preview yet.', 'The text above was cut short.' ] as $words ) {
+            $this->assertMatchesRegularExpression( '/(?:esc_html__|__)\(\s*\'' . preg_quote( $words, '/' ) . "',\s*'jhmg-ai-editor-for-divi-5'/", $src, $words );
+        }
+    }
+
     // ---- cleanup -------------------------------------------------------------------------
 
     public function testCleanupDeletesIt(): void
@@ -491,6 +513,13 @@ class StudioPreviewTest extends TestCase
         $source = (string) file_get_contents( __DIR__ . '/../wp-plugin/uninstall.php' );
         $this->assertStringContainsString( 'StudioPreview::cleanupAll()', $source );
         $this->assertLessThan( strpos( $source, 'HistoryStore::deleteAll()' ), strpos( $source, 'StudioPreview::cleanupAll()' ), 'before the history table goes' );
+    }
+
+    /** Final fix pass, S7: the once-an-hour guard of the stale sweep goes too. */
+    public function testUninstallDeletesTheSweepGuard(): void
+    {
+        $source = (string) file_get_contents( __DIR__ . '/../wp-plugin/uninstall.php' );
+        $this->assertStringContainsString( 'delete_transient( AiEditorDivi5\\WP\\StudioAjax::SWEEP_TRANSIENT )', $source );
     }
 
     public function testTheClassIsLoadedByTheAutoloader(): void

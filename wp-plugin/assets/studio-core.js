@@ -353,6 +353,39 @@
         return origin(url) !== null && origin(url) === origin(here) ? String(url) : null;
     }
 
+    /**
+     * The address of this screen with &brief=<id> (an earlier brief argument replaced, the others and the hash kept), so
+     * a reload reopens the brief. Anything but a positive whole number leaves the address as it is.
+     */
+    function briefUrl(href, id) {
+        var n = typeof id === 'number' ? id : (/^[1-9][0-9]{0,9}$/.test(String(id)) ? parseInt(id, 10) : 0);
+        href = String(href || '');
+        if (!(n > 0 && Math.floor(n) === n)) { return href; }
+        var hash = '';
+        var h = href.indexOf('#');
+        if (h >= 0) { hash = href.slice(h); href = href.slice(0, h); }
+        var q = href.indexOf('?');
+        var path = q >= 0 ? href.slice(0, q) : href;
+        var args = q >= 0 ? href.slice(q + 1).split('&').filter(function (a) { return a !== '' && a.split('=')[0] !== 'brief'; }) : [];
+        args.push('brief=' + n);
+        return path + '?' + args.join('&') + hash;
+    }
+
+    /** The brief the screen would send now, as one string (what "saved" is compared with). */
+    function briefKey(state, catalog, untitled) {
+        return JSON.stringify(buildBrief(state, catalog, untitled).brief);
+    }
+
+    /** True while the answers differ from the brief last saved or loaded (savedKey from briefKey, or null). */
+    function isDirty(state, savedKey, catalog, untitled) {
+        return savedKey === null || savedKey === undefined || briefKey(state, catalog, untitled) !== savedKey;
+    }
+
+    /** What the preview frame does after an action: a successful create deletes the preview draft, so it is cleared. */
+    function frameAfter(action, ok) {
+        return action === 'create' && ok ? 'clear' : 'keep';
+    }
+
     /** The form state from a stored brief: which sections lost their layout, which saved words lost their place. */
     function fromStored(brief, catalog) {
         var state = {
@@ -401,6 +434,10 @@
         unfilledBySection: unfilledBySection,
         toSitePath: toSitePath,
         sameSiteUrl: sameSiteUrl,
-        fromStored: fromStored
+        fromStored: fromStored,
+        briefUrl: briefUrl,
+        briefKey: briefKey,
+        isDirty: isDirty,
+        frameAfter: frameAfter
     };
 }));

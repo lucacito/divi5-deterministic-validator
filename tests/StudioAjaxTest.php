@@ -31,7 +31,7 @@ class StudioAjaxTest extends TestCase
     /** every action and whether it also needs edit_pages */
     private const ACTIONS = [
         'stack'   => false,
-        'preview' => false,
+        'preview' => true, // it inserts or updates the user's preview draft page (final fix pass, S2)
         'save'    => false,
         'create'  => true,
         'rebuild' => true,
@@ -169,7 +169,7 @@ class StudioAjaxTest extends TestCase
     {
         $GLOBALS['__wp_caps'] = [ 'manage_options' => true ];
         $id = $this->storedBrief();
-        foreach ( [ 'create', 'rebuild' ] as $a ) {
+        foreach ( [ 'create', 'rebuild', 'preview' ] as $a ) {
             $r = $this->call( $a, $this->validPost( $a, $id ) );
             $this->assertSame( 403, $r->status, $a );
         }

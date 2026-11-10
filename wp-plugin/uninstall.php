@@ -14,6 +14,7 @@ AiEditorDivi5\WP\HistoryStore::deleteAll();
 AiEditorDivi5\WP\OAuthTable::drop();
 AiEditorDivi5\WP\StudioStore::deleteAll();
 AiEditorDivi5\WP\StudioTable::drop();
+delete_transient( AiEditorDivi5\WP\StudioAjax::SWEEP_TRANSIENT );
 delete_option('ai_editor_divi5_db_version');
 delete_option( AiEditorDivi5\WP\ApprovalMode::OPTION );
 delete_option( AiEditorDivi5\WP\OAuthSettings::OPTION );

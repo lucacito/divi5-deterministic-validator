@@ -306,6 +306,35 @@ test('fromStored reports layouts that left the library and words that lost their
     assert.equal(r.state.sections[1].recipe, 'retired-recipe');
 });
 
+test('final fix pass I1: the brief address keeps the other arguments and replaces an earlier brief', () => {
+    const base = 'http://x.test/wp-admin/admin.php?page=ai-editor-divi5&tab=studio';
+    assert.equal(core.briefUrl(base, 7), base + '&brief=7');
+    assert.equal(core.briefUrl(base + '&brief=3', 7), base + '&brief=7');
+    assert.equal(core.briefUrl('http://x.test/wp-admin/admin.php?brief=3&page=ai-editor-divi5&tab=studio#top', 12), 'http://x.test/wp-admin/admin.php?page=ai-editor-divi5&tab=studio&brief=12#top');
+    assert.equal(core.briefUrl(base, 'abc'), base, 'not an id: unchanged');
+    assert.equal(core.briefUrl(base, 0), base);
+});
+
+test('final fix pass I1: answers are dirty only when they differ from the last saved or loaded brief', () => {
+    let state = { goal: 'book', name: 'Acme', line: '', action: '', language: 'editorial', kit: '', density: 'balanced', sections: core.sectionsFromStack(['hero-a', 'cards-3']), touched: false };
+    const saved = core.briefKey(state, catalog, 'Untitled');
+    assert.equal(core.isDirty(state, saved, catalog, 'Untitled'), false, 'clean after load');
+    state.sections[0].slots['heading.1'] = 'New words';
+    assert.equal(core.isDirty(state, saved, catalog, 'Untitled'), true, 'dirty after an edit');
+    const again = core.briefKey(state, catalog, 'Untitled');
+    assert.equal(core.isDirty(state, again, catalog, 'Untitled'), false, 'clean after the save');
+    state.density = 'airy';
+    assert.equal(core.isDirty(state, again, catalog, 'Untitled'), false, 'a setting that is not in the brief does not count');
+    assert.equal(core.isDirty(state, null, catalog, 'Untitled'), true, 'nothing remembered yet: dirty');
+});
+
+test('final fix pass S3: after a successful create the frame is cleared, otherwise kept', () => {
+    assert.equal(core.frameAfter('create', true), 'clear');
+    assert.equal(core.frameAfter('create', false), 'keep');
+    assert.equal(core.frameAfter('rebuild', true), 'keep');
+    assert.equal(core.frameAfter('save', true), 'keep');
+});
+
 (async () => {
     let failed = 0;
     for (const [name, fn] of tests) {

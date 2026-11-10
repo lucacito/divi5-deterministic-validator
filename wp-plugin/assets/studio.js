@@ -36,6 +36,7 @@
     var previewSeq = 0;
     var pollTimer = null;
     var polls = 0;
+    var savedKey = null;        // the brief last saved or loaded, as core.briefKey; answers that differ are unsaved
     var gate = core.makeGate(onBusy);
     var WRITE_BUTTONS = ['aied-lab-rebuild', 'aied-lab-handoff', 'aied-lab-handoff-2', 'aied-lab-refresh'];
 
@@ -90,6 +91,18 @@
         WRITE_BUTTONS.forEach(function (id) { if (byId(id)) { byId(id).disabled = busy; } });
         if (byId('aied-lab-create')) { byId('aied-lab-create').disabled = busy || previewOk === false; }
         app.setAttribute('aria-busy', busy ? 'true' : 'false');
+    }
+
+    /** The answers now count as saved (b: the brief just sent; none: the form as it is). */
+    function remember(b) {
+        savedKey = b ? JSON.stringify(b) : core.briefKey(state, catalog, t.untitled);
+    }
+
+    /** The address gets &brief=<id> (no reload), so a reload or a bookmark reopens this brief. */
+    function keepAddress() {
+        if (briefId && window.history && typeof window.history.replaceState === 'function') {
+            window.history.replaceState(null, '', core.briefUrl(window.location.href, briefId));
+        }
     }
 
     function plural(n, one, many) { return n === 1 ? t[one] : f(t[many], n); }
@@ -195,9 +208,12 @@
             });
         });
         byId('aied-lab-repreview').addEventListener('click', function () { preview(); });
-        byId('aied-lab-handoff').addEventListener('click', handoff);
-        byId('aied-lab-handoff-2').addEventListener('click', handoff);
-        byId('aied-lab-refresh').addEventListener('click', function () { refresh(true); });
+        if (cfg.assistantReady) {
+            // The hand-off exists only once its assistant tool does (plan 3); without it the buttons are not rendered.
+            byId('aied-lab-handoff').addEventListener('click', handoff);
+            byId('aied-lab-handoff-2').addEventListener('click', handoff);
+            byId('aied-lab-refresh').addEventListener('click', function () { refresh(true); });
+        }
         byId('aied-lab-create').addEventListener('click', create);
         byId('aied-lab-rebuild').addEventListener('click', rebuild);
     }
@@ -545,6 +561,17 @@
      * The frame at the true width of the chosen device (Desktop 1280, Tablet 768, Phone 390 CSS px), scaled down to fit
      * the pane, never up; the wrapper takes the scaled size so the unscaled box makes no overflow.
      */
+    /** The preview draft was deleted (Create): the frame stops showing it, so nothing inside can load a missing page. */
+    function clearFrame() {
+        window.clearTimeout(previewTimer);
+        previewSeq++;
+        var frame = byId('aied-lab-frame');
+        frame.removeAttribute('srcdoc');
+        frame.removeAttribute('sandbox');
+        frame.setAttribute('src', 'about:blank');
+        byId('aied-lab-preview-state').textContent = t.previewRemoved;
+    }
+
     function layoutFrame() {
         var wrap = byId('aied-lab-frame-wrap');
         var frame = byId('aied-lab-frame');
@@ -667,7 +694,7 @@
             if (briefId) { fields.id = String(briefId); }
             return api(action, fields).then(function (r) {
                 if (r.ok) { synced = out.brief; syncedKeys = out.keys; }
-                return { r: r, map: out.map };
+                return { r: r, map: out.map, sent: out.brief };
             });
         });
     }
@@ -686,6 +713,8 @@
                 return false;
             }
             briefId = r.data.id;
+            remember(x.sent);
+            keepAddress();
             return true;
         });
     }
@@ -719,6 +748,7 @@
     }
 
     function startPoll() {
+        if (!cfg.assistantReady) { return; }
         polls = 0;
         window.clearInterval(pollTimer);
         pollTimer = window.setInterval(function () {
@@ -754,6 +784,8 @@
 
     function showCreated(message, editUrl) {
         byId('aied-lab-created').hidden = false;
+        // A page exists for this brief now: Rebuild (and Open in Divi) take the place of Create.
+        byId('aied-lab-create').hidden = true;
         byId('aied-lab-created-message').textContent = message;
         var open = byId('aied-lab-open');
         var safe = typeof editUrl === 'string' ? core.sameSiteUrl(editUrl, window.location.href) : null;
@@ -776,6 +808,9 @@
                     return;
                 }
                 briefId = r.data.brief_id;
+                remember(x.sent);
+                keepAddress();
+                if (core.frameAfter('create', true) === 'clear') { clearFrame(); }
                 window.clearInterval(pollTimer);
                 showCreated((r.data.duplicate ? t.createdDuplicate : t.createdDraft) + unfilledNote(), r.data.edit_url);
                 renderReview();
@@ -848,12 +883,21 @@
             setChecked('aied-lab-goal', state.goal);
             setChecked('aied-lab-language', state.language);
             byId('aied-lab-kit').value = state.kit;
-            if (cfg.brief.page_id) { byId('aied-lab-created').hidden = false; byId('aied-lab-open').hidden = true; }
+            if (cfg.brief.page_id) { showCreated(t.reopened, cfg.brief.edit_url); }
+            keepAddress();
         } else {
             state.kit = byId('aied-lab-kit').value;
             state.sections = core.sectionsFromStack((cfg.stacks[state.goal] || []).filter(function (n) { return catalog[n]; }));
             state = core.applyStepOne(state, catalog);
         }
+        remember();
+        window.addEventListener('beforeunload', function (e) {
+            // Armed only while the answers differ from the brief last saved or loaded.
+            if (!core.isDirty(state, savedKey, catalog, t.untitled)) { return undefined; }
+            e.preventDefault();
+            e.returnValue = t.leaveWarning;
+            return t.leaveWarning;
+        });
         showKitSummary();
         bindControls();
         app.hidden = false;

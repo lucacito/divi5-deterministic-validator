@@ -11,7 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * The admin-ajax handlers of the Divi 5 Lab screen (internal name Studio). Logged-in users only (never the logged-out variant of the hook).
  *
- * - Every action needs the nonce NONCE and the capability manage_options; create and rebuild also need edit_pages.
+ * - Every action needs the nonce NONCE and the capability manage_options; preview, create and rebuild also need
+ *   edit_pages (each of them inserts or updates a page: the preview its user's preview draft).
  * - The user is ALWAYS get_current_user_id(): no user id is ever read from the request, and the hand-off names the site
  *   with home_url(), never an address from the request.
  * - Input is read strictly: a value that is not a string where a string is required is HTTP 400, malformed JSON is 400,
@@ -94,7 +95,7 @@ final class StudioAjax
     /** brief -> the report and where to see the preview. Writes no brief and no page except the user's preview draft. */
     public static function handlePreview(): void
     {
-        if ( ! self::gate( false ) ) {
+        if ( ! self::gate( true ) ) {
             return;
         }
         $brief = self::brief();

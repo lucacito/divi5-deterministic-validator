@@ -57,7 +57,7 @@ final class StudioPreview
     {
         try {
             if ( '' === trim( $markup ) ) {
-                return self::approximation( '', 'Nothing to preview yet.' );
+                return self::approximation( '', __( 'Nothing to preview yet.', 'jhmg-ai-editor-for-divi-5' ) );
             }
             if ( self::MODE_DRAFT !== $mode || $user <= 0 || get_current_user_id() !== $user ) {
                 // The draft's author is set by core to the signed-in user, so a draft for anyone else could never be found again.
@@ -287,7 +287,7 @@ final class StudioPreview
 
     /**
      * A labelled wrapper that shows the markup as text only. Nothing in $markup can become an element: it is escaped, cut
-     * to APPROXIMATION_LIMIT characters, and placed inside one pre block.
+     * to APPROXIMATION_LIMIT bytes (never inside a character), and placed inside one pre block.
      *
      * @return array{mode:string,url:?string,html:?string}
      */
@@ -296,16 +296,18 @@ final class StudioPreview
         $shown = $markup;
         $cut   = false;
         if ( strlen( $shown ) > self::APPROXIMATION_LIMIT ) {
-            $shown = substr( $shown, 0, self::APPROXIMATION_LIMIT );
+            // mb_strcut never splits a UTF-8 character (a split one would make esc_html return '').
+            $shown = function_exists( 'mb_strcut' ) ? mb_strcut( $shown, 0, self::APPROXIMATION_LIMIT, 'UTF-8' ) : substr( $shown, 0, self::APPROXIMATION_LIMIT );
             $cut   = true;
         }
         $html  = '<div class="aied-studio-approximation" style="font:13px/1.5 sans-serif;border:1px dashed #888;padding:12px">';
-        $html .= '<p style="margin:0 0 8px"><strong>' . esc_html( 'Approximate preview' ) . '</strong> ';
-        $html .= esc_html( '' !== $note ? $note : 'The real preview could not be made, so this is the layout the assistant would save, shown as plain text rather than as a page.' ) . '</p>';
+        $html .= '<p style="margin:0 0 8px"><strong>' . esc_html__( 'Approximate preview', 'jhmg-ai-editor-for-divi-5' ) . '</strong> ';
+        $why   = '' !== $note ? $note : __( 'The real preview could not be made, so this is the layout the assistant would save, shown as plain text rather than as a page.', 'jhmg-ai-editor-for-divi-5' );
+        $html .= esc_html( $why ) . '</p>';
         if ( '' !== trim( $markup ) ) {
             $html .= '<pre style="margin:0;white-space:pre-wrap;word-break:break-word">' . esc_html( $shown ) . '</pre>';
             if ( $cut ) {
-                $html .= '<p style="margin:8px 0 0"><em>' . esc_html( 'The text above was cut short.' ) . '</em></p>';
+                $html .= '<p style="margin:8px 0 0"><em>' . esc_html__( 'The text above was cut short.', 'jhmg-ai-editor-for-divi-5' ) . '</em></p>';
             }
         }
         $html .= '</div>';
