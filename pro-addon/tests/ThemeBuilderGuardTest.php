@@ -71,6 +71,7 @@ class ThemeBuilderGuardTest extends TestCase
         $design = [];
         $switch = [];
         $companion = [];
+        $lab = [];
         foreach ( new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( self::root(), \FilesystemIterator::SKIP_DOTS ) ) as $file ) {
             if ( 'php' !== $file->getExtension() ) {
                 continue;
@@ -80,8 +81,11 @@ class ThemeBuilderGuardTest extends TestCase
                 $isDesign = str_contains( str_replace( '\\', '/', $file->getPath() ), '/src/Design' );
                 $isSwitch = 'SwitchDesign.php' === $file->getFilename();
                 $isCompanion = str_contains( str_replace( '\\', '/', $file->getPath() ), '/src/Companion' ) || 'StrictModePanel.php' === $file->getFilename();
+                $isLab = str_contains( str_replace( '\\', '/', $file->getPath() ), '/src/Lab' );
                 foreach ( $m[1] as $name ) {
-                    if ( $isCompanion ) {
+                    if ( $isLab ) {
+                        $lab[ 'AiEditorDivi5\\WP\\' . $name ] = $file->getFilename();
+                    } elseif ( $isCompanion ) {
                         $companion[ 'AiEditorDivi5\\WP\\' . $name ] = $file->getFilename();
                     } elseif ( $isSwitch ) {
                         $switch[ 'AiEditorDivi5\\WP\\' . $name ] = $file->getFilename();
@@ -116,6 +120,13 @@ class ThemeBuilderGuardTest extends TestCase
         $this->assertNotSame( [], $companion, 'the scan found the companion files' );
         foreach ( $companion as $class => $where ) {
             $this->assertContains( $class, [ ...\AiEditorDivi5\Pro\Compat::REQUIRED_CLASSES, ...\AiEditorDivi5\Pro\Companion\ProAbilities::REQUIRED_FREE ], "{$where} references {$class}, which neither Compat::REQUIRED_CLASSES nor ProAbilities::REQUIRED_FREE lists" );
+        }
+
+        // The Lab features (src/Lab) need free classes that arrived with Divi 5 Lab, so they are guarded per tool by LabSupport::unsupported()
+        // and listed in LabSupport::REQUIRED_CLASSES, never in Compat::REQUIRED_CLASSES.
+        $this->assertNotSame( [], $lab, 'the scan found the Lab files' );
+        foreach ( $lab as $class => $where ) {
+            $this->assertContains( $class, [ ...\AiEditorDivi5\Pro\Compat::REQUIRED_CLASSES, ...\AiEditorDivi5\Pro\Lab\LabSupport::REQUIRED_CLASSES ], "{$where} references {$class}, which neither Compat::REQUIRED_CLASSES nor LabSupport::REQUIRED_CLASSES lists" );
         }
 
         $this->assertNotSame( [], $switch, 'the scan found the switch tool' );

@@ -60,6 +60,17 @@ class FreeApiCompatTest extends TestCase
             [ $w . 'HistoryStore', 'rowsSince', [ 'sinceIso' => 'string', 'limit' => 'int' ], 'array' ],
             [ $w . 'HistoryCapture', 'currentSource', [], 'array' ],
             [ $w . 'HistoryCapture', 'isSuspended', [], 'bool' ],
+            // Pro Lab (Lab\*): lab_restyle and build_site's brief option call these; LabSupport guards them per tool.
+            [ $w . 'StudioCompiler', 'compile', [ 'brief' => 'mixed', 'pageExists' => '?callable', 'homeUrl' => 'string' ], 'array' ],
+            [ $w . 'StudioBrief', 'check', [ 'brief' => 'mixed' ], 'array' ],
+            [ $w . 'StudioBrief', 'resolveRecipe', [ 'name' => 'string' ], '?string' ],
+            [ $w . 'StudioStore', 'save', [ 'user' => 'int', 'brief' => 'array', 'id' => '?int', 'expectedHash' => '?string' ], 'array' ],
+            [ $w . 'StudioStore', 'get', [ 'user' => 'int', 'id' => 'int' ], '?array' ],
+            [ $w . 'StudioStore', 'link', [ 'user' => 'int', 'id' => 'int', 'pageId' => 'int', 'contentHash' => 'string' ], 'bool' ],
+            [ $w . 'StudioStore', 'forPage', [ 'user' => 'int', 'pageId' => 'int' ], '?array' ],
+            [ $w . 'StudioStore', 'countFor', [ 'user' => 'int' ], 'int' ],
+            [ $w . 'StudioStore', 'linked', [ 'user' => 'int', 'limit' => 'int' ], 'array' ],
+            [ $w . 'StudioStore', 'delete', [ 'user' => 'int', 'id' => 'int' ], 'bool' ],
         ];
     }
 
