@@ -184,6 +184,47 @@ class StudioStoreTest extends TestCase
         $this->assertNull( StudioStore::get( 5, $a['id'] )['page_id'] );
     }
 
+    public function testLinkedListsOnlyTheUsersBriefsThatHaveAPageNewestFirst(): void
+    {
+        $a = StudioStore::save( 5, $this->brief( 'a' ) );
+        $b = StudioStore::save( 5, $this->brief( 'b' ) );
+        StudioStore::save( 5, $this->brief( 'unlinked' ) );
+        $o = StudioStore::save( 6, $this->brief( 'theirs' ) );
+        StudioStore::link( 5, $a['id'], 11, str_repeat( 'a', 64 ) );
+        StudioStore::link( 5, $b['id'], 12, str_repeat( 'b', 64 ) );
+        StudioStore::link( 6, $o['id'], 13, str_repeat( 'c', 64 ) );
+
+        $rows = StudioStore::linked( 5 );
+        $this->assertSame( [ $b['id'], $a['id'] ], array_column( $rows, 'id' ) );
+        $this->assertSame( [ 12, 11 ], array_column( $rows, 'page_id' ) );
+        $this->assertSame( 'b', $rows[0]['brief']['title'] );
+        $this->assertNotContains( $o['id'], array_column( $rows, 'id' ), 'another user\'s brief is never listed' );
+    }
+
+    public function testLinkedHonoursTheLimitAndRefusesBadUsers(): void
+    {
+        $a = StudioStore::save( 5, $this->brief( 'a' ) );
+        $b = StudioStore::save( 5, $this->brief( 'b' ) );
+        StudioStore::link( 5, $a['id'], 11, str_repeat( 'a', 64 ) );
+        StudioStore::link( 5, $b['id'], 12, str_repeat( 'b', 64 ) );
+
+        $this->assertCount( 1, StudioStore::linked( 5, 1 ) );
+        $this->assertSame( [], StudioStore::linked( 5, 0 ) );
+        $this->assertSame( [], StudioStore::linked( 0 ) );
+        $this->assertSame( [], StudioStore::linked( -1 ) );
+    }
+
+    public function testLinkedSkipsACorruptRow(): void
+    {
+        $a = StudioStore::save( 5, $this->brief( 'a' ) );
+        $b = StudioStore::save( 5, $this->brief( 'b' ) );
+        StudioStore::link( 5, $a['id'], 11, str_repeat( 'a', 64 ) );
+        StudioStore::link( 5, $b['id'], 12, str_repeat( 'b', 64 ) );
+        $GLOBALS['wpdb']->query( 'UPDATE ' . StudioTable::name() . " SET brief = '{not json' WHERE id = " . $b['id'] );
+
+        $this->assertSame( [ $a['id'] ], array_column( StudioStore::linked( 5 ), 'id' ) );
+    }
+
     public function testDeleteRemovesOnlyTheOwnersBrief(): void
     {
         $r = StudioStore::save( 5, $this->brief() );
