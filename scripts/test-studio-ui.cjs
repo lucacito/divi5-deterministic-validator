@@ -167,13 +167,72 @@ test('mergeAssistant fills empty or unchanged fields and keeps what the person c
         { recipe: 'hero-a', slots: { 'heading.1': 'Assistant', 'button.0.text': 'Book now', 'heading.0': 'Acme', 'ghost.9': 'x' } },
         { recipe: 'faq' },
     ] };
-    const r = core.mergeAssistant(state, stored, synced, [0, 2], catalog);
+    const r = core.mergeAssistant(state, stored, synced, [hero.key, faq.key], catalog);
     assert.equal(r.applied, 2, 'heading.0 was empty, button.0.text was unchanged since the save');
     assert.equal(r.kept, 1, 'heading.1 was changed here after the save');
     assert.deepEqual(r.state.sections[0].slots, { 'heading.1': 'Mine', 'button.0.text': 'Book now', 'heading.0': 'Acme' });
     assert.deepEqual(state.sections[0].slots, { 'heading.1': 'Mine', 'button.0.text': 'Sent' }, 'the input is not changed');
-    const moved = core.mergeAssistant(state, { sections: [{ recipe: 'faq', slots: {} }] }, synced, [0], catalog);
+    const moved = core.mergeAssistant(state, { sections: [{ recipe: 'faq', slots: {} }] }, synced, [hero.key], catalog);
     assert.equal(moved.applied, 0, 'a section whose layout differs is left alone');
+});
+
+test('mergeAssistant finds the sections of the last sync by key, even after a reorder or a section left out', () => {
+    const hero = core.newSection('hero-a');
+    const cards = core.newSection('cards-3');
+    const built = core.buildBrief({ name: 'A', goal: 'book', language: 'editorial', sections: [hero, cards] }, catalog, 'N');
+    assert.deepEqual(built.keys, [hero.key, cards.key]);
+    assert.notEqual(hero.key, cards.key);
+    // After the sync the person moves the cards up and leaves the hero out; the assistant wrote into both.
+    hero.on = false;
+    const state = { sections: [cards, hero] };
+    const stored = { sections: [{ recipe: 'hero-a', slots: { 'heading.1': 'H' } }, { recipe: 'cards-3', slots: { 'heading.1': 'Card' } }] };
+    const r = core.mergeAssistant(state, stored, built.brief, built.keys, catalog);
+    assert.equal(r.applied, 2);
+    assert.deepEqual(r.state.sections[0].slots, { 'heading.1': 'Card' });
+    assert.deepEqual(r.state.sections[1].slots, { 'heading.1': 'H' });
+    // Keys survive a layout swap and a stored brief loaded again.
+    assert.equal(core.swap(cards, 'cards-2', catalog).section.key, cards.key);
+    const loaded = core.fromStored({ title: 'A', sections: [{ recipe: 'faq' }, { recipe: 'faq' }] }, catalog);
+    assert.equal(new Set(loaded.state.sections.map((x) => x.key)).size, 2);
+});
+
+test('prepareSend takes the assistant\'s stored words before a save, so a save never overwrites them (ruling 19)', () => {
+    const hero = core.newSection('hero-a');
+    hero.slots = { 'heading.1': 'Mine' };
+    const base = { name: 'Acme', goal: 'book', language: 'editorial', kit: '', sections: [hero] };
+    const sent = core.buildBrief(base, catalog, 'N');
+    // The assistant fills the button and the eyebrow; the person, meanwhile, changes the headline.
+    hero.slots['heading.1'] = 'Mine, edited';
+    const stored = { version: 1, title: 'Acme', goal: 'book', language: 'editorial', sections: [{ recipe: 'hero-a', slots: { 'heading.1': 'Assistant headline', 'button.0.text': 'Book now', 'heading.0': 'Plumbers' } }] };
+    const out = core.prepareSend(base, stored, sent.brief, sent.keys, catalog, 'N');
+    assert.deepEqual(out.brief.sections[0].slots, { 'heading.0': 'Plumbers', 'heading.1': 'Mine, edited', 'button.0.text': 'Book now' }, 'untouched slots take the assistant\'s words, the edited one stays the person\'s');
+    assert.equal(out.applied, 2);
+    assert.equal(out.kept, 1);
+    assert.deepEqual(out.keys, [hero.key]);
+    assert.deepEqual(out.state.sections[0].slots, out.brief.sections[0].slots, 'the form shows what is sent');
+    // Nothing stored yet (no brief id): the form is sent as it is.
+    const plain = core.prepareSend(base, null, null, [], catalog, 'N');
+    assert.deepEqual(plain.brief.sections[0].slots, { 'heading.1': 'Mine, edited' });
+    assert.equal(plain.applied, 0);
+});
+
+test('one busy gate: a second action while one runs does nothing, and the gate opens again after success or failure', async () => {
+    const changes = [];
+    const gate = core.makeGate((busy) => changes.push(busy));
+    let release;
+    const first = gate.run(() => new Promise((resolve) => { release = resolve; }));
+    assert.equal(gate.busy(), true);
+    assert.equal(gate.run(() => { throw new Error('must not run'); }), null, 'a double click is ignored');
+    release('done');
+    assert.equal(await first, 'done');
+    assert.equal(gate.busy(), false);
+    const failed = gate.run(() => Promise.reject(new Error('network')));
+    await assert.rejects(failed);
+    assert.equal(gate.busy(), false, 'cleared in finally');
+    const thrown = gate.run(() => { throw new Error('sync'); });
+    await assert.rejects(thrown);
+    assert.equal(gate.busy(), false);
+    assert.deepEqual(changes, [true, false, true, false, true, false]);
 });
 
 test('problems and unfilled places are grouped by the section on the screen', () => {
@@ -213,15 +272,17 @@ test('fromStored reports layouts that left the library and words that lost their
     assert.equal(r.state.sections[1].recipe, 'retired-recipe');
 });
 
-let failed = 0;
-for (const [name, fn] of tests) {
-    try {
-        fn();
-        process.stdout.write(`ok - ${name}\n`);
-    } catch (e) {
-        failed++;
-        process.stdout.write(`not ok - ${name}\n  ${String(e && e.message).split('\n').join('\n  ')}\n`);
+(async () => {
+    let failed = 0;
+    for (const [name, fn] of tests) {
+        try {
+            await fn();
+            process.stdout.write(`ok - ${name}\n`);
+        } catch (e) {
+            failed++;
+            process.stdout.write(`not ok - ${name}\n  ${String(e && e.message).split('\n').join('\n  ')}\n`);
+        }
     }
-}
-process.stdout.write(`${tests.length - failed} passed, ${failed} failed\n`);
-process.exit(failed ? 1 : 0);
+    process.stdout.write(`${tests.length - failed} passed, ${failed} failed\n`);
+    process.exit(failed ? 1 : 0);
+})();

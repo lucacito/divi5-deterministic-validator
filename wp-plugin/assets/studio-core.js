@@ -39,8 +39,18 @@
 
     function clone(v) { return JSON.parse(JSON.stringify(v)); }
 
+    var keySeq = 0;
+
+    /** A section of the form. key stays with it through moves, swaps and merges, so a handler or a merge finds it. */
     function newSection(recipe) {
-        return { recipe: recipe, on: true, slots: {}, pictures: {}, auto: {} };
+        return { key: 's' + (++keySeq), recipe: recipe, on: true, slots: {}, pictures: {}, auto: {} };
+    }
+
+    function indexOfKey(sections, key) {
+        for (var i = 0; i < sections.length; i++) {
+            if (sections[i].key === key) { return i; }
+        }
+        return -1;
     }
 
     function sectionsFromStack(stack) {
@@ -102,7 +112,7 @@
         if (!own(catalog, newRecipe)) { return { section: section, kept: [], dropped: [] }; }
         var before = roleKinds(catalog, section.recipe);
         var after = roleKinds(catalog, newRecipe);
-        var out = { recipe: newRecipe, on: section.on, slots: {}, pictures: {}, auto: {} };
+        var out = { key: section.key, recipe: newRecipe, on: section.on, slots: {}, pictures: {}, auto: {} };
         var kept = [];
         var dropped = [];
         ['slots', 'pictures'].forEach(function (key) {
@@ -122,7 +132,7 @@
 
     /**
      * The brief the server expects, from the form state. Only included sections, only slots the recipe has, only words
-     * that are not empty; pictures under "pictures". map[k] is the state index of brief section k.
+     * that are not empty; pictures under "pictures". map[k] is the state index of brief section k, keys[k] its key.
      */
     function buildBrief(state, catalog, untitled) {
         var brief = {
@@ -134,6 +144,7 @@
         };
         if (state.kit) { brief.kit = state.kit; }
         var map = [];
+        var keys = [];
         state.sections.forEach(function (section, i) {
             if (!section.on) { return; }
             var out = { recipe: section.recipe };
@@ -153,8 +164,9 @@
             if (Object.keys(pictures).length) { out.pictures = pictures; }
             brief.sections.push(out);
             map.push(i);
+            keys.push(section.key);
         });
-        return { brief: brief, map: map };
+        return { brief: brief, map: map, keys: keys };
     }
 
     function firstSlot(catalog, recipe, roles) {
@@ -202,16 +214,17 @@
 
     /**
      * Words an assistant wrote into the stored brief, merged into the form. stored is the brief read back, synced the brief
-     * last sent from this screen, map the state index of each brief section. A value is taken when the form's field is
-     * empty or still what was last sent; a field the person changed here since is kept and counted.
+     * last sent from this screen, keys the section key of each section of that brief (so a section moved or left out
+     * since is still found). A value is taken when the form's field is empty or still what was last sent; a field the
+     * person changed here since is kept and counted.
      */
-    function mergeAssistant(state, stored, synced, map, catalog) {
+    function mergeAssistant(state, stored, synced, keys, catalog) {
         var next = clone(state);
         var applied = 0;
         var kept = 0;
         ((stored && stored.sections) || []).forEach(function (sec, k) {
-            var i = map[k];
-            if (i === undefined || !next.sections[i] || next.sections[i].recipe !== sec.recipe) { return; }
+            var i = keys && keys[k] !== undefined ? indexOfKey(next.sections, keys[k]) : -1;
+            if (i < 0 || next.sections[i].recipe !== sec.recipe) { return; }
             var target = next.sections[i];
             var base = (synced && synced.sections && synced.sections[k]) || {};
             var kinds = roleKinds(catalog, sec.recipe);
@@ -232,6 +245,40 @@
             });
         });
         return { state: next, applied: applied, kept: kept };
+    }
+
+    /**
+     * What to send for a save, a create, a rebuild or a hand-off (controller ruling 19): the stored brief is merged in
+     * first, so words an assistant wrote since the last sync are kept unless the person changed that field here.
+     * stored null means nothing is stored yet. Returns the merged state, the brief, its map and keys, and the counts.
+     */
+    function prepareSend(state, stored, synced, keys, catalog, untitled) {
+        var m = stored ? mergeAssistant(state, stored, synced, keys, catalog) : { state: clone(state), applied: 0, kept: 0 };
+        var built = buildBrief(m.state, catalog, untitled);
+        return { state: m.state, brief: built.brief, map: built.map, keys: built.keys, applied: m.applied, kept: m.kept };
+    }
+
+    /**
+     * One busy flag for the actions that write (save, create, rebuild, hand-off). run(fn) returns null when an action is
+     * already running (a second click does nothing), else fn's promise; the flag clears when it settles, whatever happens.
+     */
+    function makeGate(onChange) {
+        var busy = false;
+        var set = function (v) { busy = v; if (onChange) { onChange(v); } };
+        return {
+            busy: function () { return busy; },
+            run: function (fn) {
+                if (busy) { return null; }
+                set(true);
+                var p;
+                try {
+                    p = Promise.resolve(fn());
+                } catch (e) {
+                    p = Promise.reject(e);
+                }
+                return p.then(function (v) { set(false); return v; }, function (e) { set(false); throw e; });
+            }
+        };
     }
 
     /** Problems by state section ({path, code, message} lists); a path outside sections.N goes to page. */
@@ -325,6 +372,9 @@
         buildBrief: buildBrief,
         applyStepOne: applyStepOne,
         mergeAssistant: mergeAssistant,
+        prepareSend: prepareSend,
+        makeGate: makeGate,
+        indexOfKey: indexOfKey,
         problemsBySection: problemsBySection,
         unfilledBySection: unfilledBySection,
         toSitePath: toSitePath,

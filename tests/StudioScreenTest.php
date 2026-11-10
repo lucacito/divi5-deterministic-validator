@@ -558,4 +558,59 @@ class StudioScreenTest extends TestCase
         $this->assertMatchesRegularExpression( '/\.aied--lab \.aied-lab-intro[^{]*\{[^}]*max-width:\s*1120px/', $css );
         $this->assertMatchesRegularExpression( '/\.aied--lab > \*:not\(\.aied-view\)[^{]*\{[^}]*max-width:\s*1120px/s', $css );
     }
+
+    /** Fix round 1, I1: no handler keeps a section object of its own; each looks the section up by key when it fires. */
+    public function testNoHandlerHoldsAStaleSection(): void
+    {
+        $js = $this->src( 'assets/studio.js' );
+        foreach ( [ 'textField(s,', 'pictureField(s,', 'openMedia(s,' ] as $stale ) {
+            $this->assertStringNotContainsString( $stale, $js );
+        }
+        $this->assertGreaterThanOrEqual( 6, substr_count( $js, 'sectionByKey(' ), 'step 3 and step 4 handlers read the live state' );
+        $this->assertStringContainsString( 'keepFocus(', $js, 'a redraw of step 4 keeps the field and the caret' );
+    }
+
+    /** Fix round 1, I2 (controller ruling 19): every send that carries a brief id reads the stored brief and merges it first. */
+    public function testEverySendMergesTheStoredBriefFirst(): void
+    {
+        $js = $this->src( 'assets/studio.js' );
+        $this->assertStringContainsString( 'core.prepareSend(', $js );
+        // Save and create send the brief only through send(); nothing else posts a brief.
+        $this->assertSame( 1, substr_count( $js, "send('save')" ) );
+        $this->assertSame( 1, substr_count( $js, "send('create')" ) );
+        $this->assertSame( 1, substr_count( $js, 'brief: JSON.stringify(out.brief)' ) );
+        $this->assertSame( 2, substr_count( $js, 'brief: JSON.stringify(' ), 'send() and the read-only preview' );
+        $this->assertStringNotContainsString( "api('save'", $js );
+        $this->assertStringNotContainsString( "api('create'", $js );
+        preg_match( '/function send\(.*?\n    \}/s', $js, $send );
+        $this->assertNotEmpty( $send, 'one send() that every write uses' );
+        $this->assertStringContainsString( "api('brief'", $send[0] );
+        $this->assertStringContainsString( 't.syncFailed', $send[0], 'a failed read is told plainly and nothing is sent' );
+        $this->assertArrayHasKey( 'syncFailed', StudioScreen::config( 5 )['i18n'] );
+    }
+
+    /** Fix round 1, I3: one busy gate for create, rebuild and hand-off; the review never re-enables Create mid-request. */
+    public function testEveryWritingActionGoesThroughTheOneBusyGate(): void
+    {
+        $js = $this->src( 'assets/studio.js' );
+        $this->assertSame( 1, substr_count( $js, 'core.makeGate(' ) );
+        foreach ( [ 'create', 'rebuild', 'handoff' ] as $action ) {
+            $this->assertMatchesRegularExpression( '/function ' . $action . '\(\) \{\s*gate\.run\(/', $js, $action );
+        }
+        $this->assertStringContainsString( "byId('aied-lab-create').disabled = gate.busy() || previewOk === false;", $js );
+        $this->assertStringNotContainsString( 'button.disabled = false', $js );
+    }
+
+    /** Fix round 1, I4: the instruction box is on step 4 and the fallback goes there, so "the box" in the status is visible. */
+    public function testTheHandoffFallbackIsShownOnTheStepThatHoldsIt(): void
+    {
+        $xpath = $this->dom( $this->render() );
+        $this->assertSame( 1, $xpath->query( '//section[@data-step="4"]//*[@id="aied-lab-instruction-box"]' )->length );
+        $this->assertSame( 1, $xpath->query( '//section[@data-step="5"]//*[@id="aied-lab-handoff-2"]' )->length );
+        $js = $this->src( 'assets/studio.js' );
+        preg_match( '/function showInstruction\(.*?\n    \}/s', $js, $fallback );
+        $this->assertNotEmpty( $fallback );
+        $this->assertMatchesRegularExpression( "/goTo\(4\);.*instruction-box'\)\.hidden = false;.*aied-lab-instruction'\)\.focus\(\)/s", $fallback[0] );
+        $this->assertStringContainsString( 'Instruction for your assistant', StudioScreen::config( 5 )['i18n']['copyManual'], 'the status names the box by its label' );
+    }
 }

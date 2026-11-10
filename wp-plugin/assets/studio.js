@@ -24,7 +24,8 @@
         sections: [], touched: false
     };
     var briefId = null;
-    var synced = null;          // the brief last sent to the server (save, create)
+    var synced = null;          // the brief as last known to be stored (sent by a save or create, or read back)
+    var syncedKeys = [];        // the section key of each section of that brief
     var lastMap = [];           // state index of each brief section, from the last build
     var report = null;          // the last report (preview or create)
     var previewOk = null;       // true, false, or null when not checked
@@ -35,6 +36,8 @@
     var previewSeq = 0;
     var pollTimer = null;
     var polls = 0;
+    var gate = core.makeGate(onBusy);
+    var WRITE_BUTTONS = ['aied-lab-rebuild', 'aied-lab-handoff', 'aied-lab-handoff-2', 'aied-lab-refresh'];
 
     // ── Small helpers ───────────────────────────────────────────────────
 
@@ -62,6 +65,33 @@
     }
 
     /** The string for one, or the string for more with the count put in. */
+    /** The live section with this key (handlers look it up when they fire, never keep one of their own). */
+    function sectionByKey(key) {
+        var i = core.indexOfKey(state.sections, key);
+        return i < 0 ? null : state.sections[i];
+    }
+
+    /** Redraws inside root and gives the keyboard focus (and the caret) back to the control with the same id. */
+    function keepFocus(root, redraw) {
+        var a = document.activeElement;
+        var id = a && root.contains(a) ? a.id : '';
+        var caret = id && typeof a.selectionStart === 'number' ? [a.selectionStart, a.selectionEnd] : null;
+        redraw();
+        var b = id ? byId(id) : null;
+        if (!b) { return; }
+        b.focus();
+        if (caret && typeof b.setSelectionRange === 'function') {
+            try { b.setSelectionRange(caret[0], caret[1]); } catch (e) { /* not a text control */ }
+        }
+    }
+
+    /** While a write runs, its buttons are off; Create also stays off while the layout check failed. */
+    function onBusy(busy) {
+        WRITE_BUTTONS.forEach(function (id) { if (byId(id)) { byId(id).disabled = busy; } });
+        if (byId('aied-lab-create')) { byId('aied-lab-create').disabled = busy || previewOk === false; }
+        app.setAttribute('aria-busy', busy ? 'true' : 'false');
+    }
+
     function plural(n, one, many) { return n === 1 ? t[one] : f(t[many], n); }
 
     function layoutName(name) { return core.humanize(name); }
@@ -219,19 +249,22 @@
                 select.appendChild(opt);
             });
         }
-        select.addEventListener('change', function () { changeLayout(i, select.value); });
+        var key = s.key;
+        select.addEventListener('change', function () { changeLayout(key, select.value); });
         wrap.appendChild(select);
         wrap.appendChild(el('p', { id: id + '-hint', 'class': 'description' }, t.itemsHint));
         return wrap;
     }
 
-    function changeLayout(i, recipe) {
-        if (!recipe || !catalog[recipe]) { return; }
+    function changeLayout(key, recipe) {
+        var i = core.indexOfKey(state.sections, key);
+        if (i < 0 || !recipe || !catalog[recipe]) { return; }
         var old = state.sections[i];
         var r = core.swap(old, recipe, catalog);
         if (!catalog[old.recipe]) {
             r = { section: core.newSection(recipe), kept: [], dropped: [] };
             r.section.on = old.on;
+            r.section.key = old.key;
         }
         var lost = r.dropped.map(function (id) { return slotLabelFor(old.recipe, id); });
         if (lost.length && !window.confirm(f(t.swapConfirm, lost.join(', ')))) {
@@ -257,9 +290,13 @@
     function renderSections() {
         var list = byId('aied-lab-sections');
         // A redraw after a preview must not take the keyboard focus away: it goes back to the control with the same id.
-        var focused = document.activeElement && list.contains(document.activeElement) ? document.activeElement.id : '';
+        keepFocus(list, function () { drawSections(list); });
+    }
+
+    function drawSections(list) {
         clear(list);
         state.sections.forEach(function (s, i) {
+            var key = s.key;
             var li = el('li', { 'class': 'aied-lab-section' });
             if (!s.on) { li.classList.add('is-off'); }
             var head = el('div', { 'class': 'aied-lab-section__head' });
@@ -271,14 +308,21 @@
             var include = el('label', { 'class': 'aied-lab-check' });
             var box = el('input', { type: 'checkbox', id: 'aied-lab-on-' + i });
             box.checked = s.on;
-            box.addEventListener('change', function () { s.on = box.checked; touch(); renderSections(); schedulePreview(); });
+            box.addEventListener('change', function () {
+                var live = sectionByKey(key);
+                if (!live) { return; }
+                live.on = box.checked;
+                touch();
+                renderSections();
+                schedulePreview();
+            });
             include.appendChild(box);
             include.appendChild(document.createTextNode(' ' + t.include));
             tools.appendChild(include);
             [[-1, t.moveUp, t.moveUpLabel], [1, t.moveDown, t.moveDownLabel]].forEach(function (m) {
                 var b = el('button', { type: 'button', id: 'aied-lab-' + (m[0] < 0 ? 'up-' : 'down-') + i, 'aria-label': f(m[2], i + 1), disabled: (m[0] < 0 && i === 0) || (m[0] > 0 && i === state.sections.length - 1) }, m[1]);
                 b.classList.add('button', 'button-small');
-                b.addEventListener('click', function () { moveSection(i, i + m[0], m[0]); });
+                b.addEventListener('click', function () { moveSection(key, m[0]); });
                 tools.appendChild(b);
             });
             li.appendChild(tools);
@@ -286,11 +330,12 @@
             sectionNotes(i).forEach(function (n) { li.appendChild(el('p', { 'class': 'aied-lab-note' }, n)); });
             list.appendChild(li);
         });
-        if (focused && byId(focused)) { byId(focused).focus(); }
     }
 
-    function moveSection(from, to, dir) {
-        if (to < 0 || to >= state.sections.length) { return; }
+    function moveSection(key, dir) {
+        var from = core.indexOfKey(state.sections, key);
+        var to = from + dir;
+        if (from < 0 || to < 0 || to >= state.sections.length) { return; }
         state.sections = core.move(state.sections, from, to);
         var n = notes[from];
         notes[from] = notes[to];
@@ -320,6 +365,10 @@
 
     function renderWords() {
         var root = byId('aied-lab-words');
+        keepFocus(root, function () { drawWords(root); });
+    }
+
+    function drawWords(root) {
         clear(root);
         var pages = byId('aied-lab-pages');
         if (!pages.firstChild) {
@@ -337,7 +386,7 @@
             slots.forEach(function (slot) {
                 seen[slot.role] = (seen[slot.role] || 0) + 1;
                 var label = counts[slot.role] > 1 ? f(t.numbered, slotLabel(slot.role), seen[slot.role]) : slotLabel(slot.role);
-                set.appendChild(slot.kind === 'picture' ? pictureField(s, i, slot, label) : textField(s, i, slot, label));
+                set.appendChild(slot.kind === 'picture' ? pictureField(s.key, i, slot, label) : textField(s.key, i, slot, label));
             });
             root.appendChild(set);
         });
@@ -347,7 +396,8 @@
         return (problems.sections[i] || []).filter(function (p) { return p.slot === slotId; }).map(function (p) { return p.message; }).join(' ');
     }
 
-    function textField(s, i, slot, label) {
+    function textField(key, i, slot, label) {
+        var s = sectionByKey(key);
         var id = fieldId(i, slot.id);
         var wrap = el('div', { 'class': 'aied-lab-field' });
         wrap.appendChild(el('label', { 'for': id }, label));
@@ -358,8 +408,10 @@
         if (slot.sample) { input.setAttribute('placeholder', slot.sample); }
         input.value = typeof s.slots[slot.id] === 'string' ? s.slots[slot.id] : '';
         input.addEventListener('input', function () {
-            if (input.value === '') { delete s.slots[slot.id]; } else { s.slots[slot.id] = input.value; }
-            if (s.auto) { delete s.auto[slot.id]; }
+            var live = sectionByKey(key);
+            if (!live) { return; }
+            if (input.value === '') { delete live.slots[slot.id]; } else { live.slots[slot.id] = input.value; }
+            if (live.auto) { delete live.auto[slot.id]; }
             touch();
             schedulePreview();
         });
@@ -373,7 +425,8 @@
         return wrap;
     }
 
-    function pictureField(s, i, slot, label) {
+    function pictureField(key, i, slot, label) {
+        var s = sectionByKey(key);
         var id = fieldId(i, slot.id);
         var set = el('fieldset', { 'class': 'aied-lab-picture' });
         set.appendChild(el('legend', {}, label));
@@ -381,7 +434,8 @@
         var thumb = el('img', { 'class': 'aied-lab-thumb', alt: '' });
         var current = s.pictures[slot.id] || null;
         var show = function () {
-            var p = s.pictures[slot.id];
+            var live = sectionByKey(key);
+            var p = live ? live.pictures[slot.id] : null;
             var pack = p && p.pack ? (cfg.pack || []).filter(function (x) { return x.token === p.pack; })[0] : null;
             chosen.textContent = !p ? t.pictureSample : f(t.pictureChosen, pack ? pack.alt : p.url);
             // A thumbnail only for a built-in picture or a picture on this site (a path), never another site's address.
@@ -390,7 +444,9 @@
             if (pack) { thumb.src = pack.src; } else if (local) { thumb.src = local; }
         };
         var set2 = function (value) {
-            if (value) { s.pictures[slot.id] = value; } else { delete s.pictures[slot.id]; }
+            var live = sectionByKey(key);
+            if (!live) { return; }
+            if (value) { live.pictures[slot.id] = value; } else { delete live.pictures[slot.id]; }
             touch();
             show();
             schedulePreview();
@@ -401,7 +457,7 @@
         if (cfg.media && window.wp && window.wp.media) {
             var mb = el('button', { type: 'button' }, t.mediaButton);
             mb.classList.add('button');
-            mb.addEventListener('click', function () { openMedia(s, slot, set2); });
+            mb.addEventListener('click', function () { openMedia(key, slot, set2); });
             set.appendChild(mb);
         }
 
@@ -440,13 +496,15 @@
     }
 
     /** The Media Library picker; an address on this site is stored as its path, so the brief accepts it on http too. */
-    function openMedia(s, slot, apply) {
+    function openMedia(key, slot, apply) {
         var frame = window.wp.media({ title: t.mediaTitle, button: { text: t.mediaUse }, library: { type: 'image' }, multiple: false });
         frame.on('select', function () {
             var a = frame.state().get('selection').first().toJSON();
             var path = core.toSitePath(a.url, cfg.home);
             if (!path) { status(t.mediaNoAddress); return; }
             var altId = slot.id + '.alt';
+            var s = sectionByKey(key);
+            if (!s) { return; }
             if (a.alt && typeof a.alt === 'string' && !s.slots[altId] && (catalog[s.recipe].slots || []).some(function (x) { return x.id === altId; })) {
                 s.slots[altId] = a.alt;
             }
@@ -564,19 +622,43 @@
             un.appendChild(el('h4', {}, t.warningsTitle));
             un.appendChild(list(warnings.map(function (w) { return w.message; })));
         }
-        byId('aied-lab-create').disabled = previewOk === false;
+        byId('aied-lab-create').disabled = gate.busy() || previewOk === false;
     }
 
     // ── Save, hand-off, assistant words ─────────────────────────────────
 
+    /**
+     * Every write goes through here (controller ruling 19). With a stored brief, the stored version is read first and
+     * merged, so words an assistant wrote are kept unless the person changed that field here; a failed read is told
+     * plainly and nothing is sent. Resolves to { r, map } or null when nothing was sent.
+     */
+    function send(action, extra) {
+        var read = briefId ? api('brief', { id: String(briefId) }) : Promise.resolve(null);
+        return read.then(function (got) {
+            if (got && !got.ok) { status(t.syncFailed); return null; }
+            var stored = got ? (got.data.brief || {}) : null;
+            var out = core.prepareSend(state, stored, synced, syncedKeys, catalog, t.untitled);
+            state = out.state;
+            if (stored) { synced = stored; }
+            if (out.applied && step === 4) { renderWords(); }
+            lastMap = out.map;
+            var fields = { brief: JSON.stringify(out.brief) };
+            Object.keys(extra || {}).forEach(function (k) { fields[k] = extra[k]; });
+            if (briefId) { fields.id = String(briefId); }
+            return api(action, fields).then(function (r) {
+                if (r.ok) { synced = out.brief; syncedKeys = out.keys; }
+                return { r: r, map: out.map };
+            });
+        });
+    }
+
     function save() {
-        var b = brief();
-        var fields = { brief: JSON.stringify(b) };
-        if (briefId) { fields.id = String(briefId); }
         status(t.saving);
-        return api('save', fields).then(function (r) {
+        return send('save').then(function (x) {
+            if (!x) { return false; }
+            var r = x.r;
             if (!r.ok) {
-                takeReport({ problems: r.data.problems || [] }, lastMap.slice());
+                takeReport({ problems: r.data.problems || [] }, x.map);
                 previewOk = r.status === 422 ? false : previewOk;
                 status(failText(r));
                 refreshViews();
@@ -584,29 +666,34 @@
                 return false;
             }
             briefId = r.data.id;
-            synced = b;
             return true;
         });
     }
 
+    /** The clipboard was refused: the instruction box is on step 4, so the screen goes there and selects it. */
+    function showInstruction() {
+        goTo(4);
+        byId('aied-lab-instruction-box').hidden = false;
+        status(t.copyManual);
+        byId('aied-lab-instruction').focus();
+        byId('aied-lab-instruction').select();
+    }
+
     function handoff() {
-        save().then(function (ok) {
-            if (!ok) { return; }
-            api('handoff', { id: String(briefId) }).then(function (r) {
-                if (!r.ok) { status(failText(r)); return; }
-                var text = String(r.data.instruction || '');
-                byId('aied-lab-instruction').value = text;
-                var shown = function () {
-                    byId('aied-lab-instruction-box').hidden = false;
-                    status(t.copyManual);
-                    if (step === 4) { byId('aied-lab-instruction').select(); }
-                };
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(text).then(function () { status(t.copied); }, shown);
-                } else {
-                    shown();
-                }
-                startPoll();
+        gate.run(function () {
+            return save().then(function (ok) {
+                if (!ok) { return null; }
+                return api('handoff', { id: String(briefId) }).then(function (r) {
+                    if (!r.ok) { status(failText(r)); return null; }
+                    var text = String(r.data.instruction || '');
+                    byId('aied-lab-instruction').value = text;
+                    startPoll();
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        return navigator.clipboard.writeText(text).then(function () { status(t.copied); }, showInstruction);
+                    }
+                    showInstruction();
+                    return null;
+                });
             });
         });
     }
@@ -623,16 +710,17 @@
     /** Reads the stored brief and merges the words an assistant wrote. Quiet when it comes from the poll. */
     function refresh(loud) {
         if (!briefId) { if (loud) { status(t.needsSaveFirst); } return; }
+        if (gate.busy()) { return; } // a write is running and merges the stored brief itself
         if (loud) { status(t.checking); }
         api('brief', { id: String(briefId) }).then(function (r) {
             if (!r.ok) { if (loud) { status(failText(r)); } return; }
             var stored = r.data.brief || {};
-            brief();
-            var m = core.mergeAssistant(state, stored, synced, lastMap, catalog);
+            var m = core.mergeAssistant(state, stored, synced, syncedKeys, catalog);
             state = m.state;
             synced = stored;
             if (m.applied) {
                 if (step === 4) { renderWords(); }
+                if (step === 3) { renderSections(); }
                 schedulePreview();
             }
             if (loud || m.applied) {
@@ -655,27 +743,23 @@
     }
 
     function create() {
-        var b = brief();
-        var map = lastMap.slice();
-        var fields = { brief: JSON.stringify(b) };
-        if (briefId) { fields.id = String(briefId); }
-        var button = byId('aied-lab-create');
-        button.disabled = true;
-        status(t.creating);
-        api('create', fields).then(function (r) {
-            button.disabled = false;
-            takeReport(r.data.report, map);
-            if (!r.ok) {
-                previewOk = r.status === 422 ? false : previewOk;
-                status(failText(r));
+        gate.run(function () {
+            status(t.creating);
+            return send('create').then(function (x) {
+                if (!x) { return; }
+                var r = x.r;
+                takeReport(r.data.report, x.map);
+                if (!r.ok) {
+                    previewOk = r.status === 422 ? false : previewOk;
+                    status(failText(r));
+                    renderReview();
+                    return;
+                }
+                briefId = r.data.brief_id;
+                window.clearInterval(pollTimer);
+                showCreated((r.data.duplicate ? t.createdDuplicate : t.createdDraft) + unfilledNote(), r.data.edit_url);
                 renderReview();
-                return;
-            }
-            briefId = r.data.brief_id;
-            synced = b;
-            window.clearInterval(pollTimer);
-            showCreated((r.data.duplicate ? t.createdDuplicate : t.createdDraft) + unfilledNote(), r.data.edit_url);
-            renderReview();
+            });
         });
     }
 
@@ -693,19 +777,21 @@
     }
 
     function rebuild() {
-        save().then(function (ok) {
-            if (!ok) { return; }
-            status(t.rebuilding);
-            api('rebuild', { id: String(briefId) }).then(function (r) {
-                if (!r.ok) {
-                    if (r.data.code === 'RECIPE_REMOVED') { markGone(); }
-                    status(failText(r));
-                    return;
-                }
-                takeReport(r.data.report, lastMap.slice());
-                // Ruling 12: an overwrite keeps the page title, and the person is told so.
-                showCreated(rebuildText(r.data) + unfilledNote(), r.data.edit_url);
-                renderReview();
+        gate.run(function () {
+            return save().then(function (ok) {
+                if (!ok) { return null; }
+                status(t.rebuilding);
+                return api('rebuild', { id: String(briefId) }).then(function (r) {
+                    if (!r.ok) {
+                        if (r.data.code === 'RECIPE_REMOVED') { markGone(); }
+                        status(failText(r));
+                        return;
+                    }
+                    takeReport(r.data.report, lastMap.slice());
+                    // Ruling 12: an overwrite keeps the page title, and the person is told so.
+                    showCreated(rebuildText(r.data) + unfilledNote(), r.data.edit_url);
+                    renderReview();
+                });
             });
         });
     }
@@ -733,6 +819,7 @@
             state.touched = true;
             briefId = cfg.brief.id;
             synced = cfg.brief.brief;
+            syncedKeys = state.sections.map(function (x) { return x.key; });
             loaded.gone.forEach(function (i) { notes[i] = [t.recipeGone]; });
             Object.keys(loaded.stale).forEach(function (i) {
                 (notes[i] = notes[i] || []).push(f(t.slotsChanged, loaded.stale[i].join(', ')));
