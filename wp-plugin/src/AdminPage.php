@@ -33,6 +33,7 @@ final class AdminPage
         add_action('admin_post_ai_editor_divi5_history_sources', [$this, 'handleHistorySources']);
         add_action('admin_post_' . WhatsNew::ACTION, [$this, 'handleDismissWhatsNew']);
         add_action('wp_ajax_ai_editor_divi5_diagnose', [$this, 'handleDiagnose']);
+        StudioAjax::register();
         OAuthAdmin::registerHooks();
     }
 
