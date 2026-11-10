@@ -273,7 +273,7 @@ final class ToolCatalog
                             'properties' => [
                                 'section'  => ['type' => 'integer', 'description' => 'Section number, counted from 0.'],
                                 'slots'    => ['type' => 'object', 'description' => 'Slot id to text, for example {"heading.1": "Fix leaks fast"}. Use the slot ids open lists.'],
-                                'pictures' => ['type' => 'object', 'description' => 'Picture slot id to a built-in pack token or a secure (https) web address.'],
+                                'pictures' => ['type' => 'object', 'description' => 'Picture slot id to an object: {"pack": built-in pack token} or {"url": a secure web address or a site path}.'],
                             ],
                         ]],
                         'brief'     => ['type' => 'object', 'description' => 'build: the whole brief (title, goal, language, optional style_kit, sections [{recipe, slots, pictures}]). catalog shows the shape.'],

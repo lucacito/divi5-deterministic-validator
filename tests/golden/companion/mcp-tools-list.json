@@ -575,7 +575,7 @@
                                     },
                                     "pictures": {
                                         "type": "object",
-                                        "description": "Picture slot id to a built-in pack token or a secure (https) web address."
+                                        "description": "Picture slot id to an object: {\"pack\": built-in pack token} or {\"url\": a secure web address or a site path}."
                                     }
                                 }
                             }
