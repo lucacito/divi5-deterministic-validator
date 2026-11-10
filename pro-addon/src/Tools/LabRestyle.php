@@ -50,20 +50,24 @@ final class LabRestyle implements ProTool
     private \Closure $clock;
     private ?\Closure $classExists;
     private ?\Closure $methodExists;
+    private \Closure $linker;
 
     /**
      * @param (\Closure(int,string,string):array<string,mixed>)|null $write fn(postId, content, tool): HistoryService::write()'s result (used by the apply)
      * @param (\Closure():int)|null $clock fn(): unix time
      * @param (\Closure(string):bool)|null $classExists seam for the guard: whether a class is installed
      * @param (\Closure(string,string):bool)|null $methodExists seam for the guard: whether a class has a method
+     * @param (\Closure(int,int,int,string):bool)|null $linker test seam: fn(user, id, pageId, contentHash): `StudioStore::link()`'s result
      */
     public function __construct(
         private BatchLog $log,
         private ?\Closure $write = null,
         ?\Closure $clock = null,
         ?\Closure $classExists = null,
-        ?\Closure $methodExists = null
+        ?\Closure $methodExists = null,
+        ?\Closure $linker = null
     ) {
+        $this->linker       = $linker ?? static fn ( int $u, int $i, int $p, string $h ): bool => StudioStore::link( $u, $i, $p, $h );
         $this->clock        = $clock ?? static fn (): int => time();
         $this->classExists  = $classExists;
         $this->methodExists = $methodExists;
@@ -124,7 +128,8 @@ final class LabRestyle implements ProTool
             'ids'               => $args['all_mine'] ? null : $ids,
             'all_mine'          => $args['all_mine'],
             'to_language'       => $args['to_language'],
-            'to_kit'            => self::normalisedToKit( $args ),
+            // The RAW value: "default" and the language's own kit spelled out are different arguments with different tokens.
+            'to_kit'            => $args['to_kit'],
             'include_published' => $args['include_published'],
         ] );
 
@@ -231,18 +236,6 @@ final class LabRestyle implements ProTool
         return $ids;
     }
 
-    /** The `to_kit` the arguments hash carries: "default" resolved to the language's own kit when the language is given. @param array<string,mixed> $args */
-    private static function normalisedToKit( array $args ): ?string
-    {
-        if ( 'default' === $args['to_kit'] && null !== $args['to_language'] ) {
-            $language = DesignLanguages::get( (string) $args['to_language'] );
-
-            return is_array( $language ) ? (string) ( $language['kit'] ?? '' ) : '';
-        }
-
-        return $args['to_kit'];
-    }
-
     /**
      * One page's plan: what the restyle would write and whether it may. The first matching reason wins.
      *
@@ -298,12 +291,6 @@ final class LabRestyle implements ProTool
             return $row + [ 'skip' => 'invalid_result', 'violations' => self::codes( $compiled ) ];
         }
         $markup = (string) $compiled['markup'];
-        if ( strlen( $stored ) > PageHistory::MAX_BYTES ) {
-            return $row + [ 'skip' => 'too_large_for_undo', 'detail' => 'The page is over ' . PageHistory::MAX_BYTES . ' bytes, so no undo point could be kept.' ];
-        }
-        if ( strlen( $markup ) > PageHistory::MAX_BYTES ) {
-            return $row + [ 'skip' => 'too_large_for_undo', 'detail' => 'The rebuilt page would be over ' . PageHistory::MAX_BYTES . ' bytes, so no undo point could be kept.' ];
-        }
         $gate = LayoutGate::check( $markup, $stored );
         if ( ! $gate->isValid() ) {
             $codes = [];
@@ -312,6 +299,12 @@ final class LabRestyle implements ProTool
             }
 
             return $row + [ 'skip' => 'invalid_result', 'violations' => array_slice( array_keys( $codes ), 0, 10 ) ];
+        }
+        if ( strlen( $stored ) > PageHistory::MAX_BYTES ) {
+            return $row + [ 'skip' => 'too_large_for_undo', 'detail' => 'The page is over ' . PageHistory::MAX_BYTES . ' bytes, so no undo point could be kept.' ];
+        }
+        if ( strlen( $markup ) > PageHistory::MAX_BYTES ) {
+            return $row + [ 'skip' => 'too_large_for_undo', 'detail' => 'The rebuilt page would be over ' . PageHistory::MAX_BYTES . ' bytes, so no undo point could be kept.' ];
         }
 
         return $row + [
@@ -386,8 +379,9 @@ final class LabRestyle implements ProTool
      *    touched;
      * 3. save the restyled brief by compare-and-set on the brief hash the plan read; then link it to the sha256 of the
      *    content RE-READ after the save (as stored, Finding 5). When either fails the page stays restyled, the brief is
-     *    left as it is (Lab then reads the page as edited) and the page is reported `brief_not_updated` with only its
-     *    `post_content` item;
+     *    left as it is or put back by compare-and-set (Lab then reads the page as edited) and the page carries the warning
+     *    `brief_not_updated` (counted at the top level) with only its `post_content` item (plus a `lab_brief` item in the
+     *    one case where our brief could be neither linked nor put back);
      * 4. record the items `[lab_brief, post_content]` (Finding 3: undo walks them last to first, the brief never reads
      *    the page, so both directions restore).
      * Everything is ONE batch.
@@ -403,6 +397,7 @@ final class LabRestyle implements ProTool
         $done    = [];
         $skipped = [];
         $targets = [];
+        $notUpdated = 0;
         foreach ( $plan as $p ) {
             if ( ! isset( $p['new'] ) ) {
                 $skipped[] = self::row( $p );
@@ -429,16 +424,15 @@ final class LabRestyle implements ProTool
 
             $old      = $p['old_brief'];
             $briefId  = (int) $old['id'];
-            $briefRow = $this->updateBrief( $user, $briefId, $p['id'], $old, $p['new_brief'], $stored );
+            $brief = $this->updateBrief( $user, $briefId, $p['id'], $old, $p['new_brief'], $stored );
 
             $page = [ 'id' => $p['id'], 'title' => $p['title'], 'from' => $p['from'], 'to' => $p['to'], 'brief_id' => $briefId ];
-            if ( null !== $briefRow ) {
-                $items[] = LabBriefKind::itemFor( $user, $old, $briefRow );
-            } else {
-                $page += [
-                    'warning' => 'brief_not_updated',
-                    'detail'  => 'The page was restyled, but its Lab brief changed in the meantime and was left as it is. Lab now treats the page as edited; undo this batch to go back.',
-                ];
+            if ( null !== $brief['row'] ) {
+                $items[] = LabBriefKind::itemFor( $user, $old, $brief['row'] );
+            }
+            if ( null !== $brief['problem'] ) {
+                $page += [ 'warning' => 'brief_not_updated', 'detail' => $brief['problem'] ];
+                $notUpdated++;
             }
             $items[] = PostContentKind::itemFor( $p['id'], $p['title'], $stored, $snapshot );
             $done[]  = $page;
@@ -446,39 +440,52 @@ final class LabRestyle implements ProTool
         }
         $restyled = count( $done );
         if ( [] === $items ) {
-            return [ 'changed' => false, 'dry_run' => false, 'restyled' => 0, 'pages' => [], 'skipped' => $skipped, 'message' => 'Nothing was saved.' ];
+            return [ 'changed' => false, 'dry_run' => false, 'restyled' => 0, 'brief_not_updated' => 0, 'pages' => [], 'skipped' => $skipped, 'message' => 'Nothing was saved.' ];
         }
         $to    = 1 === count( $targets ) ? (string) array_key_first( $targets ) : 'their new looks';
         $batch = $this->log->record( self::NAME, 'Restyled ' . $restyled . ' Lab page(s) to ' . $to, $items );
 
-        return BatchLog::attach( [ 'changed' => true, 'dry_run' => false, 'restyled' => $restyled, 'pages' => $done, 'skipped' => $skipped ], $batch );
+        $out = [ 'changed' => true, 'dry_run' => false, 'restyled' => $restyled, 'brief_not_updated' => $notUpdated, 'pages' => $done, 'skipped' => $skipped ];
+        if ( $notUpdated > 0 ) {
+            $out['message'] = sprintf( '%d restyled page(s) kept an old or unlinked Lab brief (see each page\'s "warning"), so Lab treats them as edited. Undo this batch to go back.', $notUpdated );
+        }
+
+        return BatchLog::attach( $out, $batch );
     }
 
     /**
-     * Saves the restyled brief (compare-and-set on the hash the plan read) and links it to the content as stored. Returns
-     * the brief row after both, or null when the brief could not be updated; then the row is left as the other writer
-     * left it (a brief this call wrote but could not link is put back, again only by compare-and-set).
+     * Saves the restyled brief (compare-and-set on the hash the plan read) and links it to the content as stored.
+     * `row` is the brief row a `lab_brief` item must record (null: no item), `problem` the honest detail when the brief
+     * did not end up as the restyled, linked row (null: it did). A brief this call wrote but could not link is put back
+     * by compare-and-set on the hash it WROTE, so a Lab-screen save that landed in between is never rolled over.
      *
      * @param array<string,mixed> $old the plan's `StudioStore::forPage()` row
      * @param array<string,mixed> $newBrief
-     * @return array<string,mixed>|null
+     * @return array{row:?array<string,mixed>, problem:?string}
      */
-    private function updateBrief( int $user, int $briefId, int $pageId, array $old, array $newBrief, string $stored ): ?array
+    private function updateBrief( int $user, int $briefId, int $pageId, array $old, array $newBrief, string $stored ): array
     {
-        $saved = StudioStore::save( $user, $newBrief, $briefId, (string) $old['brief_hash'] );
+        $meantime = 'The page was restyled, but its Lab brief was changed in the meantime and was left as it is. Lab now treats the page as edited; undo this batch to go back.';
+        $saved    = StudioStore::save( $user, $newBrief, $briefId, (string) $old['brief_hash'] );
         if ( empty( $saved['ok'] ) ) {
-            return null;
+            return [ 'row' => null, 'problem' => $meantime ];
         }
-        if ( ! StudioStore::link( $user, $briefId, $pageId, hash( 'sha256', $stored ) ) ) {
-            $written = StudioStore::get( $user, $briefId );
-            if ( null !== $written && is_array( $old['brief'] ?? null ) ) {
-                StudioStore::save( $user, $old['brief'], $briefId, (string) $written['brief_hash'] );
-            }
+        if ( ( $this->linker )( $user, $briefId, $pageId, hash( 'sha256', $stored ) ) ) {
+            $row = StudioStore::get( $user, $briefId );
 
-            return null;
+            return null === $row ? [ 'row' => null, 'problem' => $meantime ] : [ 'row' => $row, 'problem' => null ];
+        }
+        $wrote = StudioStore::hashOf( $newBrief );
+        if ( null !== $wrote && is_array( $old['brief'] ?? null ) && ! empty( StudioStore::save( $user, $old['brief'], $briefId, $wrote )['ok'] ) ) {
+            return [ 'row' => null, 'problem' => 'The page was restyled, but the link from its Lab brief to the new content could not be written, so the brief was put back as it was. Lab now treats the page as edited; undo this batch to go back.' ];
+        }
+        $now = StudioStore::get( $user, $briefId );
+        if ( null !== $now && null !== $wrote && hash_equals( $wrote, (string) $now['brief_hash'] ) ) {
+            // Our brief is still there and could not be put back: record it, so undo puts the old brief back too.
+            return [ 'row' => $now, 'problem' => 'The page was restyled and its Lab brief now holds the new look, but the link to the new content could not be written, so Lab will show the page as edited. Undo this batch to go back.' ];
         }
 
-        return StudioStore::get( $user, $briefId );
+        return [ 'row' => null, 'problem' => $meantime ];
     }
 
     /**

@@ -145,6 +145,24 @@ final class LabBriefKindTest extends TestCase
         $this->assertSame( $before, $this->rowSnapshot( $id ) );
     }
 
+    public function testTheRollbackAfterALinkFailureNeverOverwritesASaveThatLandedInBetween(): void
+    {
+        [ $id, $old, $new ] = $this->restyled();
+        $other              = $this->labBrief( 'glass-dark' );
+        $kind               = new LabBriefKind( static function ( int $u, int $i ) use ( $other ): bool {
+            $row = StudioStore::get( $u, $i );
+            StudioStore::save( $u, $other, $i, $row['brief_hash'] );
+
+            return false;
+        } );
+
+        $r = $kind->restore( LabBriefKind::itemFor( 1, $old, $new ) );
+        $this->assertFalse( $r['ok'] );
+        $this->assertSame( 'link_failed', $r['reason'] );
+        $this->assertStringContainsString( 'meantime', (string) ( $r['detail'] ?? '' ) );
+        $this->assertSame( $other, StudioStore::get( 1, $id )['brief'], 'the other save is kept' );
+    }
+
     public function testAnItemWithoutABriefArrayIsInvalid(): void
     {
         [ , $old, $new ] = $this->restyled();

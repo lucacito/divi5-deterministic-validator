@@ -117,13 +117,19 @@ final class LabBriefKind implements ItemKind
         }
         $link = $this->linker ?? static fn ( int $u, int $i, int $p, string $h ): bool => StudioStore::link( $u, $i, $p, $h );
         if ( ! $link( $user, $ref, $pageId, $contentHash ) ) {
-            // Put the pre-restore brief back, but only if the row still holds what we just wrote.
-            $written = StudioStore::get( $user, $ref );
-            if ( null !== $written ) {
-                StudioStore::save( $user, $current['brief'], $ref, $written['brief_hash'] );
+            // Put the pre-restore brief back, but only if the row still holds exactly what we just wrote (compare-and-set on
+            // that hash, never on a hash read now: a Lab-screen save that landed in between must not be rolled over).
+            $wrote = StudioStore::hashOf( $before['brief'] );
+            if ( null !== $wrote && ! empty( StudioStore::save( $user, $current['brief'], $ref, $wrote )['ok'] ) ) {
+                return [ 'ok' => false, 'reason' => 'link_failed' ];
             }
+            $now    = StudioStore::get( $user, $ref );
+            $ours   = null !== $now && null !== $wrote && hash_equals( $wrote, (string) $now['brief_hash'] );
+            $detail = $ours
+                ? 'The brief now holds the restored words and look, but its link to the page could not be written, so Lab will show the page as edited.'
+                : 'The brief was changed in the meantime and was left as it is; its link to the page could not be written.';
 
-            return [ 'ok' => false, 'reason' => 'link_failed' ];
+            return [ 'ok' => false, 'reason' => 'link_failed', 'detail' => $detail ];
         }
         $after = StudioStore::get( $user, $ref );
         if ( null === $after ) {

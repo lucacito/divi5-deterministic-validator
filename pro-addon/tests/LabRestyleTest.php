@@ -618,6 +618,103 @@ final class LabRestyleTest extends TestCase
         $this->assertNotSame( hash( 'sha256', $this->layoutContent( 21 ) ), $this->briefRow( $briefId )['content_hash'], 'so Lab reads the page as edited' );
     }
 
+    public function testAFailedLinkPutsTheOldBriefBackAndReportsIt(): void
+    {
+        $briefId = $this->labPage( 21, 'draft', $this->labBrief( 'editorial' ) );
+        $before  = $this->briefRow( $briefId );
+        $tool    = new LabRestyle( $this->log, null, fn (): int => $this->now, null, null, static fn ( int $u, int $i, int $p, string $h ): bool => false );
+
+        $r = $this->applyRun( [ 'page_id' => 21, 'to_language' => 'luxe' ], $tool );
+        $this->assertSame( 1, $r['restyled'] );
+        $this->assertSame( 1, $r['brief_not_updated'] );
+        $this->assertStringContainsString( 'brief', $r['message'] );
+        $this->assertSame( 'brief_not_updated', $r['pages'][0]['warning'] );
+        $this->assertStringNotContainsString( 'meantime', $r['pages'][0]['detail'], 'nobody else changed it' );
+        $this->assertStringContainsString( 'link', $r['pages'][0]['detail'] );
+        $this->assertSame( $before, $this->briefRow( $briefId ), 'the brief row is the old one, byte for byte' );
+        $this->assertSame( $this->compiled( $this->labBrief( 'luxe' ) ), $this->layoutContent( 21 ), 'the page stays restyled' );
+        $this->assertSame( [ 'post_content' ], array_column( $this->batchRow( $r )['items'], 'kind' ) );
+    }
+
+    public function testTheRollbackNeverOverwritesALabSaveThatLandedInBetween(): void
+    {
+        $briefId = $this->labPage( 21, 'draft', $this->labBrief( 'editorial' ) );
+        $other   = $this->labBrief( 'editorial' );
+        $other['title'] = 'Saved in the Lab screen while the link was written';
+        // The link fails AND a Lab-screen save lands between our brief save and the rollback.
+        $linker = function ( int $u, int $i, int $p, string $h ) use ( $other ): bool {
+            $row = StudioStore::get( $u, $i );
+            $this->assertTrue( StudioStore::save( $u, $other, $i, $row['brief_hash'] )['ok'] );
+
+            return false;
+        };
+        $tool = new LabRestyle( $this->log, null, fn (): int => $this->now, null, null, $linker );
+
+        $r = $this->applyRun( [ 'page_id' => 21, 'to_language' => 'luxe' ], $tool );
+        $this->assertSame( 1, $r['brief_not_updated'] );
+        $this->assertSame( 'brief_not_updated', $r['pages'][0]['warning'] );
+        $this->assertStringContainsString( 'meantime', $r['pages'][0]['detail'] );
+        $this->assertSame( $other, $this->briefRow( $briefId )['brief'], 'the other save is kept, never rolled over' );
+        $this->assertSame( [ 'post_content' ], array_column( $this->batchRow( $r )['items'], 'kind' ) );
+    }
+
+    public function testACleanRunReportsZeroBriefsNotUpdated(): void
+    {
+        $this->labPage( 21, 'draft', $this->labBrief( 'editorial' ) );
+        $r = $this->applyRun( [ 'page_id' => 21, 'to_language' => 'luxe' ] );
+        $this->assertSame( 0, $r['brief_not_updated'] );
+        $this->assertArrayNotHasKey( 'warning', $r['pages'][0] );
+    }
+
+    public function testTheExplicitKitAndDefaultDoNotShareAToken(): void
+    {
+        $briefId = $this->labPage( 21, 'draft', $this->labBrief( 'editorial' ) );
+        $own     = (string) DesignLanguages::get( 'luxe' )['kit'];
+        $p       = $this->tool->run( [ 'page_id' => 21, 'to_language' => 'luxe', 'to_kit' => $own, 'dry_run' => true ] );
+        $this->assertIsString( $p['token'] );
+        $before = $this->state( $briefId );
+        $this->refused( [ 'page_id' => 21, 'to_language' => 'luxe', 'to_kit' => 'default', 'token' => $p['token'] ], 'needs the token' );
+        $this->assertSame( $before, $this->state( $briefId ) );
+    }
+
+    public function testAnUndoAfterTheLabScreenEditedTheBriefRestoresThePageAndLeavesTheBrief(): void
+    {
+        $briefId = $this->labPage( 21, 'draft', $this->labBrief( 'editorial' ) );
+        $page    = $this->layoutContent( 21 );
+        $r       = $this->applyRun( [ 'page_id' => 21, 'to_language' => 'luxe' ] );
+        $row     = StudioStore::get( 1, $briefId );
+        $edited  = $this->labBrief( 'luxe' );
+        $edited['title'] = 'Edited in Lab after the restyle';
+        $this->assertTrue( StudioStore::save( 1, $edited, $briefId, $row['brief_hash'] )['ok'] );
+        $kept = $this->briefRow( $briefId );
+
+        $u       = $this->engine()->undo( $r['batch']['id'] );
+        $results = array_column( $u['items'], 'result', 'kind' );
+        $this->assertSame( 'restored', $results['post_content'] );
+        $this->assertSame( 'changed_since', $results['lab_brief'] );
+        $this->assertFalse( $u['fully_undone'] );
+        $this->assertSame( $page, $this->layoutContent( 21 ), 'the page is back' );
+        $this->assertSame( $kept, $this->briefRow( $briefId ), 'the Lab edit is left alone' );
+    }
+
+    public function testAnAdministratorUndoesAnotherUsersRestyleUnderTheOwnersId(): void
+    {
+        $briefId = $this->labPage( 21, 'draft', $this->labBrief( 'editorial' ) );
+        $page    = $this->layoutContent( 21 );
+        $row     = $this->briefRow( $briefId );
+        $r       = $this->applyRun( [ 'page_id' => 21, 'to_language' => 'luxe' ] );
+
+        $GLOBALS['__wp_current_user_id']       = 2;
+        $GLOBALS['__wp_caps']['manage_options'] = true;
+        $u = $this->engine()->undo( $r['batch']['id'] );
+        $this->assertTrue( $u['fully_undone'], (string) json_encode( $u ) );
+        $this->assertSame( $page, $this->layoutContent( 21 ) );
+        $this->assertSame( $row, $this->briefRow( $briefId, 1 ), 'the owner\'s row is restored' );
+        $this->assertNull( StudioStore::get( 2, $briefId ) );
+        $this->assertSame( [], StudioStore::linked( 2 ), 'no brief appears under the administrator' );
+        $this->assertSame( 0, (int) $GLOBALS['wpdb']->get_var( 'SELECT COUNT(*) FROM ' . \AiEditorDivi5\WP\StudioTable::name() . ' WHERE created_by = 2' ) );
+    }
+
     public function testMcpAndRestGiveTheSamePayload(): void
     {
         $this->labPage( 21, 'draft', $this->labBrief( 'editorial' ) );
