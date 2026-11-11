@@ -14,14 +14,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 return [
-    'version' => '4.18',
-    'title'   => __( 'What\'s new in 4.18', 'jhmg-ai-editor-for-divi-5' ),
+    'version' => '4.19',
+    'title'   => __( 'What\'s new in 4.19', 'jhmg-ai-editor-for-divi-5' ),
     'bullets' => [
-        __( 'Divi\'s Loop Builder: your AI can build lists of your posts, products, categories or menu items.', 'jhmg-ai-editor-for-divi-5' ),
-        __( 'A list can be paged with Next and Previous links.', 'jhmg-ai-editor-for-divi-5' ),
-        __( 'Four new ready-made patterns: newest posts, all posts in pages, categories and newest products.', 'jhmg-ai-editor-for-divi-5' ),
-        __( 'Before a page is saved, your AI sees what each loop will list on your site.', 'jhmg-ai-editor-for-divi-5' ),
-        __( 'The checker refuses loop settings that would break the page.', 'jhmg-ai-editor-for-divi-5' ),
+        __( 'Lab: a new tab where you answer a few questions and see a live preview of your page.', 'jhmg-ai-editor-for-divi-5' ),
+        __( 'Save the result as a draft page, checked before it is saved like every other change.', 'jhmg-ai-editor-for-divi-5' ),
+        __( 'Your AI assistant can fill in the words of a Lab brief you started, with the new lab_build tool.', 'jhmg-ai-editor-for-divi-5' ),
+        __( 'It never overwrites what you changed meanwhile.', 'jhmg-ai-editor-for-divi-5' ),
+        __( 'Lab is new and not yet confirmed with every assistant.', 'jhmg-ai-editor-for-divi-5' ),
     ],
     'link'    => [
         'label' => __( 'See the full changelog', 'jhmg-ai-editor-for-divi-5' ),
