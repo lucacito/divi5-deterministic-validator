@@ -393,7 +393,7 @@ class WpOrgComplianceTest extends TestCase
             'update_page_layout', 'validate_layout',
         ], $tools);
         // 20 tools: 4.9.0 adds the READ-ONLY list_products and get_product (the WooCommerce catalogue). Nothing is gated and nothing writes anything; no rule of this test is loosened.
-        // 21 tools: 4.10.0 adds html_to_divi (deterministic HTML to Divi 5 conversion). It is free, makes no remote call, reads nothing from the site's files, previews by default and saves only a new DRAFT page when asked, through the same validator gate as create_page. No rule of this test is loosened.
+        // 22 tools (4.19.0 adds lab_build, MCP and REST only); 21 tools: 4.10.0 adds html_to_divi (deterministic HTML to Divi 5 conversion). It is free, makes no remote call, reads nothing from the site's files, previews by default and saves only a new DRAFT page when asked, through the same validator gate as create_page. No rule of this test is loosened.
         // 22 tools: Lab's assistant tool lab_build (build a page from a short brief, or fill a brief a person started in the Lab screen). It is free, makes no remote call, calls no AI, never licence-gates and saves only a stored brief or a new DRAFT page, through the same validator gate as create_page. MCP and REST only. No rule of this test is loosened.
         $this->assertCount(22, $tools);
     }
@@ -616,7 +616,7 @@ class WpOrgComplianceTest extends TestCase
         $this->assertSame(['get'], array_keys($spec['paths']['/global-styles']));
         $r = (string) file_get_contents(self::ROOT . '/readme.txt');
         $this->assertStringContainsString('`list_global_styles`', $r);
-        $this->assertStringContainsString('(21 tools)', $r);
+        $this->assertStringContainsString('(22 tools)', $r);
         $this->assertStringContainsString('It cannot create or change presets or colors', $r, 'the readme must say plainly that presets and colors are read-only');
     }
 

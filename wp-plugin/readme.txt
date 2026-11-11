@@ -3,7 +3,7 @@ Contributors:      lucaslopvet
 Tags:              divi, divi 5, mcp, claude, chatgpt
 Requires at least: 6.0
 Tested up to:      7.1
-Stable tag:        4.18.0
+Stable tag:        4.19.0
 Requires PHP:      8.1
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -96,7 +96,7 @@ What to expect: your assistant, not the plugin, looks at the picture or reads th
 * "Add a section with our opening hours under the hero on the About page."
 * "Undo the last change you made to the Services page."
 
-= What your AI assistant can do (21 tools) =
+= What your AI assistant can do (22 tools) =
 
 Read and check:
 
@@ -115,6 +115,8 @@ Edit and create:
 * `update_page_layout`: save a new layout for a page or Divi Project, after the checker approves it. Add `dry_run` to preview what would change without saving it.
 * `create_page`: create a new page. It is always saved as a draft for you to review and publish.
 * `html_to_divi`: turn HTML you already have (a page your assistant or another tool wrote) into a Divi 5 layout: the structure, all the copy, the links and the images, plus the basic colors, fonts and spacing where Divi can show them and the text stays readable. It previews by default and saves a new draft only when asked. Scripts, forms, embeds and site navigation are never converted and are listed in a report (available over MCP and the REST API, not in the ChatGPT Action).
+
+* `lab_build`: lets your assistant use Lab (see "Lab: answer a few questions, see a preview" below). It can read a Lab brief you started and fill in the words, telling it which parts are still empty and never overwriting what you changed meanwhile, or build a whole page from a short brief. It is always saved as a draft, after the checker approves it. New: results with a given assistant have not been confirmed yet (available over MCP and the REST API, not in the ChatGPT Action).
 
 Undo:
 
@@ -141,6 +143,10 @@ On WordPress 6.9 and later the plugin also registers these abilities in the `jhm
 * Pages and undo: `list-divi-pages`, `get-page-layout`, `update-page-layout`, `edit-page-content`, `create-page`, `list-page-history`, `get-page-history-entry` and `restore-page-version`. Every save is still checked first.
 
 On older WordPress versions these abilities are simply not offered; everything else works the same.
+
+= Lab: answer a few questions, see a preview =
+
+New in 4.19.0. The Lab tab in the plugin's admin page builds a page without writing a prompt. You answer a few questions (what the page is for, the look, the sections, your words and pictures), see a live preview, and save a draft page. The page is made from the plugin's proven section layouts and is checked before it is saved, like every other change. Your assistant can also fill in the words of a brief you started, through the `lab_build` tool, and it never overwrites what you changed in the meantime. Lab is new, and results with any particular assistant have not been confirmed yet.
 
 = Images =
 
@@ -257,7 +263,7 @@ Divi has announced its own MCP, which is not released yet, so this plugin has no
 
 = Is this an MCP server for Divi? =
 
-Yes. The plugin adds a Model Context Protocol (MCP) server to your own WordPress site, with 21 tools made for Divi 5 pages and Divi Projects. Any MCP client can use it: Claude, Cursor, Windsurf, VS Code with GitHub Copilot, Gemini CLI and others. ChatGPT connects through a custom connector that signs in with your WordPress login and gets every tool (the older custom GPT Action offers most of them).
+Yes. The plugin adds a Model Context Protocol (MCP) server to your own WordPress site, with 22 tools made for Divi 5 pages and Divi Projects. Any MCP client can use it: Claude, Cursor, Windsurf, VS Code with GitHub Copilot, Gemini CLI and others. ChatGPT connects through a custom connector that signs in with your WordPress login and gets every tool (the older custom GPT Action offers most of them).
 
 = Can I give it a screenshot or a URL and have it copy a page? =
 
@@ -297,6 +303,12 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 3. Features: everything your AI assistant can do on your Divi 5 site.
 
 == Changelog ==
+
+= 4.19.0 =
+* New: Lab. A page builder screen in the plugin (the Lab tab) where you answer a few questions (what the page is for, the look, the sections, your words and pictures), see a live preview, and save a draft page. The page is built from the plugin's proven section layouts, so it is checked before it is saved, like every other change.
+* New: `lab_build`, the tool that lets your AI assistant use Lab. It can read a Lab brief you started and fill in the words (it is told which parts are still empty and never overwrites what you changed in the meantime), or build a whole page from a short brief and save it as a draft. The brief is much smaller than the Divi markup of the same page. Available over MCP and the REST API, not in the ChatGPT Action. It is new: results with a given assistant have not been confirmed yet.
+* Improved: the Lab screen keeps your changes and your assistant's words apart. If your assistant fills in words while you have the screen open, nothing is lost: the screen merges them, or asks you to reload if the structure changed.
+* Changed: 22 tools instead of 21 (`lab_build`).
 
 = 4.18.0 =
 * New: Divi's Loop Builder. Your AI can build lists that repeat once per post, product, category, user or navigation item, and page through them with Next and Previous links. The style guide has a new `loops` topic, and there are four ready-made patterns: the newest posts, all posts in pages, the site's categories and the newest products.
@@ -449,6 +461,9 @@ No. The plugin adds no scripts or styles to your public pages. It only adds its 
 * Initial release.
 
 == Upgrade Notice ==
+
+= 4.19.0 =
+Adds Lab, a tab where you answer a few questions, see a preview and save a draft page, and the `lab_build` tool so your assistant can fill in its words. New and not yet confirmed with every assistant. Nothing changes unless you use it.
 
 = 4.16.0 =
 ChatGPT can now connect as a custom connector that signs in with your WordPress login, since OpenAI is retiring custom GPT Actions. Not yet tested by us with a ChatGPT account. Nothing changes unless you turn on the sign-in.

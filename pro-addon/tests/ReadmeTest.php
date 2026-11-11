@@ -24,7 +24,7 @@ class ReadmeTest extends TestCase
      * Tools registered but not yet released: the Pro Lab plan forbids any readme edit until the release, so the readme need not name
      * them yet. Remove the entry (and name the tool in the readme) at release time; this list may only shrink.
      */
-    private const UNRELEASED_TOOLS = [ 'lab_restyle' ];
+    private const UNRELEASED_TOOLS = [];
 
     public function testTheStableTagIsTheCurrentVersion(): void
     {

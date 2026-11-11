@@ -326,14 +326,14 @@ final class StudioAjax
             return null;
         }
         // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- verified in gate(); the value is only compared with fixed lists, decoded as JSON or matched as digits.
-        $value = $_POST[ $key ];
+        $value = isset( $_POST[ $key ] ) ? wp_unslash( $_POST[ $key ] ) : null;
         if ( ! is_string( $value ) ) {
             self::fail( 400, 'BAD_REQUEST', __( 'A value was not text.', 'jhmg-ai-editor-for-divi-5' ) );
 
             return null;
         }
 
-        return wp_unslash( $value );
+        return $value;
     }
 
     /**

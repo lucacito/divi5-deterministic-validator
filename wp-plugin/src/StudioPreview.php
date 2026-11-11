@@ -167,7 +167,7 @@ final class StudioPreview
             'orderby'          => 'ID',
             'order'            => 'ASC',
             'no_found_rows'    => true,
-            'suppress_filters' => true,
+            'suppress_filters' => false,
         ] );
         $found = [];
         foreach ( is_array( $rows ) ? $rows : [] as $post ) {
@@ -199,7 +199,7 @@ final class StudioPreview
                 'orderby'          => 'ID',
                 'order'            => 'ASC',
                 'no_found_rows'    => true,
-                'suppress_filters' => true,
+                'suppress_filters' => false,
             ];
             if ( null !== $cutoff ) {
                 $args['date_query'] = [ [ 'column' => 'post_modified_gmt', 'before' => $cutoff, 'inclusive' => false ] ];
