@@ -399,29 +399,41 @@ final class StudioScreen
     {
         return [
             'untitled'          => __( 'New page', 'jhmg-ai-editor-for-divi-5' ),
+            /* translators: 1: the section number, 2: the name of the section layout */
             'sectionTitle'      => __( 'Section %1$d: %2$s', 'jhmg-ai-editor-for-divi-5' ),
             'include'           => __( 'Include this section', 'jhmg-ai-editor-for-divi-5' ),
             'leftOut'           => __( 'Left out', 'jhmg-ai-editor-for-divi-5' ),
             'moveUp'            => __( 'Move up', 'jhmg-ai-editor-for-divi-5' ),
             'moveDown'          => __( 'Move down', 'jhmg-ai-editor-for-divi-5' ),
+            /* translators: %d: the number of the section */
             'moveUpLabel'       => __( 'Move section %d up', 'jhmg-ai-editor-for-divi-5' ),
+            /* translators: %d: the number of the section */
             'moveDownLabel'     => __( 'Move section %d down', 'jhmg-ai-editor-for-divi-5' ),
+            /* translators: %d: the new position of the section */
             'moved'             => __( 'Section moved to position %d.', 'jhmg-ai-editor-for-divi-5' ),
             'layout'            => __( 'Layout', 'jhmg-ai-editor-for-divi-5' ),
+            /* translators: 1: the layout name, 2: how many items it holds */
             'layoutItems'       => __( '%1$s (%2$d items)', 'jhmg-ai-editor-for-divi-5' ),
+            /* translators: %s: the layout name */
             'layoutOneItem'     => __( '%s (1 item)', 'jhmg-ai-editor-for-divi-5' ),
+            /* translators: 1: the layout name, 2: how many items it holds, 3: how many items you filled in */
             'layoutTooFew'      => __( '%1$s (holds %2$d items, you filled %3$d)', 'jhmg-ai-editor-for-divi-5' ),
+            /* translators: %s: the layout name */
             'layoutCurrent'     => __( '%s (this layout)', 'jhmg-ai-editor-for-divi-5' ),
             'itemsHint'         => __( 'Layouts that hold fewer items than you have filled in cannot be picked. Empty an item first if you want one of them.', 'jhmg-ai-editor-for-divi-5' ),
+            /* translators: %s: a list of the words that will be removed */
             'swapConfirm'       => __( 'Some words you wrote do not fit this layout and will be removed: %s. Change the layout?', 'jhmg-ai-editor-for-divi-5' ),
+            /* translators: %s: a list of the words that were removed */
             'swapDropped'       => __( 'Layout changed. These words did not fit and were removed: %s.', 'jhmg-ai-editor-for-divi-5' ),
             'swapDone'          => __( 'Layout changed. Your words were kept.', 'jhmg-ai-editor-for-divi-5' ),
             'recipeGone'        => __( 'This layout is no longer in the library. Pick another layout for this section; the words of the other sections are kept.', 'jhmg-ai-editor-for-divi-5' ),
+            /* translators: %s: a list of the words that no longer have a place */
             'slotsChanged'      => __( 'This layout has changed since your words were saved. Some of them no longer have a place: %s. Pick a layout for this section or retype them.', 'jhmg-ai-editor-for-divi-5' ),
             'pickReplacement'   => __( 'Pick a replacement layout', 'jhmg-ai-editor-for-divi-5' ),
             'noSections'        => __( 'Include at least one section.', 'jhmg-ai-editor-for-divi-5' ),
             'resuggestConfirm'  => __( 'Replace your sections with the suggestion for this goal? Words you wrote for them are removed.', 'jhmg-ai-editor-for-divi-5' ),
             'resuggestKept'     => __( 'Your sections were kept. Use "Suggest sections again" for the suggestion that fits this choice.', 'jhmg-ai-editor-for-divi-5' ),
+            /* translators: 1: a label, 2: a number */
             'numbered'          => __( '%1$s %2$d', 'jhmg-ai-editor-for-divi-5' ),
             'emptyKeepsSample'  => __( 'Leave it empty to keep the sample text.', 'jhmg-ai-editor-for-divi-5' ),
             'linkHint'          => __( 'An https:// address, mailto:, tel:, #a-section or a page of this site such as /contact/.', 'jhmg-ai-editor-for-divi-5' ),
@@ -434,6 +446,7 @@ final class StudioScreen
             'packNone'          => __( 'Keep the sample picture', 'jhmg-ai-editor-for-divi-5' ),
             'urlLabel'          => __( 'Or type a picture address', 'jhmg-ai-editor-for-divi-5' ),
             'urlHint'           => __( 'An https:// address or a path on this site starting with /.', 'jhmg-ai-editor-for-divi-5' ),
+            /* translators: %s: the name of the chosen picture */
             'pictureChosen'     => __( 'Chosen: %s', 'jhmg-ai-editor-for-divi-5' ),
             'pictureSample'     => __( 'The sample picture is used.', 'jhmg-ai-editor-for-divi-5' ),
             'clearPicture'      => __( 'Use the sample picture', 'jhmg-ai-editor-for-divi-5' ),
@@ -446,10 +459,12 @@ final class StudioScreen
             'verdictUnknown'    => __( 'Not checked yet.', 'jhmg-ai-editor-for-divi-5' ),
             'okMark'            => __( 'OK', 'jhmg-ai-editor-for-divi-5' ),
             'badMark'           => __( 'Problem', 'jhmg-ai-editor-for-divi-5' ),
+            /* translators: 1: where the problem is, 2: what the problem is */
             'problemAt'         => __( '%1$s: %2$s', 'jhmg-ai-editor-for-divi-5' ),
             'pageLevel'         => __( 'Page', 'jhmg-ai-editor-for-divi-5' ),
             'unfilledNone'      => __( 'None: every place has your words.', 'jhmg-ai-editor-for-divi-5' ),
             'unfilledOne'       => __( 'One place still shows sample text. The page can be created anyway; replace it before you publish.', 'jhmg-ai-editor-for-divi-5' ),
+            /* translators: %d: the number of places that still show sample text */
             'unfilledCount'     => __( '%d places still show sample text. The page can be created anyway; replace them before you publish.', 'jhmg-ai-editor-for-divi-5' ),
             'warningsTitle'     => __( 'Worth checking', 'jhmg-ai-editor-for-divi-5' ),
             'saving'            => __( 'Saving your brief...', 'jhmg-ai-editor-for-divi-5' ),
@@ -460,17 +475,21 @@ final class StudioScreen
             'syncFailed'        => __( 'Your assistant\'s latest words could not be read, so nothing was sent (sending now could replace them). Check that you are still logged in, then try again.', 'jhmg-ai-editor-for-divi-5' ),
             'checking'          => __( 'Looking for your assistant\'s words...', 'jhmg-ai-editor-for-divi-5' ),
             'mergedOne'         => __( 'One place was filled by your assistant.', 'jhmg-ai-editor-for-divi-5' ),
+            /* translators: %d: the number of places your assistant filled */
             'mergedSome'        => __( '%d places were filled by your assistant.', 'jhmg-ai-editor-for-divi-5' ),
             'mergedNone'        => __( 'No new words from your assistant yet.', 'jhmg-ai-editor-for-divi-5' ),
             'mergedKeptOne'     => __( 'One place you changed here was kept as you wrote it.', 'jhmg-ai-editor-for-divi-5' ),
+            /* translators: %d: the number of places you changed */
             'mergedKept'        => __( '%d places you changed here were kept as you wrote them.', 'jhmg-ai-editor-for-divi-5' ),
             'needsSaveFirst'    => __( 'Copy the instruction for your assistant first, so there is a saved brief to read.', 'jhmg-ai-editor-for-divi-5' ),
             'creating'          => __( 'Creating the draft...', 'jhmg-ai-editor-for-divi-5' ),
             'rebuilding'        => __( 'Rebuilding the page...', 'jhmg-ai-editor-for-divi-5' ),
             'createdDraft'      => __( 'A draft page was created.', 'jhmg-ai-editor-for-divi-5' ),
             'createdUnfilledOne' => __( 'One place still shows sample text; replace it before you publish.', 'jhmg-ai-editor-for-divi-5' ),
+            /* translators: %d: the number of places that still show sample text */
             'createdUnfilled'   => __( '%d places still show sample text; replace them before you publish.', 'jhmg-ai-editor-for-divi-5' ),
             'createdDuplicate'  => __( 'This brief was just turned into a draft page, so that page is shown instead of making a second one.', 'jhmg-ai-editor-for-divi-5' ),
+            /* translators: %s: the reason, a short phrase such as "the page is in the trash" */
             'rebuiltNewDraft'   => __( 'A new draft page was made, because %s. The earlier page was left as it is.', 'jhmg-ai-editor-for-divi-5' ),
             'reasonEdited'      => __( 'the page was changed after it was built', 'jhmg-ai-editor-for-divi-5' ),
             'reasonPublished'   => __( 'the page is no longer a draft', 'jhmg-ai-editor-for-divi-5' ),
@@ -565,7 +584,7 @@ final class StudioScreen
     private static function storedBrief( int $user ): ?array
     {
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only: it only selects which of the user's own briefs to show.
-        $raw = $_GET['brief'] ?? null;
+        $raw = isset( $_GET['brief'] ) ? sanitize_text_field( wp_unslash( $_GET['brief'] ) ) : null;
         if ( ! is_string( $raw ) || 1 !== preg_match( '/^[1-9][0-9]{0,9}\z/', $raw ) || $user <= 0 ) {
             return null;
         }

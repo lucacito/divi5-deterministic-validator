@@ -211,6 +211,7 @@ final class StudioSlots
     /** Inner HTML as one line of plain text (tags dropped, entities decoded, spaces and non-breaking spaces trimmed). */
     private static function plain( string $inner ): string
     {
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags -- exact PHP strip_tags is wanted: wp_strip_all_tags would also delete <script>/<style> contents and trim, which changes which elements count as slots (pinned by the slot golden).
         $text = html_entity_decode( strip_tags( $inner ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
         $text = preg_replace( '/\s+/u', ' ', $text ) ?? $text;
 

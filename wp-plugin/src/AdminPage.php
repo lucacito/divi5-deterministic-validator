@@ -113,8 +113,8 @@ final class AdminPage
     private static function currentTab( array $allowed ): string
     {
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display-only nav.
-        $raw = $_GET['tab'] ?? 'dashboard'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized on the next line.
-        $tab = is_string( $raw ) ? sanitize_key( wp_unslash( $raw ) ) : 'dashboard';
+        $raw = isset( $_GET['tab'] ) ? wp_unslash( $_GET['tab'] ) : 'dashboard'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized on the next line.
+        $tab = is_string( $raw ) ? sanitize_key( $raw ) : 'dashboard';
 
         return in_array( $tab, array_map( 'strval', $allowed ), true ) ? $tab : 'dashboard';
     }

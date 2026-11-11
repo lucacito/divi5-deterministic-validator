@@ -88,14 +88,14 @@ final class StudioLinks
         if ( 1 !== preg_match( '/^https:\/\//i', $url ) ) {
             return null;
         }
-        $host     = parse_url( $url, PHP_URL_HOST );
-        $homeHost = parse_url( $homeUrl, PHP_URL_HOST );
+        $host     = wp_parse_url( $url, PHP_URL_HOST );
+        $homeHost = wp_parse_url( $homeUrl, PHP_URL_HOST );
         if ( ! is_string( $host ) || ! is_string( $homeHost ) || 0 !== strcasecmp( $host, $homeHost ) ) {
             return null;
         }
-        $path     = parse_url( $url, PHP_URL_PATH );
+        $path     = wp_parse_url( $url, PHP_URL_PATH );
         $path     = is_string( $path ) && '' !== $path ? $path : '/';
-        $homePath = rtrim( (string) parse_url( $homeUrl, PHP_URL_PATH ), '/' );
+        $homePath = rtrim( (string) wp_parse_url( $homeUrl, PHP_URL_PATH ), '/' );
         // A site in a subdirectory: the path is read from the install's own root (a longer name such as /blogger is not inside /blog).
         if ( '' !== $homePath && ( $path === $homePath || str_starts_with( $path, $homePath . '/' ) ) ) {
             $path = substr( $path, strlen( $homePath ) );
@@ -116,7 +116,7 @@ final class StudioLinks
         if ( 1 === preg_match( '/\s/', $url ) ) {
             return 'LINK_MALFORMED';
         }
-        $parts = parse_url( $url );
+        $parts = wp_parse_url( $url );
         if ( ! is_array( $parts ) || isset( $parts['user'] ) || isset( $parts['pass'] ) ) {
             return 'LINK_MALFORMED';
         }
