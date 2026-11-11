@@ -238,3 +238,47 @@ plan where the table leaves it free; how the gate scripts share code with the sw
 - Divi save filters differ between `HistoryService::write` and `wp_insert_post` only if Divi hooks them differently; the
   gates compare within the same path and would show it.
 - `lab_restyle` on a page whose words contain a link to a page that no longer exists still saves (warnings only, as Lab).
+
+## Outcome
+
+Built on branch `feat/pro-lab` (head 15bb499 when this was written). NO release, version bump, zip rebuild or readme edit.
+
+- **A. `lab_restyle`** is the 24th Pro tool, MCP and REST only (`ProOpenApi::MCP_REST_ONLY`). It follows section A, including the skip reasons, the token over `stored16:new16:brief16`, the page written through `HistoryService::write`, the brief by compare-and-set and the link to the sha256 of the stored content, and one batch of `[lab_brief, post_content]` items. Two additions from review:
+  - The `brief_not_updated` warning is counted at the top level.
+  - A brief this call wrote but could not link is put back by compare-and-set on the hash it wrote.
+- **B. `build_site` with `brief`** follows section B. Review fix pass:
+  - The `TOO_MANY_BRIEFS` message says that briefs of earlier and undone builds count.
+  - A throwing brief store keeps the page in the build with `stored: false`.
+  - Once any page of a build has a live brief, only live briefs decide the build's look.
+- **New files:**
+  - `pro-addon/src/Lab/LabSupport.php`, `LabLook.php`, `LabCompile.php`, `LabBriefs.php`
+  - `pro-addon/src/Kinds/LabBriefKind.php`
+  - `pro-addon/src/Tools/LabRestyle.php`
+  - the gates `scripts/verify-pro-lab-restyle.{php,cjs}`, `scripts/test-verify-pro-lab-restyle.cjs` and `scripts/verify-pro-lab-site.php`
+- **Free addition (the only one):** `StudioStore::linked()`.
+- **Review-driven decisions:**
+  - Published pages are skipped by default and restyled with `include_published`.
+  - The `lab_brief` item restores the brief by compare-and-set and never reads the page.
+  - The briefs of undone builds are kept and still count toward the 50 cap.
+  - `build_site` callers that pass `content` are unchanged, except that `content` together with `brief` is refused.
+- **Goldens:**
+  - `pro-tools-list.json` gained the `lab_restyle` entry, plus `build_site`'s changed `title` and `content` descriptions and the new `brief` property.
+  - `lab-restyle-tool.json` is new.
+  - `pro-openapi-operations.json` is unchanged (14 operations).
+  - `ReadmeTest::UNRELEASED_TOOLS = ['lab_restyle']`: remove it at release, when the readme names the tool.
+  - `DevGuardTest` counts 19 `verify-pro-*.php` scripts.
+- **Suites at 15bb499:**
+  - `make test-pro`: OK, 3144 tests (1 PHPUnit deprecation).
+  - Free suite: OK, 6993 tests, 1 skipped by design. It was run as `php -d memory_limit=-1 vendor/bin/phpunit`, because plain `make test` stops on PHP's 128 MB memory limit in `CodePolicy.php`.
+- **Live gates** (Docker dev site, Divi 5.15.1):
+  - `make verify-pro-lab-restyle`: 125 PASS, 0 SKIP, 0 FAIL, at 3f03da8. The render compare covered 116 modules at both 1280 and 400 px.
+  - `make verify-pro-lab-site`: 44 PASS, 0 FAIL, at 15bb499. All 10 brief pages are byte-equal to the pages the real `lab_build` (`create: true`) saved from the same filled briefs.
+  - `make verify-pro-switch-design` (62 PASS) and `make verify-pro-build-site` passed unchanged.
+- **Proven only in part:**
+  - A page edited between the preview and the run is reported `edited`, not `changed_since_preview`, because the run plans again and the hash check comes first.
+  - Whether the legacy ChatGPT Action importer accepts the nested `brief` object is still not proven.
+  - The race on the look check before the build lock was accepted.
+- **Owner decisions left:**
+  1. Keep `include_published`, or send launched sites to `switch_design`.
+  2. Whether undoing a build should also delete its briefs.
+  3. The release order (free with Lab first), and the readme and divi5lab.com wording without "in minutes".
