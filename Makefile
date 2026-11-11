@@ -1,4 +1,4 @@
-.PHONY: up down clean test test-pro verify-companion build-pro verify-pro-megamenu verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-switch-design verify-pro-lab-restyle verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-page-title verify-products verify-oauth verify-oauth-chatgpt verify-test-connection verify-html-to-divi verify-guide-shapes verify-shapes verify-recipes verify-kits verify-language-type verify-components verify-loop-builder verify-style-values verify-studio card-report type-report rhythm-report dogfood-prepare dogfood-score dogfood-render divi-currency
+.PHONY: up down clean test test-pro verify-companion build-pro verify-pro-megamenu verify-pro-skeleton verify-pro-settings verify-pro-custom-fields verify-pro-create-product verify-pro-update-products verify-pro-bulk-adjust-prices verify-pro-switch-design verify-pro-lab-restyle verify-pro-theme-layouts verify-pro-theme-templates verify-pro-global-colors verify-pro-global-variables verify-pro-global-presets verify-pro-site-tools verify-pro-rest verify-pro-build-site verify-pro-lab-site verify-pro-licence-tiers validate install shell-wp shell-wpcli export-layouts app-password schema-gap verify-modules verify-history verify-dry-run verify-global-styles verify-site-structure verify-acf-custom-fields verify-custom-fields verify-project-layouts verify-page-title verify-products verify-oauth verify-oauth-chatgpt verify-test-connection verify-html-to-divi verify-guide-shapes verify-shapes verify-recipes verify-kits verify-language-type verify-components verify-loop-builder verify-style-values verify-studio card-report type-report rhythm-report dogfood-prepare dogfood-score dogfood-render divi-currency
 
 # ---------------------------------------------------------------
 # up — bootstrap the full environment (idempotent)
@@ -160,6 +160,10 @@ verify-pro-rest:
 # ---------------------------------------------------------------
 verify-pro-build-site:
 	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-pro-build-site.php --user=1
+
+# verify-pro-lab-site — real-site check of build_site with Divi 5 Lab briefs (10 brief pages byte-equal to the real lab_build's pages from the same briefs, one shared look, LOOK_MISMATCH, the 50-brief cap, hostile words rendered literally, lab_restyle over the drafts, launch, include_published, undo of the restyles and of the build keeping the briefs; self-cleaning; free + Pro plugins must be active; dev site only: it evicts old batch rows)
+verify-pro-lab-site:
+	@docker compose exec -T wpcli php -d memory_limit=1G /usr/local/bin/wp eval-file /scripts/verify-pro-lab-site.php --user=1
 
 # ---------------------------------------------------------------
 # validate — run the validator against an arbitrary JSON file
