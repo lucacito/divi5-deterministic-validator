@@ -162,6 +162,14 @@ deleted (existing rule) and the brief row too (`StudioStore::delete`). Answer: t
 **Undo of a build** trashes its draft pages as today. The briefs stay (**my call**): they hold the person's words, the
 Lab screen shows them as linked to a trashed page and its rebuild makes a new draft (`trashed`). Deleting them would be
 destructive and not re-doable by an undo of the undo. **Owner decision left:** whether undo should also delete them.
+Two consequences of keeping them (found in review, both expected):
+(a) the briefs of an undone build keep counting toward the 50 briefs per person, so "build 30 pages, undo, build again"
+is refused with `TOO_MANY_BRIEFS` at the 21st brief page of the new build; the refusal says that briefs of earlier and
+undone builds count and that briefs can be deleted in the Lab screen to make room (pinned by
+`testBriefsOfAnUndoneBuildStillCountAndTheRefusalSaysSo`);
+(b) a Lab rebuild in place of an untouched build draft changes that page's content, so a later `undo_batch` of the build
+may find the page "changed since" and skip trashing it. That is the normal changed-since rule protecting the newer
+content, not a defect.
 
 ## Release guard
 

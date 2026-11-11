@@ -53,13 +53,16 @@ final class BuildSite implements ProTool
      * @param (\Closure():int)|null               $clock        the time in seconds (the tests move it)
      * @param (\Closure(string):bool)|null        $classExists  seam for the Lab guard: whether a class is installed
      * @param (\Closure(string,string):bool)|null $methodExists seam for the Lab guard: whether a class has a method
+     * @param (\Closure(int,array<string,mixed>,int,string):array{brief_id:?int,stored:bool})|null $storeBrief seam: stores and
+     *        links a brief page's brief (default `LabBriefs::storeAndLink`)
      */
     public function __construct(
         private BatchLog $log,
         ?BuildLock $lock = null,
         ?\Closure $clock = null,
         private ?\Closure $classExists = null,
-        private ?\Closure $methodExists = null
+        private ?\Closure $methodExists = null,
+        private ?\Closure $storeBrief = null
     ) {
         $this->lock  = $lock ?? new BuildLock();
         $this->clock = $clock ?? static fn (): int => time();
@@ -340,7 +343,8 @@ final class BuildSite implements ProTool
     {
         if ( LabBriefs::count( $userId ) >= LabBriefs::max() ) {
             throw new \InvalidArgumentException( 'TOO_MANY_BRIEFS: the page was not created. You already have ' . LabBriefs::max()
-                . ' saved Divi 5 Lab briefs, the most Lab keeps. Delete briefs you no longer need in the Lab screen, then call again.' );
+                . ' saved Divi 5 Lab briefs, the most Lab keeps for one person. The briefs of earlier builds count toward the '
+                . LabBriefs::max() . ', also those of builds that were undone (undo keeps their briefs). Delete briefs you no longer need in the Lab screen to make room, then call again.' );
         }
     }
 
@@ -403,7 +407,14 @@ final class BuildSite implements ProTool
         $post = get_post( (int) $id );
         if ( null !== $brief ) {
             // The content hash is of the page as WordPress stored it (re-read), never of the markup that was sent.
-            $lab                   = LabBriefs::storeAndLink( $userId, $brief, (int) $id, $post ? (string) $post->post_content : '' );
+            // A failure here never orphans the page: whatever happens, the page goes into the build (stored: false).
+            try {
+                $store = $this->storeBrief ?? static fn ( int $u, array $b, int $p, string $c ): array => LabBriefs::storeAndLink( $u, $b, $p, $c );
+                $lab   = $store( $userId, $brief, (int) $id, $post ? (string) $post->post_content : '' );
+                $lab   = is_int( $lab['brief_id'] ?? null ) && true === ( $lab['stored'] ?? null ) ? [ 'brief_id' => $lab['brief_id'], 'stored' => true ] : [ 'brief_id' => null, 'stored' => false ];
+            } catch ( \Throwable $e ) {
+                $lab = [ 'brief_id' => null, 'stored' => false ];
+            }
             $extraMeta['brief_id'] = $lab['brief_id'];
         }
         $item = PageCreatedKind::itemFor( $post, [ 'in_menu' => $inMenu, 'is_front' => $isFront, 'menu_label' => $label ] + $extraMeta );
@@ -555,34 +566,48 @@ final class BuildSite implements ProTool
     /**
      * The look of a build's brief pages: `{language, kit}` when they share one, `'mixed'` when they do not (only after a
      * partial restyle), null when the build has no brief page. Each page counts with the look of its brief as stored now
-     * (a `lab_restyle` changes it), or with the look recorded when it was added when that brief is gone or was not stored.
+     * (a `lab_restyle` changes it); a page whose brief is gone or was not stored does not count. Only when no page of the
+     * build has a readable brief do the looks recorded when the pages were added count instead.
      *
      * @param array<string,mixed> $row
      * @return array{language:string,kit:string}|string|null
      */
     public static function buildLook( array $row ): array|string|null
     {
-        $looks = [];
+        $live   = [];
+        $stored = [];
         foreach ( self::pageItems( $row ) as $item ) {
-            $look    = $item['meta']['look'] ?? null;
+            $look = self::lookOf( $item['meta']['look'] ?? null );
+            if ( null === $look ) {
+                continue;
+            }
+            $stored[ $look['language'] . "\n" . $look['kit'] ] = $look;
             $briefId = $item['meta']['brief_id'] ?? null;
-            if ( null !== $look && is_int( $briefId ) && $briefId > 0 ) {
-                $live = LabBriefs::brief( (int) ( $row['user_id'] ?? 0 ), $briefId );
-                $live = null === $live ? null : LabLook::of( $live );
-                if ( null !== $live ) {
-                    $look = $live;
+            if ( is_int( $briefId ) && $briefId > 0 ) {
+                $brief = LabBriefs::brief( (int) ( $row['user_id'] ?? 0 ), $briefId );
+                $now   = null === $brief ? null : LabLook::of( $brief );
+                if ( null !== $now ) {
+                    $live[ $now['language'] . "\n" . $now['kit'] ] = $now;
                 }
             }
-            if ( is_array( $look ) && is_string( $look['language'] ?? null ) && is_string( $look['kit'] ?? null ) ) {
-                $one                                         = [ 'language' => $look['language'], 'kit' => $look['kit'] ];
-                $looks[ $one['language'] . "\n" . $one['kit'] ] = $one;
-            }
         }
+        // Once any page has a live brief, only live briefs count: a brief deleted in the Lab screen leaves a stale meta.look
+        // that must not turn the build "mixed". The recorded looks count only when no brief is readable at all (the Lab table
+        // is missing, or the free plugin has no Lab).
+        $looks = [] !== $live ? $live : $stored;
         if ( [] === $looks ) {
             return null;
         }
 
         return 1 === count( $looks ) ? array_values( $looks )[0] : 'mixed';
+    }
+
+    /** @return array{language:string,kit:string}|null */
+    private static function lookOf( mixed $look ): ?array
+    {
+        return is_array( $look ) && is_string( $look['language'] ?? null ) && is_string( $look['kit'] ?? null )
+            ? [ 'language' => $look['language'], 'kit' => $look['kit'] ]
+            : null;
     }
 
     /** A trashed page's slug carries core's `__trashed` suffix. */

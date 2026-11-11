@@ -420,6 +420,78 @@ final class BuildSiteBriefTest extends TestCase
         $this->assertSame( 'trash', $GLOBALS['__wp_posts'][ $b['page']['id'] ]->post_status );
         $this->assertNotNull( StudioStore::get( 1, $a['lab']['brief_id'] ) );
         $this->assertNotNull( StudioStore::get( 1, $b['lab']['brief_id'] ) );
+
+        // What Lab does next with the brief of a trashed build page: a NEW draft, the trashed page is left alone.
+        $GLOBALS['__wp_caps']['edit_pages'] = true;
+        $rebuild = StudioService::rebuild( 1, $a['lab']['brief_id'] );
+        $this->assertTrue( $rebuild['ok'], (string) json_encode( $rebuild ) );
+        $this->assertSame( StudioService::MODE_NEW_DRAFT, $rebuild['mode'] );
+        $this->assertSame( 'trashed', $rebuild['reason'] );
+        $this->assertNotSame( $a['page']['id'], $rebuild['page_id'] );
+        $this->assertSame( 'trash', $GLOBALS['__wp_posts'][ $a['page']['id'] ]->post_status );
+    }
+
+    // ---- Review fix pass ------------------------------------------------------------------------------------------------
+
+    public function testBriefsOfAnUndoneBuildStillCountAndTheRefusalSaysSo(): void
+    {
+        $this->tool->run( self::page( self::brief( 'Page 1' ), 'page-1' ) );
+        for ( $i = 2; $i <= 30; $i++ ) {
+            $this->tool->run( self::page( self::brief( "Page {$i}", null ), "page-{$i}", [ 'build_id' => 1 ] ) );
+        }
+        $u = ( new BatchUndo( Batches::kinds(), $this->log ) )->undo( 1 );
+        $this->assertTrue( $u['fully_undone'] );
+        $this->assertSame( 30, StudioStore::countFor( 1 ), 'undo keeps the briefs' );
+
+        $first = $this->tool->run( self::page( self::brief( 'Again 1' ), 'again-1' ) );
+        $build = $first['build']['id'];
+        for ( $i = 2; $i <= 20; $i++ ) {
+            $this->tool->run( self::page( self::brief( "Again {$i}", null ), "again-{$i}", [ 'build_id' => $build ] ) );
+        }
+        $ids     = $this->briefIds( 1 );
+        $message = $this->refused( self::page( self::brief( 'Again 21', null ), 'again-21', [ 'build_id' => $build ] ), 'TOO_MANY_BRIEFS', '50', 'undone', 'Lab screen' );
+        $this->assertStringContainsString( 'earlier builds', $message );
+        $this->assertSame( $ids, $this->briefIds( 1 ), 'nothing was pruned' );
+        $this->assertCount( 20, $this->repo->rows[ $build ]['items'] );
+    }
+
+    public function testAStoreThatThrowsKeepsThePageInTheBuild(): void
+    {
+        $throws = static function (): array {
+            throw new \RuntimeException( 'database gone' );
+        };
+        $tool = new BuildSite( $this->log, new BuildLock( 0 ), null, null, null, $throws );
+        $r    = $tool->run( self::page( self::brief( 'Home' ), 'home' ) );
+
+        $this->assertTrue( $r['created'] );
+        $this->assertFalse( $r['lab']['stored'] );
+        $this->assertNull( $r['lab']['brief_id'] );
+        $this->assertStringContainsString( 'could not be saved', $r['lab']['note'] );
+        $this->assertStringNotContainsString( 'database gone', (string) json_encode( $r ) );
+        $this->assertArrayHasKey( $r['page']['id'], $GLOBALS['__wp_posts'], 'the page is not orphaned' );
+        $this->assertSame( [ (string) $r['page']['id'] ], array_column( $this->repo->rows[1]['items'], 'ref' ), 'it is in the build' );
+        $this->assertNull( $this->repo->rows[1]['items'][0]['meta']['brief_id'] );
+    }
+
+    public function testADeletedBriefDoesNotMakeTheBuildMixed(): void
+    {
+        $a = $this->tool->run( self::page( self::brief( 'Home' ), 'home' ) );
+        $this->tool->run( self::page( self::brief( 'About', null ), 'about', [ 'build_id' => 1 ] ) );
+        $this->relook( 1, 'luxe', 'raw-frame' );
+        $this->assertSame( 'mixed', BuildSite::buildLook( $this->repo->rows[1] ) );
+
+        // The person deletes the editorial page's brief in the Lab screen: its stale meta.look no longer counts.
+        $this->assertTrue( StudioStore::delete( 1, $a['lab']['brief_id'] ) );
+        $look = [ 'language' => 'luxe', 'kit' => 'raw-frame' ];
+        $this->assertSame( $look, BuildSite::buildLook( $this->repo->rows[1] ) );
+        $this->refused( self::page( self::brief( 'Team', 'editorial' ), 'team', [ 'build_id' => 1 ] ), 'LOOK_MISMATCH' );
+
+        // Only when NO page has a live brief (a missing Lab table, an older free plugin) does meta.look count.
+        $row = $this->repo->rows[1];
+        foreach ( $row['items'] as $i => $item ) {
+            $row['items'][ $i ]['meta']['brief_id'] = 99999 + $i;
+        }
+        $this->assertSame( [ 'language' => 'editorial', 'kit' => self::editorialKit() ], BuildSite::buildLook( $row ) );
     }
 
     /** Gives the stored brief of the build's Nth page another look (as a partial restyle of the briefs would). */

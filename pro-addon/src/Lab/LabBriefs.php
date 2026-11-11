@@ -42,7 +42,12 @@ final class LabBriefs
             return [ 'brief_id' => null, 'stored' => false ];
         }
         $id = (int) $saved['id'];
-        if ( ! StudioStore::link( $user, $id, $pageId, hash( 'sha256', $storedContent ) ) ) {
+        try {
+            $linked = StudioStore::link( $user, $id, $pageId, hash( 'sha256', $storedContent ) );
+        } catch ( \Throwable $e ) {
+            $linked = false;
+        }
+        if ( ! $linked ) {
             StudioStore::delete( $user, $id );
 
             return [ 'brief_id' => null, 'stored' => false ];
