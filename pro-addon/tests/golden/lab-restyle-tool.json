@@ -1,0 +1,49 @@
+{
+    "name": "lab_restyle",
+    "description": "Rebuild pages made with Divi 5 Lab in another design language and/or style kit, exactly as Lab would build them now. Only unedited Lab pages; edited ones are skipped (use switch_design). Always dry_run=true first, then repeat with the token. Undoable.",
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "page_id": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "One Lab page id (or use page_ids or all_mine)"
+            },
+            "page_ids": {
+                "type": "array",
+                "items": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "minItems": 1,
+                "maxItems": 25,
+                "description": "Up to 25 Lab page ids, restyled as one batch (or use page_id or all_mine)"
+            },
+            "all_mine": {
+                "type": "boolean",
+                "description": "true: every page you built with Lab (at most 25; use page_ids when you have more)"
+            },
+            "to_language": {
+                "type": "string",
+                "description": "Target design language id (get_style_guide topic design-languages); omitted keeps each page's own"
+            },
+            "to_kit": {
+                "type": "string",
+                "description": "Target style kit id, or \"default\" for the language's own kit; omitted keeps each page's own"
+            },
+            "include_published": {
+                "type": "boolean",
+                "description": "Also restyle Lab pages that are already published (default false: only drafts)"
+            },
+            "dry_run": {
+                "type": "boolean",
+                "description": "Preview only; returns the report and the token a real run needs"
+            },
+            "token": {
+                "type": "string",
+                "description": "The token from your dry run of the same arguments; it works once, within 30 minutes"
+            }
+        }
+    },
+    "capability": "edit_pages"
+}

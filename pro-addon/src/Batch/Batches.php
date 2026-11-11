@@ -9,6 +9,7 @@ use AiEditorDivi5\Pro\Kinds\FrontPageKind;
 use AiEditorDivi5\Pro\Kinds\GlobalColorKind;
 use AiEditorDivi5\Pro\Kinds\GlobalPresetKind;
 use AiEditorDivi5\Pro\Kinds\GlobalVariableKind;
+use AiEditorDivi5\Pro\Kinds\LabBriefKind;
 use AiEditorDivi5\Pro\Kinds\MenuKind;
 use AiEditorDivi5\Pro\Kinds\PageCreatedKind;
 use AiEditorDivi5\Pro\Kinds\PageTrashedKind;
@@ -56,6 +57,7 @@ final class Batches
             new ProductCreatedKind(),
             new ProductTrashedKind(),
             new ProductFieldsKind(),
+            new LabBriefKind(),
         ];
         $out = [];
         foreach ( $kinds as $kind ) {

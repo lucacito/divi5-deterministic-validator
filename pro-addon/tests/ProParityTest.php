@@ -82,6 +82,10 @@ class ProParityTest extends TestCase
             $this->assertContains( $name, $rest, "{$name} over REST" );
             $this->assertArrayNotHasKey( '/pro/' . $name, $this->spec['paths'], "{$name} is not in the ChatGPT spec" );
         }
+        $this->assertContains( 'lab_restyle', ProOpenApi::MCP_REST_ONLY );
+        $this->assertContains( 'lab_restyle', $mcp );
+        $this->assertContains( 'lab_restyle', $rest );
+        $this->assertArrayNotHasKey( '/pro/lab_restyle', $this->spec['paths'] );
         $this->assertCount( 14, $this->proOperations(), '16 free + 14 Pro operations = the importer\'s 30' );
     }
 

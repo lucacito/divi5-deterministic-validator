@@ -124,12 +124,12 @@ class ExpiryKeepsAllToolsTest extends TestCase
     private function assertKeepsAllTools(): void
     {
         $names = self::allToolNames();
-        $this->assertCount( 23, $names ); // 22 + manage_mega_menu
+        $this->assertCount( 24, $names ); // 23 + lab_restyle
         $listed = $this->advertised( [] );
         sort( $listed );
         $sorted = $names;
         sort( $sorted );
-        $this->assertSame( $sorted, $listed, 'all 22 Pro tools are advertised' );
+        $this->assertSame( $sorted, $listed, 'all 24 Pro tools are advertised' );
 
         $response = $this->registry()->claim( null, 'propose_php_snippet', [], 1 );
         $this->assertNotNull( $response, 'a Pro tool call is claimed (not passed through) while unlocked' );

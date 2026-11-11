@@ -37,7 +37,7 @@ class CompanionAbilitiesTest extends TestCase
         }
     }
 
-    public function testTheTwentyTwoEarlierProToolsAreExactlyAsBeforeAndTheMegaMenuToolIsTheTwentyThird(): void
+    public function testTheTwentyTwoEarlierProToolsAreExactlyAsBeforeTheMegaMenuToolIsTheTwentyThirdAndLabRestyleTheTwentyFourth(): void
     {
         $names = array_map( static fn ( $t ) => $t->name(), Tools::all() );
         sort( $names );
@@ -45,9 +45,10 @@ class CompanionAbilitiesTest extends TestCase
             'audit_site', 'build_site', 'bulk_adjust_prices', 'create_product', 'edit_theme_layout', 'find_replace_site', 'list_batches', 'list_theme_layouts',
             'manage_global_colors', 'manage_global_presets', 'manage_global_variables', 'manage_theme_template', 'propose_php_snippet', 'publish_page',
             'set_custom_css', 'set_custom_fields', 'set_front_page', 'set_primary_menu', 'switch_design', 'undo_batch', 'update_products', 'update_theme_layout',
-        ], array_values( array_diff( $names, [ 'manage_mega_menu' ] ) ) );
+        ], array_values( array_diff( $names, [ 'manage_mega_menu', 'lab_restyle' ] ) ) );
         $this->assertContains( 'manage_mega_menu', $names );
-        $this->assertCount( 23, $names );
+        $this->assertContains( 'lab_restyle', $names );
+        $this->assertCount( 24, $names );
     }
 
     public function testNoAbilityNeedsANewToolRouteOrOpenApiOperation(): void

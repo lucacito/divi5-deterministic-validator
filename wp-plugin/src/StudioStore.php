@@ -221,6 +221,38 @@ final class StudioStore
         return self::shape( is_array( $rows ) && isset( $rows[0] ) ? $rows[0] : null );
     }
 
+    /**
+     * The user's briefs that built a page, newest first (read-only, for the Lab screen and tools).
+     *
+     * @return list<array{id:int, brief:array, page_id:int, content_hash:?string, brief_hash:string, plugin_version:string, updated_at:string}>
+     */
+    public static function linked( int $user, int $limit = self::MAX_PER_USER ): array
+    {
+        global $wpdb;
+
+        $limit = max( 0, min( $limit, self::MAX_PER_USER ) );
+        if ( $user <= 0 || 0 === $limit || ! StudioTable::ensureReady() ) {
+            return [];
+        }
+        $table = StudioTable::name();
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $rows = $wpdb->get_results(
+            $wpdb->prepare( "SELECT * FROM {$table} WHERE created_by = %d AND page_id IS NOT NULL ORDER BY updated_at DESC, id DESC LIMIT %d", $user, $limit ),
+            ARRAY_A
+        );
+        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+
+        $out = [];
+        foreach ( is_array( $rows ) ? $rows : [] as $row ) {
+            $shaped = self::shape( $row );
+            if ( null !== $shaped && null !== $shaped['page_id'] ) {
+                $out[] = $shaped;
+            }
+        }
+
+        return $out;
+    }
+
     public static function delete( int $user, int $id ): bool
     {
         global $wpdb;

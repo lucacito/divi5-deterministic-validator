@@ -14,7 +14,7 @@ require_once __DIR__ . '/../src/autoload.php';
 require_once __DIR__ . '/../../wp-plugin/src/autoload.php';
 
 /**
- * Pins the Pro add-on's public surface: the 23 tool definitions (what MCP serves), the operations ChatGPT's importer sees, and the
+ * Pins the Pro add-on's public surface: the 24 tool definitions (what MCP serves), the operations ChatGPT's importer sees, and the
  * Pro abilities. A change to any of them is a change to what customers' assistants see, so it must be deliberate:
  * regenerate with AIED_UPDATE_GOLDEN=1 and review the diff.
  */
@@ -39,7 +39,7 @@ class ProGoldenTest extends TestCase
     public function testTheProToolDefinitionsArePinned(): void
     {
         $defs = array_map( static fn ( $t ) => $t->definition() + [ 'capability' => $t->capability() ], Tools::all() );
-        $this->assertCount( 23, $defs );
+        $this->assertCount( 24, $defs );
         $this->check( 'pro-tools-list.json', $this->json( $defs ) );
     }
 
@@ -47,6 +47,12 @@ class ProGoldenTest extends TestCase
     {
         $tool = array_values( array_filter( Tools::all(), static fn ( $t ) => 'manage_mega_menu' === $t->name() ) )[0];
         $this->check( 'manage-mega-menu-tool.json', $this->json( $tool->definition() + [ 'capability' => $tool->capability() ] ) );
+    }
+
+    public function testTheLabRestyleToolDefinitionIsPinnedOnItsOwn(): void
+    {
+        $tool = array_values( array_filter( Tools::all(), static fn ( $t ) => 'lab_restyle' === $t->name() ) )[0];
+        $this->check( 'lab-restyle-tool.json', $this->json( $tool->definition() + [ 'capability' => $tool->capability() ] ) );
     }
 
     public function testTheChatGptOperationsAreStillFourteenForPro(): void
