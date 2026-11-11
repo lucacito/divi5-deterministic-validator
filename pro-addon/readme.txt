@@ -3,11 +3,11 @@ Contributors:      lucaslopvet
 Requires at least: 6.0
 Tested up to:      7.1
 Requires PHP:      8.1
-Stable tag:        0.14.1
+Stable tag:        0.15.0
 License:           GPLv2 or later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
-Pro add-on for JHMG AI Editor for Divi 5: Divi 5 sites that look designed, built in minutes, with undo for everything. Build a whole site page by page and launch it in one undoable step, restyle pages to another design, edit the live header and footer, find and replace across your pages, set the front page and menu, publish, manage colours, presets and WooCommerce products, and undo each change in one step.
+Pro add-on for JHMG AI Editor for Divi 5: Divi 5 sites that look designed, with undo for each change Pro makes. Build a whole site page by page and launch it in one undoable step, restyle pages to another design, edit the live header and footer, find and replace across your pages, set the front page and menu, publish, manage colours, presets and WooCommerce products, and undo each change in one step.
 
 == Description ==
 
@@ -40,10 +40,11 @@ Every change a Pro tool makes is recorded as a batch with an undo point. `undo_b
 * `bulk_adjust_prices` - raise or lower the regular prices of every product a filter matches (categories, tags, types, stock status, on sale or not, name search, product ids, and which statuses; published products only unless you say otherwise) by a percent or a fixed amount. Needs WooCommerce. Sale prices are never touched. Prices are calculated exactly (no floating point), rounded to your shop's decimals, and optionally made to end in what you choose (for example `0.95`). A product that cannot be adjusted (no regular price, a price at or below its sale price, a price of zero or less) is skipped with a reason and the rest proceed; a variable product is adjusted as a whole or not at all. It changes live prices, so every real run needs the token from a preview (`dry_run`), which lists every product with its price before and after; a product that changed since the preview is skipped, never overwritten. A call adjusts at most 100 products. A failed save puts every product the call touched back. One `undo_batch` puts the previous prices back unless you changed them since.
 * `switch_design` - restyle up to 25 Divi 5 pages or Divi Projects built with the free plugin to another of its design languages and/or style kits: colours, fonts, headline type, section spacing and every kit-styled button, card, rule, chip, accordion, form and image. Deterministic: no AI, no custom CSS, the same answer every time. Text, images, links and layout are never changed. Palette colours and fonts are switched by role in every block. Kit styling (frame, corners, padding, shadow, hover) is switched on blocks that exactly match a kit style, and with `mode: conform` (opt-in) also on near matches; every other block keeps its own frame, corners, padding, shadow and hover and is listed, as are colours and fonts it does not recognise. A page whose design cannot be told safely is skipped with a request for `from_language` or `from_kit`. Every real run needs the token from a preview (`dry_run`), which reports what would switch and what is left; a page changed since the preview is skipped, every result passes the layout checks before it is saved, and one `undo_batch` puts every page back. Needs free plugin 4.15.0 or newer (it says so plainly otherwise).
 * `manage_mega_menu` - turn the global header's menu into a mega menu built from Divi's own modules (no custom code): `status` lists the 14 layouts and the menu items, `apply` puts a layout on every item or on one (`item_id`), `update` rebuilds the panels from the menu as it is now, and `remove` puts the plain menu back. If you changed a panel in the Divi builder, say `edited: keep` or `edited: rebuild`. Every change goes through the layout checker, keeps an undo point and is one batch for `undo_batch`; `dry_run` previews. Needs the Theme Builder permission and edits the global header only. Writing a panel's own headline, text, button and picture stays in the Mega menu tab.
+* `lab_restyle` - rebuild pages that Lab (a tab of the free plugin) built, in another design language or style kit, from their stored briefs. A preview (`dry_run`) comes first and every real run needs its token; a page you edited since is skipped, never overwritten; published pages are skipped unless you set `include_published`. Every result passes the layout checks, and one `undo_batch` puts every page back. Needs free plugin 4.19.0 or newer (it says so plainly otherwise). New: not yet confirmed with every assistant.
 * `list_batches` - list recent Pro changes.
 * `undo_batch` - undo one batch.
 
-Every tool is also available over REST (`POST /wp-json/ai-editor-divi5/v1/pro/<tool>`) and, except `manage_global_colors`, `manage_global_variables`, `manage_global_presets`, `set_custom_fields`, `create_product`, `update_products`, `bulk_adjust_prices`, `switch_design` and `manage_mega_menu` (MCP and REST only), in the free plugin's ChatGPT OpenAPI spec, with the same permission checks. The Pro tools stay off, over every transport, until the licence is unlocked. ChatGPT's newer custom connector (set up in the free plugin's Settings) uses MCP, so it is offered every Pro tool, not only the ones in the spec; we have set it up to OpenAI's published requirements but have not yet confirmed it with a real ChatGPT account.
+Every tool is also available over REST (`POST /wp-json/ai-editor-divi5/v1/pro/<tool>`) and, except `manage_global_colors`, `manage_global_variables`, `manage_global_presets`, `set_custom_fields`, `create_product`, `update_products`, `bulk_adjust_prices`, `switch_design`, `manage_mega_menu` and `lab_restyle` (MCP and REST only), in the free plugin's ChatGPT OpenAPI spec, with the same permission checks. The Pro tools stay off, over every transport, until the licence is unlocked. ChatGPT's newer custom connector (set up in the free plugin's Settings) uses MCP, so it is offered every Pro tool, not only the ones in the spec; we have set it up to OpenAI's published requirements but have not yet confirmed it with a real ChatGPT account.
 
 Each tool checks the permission it really needs (for example `manage_options` to set the front page), not only that the request is authenticated.
 
@@ -63,6 +64,11 @@ If the service cannot be reached, the Pro tools you already unlocked keep workin
 Deleting the plugin removes its own data (licence state, batch history, saved code proposals). It does not undo your site's front page, menu, CSS, page statuses, header or footer content or Theme Builder templates: undo those first if you want them back.
 
 == Changelog ==
+
+= 0.15.0 =
+* New: `lab_restyle` rebuilds pages that Lab (the free plugin's Lab tab) built in another design language or style kit, from their stored briefs. It is previewed first, undoable, and skips pages you edited since; published pages only with `include_published`. MCP and REST only.
+* New: `build_site` accepts a Lab brief, so a whole multi-page site shares one look, and its pages show up in the Lab screen.
+* Needs the free plugin 4.19.0 for these two. On an older free plugin only they are unavailable and say so; every other Pro tool keeps working (the add-on still runs with free 4.9.0 or newer).
 
 = 0.14.1 =
 * New: `list_theme_layouts`, `update_theme_layout` and `edit_theme_layout` now also work on the body layout of a live Theme Builder template (before, the body was listed as read-only). Same checks, `dry_run` preview and undo as the header and footer. `find_replace_site` and `audit_site` still only walk pages, the header and the footer, never a body.

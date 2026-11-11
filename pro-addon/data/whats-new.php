@@ -13,13 +13,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 return [
-    'version' => '0.14',
-    'title'   => __( 'What\'s new in Pro 0.14', 'jhmg-ai-editor-for-divi-5-pro' ),
+    'version' => '0.15',
+    'title'   => __( 'What\'s new in Pro 0.15', 'jhmg-ai-editor-for-divi-5-pro' ),
     'bullets' => [
-        __( 'Companion abilities for any AI: audit-site, design-review-site and more, in their own category.', 'jhmg-ai-editor-for-divi-5-pro' ),
-        __( 'Undo a whole batch of changes made by any tool, with start-batch and end-batch.', 'jhmg-ai-editor-for-divi-5-pro' ),
-        __( 'Strict validation, off by default: flag Divi pages saved by AI tools that fail the layout check.', 'jhmg-ai-editor-for-divi-5-pro' ),
-        __( 'Mega menu: 14 ready-made layouts for your header, built in Divi and undoable.', 'jhmg-ai-editor-for-divi-5-pro' ),
+        __( 'lab_restyle: rebuild pages made in Lab in another design language or style kit, previewed and undoable.', 'jhmg-ai-editor-for-divi-5-pro' ),
+        __( 'It skips pages you edited since and publishes nothing; published pages only when you ask.', 'jhmg-ai-editor-for-divi-5-pro' ),
+        __( 'build_site accepts a Lab brief, so a whole multi-page site shares one look.', 'jhmg-ai-editor-for-divi-5-pro' ),
+        __( 'The pages of such a site show up in the Lab screen. Needs the free plugin 4.19.0. New: not yet confirmed with every assistant.', 'jhmg-ai-editor-for-divi-5-pro' ),
     ],
     'link'    => [
         'label' => __( 'Read the full list of changes', 'jhmg-ai-editor-for-divi-5-pro' ),

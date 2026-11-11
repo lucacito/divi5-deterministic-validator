@@ -22,7 +22,7 @@ class WhatsNewPanelTest extends TestCase
     {
         $c = WhatsNewPanel::content();
         $this->assertNotNull( $c );
-        $this->assertSame( '0.14', $c['version'] );
+        $this->assertSame( '0.15', $c['version'] );
         $this->assertGreaterThanOrEqual( 3, count( $c['bullets'] ) );
         $this->assertLessThanOrEqual( 5, count( $c['bullets'] ) );
         foreach ( [ $c['title'], $c['link']['label'], ...$c['bullets'] ] as $text ) {
@@ -30,7 +30,7 @@ class WhatsNewPanelTest extends TestCase
             $this->assertLessThanOrEqual( 130, strlen( $text ), 'one line each' );
         }
         $text = implode( ' ', $c['bullets'] );
-        foreach ( [ 'audit-site', 'design-review-site', 'batch', 'Strict validation', 'Mega menu' ] as $must ) {
+        foreach ( [ 'lab_restyle', 'skips pages you edited', 'build_site', 'Lab screen', 'not yet confirmed' ] as $must ) {
             $this->assertStringContainsString( $must, $text, $must );
         }
         $this->assertStringStartsWith( 'https://divi5lab.com/', $c['link']['url'] );
@@ -41,24 +41,24 @@ class WhatsNewPanelTest extends TestCase
         $c = WhatsNewPanel::content();
         $this->assertSame( 'whats_new', WhatsNewPanel::mode( '4.17.0', $c, '', true ) );
         $this->assertSame( 'none', WhatsNewPanel::mode( '4.17.0', $c, '', false ), 'never for a user without edit_pages' );
-        $this->assertSame( 'none', WhatsNewPanel::mode( '4.17.0', $c, '0.14', true ), 'hidden after dismissal' );
+        $this->assertSame( 'none', WhatsNewPanel::mode( '4.17.0', $c, '0.15', true ), 'hidden after dismissal' );
         $this->assertSame( 'none', WhatsNewPanel::mode( '4.17.0', null, '', true ) );
     }
 
     public function testANewVersionBringsItBack(): void
     {
-        $next = [ 'version' => '0.15', 'title' => 'T', 'bullets' => [ 'a', 'b', 'c' ], 'link' => [ 'label' => 'l', 'url' => 'https://divi5lab.com/x' ] ];
+        $next = [ 'version' => '0.16', 'title' => 'T', 'bullets' => [ 'a', 'b', 'c' ], 'link' => [ 'label' => 'l', 'url' => 'https://divi5lab.com/x' ] ];
         $this->assertTrue( WhatsNewPanel::valid( $next ) );
-        $this->assertSame( 'whats_new', WhatsNewPanel::mode( '4.17.0', $next, '0.14', true ) );
-        $this->assertSame( 'none', WhatsNewPanel::mode( '4.17.0', $next, '0.15', true ) );
-        $this->assertSame( 'whats_new', WhatsNewPanel::mode( '4.17.0', [ 'version' => '0.100' ] + $next, '0.14', true ), 'compared as versions' );
+        $this->assertSame( 'whats_new', WhatsNewPanel::mode( '4.17.0', $next, '0.15', true ) );
+        $this->assertSame( 'none', WhatsNewPanel::mode( '4.17.0', $next, '0.16', true ) );
+        $this->assertSame( 'whats_new', WhatsNewPanel::mode( '4.17.0', [ 'version' => '0.100' ] + $next, '0.15', true ), 'compared as versions' );
     }
 
     public function testAnOldFreePluginShowsTheUpdateMessageInsteadAndItCannotBeDismissed(): void
     {
         $c = WhatsNewPanel::content();
         $this->assertSame( 'update', WhatsNewPanel::mode( '4.16.0', $c, '', true ) );
-        $this->assertSame( 'update', WhatsNewPanel::mode( '4.16.0', $c, '0.14', true ), 'dismissing the announcement does not hide the update message' );
+        $this->assertSame( 'update', WhatsNewPanel::mode( '4.16.0', $c, '0.15', true ), 'dismissing the announcement does not hide the update message' );
         $this->assertSame( 'none', WhatsNewPanel::mode( '4.16.0', $c, '', false ), 'and still only for users who can edit pages' );
         $this->assertSame( 'whats_new', WhatsNewPanel::mode( null, $c, '', true ), 'an unknown free version is not called old' );
     }
