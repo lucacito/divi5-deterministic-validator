@@ -261,8 +261,13 @@ fit the number of facts). Run `scripts/dogfood-lab.sh <run> cleanup` afterwards;
 per-recipe catalog calls only to learn what the recipes are, because the names mislead (`card-grid-3`, `icon-values`); so `catalog` with a
 `role` now lists title, description and slot count of that role's layouts (fixed on `fix/lab-build-dogfood-2`). Open findings, left to the
 owner as recipe or product decisions:
-1. Some recipes carry software-style sample copy (dashboards, security shield alt text), poor picks for other businesses because an
-   unfilled slot keeps its sample copy.
+1. ~~Some recipes carry software-style sample copy (dashboards, security shield alt text), poor picks for other businesses because an
+   unfilled slot keeps its sample copy.~~ Fixed on `fix/recipe-sample-copy`: the sample copy of `section-intro` (a "developers" intro),
+   `card-grid-3` (lorem ipsum body, dashboard and shield picture descriptions), `card-grid-4` and `split-image-text` (picture descriptions)
+   is now placeholder text in the library's register, and `tests/RecipeSampleCopyTest.php` fails on software words, lorem ipsum or a
+   scene-describing picture description in any recipe. `hero-spec-card` ("Platform [placeholder]") stays, it is the software hero.
+   The built-in pictures of those slots (`card-blue-1` dashboard, `card-teal-1` shield, `card-purple-1` laptop) still show what they
+   show; only the text no longer claims it.
 2. Decorative numerals ("01" to "04") and similar show as unfilled although keeping them is right.
 3. A hero text-link has no link slot.
 4. The contact form's recipient is not a slot.

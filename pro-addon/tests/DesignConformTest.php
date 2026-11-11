@@ -71,13 +71,13 @@ class DesignConformTest extends TestCase
     ];
 
     /** sha256 over every `leave` switch of the corpus (page, target, content), measured on Task 5's head 105406d. */
-    private const LEAVE_CORPUS_CONTENT = '31dd40d2a68fe504cf29d9f1edea16ec5298456e15f5b67d3cff76fb2bdda39b';
+    private const LEAVE_CORPUS_CONTENT = 'e176a916018e95bb126e1d8e2e6c6b62bbded9aef444440a0f3336efac53afe4';
 
     /** sha256 over the `toArray(1000)` reports of the same switches, Task 5's keys only (the new lists are empty). */
     private const LEAVE_CORPUS_REPORT = 'f0d4d31c0ffb2b43604359a8d1d370cbbc8c71a96a5a8c2b7baeee5fe1b82b68';
 
     /** sha256 over every recipe built under editorial and switched (`leave`) to the ten default designs (710 switches). */
-    private const LEAVE_LIBRARY_CONTENT = '2c30106dbb3874aa07375717afa544c11edbd990e77787f5b73b3601d286960f';
+    private const LEAVE_LIBRARY_CONTENT = 'b97d612e58be5d466032581571e70c938838c86ec1aa3bdcb13678e23a848fd9';
 
     /** @var list<array{name:string, from:Design, markup:string}>|null */
     private static ?array $corpus = null;
